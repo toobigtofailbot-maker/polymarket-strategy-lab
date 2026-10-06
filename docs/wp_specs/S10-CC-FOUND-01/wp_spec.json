@@ -1,0 +1,783 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CC-FOUND-01",
+    "title": "Control Center Frontend Foundation + Existing Cockpit Compatibility Migration",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "CONTROL_CENTER_FRONTEND_FOUNDATION",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 221,
+      "head_sha": "c76b6eeb9157ab578c2655701ab9950d1bd474bd",
+      "merge_sha": "71a83bf1d989b5e0bb8a4feab72132756d1eef15"
+    },
+    "suggested_branch": "claude/s10-cc-found-01-control-center-foundation",
+    "objective": "Migrate the existing read-only five-view operator cockpit into a maintainable Control Center frontend foundation: typed same-origin /api client, TanStack Query server state with conservative defaults, React Router declarative URL routing, semantic source-owned primitives and CSS tokens, and deterministic Storybook/MSW reference states, with the 14-route GET-only backend byte-unchanged and zero strategy, Hermes, execution, live, deployment or capital authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      ".github/workflows/ci.yml",
+      "src/operator_cockpit_frontend/package.json",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "src/operator_cockpit_frontend/index.html",
+      "src/operator_cockpit_frontend/tsconfig.json",
+      "src/operator_cockpit_frontend/vite.config.ts",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "src/operator_cockpit_frontend/.storybook/main.ts",
+      "src/operator_cockpit_frontend/.storybook/preview.ts",
+      "src/operator_cockpit_frontend/public/mockServiceWorker.js",
+      "tests/test_operator_cockpit.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-FOUND-01.md",
+      "docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-FOUND-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      ".github/workflows/ci.yml",
+      "src/operator_cockpit_frontend/package.json",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "src/operator_cockpit_frontend/index.html",
+      "src/operator_cockpit_frontend/tsconfig.json",
+      "src/operator_cockpit_frontend/vite.config.ts",
+      "src/operator_cockpit_frontend/src/main.tsx",
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "src/operator_cockpit_frontend/.storybook/main.ts",
+      "src/operator_cockpit_frontend/.storybook/preview.ts",
+      "src/operator_cockpit_frontend/public/mockServiceWorker.js",
+      "tests/test_operator_cockpit.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-FOUND-01.md",
+      "docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-FOUND-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "tools/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/strategy_lifecycle/",
+      "src/research_runtime/",
+      "src/paper_trading/",
+      "src/data_layer/"
+    ],
+    "max_changed_files": 20,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_operator_cockpit.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Revert S10-CC-FOUND-01. The cockpit frontend returns to the WP171 single-file main.tsx with inline CSS, absolute loopback API and react/react-dom only; the cockpit CI job drops the Storybook build step; the two historical frontend guards return to their base form. No backend source, Python dependency, credential, runtime store, execution, live, capital or persistent product state is changed or migrated.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": true,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "The backend GET contract is frozen; only the browser-side consumption surface, local dev proxy, Storybook reference environment and the existing hosted frontend job change.",
+    "items": [
+      {
+        "surface": "operator_cockpit backend /api GET contract",
+        "before": "14 GET-only routes in src/operator_cockpit.py",
+        "after": "UNCHANGED (byte-identical source)",
+        "change_authorized": false,
+        "compatibility_requirement": "src/operator_cockpit.py byte-unchanged; tests/test_operator_cockpit.py backend and read-only assertions unchanged and passing",
+        "authority": "NONE"
+      },
+      {
+        "surface": "frontend routing",
+        "before": "single in-memory view state",
+        "after": "React Router declarative routes /overview /markets /experiments /paper /audit with root and catch-all redirect to /overview",
+        "change_authorized": true,
+        "compatibility_requirement": "same five views; no loader, action, fetcher, Data or Framework mode",
+        "authority": "LOCAL_UI_SURFACE_ONLY"
+      },
+      {
+        "surface": "frontend API base",
+        "before": "absolute http://127.0.0.1:8000/api in main.tsx",
+        "after": "same-origin /api in src/api.ts",
+        "change_authorized": true,
+        "compatibility_requirement": "GET only; no absolute URL, environment override, credentials or cookies in application source",
+        "authority": "READ_ONLY_PRESENTATION"
+      },
+      {
+        "surface": "Vite development proxy",
+        "before": "absent",
+        "after": "vite.config.ts proxies /api to http://127.0.0.1:8000 on a 127.0.0.1 dev server",
+        "change_authorized": true,
+        "compatibility_requirement": "loopback only; no environment override, auth header, TLS bypass or production proxy",
+        "authority": "LOCAL_DEVELOPMENT_ONLY"
+      },
+      {
+        "surface": "TanStack server state",
+        "before": "absent (useEffect fetch)",
+        "after": "one QueryClient with retry false, no focus/reconnect refetch, staleTime Infinity, no refetchInterval",
+        "change_authorized": true,
+        "compatibility_requirement": "manual Refresh invalidates only the active route family",
+        "authority": "READ_ONLY_PRESENTATION"
+      },
+      {
+        "surface": "Storybook and MSW",
+        "before": "absent",
+        "after": "deterministic local fixture/reference environment with msw-storybook-addon v3 and generated public/mockServiceWorker.js",
+        "change_authorized": true,
+        "compatibility_requirement": "unhandled /api requests error instead of reaching a backend; no product network",
+        "authority": "LOCAL_DEVELOPMENT_ONLY"
+      },
+      {
+        "surface": "hosted cockpit-frontend job",
+        "before": "npm ci, typecheck, build, npm audit --audit-level=high",
+        "after": "same job plus npm run build-storybook",
+        "change_authorized": true,
+        "compatibility_requirement": "no trigger, matrix, permission, secret or other job change",
+        "authority": "WORKFLOW_GOVERNANCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Dependency pins, API base, routes, Query defaults, refresh scope, safe errors, view compatibility, Storybook isolation, build output, exact scope, authority closure and validation flow are deterministic package semantics.",
+    "items": [
+      {
+        "path": "dependency.exact_pins",
+        "source": "CONSTANT",
+        "type": "exact_direct_dependency_set",
+        "required_rule": "package.json dependencies are exactly react 19.3.0, react-dom 19.3.0, react-router 8.4.0, @tanstack/react-query 5.104.0; devDependencies exactly @types/react 19.3.0, @types/react-dom 19.3.0, typescript 7.0.2, vite 8.3.0, storybook 10.6.1, @storybook/react-vite 10.6.1, msw 2.15.0, msw-storybook-addon 3.0.3; node engine 24.18.0",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "T01 exact-dictionary test, lock root equality and npm ls of the six new pins",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "package names and versions only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "dependency.msw_v2_compatibility",
+        "source": "CONSTANT",
+        "type": "peer_compatibility",
+        "required_rule": "msw stays on 2.15.0 because msw-storybook-addon 3.0.3 declares an msw 2.x peer",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "npm ls reports no invalid or missing peer for msw and msw-storybook-addon",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "package names and versions only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "api.same_origin_base",
+        "source": "CONSTANT",
+        "type": "api_base",
+        "required_rule": "application fetches use the same-origin /api base with GET only; the loopback target appears only in vite.config.ts",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "N01 and N04 static source checks",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "pattern names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "api.safe_error_codes",
+        "source": "CONSTANT",
+        "type": "closed_error_vocabulary",
+        "required_rule": "visible errors render only INVALID_INPUT, NOT_FOUND, SOURCE_UNAVAILABLE, INTERNAL_ERROR or the frontend closed codes NETWORK_UNAVAILABLE and MALFORMED_RESPONSE; no URL, stack, body or exception text",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "N06 static check and Storybook error stories",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed codes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "routing.route_map",
+        "source": "CONSTANT",
+        "type": "route_set",
+        "required_rule": "routes are exactly /overview /markets /experiments /paper /audit plus root and catch-all redirects to /overview in React Router declarative mode",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "N09 source inspection, typecheck and build",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "route paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "query.conservative_defaults",
+        "source": "CONSTANT",
+        "type": "query_defaults",
+        "required_rule": "single QueryClient; retry false; refetchOnWindowFocus false; refetchOnReconnect false; staleTime Infinity; no refetchInterval or setInterval",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "N02 static check and api.ts inspection",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "option names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "query.active_family_refresh",
+        "source": "CONSTANT",
+        "type": "manual_refresh_scope",
+        "required_rule": "the Refresh control invalidates only queries under [cc, active family]; inactive families are not invalidated; query cache staleness is never shown as domain freshness",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "app.tsx inspection and refreshing story",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "family names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ui.five_view_compatibility",
+        "source": "CONSTANT",
+        "type": "view_compatibility",
+        "required_rule": "Overview, Market Truth, Experiments with inline detail, Paper Operations and Audit / Health keep their current backend fields, exact status strings and simulated-paper posture; no new domain page or recommendation language",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Storybook stories and tests/test_operator_cockpit.py",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "view names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storybook.no_real_network",
+        "source": "CONSTANT",
+        "type": "story_isolation",
+        "required_rule": "msw-storybook-addon initializes with an onUnhandledRequest policy that errors for /api requests; every story installs handlers for each /api request it makes; no story reaches a backend or product endpoint",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "N10 inspection and Storybook build/smoke",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "story names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storybook.build_output",
+        "source": "CONSTANT",
+        "type": "build_output_location",
+        "required_rule": "build-storybook writes to the ignored dist/storybook directory; no storybook-static or other unignored output",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "N07 git status after builds",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "workflow.cockpit_job",
+        "source": "CONSTANT",
+        "type": "hosted_job_extension",
+        "required_rule": "cockpit-frontend keeps npm ci, typecheck, build and npm audit --audit-level=high on Node 24.18.0 and adds only npm run build-storybook",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "tests/test_codex_workflow_docs.py and final hosted job log",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "step names only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the 20 package paths change; tests/test_operator_cockpit.py changes only T01 and T02",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "readiness --check-diff, diff_scope_summary --require-exact-scope and N08 test diff inspection",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.authority_closure",
+        "source": "CONSTANT",
+        "type": "closed_authority",
+        "required_rule": "no backend source, route, DTO, network, credential, scheduler, Hermes, strategy, paper mutation, execution, live, deployment or capital authority; source_runtime is true only for the frontend package files",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact diff and authority mirror",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NONE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.local_first_hosted_final",
+        "source": "CONSTANT",
+        "type": "validation_flow",
+        "required_rule": "focused frontend, adjacent cockpit/workflow tests, hygiene, available security checks and one local full suite pass before Ready; then one complete exact-head hosted matrix and a posted PR evidence guard PASS",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "PR body records commands, run id, head and job conclusions",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "command results only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Frontend foundation introduces no product identity or content-addressed record.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical governed-WP lifecycle; AUTHORIZED follows Karl sending this REV A package to the executor and deterministic readiness passing. Posted GitHub verification after IMPLEMENTED_LOCAL is the PR-body evidence-mode step.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST readiness passes with no unresolved decisions and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sent this exact REV A package to the executor with an instruction to proceed and readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "only the exact 20 paths change and local-first stable-candidate validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Bounded change-set examples: the exact package is valid; single-fault mutations are rejected by the named category.",
+    "items": [
+      {
+        "example_id": "valid_exact_twenty_path_change_set",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            ".github/workflows/ci.yml",
+            "src/operator_cockpit_frontend/package.json",
+            "src/operator_cockpit_frontend/package-lock.json",
+            "src/operator_cockpit_frontend/index.html",
+            "src/operator_cockpit_frontend/tsconfig.json",
+            "src/operator_cockpit_frontend/vite.config.ts",
+            "src/operator_cockpit_frontend/src/main.tsx",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "src/operator_cockpit_frontend/.storybook/main.ts",
+            "src/operator_cockpit_frontend/.storybook/preview.ts",
+            "src/operator_cockpit_frontend/public/mockServiceWorker.js",
+            "tests/test_operator_cockpit.py",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-FOUND-01.md",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_spec.json"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_twenty_first_path",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            ".github/workflows/ci.yml",
+            "src/operator_cockpit_frontend/package.json",
+            "src/operator_cockpit_frontend/package-lock.json",
+            "src/operator_cockpit_frontend/index.html",
+            "src/operator_cockpit_frontend/tsconfig.json",
+            "src/operator_cockpit_frontend/vite.config.ts",
+            "src/operator_cockpit_frontend/src/main.tsx",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "src/operator_cockpit_frontend/.storybook/main.ts",
+            "src/operator_cockpit_frontend/.storybook/preview.ts",
+            "src/operator_cockpit_frontend/public/mockServiceWorker.js",
+            "tests/test_operator_cockpit.py",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-FOUND-01.md",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_spec.json",
+            "src/operator_cockpit_frontend/src/ui.tsx"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_backend_source_change",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            ".github/workflows/ci.yml",
+            "src/operator_cockpit_frontend/package.json",
+            "src/operator_cockpit_frontend/package-lock.json",
+            "src/operator_cockpit_frontend/index.html",
+            "src/operator_cockpit_frontend/tsconfig.json",
+            "src/operator_cockpit_frontend/vite.config.ts",
+            "src/operator_cockpit_frontend/src/main.tsx",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "src/operator_cockpit_frontend/.storybook/main.ts",
+            "src/operator_cockpit_frontend/.storybook/preview.ts",
+            "src/operator_cockpit_frontend/public/mockServiceWorker.js",
+            "tests/test_operator_cockpit.py",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-FOUND-01.md",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_spec.json"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_live_authority",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "AUTHORITY_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            ".github/workflows/ci.yml",
+            "src/operator_cockpit_frontend/package.json",
+            "src/operator_cockpit_frontend/package-lock.json",
+            "src/operator_cockpit_frontend/index.html",
+            "src/operator_cockpit_frontend/tsconfig.json",
+            "src/operator_cockpit_frontend/vite.config.ts",
+            "src/operator_cockpit_frontend/src/main.tsx",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "src/operator_cockpit_frontend/.storybook/main.ts",
+            "src/operator_cockpit_frontend/.storybook/preview.ts",
+            "src/operator_cockpit_frontend/public/mockServiceWorker.js",
+            "tests/test_operator_cockpit.py",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-FOUND-01.md",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-FOUND-01/wp_spec.json"
+          ],
+          "authority_live": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R012 mirror the package requirement-to-evidence traceability.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "exact twenty path FAST readiness and scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-FOUND-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-FOUND-01/wp_spec.json --repo-root . --check-diff --base 71a83bf1d989b5e0bb8a4feab72132756d1eef15 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY on FAST deterministic readiness with exact 20-path diff, no certificate, and diff_scope_summary --require-exact-scope reporting no out-of-scope path"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_dependency_pins_security_and_historical_guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py",
+        "expected_result": "package.json direct dependency dictionaries equal the exact Section 11 set, node engine 24.18.0, lockfileVersion 3 and lock root mirrors package.json"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "validation",
+        "test": "route map inspection typecheck and build",
+        "command": "npm --prefix src/operator_cockpit_frontend run typecheck && npm --prefix src/operator_cockpit_frontend run build",
+        "expected_result": "project-wide typecheck and Vite build exit 0 and the route set is exactly five routes plus redirects"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "validation",
+        "test": "same origin API and safe errors static checks",
+        "command": "git grep -n -E \"127\\.0\\.0\\.1:8000/api|method: .(POST|PUT|PATCH|DELETE)|error\\.message\" -- src/operator_cockpit_frontend/src",
+        "expected_result": "no absolute loopback API, no mutation method and no raw exception message rendering in application source"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "validation",
+        "test": "query defaults and no polling static checks",
+        "command": "git grep -n -E \"setInterval|refetchInterval|EventSource|WebSocket\" -- src/operator_cockpit_frontend/src",
+        "expected_result": "no polling or realtime primitive; QueryClient defaults are retry false, no focus or reconnect refetch, staleTime Infinity"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_contract_status_and_repo_truth_are_consistent",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py",
+        "expected_result": "historical contract, status, index, deferred and workflow assertions hold and the Overview label is found in src/app.tsx; all backend route and read-only tests unchanged"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "validation",
+        "test": "semantic tokens and primitives Storybook build",
+        "command": "npm --prefix src/operator_cockpit_frontend run build-storybook",
+        "expected_result": "Storybook static build exits 0 into dist/storybook rendering token-styled primitives across all foundation stories"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "validation",
+        "test": "Storybook smoke and MSW isolation",
+        "command": "npm --prefix src/operator_cockpit_frontend run storybook -- --smoke-test",
+        "expected_result": "smoke test exits 0 on 127.0.0.1:6006; every story installs MSW handlers for its /api requests and unhandled /api requests error"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "workflow compatibility suite",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "workflow governance suite passes unchanged with the cockpit-frontend job carrying the added build-storybook step"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "authority closure and backend byte identity",
+        "command": "git diff --exit-code 71a83bf1d989b5e0bb8a4feab72132756d1eef15 HEAD -- src/operator_cockpit.py",
+        "expected_result": "backend source byte-unchanged, test diff limited to T01 and T02, authority mirror equals spec with network credentials execution and live false"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "one authoritative local full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one full repository suite run on the stable candidate completes without failures"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pr_evidence",
+        "test": "posted exact head evidence",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body posted-pr-body.md --expected-head FINAL_HEAD_SHA --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-guard-result",
+        "expected_result": "the re-fetched posted PR body binds the final head, one complete hosted matrix with all jobs green and passes the evidence guard"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CC-RESEARCH-01",
+    "next_title": "Control Center read-only research surfaces (StrategyLifecycle, Hermes assessments, Alpha evidence, lineage)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-RESEARCH-01",
+    "forbidden_in_this_wp": [
+      "Strategy, Hermes or Alpha read models",
+      "portfolio, risk or ops read models",
+      "SSE or WebSocket streaming",
+      "polling loops",
+      "protected commands or mutation controls",
+      "private production deployment or hosting",
+      "Tailscale, VPS, firewall or reverse proxy change",
+      "backend route, DTO or src/operator_cockpit.py change",
+      "credentials, account reads or product network",
+      "execution, Gate-C, LIVE-ORCH, orders, signing, live or capital",
+      "merge"
+    ]
+  }
+}
