@@ -10,9 +10,9 @@
     "risk_level": 3,
     "base_branch": "main",
     "required_predecessor": {
-      "pr_number": 220,
-      "head_sha": "d6899e205f0652c7314216016d95cd17e6f01f46",
-      "merge_sha": "f9a0bae6a69d008862e6466f1fe532bc9416de5d"
+      "pr_number": 222,
+      "head_sha": "9c9a2cb24f7c4916809844a74483a74a90070dd5",
+      "merge_sha": "7e520014cd4e26bf65fa6eaaf624f0e64d07d5af"
     },
     "suggested_branch": "claude/s10-live-canary-ua-01-public-user-agent",
     "objective": "Add the established fixed wp169 User-Agent to the merged public Gamma/CLOB and geoblock urllib GET requests while preserving all endpoint, redirect, timeout, body-size, failure, retry, credential, execution and live-authority boundaries.",
@@ -248,7 +248,7 @@
         "path": "validation.final_ci",
         "source": "DERIVED",
         "type": "repair_rule",
-        "required_rule": "Keep PR draft while changing; when stable, mark Ready and obtain one final exact-head hosted CI matrix plus PR evidence consistency guard PASS before Side16 merge review.",
+        "required_rule": "Keep PR draft while changing; when stable, mark Ready and obtain one final exact-head hosted CI matrix plus PR evidence consistency guard PASS, then Side17 exact-head review before Karl merge.",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,

@@ -9,7 +9,11 @@
 - Package class / size / risk: PUBLIC_POLYMARKET_TRANSPORT_COMPATIBILITY_REPAIR / M / 3
 - Governance track: RUNTIME; readiness basis DETERMINISTIC (no certificate required)
 - Branch: claude/s10-live-canary-ua-01-public-user-agent
-- Frozen base: f9a0bae6a69d008862e6466f1fe532bc9416de5d (PR #220 merge)
+- Frozen base: 7e520014cd4e26bf65fa6eaaf624f0e64d07d5af (PR #222 / S10-CI-SEC-01 merge; PR #222 merged, head 9c9a2cb24f7c4916809844a74483a74a90070dd5)
+- Required predecessor: PR #222 / S10-CI-SEC-01
+- Refreeze: the existing PR #221 repair, first built on f9a0bae6a69d008862e6466f1fe532bc9416de5d (PR #220 merge), was rebased
+  unchanged and refrozen onto the new base after S10-CI-SEC-01 merged
+- Review owner: Side17
 - PR and current live head: see GitHub metadata and the PR body
 - Merge commit: not merged
 - MERGE AUTHORITY: KARL ONLY
@@ -86,11 +90,12 @@
 - Capital: USD 0
 - Live: DISABLED
 - Live canary: SUSPENDED
+- Deployment of this repair / public runtime smoke: NOT performed (post-merge successor actions)
 
 ## Successor
 
-- After Karl merges: record the merge SHA; do not resume canary packages bound to f9a0bae.
-- Side16 issues a SHA-only canary rebind/continuation package; deploy and bind the new release and
+- After Karl merges: record the merge SHA; do not resume canary packages bound to f9a0bae or 7e52001.
+- Side17 issues a SHA-only canary rebind/continuation package; deploy and bind the new release and
   require strict `EXECUTION_HOST_CURRENT`; run a fresh public Gamma/CLOB + geoblock smoke on the
   execution host; only then resume the directional-Hermes -> lifecycle/Hermes-assessment ->
   JIT Gate-C -> parent-preflight flow.
