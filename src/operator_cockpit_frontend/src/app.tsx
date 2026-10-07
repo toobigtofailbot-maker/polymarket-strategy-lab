@@ -1972,7 +1972,8 @@ function StreamRefreshController({ family }: { family: QueryFamily }) {
     const source = new EventSource(streamEventUrl(family));
     setTransport({ state: "Connecting", signalNs: null });
     const reread = (resync: boolean) => {
-      const settled = queryClient.invalidateQueries({ queryKey: familyKey(family) });
+      // Never abort an in-flight re-read: a projection slower than the cadence must still land.
+      const settled = queryClient.invalidateQueries({ queryKey: familyKey(family) }, { cancelRefetch: false });
       if (!resync) return void settled;
       void settled.finally(() => {
         if (open) setTransport((current) => (current.state === "Resyncing" ? { ...current, state: "Connected" } : current));
@@ -2009,8 +2010,11 @@ function StreamRefreshController({ family }: { family: QueryFamily }) {
 
   const state: TransportState = enabled ? transport.state : "Disabled";
   return (
-    <div className="stream-indicator" role="status" aria-label="Auto-refresh transport">
-      <StatusPill tone={TRANSPORT_TONE[state]}>Auto-refresh: {state}</StatusPill>
+    <div className="stream-indicator">
+      {/* Only the state is a live region; the signal time changes every tick and is not announced. */}
+      <span role="status">
+        <StatusPill tone={TRANSPORT_TONE[state]}>Auto-refresh: {state}</StatusPill>
+      </span>
       {enabled && transport.signalNs !== null && (
         <span className="stream-signal">
           Server refresh-signal time <code>{signalTimeUtc(transport.signalNs)}</code>

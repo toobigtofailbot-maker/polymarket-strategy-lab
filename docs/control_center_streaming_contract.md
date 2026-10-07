@@ -183,8 +183,10 @@ market-data gap, and no attempt is made to replay canonical domain events.
   change or unmount. Native browser reconnect is allowed; there is no custom reconnect timer or
   backoff, and an error only marks the transport disconnected.
 - Stream-driven refresh only ever calls
-  `queryClient.invalidateQueries({ queryKey: familyKey(activeFamily) })`. It never invalidates every
-  `cc` family and never calls `setQueryData` with canonical content.
+  `queryClient.invalidateQueries({ queryKey: familyKey(activeFamily) })`, with the option
+  `cancelRefetch: false`. A signal therefore never aborts an in-flight re-read, and a projection
+  slower than its family cadence still lands instead of being restarted on every signal. It never
+  invalidates every `cc` family and never calls `setQueryData` with canonical content.
 - Manual Refresh is unchanged and always usable. The Query defaults (`staleTime: Infinity`,
   `retry: false`, no focus or reconnect refetch) are unchanged. There is no `setInterval`,
   `refetchInterval`, WebSocket, local/session storage or mutation method.

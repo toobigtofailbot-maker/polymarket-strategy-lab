@@ -635,7 +635,8 @@ def test_s11_frontend_resync_refresh_heartbeat_and_gap_invalidation_semantics(no
     assert 'return { baseline: next, resync: false, invalidate: event.kind === "REFRESH_DUE" };' in reducer
     controller = _controller()
     assert controller.count("invalidateQueries(") == 1
-    assert "queryClient.invalidateQueries({ queryKey: familyKey(family) })" in controller
+    # Active family only, and an in-flight re-read is never aborted by the next signal.
+    assert "queryClient.invalidateQueries({ queryKey: familyKey(family) }, { cancelRefetch: false })" in controller
     assert "if (step.invalidate) reread(step.resync);" in controller
     for forbidden in ("setQueryData", "resetQueries", "refetchQueries", "removeQueries", "invalidateQueries()",
                       '["cc"]', "queryKey: [\"cc\"", "fetchQuery", "message.data}"):
