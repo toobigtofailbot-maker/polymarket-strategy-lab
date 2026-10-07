@@ -166,9 +166,11 @@ APPROVED_SRC_SCOPES = (
     # caller-selected WP169/WP170 SQLite evidence and has no trading authority.
     "src/operator_cockpit.py",
     # S10-CC-RESEARCH-01 approves exactly the read-only Control Center research projection
-    # module. It reads StrategyLifecycle and Hermes strategy-manager state only through their
-    # verified loaders and has no mutation, Hermes-runtime, network, credential, paper,
-    # execution or live authority. It is not a src/operator_cockpit* wildcard approval.
+    # module; S10-CC-RESEARCH-02 extends that same exact module (no new entry). It reads
+    # StrategyLifecycle, Hermes strategy-manager, Alpha Factory and Alpha Discovery state only
+    # through their verified loaders and has no mutation, Hermes-runtime, network, credential,
+    # qualification, paper, execution or live authority. It is not a src/operator_cockpit*
+    # wildcard approval.
     "src/operator_cockpit_research.py",
     "src/operator_cockpit_frontend",
     # S10-STRAT-LIFE-01 approves exactly the stdlib-only src/strategy_lifecycle family:
@@ -267,8 +269,10 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     S10-GATE-C-EXPLORE-01 permits src/exploratory_gate_c/ for the credential-free exploratory
     Gate-C policy-permit core only (no network/credential/order/A3/live authority).
     S10-CC-RESEARCH-01 permits src/operator_cockpit_research.py for the read-only Control
-    Center StrategyLifecycle + Hermes projection only (verified loaders; no mutation,
-    Hermes-runtime, network, credential, execution or live authority).
+    Center research projections; S10-CC-RESEARCH-02 extends the same exact module to the
+    StrategyLifecycle, Hermes strategy-manager, Alpha Factory and Alpha Discovery projections
+    (verified loaders only; no mutation, Hermes-runtime, network, credential, qualification,
+    paper, execution or live authority).
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

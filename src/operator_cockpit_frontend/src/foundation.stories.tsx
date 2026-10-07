@@ -7,7 +7,16 @@ import {
   createQueryClient,
   familyKey,
   overviewQuery,
+  type AlphaCandidateDetail,
+  type AlphaCandidateSummary,
+  type AlphaEpisodeDetail,
+  type AlphaEpisodeSummary,
+  type AlphaMemorySummary,
+  type AlphaSourceReference,
   type AuditItem,
+  type DiscoveryQueueResponse,
+  type DiscoveryTriageResponse,
+  type DiscoveryTriageSummary,
   type ContextStatus,
   type Experiment,
   type ExperimentDetail,
@@ -585,4 +594,547 @@ export const HermesSelectedDetail = meta.story({
 export const HermesSourceUnavailable = meta.story({
   args: { path: "/hermes" },
   beforeEach: mock(researchHandlers.hermesUnavailable),
+});
+
+// ---------------------------------------------------------------------------
+// S10-CC-RESEARCH-02: Alpha Research Memory + Discovery Queue reference states. Every
+// /api/alpha/** request below is intercepted by MSW (unmatched alpha paths get a closed
+// NOT_FOUND); fixtures mirror the backend DTOs. Source locators are text only.
+// ---------------------------------------------------------------------------
+
+const alphaFlags = {
+  advisory_only: true,
+  no_execution_authority: true,
+  no_strategy_authority: true,
+  no_qualification_authority: true,
+} as const;
+const registryHead = "alpharegistryentry:sha256:" + hex("1");
+const laterRegistryHead = "alpharegistryentry:sha256:" + hex("2");
+const candidateA = "alphacandidate:sha256:" + hex("a");
+const candidateB = "alphacandidate:sha256:" + hex("b");
+const familyOne = "alphafamily:sha256:" + hex("c");
+const familyTwo = "alphafamily:sha256:" + hex("d");
+const episodeRoot = "alphaepisode:sha256:" + hex("1");
+const episodeSupportive = "alphaepisode:sha256:" + hex("2");
+const episodeNoEdge = "alphaepisode:sha256:" + hex("3");
+const episodeReopen = "alphaepisode:sha256:" + hex("4");
+const episodeData = "alphaepisode:sha256:" + hex("5");
+const sourceOfficial = "alphasource:sha256:" + hex("6");
+const sourceReference = "alphasource:sha256:" + hex("7");
+
+const alphaMemory: AlphaMemorySummary = {
+  head_entry_hash: registryHead,
+  total_rows: 13,
+  total_payload_bytes: 24576,
+  record_counts: { research_source_references: 2, opportunity_candidates: 2, hypothesis_families: 3, research_episodes: 6 },
+  ...alphaFlags,
+};
+
+const candidateSummaryA: AlphaCandidateSummary = {
+  sequence_number: 2,
+  candidate_id: candidateA,
+  candidate_version: "v1",
+  title: "Cold-weather scoring suppression",
+  research_question: "Does forecast cold bias recorded totals in this exact scope?",
+  subject_refs: ["market:polymarket:alpha"],
+  evidence_lanes: ["FUNDAMENTAL", "WEATHER"],
+  is_multi_lane: true,
+  scope_key: "scope-alpha",
+  mechanism_hint: "temperature suppresses scoring",
+  novelty_fingerprint: "alphanovelty:sha256:" + hex("8"),
+  human_review_required: true,
+  family_count: 2,
+  episode_count: 5,
+  leaf_episode_count: 3,
+};
+const candidateSummaryB: AlphaCandidateSummary = {
+  ...candidateSummaryA,
+  sequence_number: 10,
+  candidate_id: candidateB,
+  title: "Resolution-source wording drift",
+  research_question: "Does rule wording drift precede re-pricing?",
+  subject_refs: ["market:polymarket:beta"],
+  evidence_lanes: ["RESOLUTION_RULES"],
+  is_multi_lane: false,
+  scope_key: "scope-beta",
+  family_count: 1,
+  episode_count: 1,
+  leaf_episode_count: 1,
+};
+
+const sources: AlphaSourceReference[] = [
+  {
+    source_reference_id: sourceOfficial,
+    source_kind: "PUBLIC_HTTPS",
+    source_class: "OFFICIAL",
+    source_locator: "https://docs.polymarket.com/rules",
+    title: "Resolution rules",
+    observed_at: "2026-09-20T00:00:00Z",
+    content_sha256: null,
+    provenance: "human_research",
+    public_research_only: true,
+    advisory_only: true,
+    no_execution_authority: true,
+  },
+  {
+    source_reference_id: sourceReference,
+    source_kind: "PUBLIC_HTTPS",
+    source_class: "REFERENCE",
+    source_locator: "https://example.org/reference",
+    title: "Reference climatology",
+    observed_at: "2026-09-21T00:00:00Z",
+    content_sha256: hex("9"),
+    provenance: "human_research",
+    public_research_only: true,
+    advisory_only: true,
+    no_execution_authority: true,
+  },
+];
+
+const episodeSummary = (
+  id: string,
+  family: string,
+  state: AlphaEpisodeSummary["result_state"],
+  sequence: number,
+  links: { predecessor?: string; reopened?: string } = {},
+): AlphaEpisodeSummary => ({
+  sequence_number: sequence,
+  research_episode_id: id,
+  hypothesis_family_id: family,
+  predecessor_episode_id: links.predecessor ?? null,
+  reopened_episode_id: links.reopened ?? null,
+  result_state: state,
+  confidence_label: "moderate",
+  evidence_lanes: ["WEATHER"],
+  research_as_of: "2026-09-20T00:00:00Z",
+  producer_type: "HUMAN_RESEARCH",
+  human_review_required: true,
+});
+
+const familyRecord = (id: string, name: string, sequence: number, episodes: number, leaves: string[]) => ({
+  sequence_number: sequence,
+  hypothesis_family_id: id,
+  family_version: "v1",
+  family_name: name,
+  mechanism_key: "mechanism-" + name.toLowerCase().replace(/[^a-z]+/g, "-"),
+  mechanism_dimensions_json: '{"driver":"temperature"}',
+  mechanism_fingerprint: "alphamechanism:sha256:" + hex(sequence === 3 ? "a" : "b"),
+  falsifiable_theme: "Cold reduces recorded totals in the exact scope",
+  predecessor_family_id: null,
+  creation_provenance: "human_research",
+  human_review_required: true,
+  ...alphaFlags,
+  episode_count: episodes,
+  leaf_episode_ids: leaves,
+});
+
+const candidateDetailA: AlphaCandidateDetail = {
+  candidate: {
+    candidate_id: candidateA,
+    candidate_version: "v1",
+    title: candidateSummaryA.title,
+    research_question: candidateSummaryA.research_question,
+    thesis: "Cold forecasts suppress scoring in this exact recorded scope.",
+    subject_refs: candidateSummaryA.subject_refs,
+    evidence_lanes: candidateSummaryA.evidence_lanes,
+    is_multi_lane: true,
+    scope_key: "scope-alpha",
+    mechanism_hint: candidateSummaryA.mechanism_hint,
+    novelty_dimensions_json: '{"mechanism_key":"mechanism-alpha","scope_key":"scope-alpha","subject_keys":["alpha"]}',
+    novelty_fingerprint: candidateSummaryA.novelty_fingerprint,
+    discovery_provenance: "human_research",
+    human_review_required: true,
+    ...alphaFlags,
+  },
+  hypothesis_families: [
+    familyRecord(familyOne, "Cold scoring suppression", 3, 4, [episodeSupportive, episodeReopen]),
+    familyRecord(familyTwo, "Wind-driven pace", 4, 1, [episodeData]),
+  ],
+  research_episodes: [
+    episodeSummary(episodeRoot, familyOne, "WATCH_FOR_CHANGE", 5),
+    episodeSummary(episodeData, familyTwo, "DATA_INSUFFICIENT", 6),
+    episodeSummary(episodeSupportive, familyOne, "RESEARCH_SUPPORTIVE", 7, { predecessor: episodeRoot }),
+    episodeSummary(episodeNoEdge, familyOne, "NO_EDGE_CURRENTLY", 8, { predecessor: episodeRoot }),
+    episodeSummary(episodeReopen, familyOne, "REOPEN_TRIGGERED", 9, { reopened: episodeNoEdge }),
+  ],
+  source_references: sources,
+  deterministic_evidence_refs: ["det-alpha-1", "det-alpha-5", "det-alpha-2"],
+  lineage_summary: {
+    family_count: 2,
+    episode_count: 5,
+    leaf_episode_count: 3,
+    leaf_episode_ids: [episodeData, episodeSupportive, episodeReopen],
+  },
+};
+
+const reopenEpisodeDetail: AlphaEpisodeDetail = {
+  research_episode_id: episodeReopen,
+  episode_version: "v1",
+  candidate_id: candidateA,
+  hypothesis_family_id: familyOne,
+  predecessor_episode_id: null,
+  reopened_episode_id: episodeNoEdge,
+  result_state: "REOPEN_TRIGGERED",
+  confidence_label: "low",
+  evidence_lanes: ["WEATHER"],
+  is_multi_lane: false,
+  exact_scope_json: '{"league":"nfl","season":"2026","venue":"outdoor"}',
+  evidence_regime_json: '{"window":"2020-2025"}',
+  research_question: candidateSummaryA.research_question,
+  thesis: "A recorded rule change reopens the earlier no-edge result in this exact scope.",
+  tested_assumptions: ["Temperature measured pre-kickoff"],
+  evidence_for: ["Rule change alters the totals definition"],
+  evidence_against: ["Prior no-edge result in the same scope"],
+  uncertainties: ["Dome games"],
+  known_missing_data: ["Post-change sample is small"],
+  falsification_checks_performed: ["Checked warm-weather control"],
+  limitations: ["Small sample"],
+  what_would_change_the_conclusion: ["A post-change warm-weather run"],
+  suggested_next_research_steps: ["Re-run the deterministic cohort after the change"],
+  source_reference_ids: [sourceOfficial],
+  source_references: [sources[0]],
+  deterministic_evidence_refs: ["det-alpha-4"],
+  material_change_basis: ["Resolution rule text changed"],
+  producer_type: "HUMAN_RESEARCH",
+  producer_version: "human-v1",
+  producer_receipt_ref: null,
+  research_as_of: "2026-09-25T00:00:00Z",
+  creation_provenance: "human_research",
+  human_review_required: true,
+  ...alphaFlags,
+};
+
+const coverage = [
+  { research_archetype: "resolution_contract", coverage_state: "UNKNOWN" },
+  { research_archetype: "fundamental_public_info", coverage_state: "SUPPORTED" },
+  { research_archetype: "domain_specific", coverage_state: "SUPPORTED" },
+];
+const triageAlphaId = "alphatriage:sha256:" + hex("a");
+const triageSummary = (
+  id: string,
+  market: string,
+  disposition: string,
+  priority: string,
+  extra: Partial<DiscoveryTriageSummary> = {},
+): DiscoveryTriageSummary => ({
+  market_triage_decision_id: id,
+  market_id: "market:polymarket:" + market,
+  event_id: "event:polymarket:" + market,
+  category: "weather",
+  eligibility: "ELIGIBLE",
+  priority_class: priority,
+  reopen_disposition: "NO_REOPEN",
+  readiness: "READY",
+  reason_codes: ["ALPHA_NO_CANONICAL_MATCH"],
+  material_change_event_id: null,
+  newly_observed_locally: false,
+  final_disposition: disposition,
+  selected_lane: ["CORE_PRIORITY", "EXPLORATION", "AUDIT"].includes(disposition) ? disposition : null,
+  analysis_temporal_mode: "CURRENT_BUILD_ANALYSIS",
+  alpha_memory_temporal_posture: "CURRENT_REGISTRY_BUILD_TIME_ONLY",
+  alpha_registry_head_entry_hash: registryHead,
+  matched_candidate_ids: [],
+  matched_hypothesis_family_ids: [],
+  matched_research_episode_ids: [],
+  coverage,
+  ...extra,
+});
+const triageAlpha = triageSummary(triageAlphaId, "alpha", "CORE_PRIORITY", "EXISTING_RESEARCH_FOLLOWUP", {
+  reopen_disposition: "REOPEN_REVIEW_REQUIRED",
+  reason_codes: ["MATERIAL_CHANGE_EXISTING_RESEARCH"],
+  material_change_event_id: "alphachange:sha256:" + hex("e"),
+  matched_candidate_ids: [candidateA],
+  matched_hypothesis_family_ids: [familyOne, familyTwo],
+  matched_research_episode_ids: [episodeRoot, episodeSupportive, episodeNoEdge, episodeReopen, episodeData],
+});
+
+const discoveryQueue: DiscoveryQueueResponse = {
+  discovery_registry_head_entry_hash: "alphadiscoveryentry:sha256:" + hex("f"),
+  queue_sequence_number: 11,
+  queue: {
+    alpha_research_queue_snapshot_id: "alphaqueue:sha256:" + hex("1"),
+    policy_id: "alphadiscoverypolicy:sha256:" + hex("2"),
+    universe_id: "alphauniverse:sha256:" + hex("3"),
+    comparison_prior_universe_id: "alphauniverse:sha256:" + hex("4"),
+    analysis_temporal_mode: "CURRENT_BUILD_ANALYSIS",
+    alpha_memory_temporal_posture: "CURRENT_REGISTRY_BUILD_TIME_ONLY",
+    alpha_registry_head_entry_hash: registryHead,
+    historical_alpha_memory_available: false,
+    historical_selection_replay_valid: false,
+    queue_capacity: 4,
+    configured_exploration_slots: 1,
+    configured_audit_slots: 1,
+    exploration_selected_count: 0,
+    audit_selected_count: 1,
+    unused_exploration_slots: 1,
+    unused_audit_slots: 0,
+    unused_capacity_reason_codes: ["EXPLORATION_POOL_EXHAUSTED"],
+    max_per_category: 2,
+    prior_only_market_ids: ["market:polymarket:omega"],
+    ...alphaFlags,
+  },
+  policy: {
+    alpha_discovery_policy_id: "alphadiscoverypolicy:sha256:" + hex("2"),
+    policy_version: "fixture/1",
+    eligible_market_statuses: ["open"],
+    metadata_freshness_seconds: 60,
+    order_book_freshness_seconds: 30,
+    resolution_rule_freshness_seconds: 120,
+    queue_capacity: 4,
+    exploration_slots: 1,
+    audit_slots: 1,
+    max_per_category: 2,
+    research_archetype_taxonomy_version: "alpha-archetypes/1",
+  },
+  universe: {
+    alpha_universe_snapshot_id: "alphauniverse:sha256:" + hex("3"),
+    as_of: "2026-10-01T00:00:30Z",
+    cutoff_mode: "AS_OF_INGESTION_TIME",
+    query_engine_version: "point-in-time-as-of-query@1.0.0",
+    query_parameter_set_id: "s10-alpha-02:1.0.0",
+    coverage_scope: "BOUNDED_OBSERVED_UNIVERSE",
+    external_universe_completeness: "UNPROVEN",
+    market_count: 6,
+  },
+  lanes: {
+    core: [
+      triageAlpha,
+      triageSummary("alphatriage:sha256:" + hex("b"), "beta", "CORE_PRIORITY", "EXISTING_RESEARCH_FOLLOWUP", {
+        reason_codes: ["EXISTING_RESEARCH_FOLLOWUP"],
+        matched_candidate_ids: [candidateB],
+      }),
+    ],
+    exploration: [],
+    audit: [triageSummary("alphatriage:sha256:" + hex("c"), "epsilon", "AUDIT", "NEW_RESEARCH")],
+    deferred: [
+      triageSummary("alphatriage:sha256:" + hex("d"), "delta", "DEFERRED", "DEFER_CAPTURE_REFRESH", {
+        eligibility: "DEFERRED",
+        readiness: "DEFERRED",
+        reopen_disposition: "REOPEN_UNAVAILABLE_DATA",
+        reason_codes: ["METADATA_CONFLICT"],
+      }),
+    ],
+    skipped_ineligible: [
+      triageSummary("alphatriage:sha256:" + hex("e"), "gamma", "SKIPPED_INELIGIBLE", "INELIGIBLE", {
+        eligibility: "INELIGIBLE",
+        readiness: "INELIGIBLE",
+        reason_codes: ["MARKET_STATUS_INELIGIBLE"],
+      }),
+    ],
+    skipped_capacity: [
+      triageSummary("alphatriage:sha256:" + hex("f"), "zeta", "SKIPPED_CAPACITY", "NEW_RESEARCH", {
+        newly_observed_locally: true,
+        reason_codes: ["ALPHA_NO_CANONICAL_MATCH", "NEWLY_OBSERVED_LOCALLY"],
+      }),
+    ],
+  },
+};
+
+const triageDetail = (resolution: DiscoveryTriageResponse["alpha_memory_resolution"]): DiscoveryTriageResponse => ({
+  triage: {
+    ...triageAlpha,
+    ...alphaFlags,
+    policy_id: discoveryQueue.queue.policy_id,
+    universe_id: discoveryQueue.queue.universe_id,
+    comparison_prior_universe_id: discoveryQueue.queue.comparison_prior_universe_id,
+    capture_requests: [
+      {
+        request_type: "ORDER_BOOK",
+        market_id: "market:polymarket:alpha",
+        token_id: "token:polymarket:alpha",
+        universe_id: discoveryQueue.queue.universe_id,
+        policy_id: discoveryQueue.queue.policy_id,
+        comparison_prior_universe_id: discoveryQueue.queue.comparison_prior_universe_id,
+        reason_code: "ORDER_BOOK_STALE",
+        priority_class: "EXISTING_RESEARCH_FOLLOWUP",
+        pre_allocation_semantic_key: hex("5"),
+      },
+    ],
+    audit_digest: null,
+    audit_eligible_pool_size: null,
+    audit_selection_fraction_numerator: null,
+    audit_selection_fraction_denominator: null,
+    historical_alpha_memory_available: false,
+    historical_selection_replay_valid: false,
+    historical_replay_valid_for_alpha_memory: false,
+  },
+  universe_market: {
+    market_id: "market:polymarket:alpha",
+    event_id: "event:polymarket:alpha",
+    market_status: "open",
+    condition_id: "condition:alpha",
+    token_ids: ["token:polymarket:alpha"],
+    outcome_labels: ["No", "Yes"],
+    resolution_date: "2026-12-01T00:00:00Z",
+    category: "weather",
+    question_text: "Will the recorded total be under 41.5?",
+    metadata_record_version_id: "record:sha256:" + hex("6"),
+    metadata_observed_time: "2026-10-01T00:00:00Z",
+    metadata_freshness: "FRESH",
+    data_gap_codes: ["ORDER_BOOK_STALE"],
+    resolution_rule_count: 1,
+    order_book_count: 1,
+  },
+  material_change: {
+    material_change_event_id: "alphachange:sha256:" + hex("e"),
+    prior_universe_id: "alphauniverse:sha256:" + hex("4"),
+    current_universe_id: "alphauniverse:sha256:" + hex("3"),
+    market_id: "market:polymarket:alpha",
+    hard_change_classes: ["RESOLUTION_RULE_CHANGED"],
+    soft_change_classes: ["MID_PRICE_MOVED"],
+    review_only_change_classes: [],
+    affected_token_ids: [{ change_class: "MID_PRICE_MOVED", token_ids: ["token:polymarket:alpha"] }],
+    affected_resolution_source_ids: ["resolution-source:polymarket:primary"],
+    before_record_version_ids: ["record:sha256:" + hex("7")],
+    after_record_version_ids: ["record:sha256:" + hex("8")],
+    comparison_diagnostics: [],
+    reopen_material: true,
+    ...alphaFlags,
+  },
+  alpha_memory_resolution: resolution,
+});
+const resolutionEmpty = { candidates: [], hypothesis_families: [], research_episodes: [] };
+const triageResolved = triageDetail({
+  status: "RESOLVED",
+  bound_alpha_registry_head_entry_hash: registryHead,
+  candidates: [candidateSummaryA],
+  hypothesis_families: candidateDetailA.hypothesis_families.map((family) => ({
+    sequence_number: family.sequence_number,
+    hypothesis_family_id: family.hypothesis_family_id,
+    family_name: family.family_name,
+    mechanism_key: family.mechanism_key,
+    falsifiable_theme: family.falsifiable_theme,
+  })),
+  research_episodes: candidateDetailA.research_episodes,
+});
+const triageAlphaUnavailable = triageDetail({
+  status: "UNAVAILABLE",
+  bound_alpha_registry_head_entry_hash: registryHead,
+  ...resolutionEmpty,
+});
+const triageHeadMismatch = triageDetail({
+  status: "HEAD_MISMATCH",
+  bound_alpha_registry_head_entry_hash: registryHead,
+  ...resolutionEmpty,
+});
+
+const triageHandler = (response: DiscoveryTriageResponse) =>
+  http.get("/api/alpha/discovery/triage/:marketTriageDecisionId", ({ params }) =>
+    decodedParam(params.marketTriageDecisionId) === triageAlphaId
+      ? HttpResponse.json(response)
+      : closedError("NOT_FOUND", 404),
+  );
+
+const alphaHandlers = {
+  memory: [
+    http.get("/api/alpha/memory", () => HttpResponse.json(alphaMemory)),
+    http.get("/api/alpha/candidates", () => HttpResponse.json(list([candidateSummaryB, candidateSummaryA]))),
+    http.get("/api/alpha/candidates/:candidateId", ({ params }) =>
+      decodedParam(params.candidateId) === candidateA
+        ? HttpResponse.json(candidateDetailA)
+        : closedError("NOT_FOUND", 404),
+    ),
+    http.get("/api/alpha/episodes/:researchEpisodeId", ({ params }) =>
+      decodedParam(params.researchEpisodeId) === episodeReopen
+        ? HttpResponse.json({ item: reopenEpisodeDetail })
+        : closedError("NOT_FOUND", 404),
+    ),
+  ],
+  queue: http.get("/api/alpha/discovery/queue", () => HttpResponse.json(discoveryQueue)),
+  // Any other alpha path stays inside the browser with a closed safe code.
+  fallback: http.get("/api/alpha/*", () => closedError("NOT_FOUND", 404)),
+  unavailable: http.get("/api/alpha/*", () => closedError("SOURCE_UNAVAILABLE", 503)),
+  memoryUnavailable: [
+    http.get("/api/alpha/memory", () => closedError("SOURCE_UNAVAILABLE", 503)),
+    http.get("/api/alpha/candidates", () => closedError("SOURCE_UNAVAILABLE", 503)),
+  ],
+};
+
+type PlayContext = {
+  canvas: {
+    findByRole: (role: string, options?: { name?: string }) => Promise<HTMLElement>;
+    findByText: (text: string) => Promise<HTMLElement>;
+  };
+  userEvent: { click: (element: Element) => Promise<void> };
+};
+const openDiscoveryTab = async ({ canvas, userEvent }: PlayContext) => {
+  await userEvent.click(await canvas.findByRole("tab", { name: "Discovery Queue" }));
+  await canvas.findByText("Latest recorded discovery queue");
+};
+const openAlphaTriage = async (context: PlayContext) => {
+  await openDiscoveryTab(context);
+  await context.userEvent.click(await context.canvas.findByRole("button", { name: "market:polymarket:alpha" }));
+  await context.canvas.findByText("Alpha-memory resolution");
+};
+
+export const AlphaMemoryPopulated = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.memory, alphaHandlers.fallback),
+});
+
+export const AlphaMemoryCandidateSelected = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.memory, alphaHandlers.fallback),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("button", { name: candidateSummaryA.title }));
+    await canvas.findByText("Novelty dimensions");
+  },
+});
+
+export const AlphaMemoryEpisodeReopenLineage = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.memory, alphaHandlers.fallback),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("button", { name: candidateSummaryA.title }));
+    await userEvent.click(await canvas.findByRole("button", { name: episodeReopen }));
+    await canvas.findByText("Exact scope (this result applies here only)");
+  },
+});
+
+export const AlphaMemorySourceUnavailable = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.unavailable),
+});
+
+export const AlphaDiscoveryPopulatedQueue = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.memory, alphaHandlers.queue, triageHandler(triageResolved), alphaHandlers.fallback),
+  play: openDiscoveryTab,
+});
+
+export const AlphaDiscoveryTriageMaterialChange = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.memory, alphaHandlers.queue, triageHandler(triageResolved), alphaHandlers.fallback),
+  play: openAlphaTriage,
+});
+
+export const AlphaDiscoveryAlphaMemoryUnavailable = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(
+    alphaHandlers.memoryUnavailable,
+    alphaHandlers.queue,
+    triageHandler(triageAlphaUnavailable),
+    alphaHandlers.fallback,
+  ),
+  play: openAlphaTriage,
+});
+
+export const AlphaDiscoveryHeadMismatch = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(
+    http.get("/api/alpha/memory", () => HttpResponse.json({ ...alphaMemory, head_entry_hash: laterRegistryHead })),
+    alphaHandlers.queue,
+    triageHandler(triageHeadMismatch),
+    alphaHandlers.fallback,
+  ),
+  play: openAlphaTriage,
+});
+
+export const AlphaDiscoverySourceUnavailable = meta.story({
+  args: { path: "/alpha" },
+  beforeEach: mock(alphaHandlers.memory, alphaHandlers.unavailable),
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(await canvas.findByRole("tab", { name: "Discovery Queue" }));
+    await canvas.findByText("SOURCE_UNAVAILABLE");
+  },
 });

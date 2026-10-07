@@ -1,4 +1,4 @@
-"""WP171/WP173/WP175/S10-CC-RESEARCH-01 local read-only cockpit over evidence."""
+"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02 local read-only cockpit over evidence."""
 
 from __future__ import annotations
 
@@ -119,6 +119,8 @@ class CockpitConfig:
     gateway_store_path: Path | None = None
     strategy_lifecycle_path: Path | None = None
     hermes_strategy_manager_path: Path | None = None
+    alpha_factory_registry_path: Path | None = None
+    alpha_discovery_registry_path: Path | None = None
 
     def __post_init__(self) -> None:
         for value in (
@@ -128,6 +130,8 @@ class CockpitConfig:
             self.gateway_store_path,
             self.strategy_lifecycle_path,
             self.hermes_strategy_manager_path,
+            self.alpha_factory_registry_path,
+            self.alpha_discovery_registry_path,
         ):
             if value is not None and not isinstance(value, Path):
                 raise TypeError("cockpit paths must be pathlib.Path or None")
@@ -1035,6 +1039,47 @@ def create_app(config: CockpitConfig) -> FastAPI:
         )
         return {"item": item}
 
+    # S10-CC-RESEARCH-02: verified Alpha Factory research memory + Alpha Discovery
+    # evidence projections. GET only; no Alpha append/init, qualification or network.
+    @app.get("/api/alpha/memory")
+    async def alpha_memory() -> dict[str, Any]:
+        return research.alpha_memory_summary(config.alpha_factory_registry_path)
+
+    @app.get("/api/alpha/candidates")
+    async def alpha_candidates(request: Request) -> dict[str, Any]:
+        limit = _request_limit(request)
+        items = research.alpha_candidate_list(config.alpha_factory_registry_path, limit)
+        return {"items": items, "count": len(items), "limit": limit}
+
+    @app.get("/api/alpha/candidates/{candidate_id}")
+    async def alpha_candidate_detail(candidate_id: str) -> dict[str, Any]:
+        if not research.ALPHA_CANDIDATE_ID_RE.fullmatch(candidate_id):
+            raise CockpitError("INVALID_INPUT")
+        return research.alpha_candidate_detail(config.alpha_factory_registry_path, candidate_id)
+
+    @app.get("/api/alpha/episodes/{research_episode_id}")
+    async def alpha_episode_detail(research_episode_id: str) -> dict[str, Any]:
+        if not research.ALPHA_EPISODE_ID_RE.fullmatch(research_episode_id):
+            raise CockpitError("INVALID_INPUT")
+        item = research.alpha_episode_detail(
+            config.alpha_factory_registry_path, research_episode_id
+        )
+        return {"item": item}
+
+    @app.get("/api/alpha/discovery/queue")
+    async def alpha_discovery_queue() -> dict[str, Any]:
+        return research.alpha_discovery_queue(config.alpha_discovery_registry_path)
+
+    @app.get("/api/alpha/discovery/triage/{market_triage_decision_id}")
+    async def alpha_discovery_triage(market_triage_decision_id: str) -> dict[str, Any]:
+        if not research.ALPHA_TRIAGE_ID_RE.fullmatch(market_triage_decision_id):
+            raise CockpitError("INVALID_INPUT")
+        return research.alpha_triage_detail(
+            config.alpha_discovery_registry_path,
+            config.alpha_factory_registry_path,
+            market_triage_decision_id,
+        )
+
     return app
 
 
@@ -1048,6 +1093,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--gateway-store", type=Path)
     parser.add_argument("--strategy-lifecycle-store", type=Path)
     parser.add_argument("--hermes-strategy-manager-store", type=Path)
+    parser.add_argument("--alpha-factory-registry", type=Path)
+    parser.add_argument("--alpha-discovery-registry", type=Path)
     parser.add_argument("--port", default=8000, type=int)
     args = parser.parse_args(argv)
     if args.port < 1 or args.port > 65_535:
@@ -1063,6 +1110,8 @@ def main(argv: list[str] | None = None) -> int:
                 args.gateway_store,
                 args.strategy_lifecycle_store,
                 args.hermes_strategy_manager_store,
+                args.alpha_factory_registry,
+                args.alpha_discovery_registry,
             )
         ),
         host="127.0.0.1",

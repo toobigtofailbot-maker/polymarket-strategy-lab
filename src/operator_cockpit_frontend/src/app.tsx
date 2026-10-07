@@ -2,6 +2,12 @@ import { useState, type ReactNode } from "react";
 import { useIsFetching, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { Navigate, NavLink, Route, Routes, useLocation } from "react-router";
 import {
+  alphaCandidateDetailQuery,
+  alphaCandidatesQuery,
+  alphaDiscoveryQueueQuery,
+  alphaEpisodeDetailQuery,
+  alphaMemoryQuery,
+  alphaTriageDetailQuery,
   auditRecentQuery,
   experimentDetailQuery,
   experimentsQuery,
@@ -19,13 +25,17 @@ import {
   strategiesQuery,
   strategyDetailQuery,
   toSafeErrorCode,
+  type AlphaResolutionStatus,
+  type AlphaSourceReference,
   type ContextStatus,
+  type DiscoveryLaneName,
   type HermesNonAuthority,
   type JsonValue,
   type LatestHermesAssessment,
   type LifecycleAllocation,
   type ListResponse,
   type QueryFamily,
+  type ResearchResultState,
 } from "./api";
 
 // ---------------------------------------------------------------------------
@@ -904,6 +914,635 @@ function HermesView() {
 }
 
 // ---------------------------------------------------------------------------
+// S10-CC-RESEARCH-02 Alpha workspace: recorded Alpha Factory research memory and the latest
+// recorded Alpha Discovery queue. Read only. Research records never become qualification,
+// strategy selection, trade priority, execution or live authority, and no source is fetched.
+// ---------------------------------------------------------------------------
+
+const RESULT_TONE: Record<ResearchResultState, Tone> = {
+  RESEARCH_SUPPORTIVE: "success",
+  NO_EDGE_CURRENTLY: "neutral",
+  HYPOTHESIS_FALSIFIED: "neutral",
+  DATA_INSUFFICIENT: "warning",
+  EXECUTION_UNECONOMIC: "neutral",
+  WATCH_FOR_CHANGE: "warning",
+  RESEARCH_STALE: "warning",
+  REOPEN_TRIGGERED: "warning",
+  MECHANISM_FAMILY_EXHAUSTED: "neutral",
+};
+
+function ResultStatePill({ state }: { state: ResearchResultState }) {
+  return <StatusPill tone={RESULT_TONE[state]}>{state}</StatusPill>;
+}
+
+function LaneTags({ lanes, multiLane }: { lanes: string[]; multiLane: boolean }) {
+  return (
+    <span className="tag-row">
+      {lanes.map((lane) => (
+        <StatusPill key={lane}>{lane}</StatusPill>
+      ))}
+      {multiLane && <span className="muted">multi-lane</span>}
+    </span>
+  );
+}
+
+/** Canonical JSON text from a record, pretty-printed for reading only. */
+function JsonText({ value }: { value: string }) {
+  let pretty = value;
+  try {
+    pretty = JSON.stringify(JSON.parse(value), null, 2);
+  } catch {
+    // Keep the canonical text as recorded.
+  }
+  return <pre className="json-block">{pretty}</pre>;
+}
+
+/** Source locators are canonical evidence metadata shown as text only: never linked or fetched. */
+function SourceReferenceList({ sources }: { sources: AlphaSourceReference[] }) {
+  return (
+    <section className="evidence-section">
+      <h3>Source references</h3>
+      {sources.length === 0 ? (
+        <p className="muted">None recorded.</p>
+      ) : (
+        <ul className="ref-list source-list">
+          {sources.map((source) => (
+            <li key={source.source_reference_id}>
+              <strong>{source.title}</strong> <StatusPill>{source.source_kind}</StatusPill>{" "}
+              <StatusPill>{source.source_class}</StatusPill>
+              <br />
+              <span className="locator">{source.source_locator}</span>
+              <br />
+              <span className="muted">
+                Observed <span className="mono">{source.observed_at}</span> · {source.provenance}
+              </span>
+              <br />
+              <Token>{source.source_reference_id}</Token>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function AlphaEpisodePanel({ researchEpisodeId, onClose }: { researchEpisodeId: string; onClose: () => void }) {
+  const detail = useQuery(alphaEpisodeDetailQuery(researchEpisodeId));
+  return (
+    <Panel title="Research episode · recorded evidence">
+      <div className="panel-actions">
+        <Button variant="secondary" onClick={onClose}>
+          Close episode
+        </Button>
+      </div>
+      <QueryState query={detail} label="research episode">
+        {(item) => (
+          <div className="detail-stack">
+            <p className="summary">{item.thesis}</p>
+            <DetailList
+              items={[
+                ["Research episode", <Token>{item.research_episode_id}</Token>],
+                ["Research state", <ResultStatePill state={item.result_state} />],
+                ["Confidence", item.confidence_label],
+                ["Evidence lanes", <LaneTags lanes={item.evidence_lanes} multiLane={item.is_multi_lane} />],
+                ["Research question", item.research_question],
+                ["Research as of", <span className="mono">{item.research_as_of}</span>],
+                ["Candidate", <Token>{item.candidate_id}</Token>],
+                ["Hypothesis family", <Token>{item.hypothesis_family_id}</Token>],
+                ["Predecessor episode", <Token>{item.predecessor_episode_id ?? "None (lineage root)"}</Token>],
+                ["Reopens episode", <Token>{item.reopened_episode_id ?? "—"}</Token>],
+                ["Episode version", <Token>{item.episode_version}</Token>],
+              ]}
+            />
+            {item.result_state === "RESEARCH_SUPPORTIVE" && (
+              <p className="muted">
+                RESEARCH_SUPPORTIVE means further deterministic qualification may be worthwhile. It is not a qualification
+                pass, proven predictive edge, positive out-of-sample result, executable edge or trading readiness.
+              </p>
+            )}
+            <div className="evidence-columns">
+              <TextList title="Tested assumptions" items={item.tested_assumptions} />
+              <TextList title="Evidence for" items={item.evidence_for} />
+              <TextList title="Evidence against" items={item.evidence_against} />
+              <TextList title="Uncertainties" items={item.uncertainties} />
+              <TextList title="Known missing data" items={item.known_missing_data} />
+              <TextList title="Falsification checks performed" items={item.falsification_checks_performed} />
+              <TextList title="Limitations" items={item.limitations} />
+              <TextList title="What would change the conclusion" items={item.what_would_change_the_conclusion} />
+              <TextList title="Suggested next research steps" items={item.suggested_next_research_steps} />
+              <TextList title="Material change basis" items={item.material_change_basis} />
+            </div>
+            <section className="evidence-section">
+              <h3>Exact scope (this result applies here only)</h3>
+              <JsonText value={item.exact_scope_json} />
+              <h3>Evidence regime</h3>
+              <JsonText value={item.evidence_regime_json} />
+            </section>
+            <SourceReferenceList sources={item.source_references} />
+            <RefList title="Deterministic evidence references (opaque)" refs={item.deterministic_evidence_refs} />
+            <section className="evidence-section">
+              <h3>Producer provenance</h3>
+              <DetailList
+                items={[
+                  ["Producer", item.producer_type],
+                  ["Producer version", <Token>{item.producer_version}</Token>],
+                  ["Producer receipt", <Token>{item.producer_receipt_ref ?? "—"}</Token>],
+                  ["Creation provenance", <Token>{item.creation_provenance}</Token>],
+                  ["Human review required", yesNo(item.human_review_required)],
+                ]}
+              />
+            </section>
+          </div>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function AlphaCandidatePanel({
+  candidateId,
+  selectedEpisode,
+  onSelectEpisode,
+  onClose,
+}: {
+  candidateId: string;
+  selectedEpisode: string | null;
+  onSelectEpisode: (researchEpisodeId: string) => void;
+  onClose: () => void;
+}) {
+  const detail = useQuery(alphaCandidateDetailQuery(candidateId));
+  return (
+    <Panel title="Research candidate · recorded lineage">
+      <div className="panel-actions">
+        <Button variant="secondary" onClick={onClose}>
+          Close candidate
+        </Button>
+      </div>
+      <QueryState query={detail} label="candidate lineage">
+        {(data) => {
+          const leaves = new Set(data.lineage_summary.leaf_episode_ids);
+          return (
+            <div className="detail-stack">
+              <p className="summary">{data.candidate.thesis}</p>
+              <DetailList
+                items={[
+                  ["Candidate", <Token>{data.candidate.candidate_id}</Token>],
+                  ["Title", data.candidate.title],
+                  ["Research question", data.candidate.research_question],
+                  ["Evidence lanes", <LaneTags lanes={data.candidate.evidence_lanes} multiLane={data.candidate.is_multi_lane} />],
+                  ["Scope key", <Token>{data.candidate.scope_key}</Token>],
+                  ["Mechanism hint", data.candidate.mechanism_hint],
+                  ["Novelty fingerprint", <Token>{data.candidate.novelty_fingerprint}</Token>],
+                  ["Discovery provenance", <Token>{data.candidate.discovery_provenance}</Token>],
+                  ["Human review required", yesNo(data.candidate.human_review_required)],
+                ]}
+              />
+              <section className="evidence-section">
+                <h3>Novelty dimensions</h3>
+                <JsonText value={data.candidate.novelty_dimensions_json} />
+              </section>
+              <RefList title="Subject references" refs={data.candidate.subject_refs} />
+              <section className="evidence-section">
+                <h3>
+                  Research lineage · {data.lineage_summary.family_count} families · {data.lineage_summary.episode_count}{" "}
+                  episodes · {data.lineage_summary.leaf_episode_count} research leaves
+                </h3>
+                <p className="muted">
+                  A research leaf is an episode no later episode of the same lineage builds on or reopens. Several leaves
+                  can coexist; a leaf is not a qualification, approval or trading signal.
+                </p>
+                {data.hypothesis_families.map((family) => (
+                  <div key={family.hypothesis_family_id} className="family-block">
+                    <h4>{family.family_name}</h4>
+                    <p className="muted">
+                      {family.falsifiable_theme} · mechanism <Token>{family.mechanism_key}</Token>
+                    </p>
+                    <p className="muted">
+                      Family <Token>{family.hypothesis_family_id}</Token> · fingerprint{" "}
+                      <Token>{family.mechanism_fingerprint}</Token>
+                    </p>
+                    <ol className="lineage">
+                      {data.research_episodes
+                        .filter((episode) => episode.hypothesis_family_id === family.hypothesis_family_id)
+                        .map((episode) => (
+                          <li
+                            key={episode.research_episode_id}
+                            className={episode.research_episode_id === selectedEpisode ? "lineage-current" : undefined}
+                          >
+                            <Button variant="link" onClick={() => onSelectEpisode(episode.research_episode_id)}>
+                              <span className="token">{episode.research_episode_id}</span>
+                            </Button>
+                            <div className="tag-row">
+                              <ResultStatePill state={episode.result_state} />
+                              <span className="muted">
+                                #{episode.sequence_number} · {episode.confidence_label} · {episode.producer_type}
+                              </span>
+                              {leaves.has(episode.research_episode_id) && <StatusPill>research leaf</StatusPill>}
+                            </div>
+                            {episode.predecessor_episode_id && (
+                              <div className="muted">
+                                Builds on <Token>{episode.predecessor_episode_id}</Token>
+                              </div>
+                            )}
+                            {episode.reopened_episode_id && (
+                              <div className="muted">
+                                Reopens <Token>{episode.reopened_episode_id}</Token> (appended; the earlier episode is
+                                unchanged)
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                    </ol>
+                  </div>
+                ))}
+              </section>
+              <SourceReferenceList sources={data.source_references} />
+              <RefList title="Deterministic evidence references (opaque)" refs={data.deterministic_evidence_refs} />
+            </div>
+          );
+        }}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function ResearchMemoryPane() {
+  const memory = useQuery(alphaMemoryQuery);
+  const candidates = useQuery(alphaCandidatesQuery);
+  const [candidate, setCandidate] = useState<string | null>(null);
+  const [episode, setEpisode] = useState<string | null>(null);
+  const selectCandidate = (candidateId: string | null) => {
+    setCandidate(candidateId);
+    setEpisode(null);
+  };
+  return (
+    <>
+      <Notice>
+        <strong>Alpha Factory records research history.</strong>{" "}
+        RESEARCH_SUPPORTIVE is not qualification, executable edge, profitability or trading authority.
+        Negative results describe their exact recorded scope and evidence regime only, never a permanent market or category
+        blacklist. A reopen appends new lineage; earlier episodes are never rewritten.
+      </Notice>
+      <QueryState query={memory} label="Alpha research memory">
+        {(data) => (
+          <>
+            <MetricGrid>
+              <Metric label="Candidates" value={data.record_counts.opportunity_candidates} />
+              <Metric label="Hypothesis families" value={data.record_counts.hypothesis_families} />
+              <Metric label="Research episodes" value={data.record_counts.research_episodes} />
+              <Metric label="Source references" value={data.record_counts.research_source_references} />
+              <Metric label="Registry rows" value={data.total_rows} />
+            </MetricGrid>
+            <p className="muted">
+              Recorded research memory · registry head <Token>{data.head_entry_hash ?? "Empty registry (no records)"}</Token>
+            </p>
+          </>
+        )}
+      </QueryState>
+      <div className={candidate ? "split" : undefined}>
+        <QueryState query={candidates} label="research candidates" isEmpty={isEmptyList}>
+          {(data) => (
+            <Panel title="Research candidates · registry order (newest record first)">
+              <DataTable label="Research candidates" headers={["Candidate", "Evidence lanes", "Lineage"]}>
+                {data.items.map((item) => (
+                  <tr key={item.candidate_id} className={item.candidate_id === candidate ? "selected" : undefined}>
+                    <td>
+                      <Button variant="link" onClick={() => selectCandidate(item.candidate_id)}>
+                        {item.title}
+                      </Button>
+                      <br />
+                      <Token>{item.candidate_id}</Token>
+                      <br />
+                      <span className="muted">{item.research_question}</span>
+                    </td>
+                    <td>
+                      <LaneTags lanes={item.evidence_lanes} multiLane={item.is_multi_lane} />
+                    </td>
+                    <td className="num">
+                      {item.family_count} families
+                      <br />
+                      {item.episode_count} episodes
+                      <br />
+                      {item.leaf_episode_count} research leaves
+                    </td>
+                  </tr>
+                ))}
+              </DataTable>
+            </Panel>
+          )}
+        </QueryState>
+        {candidate && (
+          <AlphaCandidatePanel
+            candidateId={candidate}
+            selectedEpisode={episode}
+            onSelectEpisode={setEpisode}
+            onClose={() => selectCandidate(null)}
+          />
+        )}
+      </div>
+      {episode && <AlphaEpisodePanel researchEpisodeId={episode} onClose={() => setEpisode(null)} />}
+    </>
+  );
+}
+
+const LANE_SECTIONS: [DiscoveryLaneName, string, string][] = [
+  ["core", "Core priority", "Research allocation lane; not trade priority."],
+  ["exploration", "Exploration", "Coverage-seeking research allocation."],
+  ["audit", "Audit", "Deterministic audit sample of the remaining research pool."],
+  ["deferred", "Deferred", "Waiting on capture refresh before research."],
+  ["skipped_ineligible", "Skipped · ineligible", "Market status outside the recorded policy."],
+  ["skipped_capacity", "Skipped · capacity", "Eligible but outside the recorded queue capacity."],
+];
+
+const RESOLUTION_TONE: Record<AlphaResolutionStatus, Tone> = {
+  RESOLVED: "success",
+  NOT_BOUND: "neutral",
+  UNAVAILABLE: "warning",
+  HEAD_MISMATCH: "danger",
+};
+
+const RESOLUTION_TEXT: Record<AlphaResolutionStatus, string> = {
+  RESOLVED:
+    "The verified Alpha Factory registry head equals the Alpha-memory binding head recorded on this triage; only the canonical matched ids are resolved.",
+  NOT_BOUND:
+    "This triage was recorded without an Alpha-memory binding head (for example a historical replay); no Alpha records are resolved.",
+  UNAVAILABLE:
+    "This triage binds an Alpha-memory head, but the Alpha Factory registry is not configured or could not be verified here. The canonical matched ids remain the record.",
+  HEAD_MISMATCH:
+    "The verified Alpha Factory registry head differs from the Alpha-memory binding head recorded on this triage, so no ids are resolved against it. This is research-lineage truth, not market freshness.",
+};
+
+function TriageDetailPanel({ marketTriageDecisionId, onClose }: { marketTriageDecisionId: string; onClose: () => void }) {
+  const detail = useQuery(alphaTriageDetailQuery(marketTriageDecisionId));
+  return (
+    <Panel title="Triage decision · research allocation evidence">
+      <div className="panel-actions">
+        <Button variant="secondary" onClick={onClose}>
+          Close triage
+        </Button>
+      </div>
+      <QueryState query={detail} label="triage detail">
+        {(data) => {
+          const { triage, universe_market: market, material_change: change, alpha_memory_resolution: alpha } = data;
+          return (
+            <div className="detail-stack">
+              <DetailList
+                items={[
+                  ["Triage decision", <Token>{triage.market_triage_decision_id}</Token>],
+                  ["Market / event", <><Token>{triage.market_id}</Token><br /><Token>{triage.event_id}</Token></>],
+                  ["Category", triage.category ?? "—"],
+                  ["Final disposition (research lane)", <StatusPill>{triage.final_disposition}</StatusPill>],
+                  ["Priority class (research)", triage.priority_class],
+                  ["Readiness (research control)", triage.readiness],
+                  ["Reopen disposition (research)", triage.reopen_disposition],
+                  ["Eligibility", triage.eligibility],
+                  ["Newly observed locally", yesNo(triage.newly_observed_locally)],
+                  ["Analysis mode", triage.analysis_temporal_mode],
+                  ["Alpha-memory posture", triage.alpha_memory_temporal_posture],
+                  ["Alpha-memory binding head", <Token>{triage.alpha_registry_head_entry_hash ?? "None (not bound)"}</Token>],
+                  ["Historical selection replay valid", yesNo(triage.historical_selection_replay_valid)],
+                ]}
+              />
+              <RefList title="Reason codes" refs={triage.reason_codes} />
+              <section className="evidence-section">
+                <h3>Capture requests (data only; nothing is fetched)</h3>
+                {triage.capture_requests.length === 0 ? (
+                  <p className="muted">None recorded.</p>
+                ) : (
+                  <ul className="ref-list">
+                    {triage.capture_requests.map((request) => (
+                      <li key={request.pre_allocation_semantic_key}>
+                        <StatusPill>{request.request_type}</StatusPill> {request.reason_code}
+                        {request.token_id && (
+                          <>
+                            {" "}
+                            · <Token>{request.token_id}</Token>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+              <section className="evidence-section">
+                <h3>Research archetype coverage</h3>
+                <dl className="coverage-grid">
+                  {triage.coverage.map((entry) => (
+                    <div key={entry.research_archetype}>
+                      <dt>{entry.research_archetype}</dt>
+                      <dd>{entry.coverage_state}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+              <section className="evidence-section">
+                <h3>Observed universe market</h3>
+                <p className="summary">{market.question_text ?? "No question text recorded"}</p>
+                <DetailList
+                  items={[
+                    ["Market status", market.market_status ?? "—"],
+                    ["Condition", <Token>{market.condition_id ?? "—"}</Token>],
+                    ["Outcomes", market.outcome_labels.join(" / ") || "—"],
+                    ["Resolution date", <span className="mono">{market.resolution_date ?? "—"}</span>],
+                    ["Metadata observed", <span className="mono">{market.metadata_observed_time}</span>],
+                    ["Recorded metadata freshness", market.metadata_freshness],
+                    ["Rules / books recorded", `${market.resolution_rule_count} / ${market.order_book_count}`],
+                    ["Data gaps", market.data_gap_codes.join(", ") || "None"],
+                  ]}
+                />
+                <RefList title="Token ids" refs={market.token_ids} />
+              </section>
+              <section className="evidence-section">
+                <h3>Material change</h3>
+                {change === null ? (
+                  <p className="muted">No material change recorded for this triage.</p>
+                ) : (
+                  <>
+                    <DetailList
+                      items={[
+                        ["Material change", <Token>{change.material_change_event_id}</Token>],
+                        ["Prior → current universe", <><Token>{change.prior_universe_id}</Token><br /><Token>{change.current_universe_id}</Token></>],
+                        ["Hard changes", change.hard_change_classes.join(", ") || "None"],
+                        ["Soft changes", change.soft_change_classes.join(", ") || "None"],
+                        ["Review-only changes", change.review_only_change_classes.join(", ") || "None"],
+                        ["Reopen-material (research)", yesNo(change.reopen_material)],
+                        ["Diagnostics", change.comparison_diagnostics.join(", ") || "None"],
+                      ]}
+                    />
+                    <ul className="ref-list">
+                      {change.affected_token_ids.map((entry) => (
+                        <li key={entry.change_class}>
+                          {entry.change_class}: {entry.token_ids.join(", ")}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </section>
+              <section className="evidence-section">
+                <h3>Alpha-memory resolution</h3>
+                <p>
+                  <StatusPill tone={RESOLUTION_TONE[alpha.status]}>{alpha.status}</StatusPill>
+                </p>
+                <p className="muted">{RESOLUTION_TEXT[alpha.status]}</p>
+                <RefList title="Matched candidate ids (canonical)" refs={triage.matched_candidate_ids} />
+                <RefList title="Matched hypothesis family ids (canonical)" refs={triage.matched_hypothesis_family_ids} />
+                <RefList title="Matched research episode ids (canonical)" refs={triage.matched_research_episode_ids} />
+                {alpha.status === "RESOLVED" && (
+                  <ul className="ref-list">
+                    {alpha.candidates.map((candidate) => (
+                      <li key={candidate.candidate_id}>
+                        <strong>{candidate.title}</strong> · <Token>{candidate.candidate_id}</Token>
+                      </li>
+                    ))}
+                    {alpha.research_episodes.map((episode) => (
+                      <li key={episode.research_episode_id}>
+                        <ResultStatePill state={episode.result_state} /> <Token>{episode.research_episode_id}</Token>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </div>
+          );
+        }}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function DiscoveryQueuePane() {
+  const queue = useQuery(alphaDiscoveryQueueQuery);
+  const [triage, setTriage] = useState<string | null>(null);
+  return (
+    <>
+      <Notice>
+        <strong>Discovery priority is research allocation only.</strong>{" "}
+        It is not strategy selection or trade priority.
+        READY is research-control readiness, not trading readiness; REOPEN_ELIGIBLE is a research reopen condition, not
+        strategy or live authorization. This view shows the latest recorded discovery queue from the verified Discovery
+        registry over a bounded observed universe whose external completeness is UNPROVEN.
+      </Notice>
+      <QueryState query={queue} label="latest recorded discovery queue">
+        {(data) => (
+          <>
+            <MetricGrid>
+              <Metric label="Universe as_of" value={<span className="mono">{data.universe.as_of}</span>} />
+              <Metric label="Observed markets" value={data.universe.market_count} />
+              <Metric
+                label="External completeness"
+                value={<StatusPill tone="warning">{data.universe.external_universe_completeness}</StatusPill>}
+              />
+              <Metric label="Queue capacity" value={data.queue.queue_capacity} />
+              <Metric
+                label="Unused exploration / audit"
+                value={`${data.queue.unused_exploration_slots} / ${data.queue.unused_audit_slots}`}
+              />
+              <Metric label="Registry sequence" value={data.queue_sequence_number} />
+            </MetricGrid>
+            <Panel title="Latest recorded discovery queue">
+              <DetailList
+                items={[
+                  ["Queue snapshot", <Token>{data.queue.alpha_research_queue_snapshot_id}</Token>],
+                  ["Universe snapshot", <Token>{data.universe.alpha_universe_snapshot_id}</Token>],
+                  ["Coverage scope", data.universe.coverage_scope],
+                  ["Analysis mode", data.queue.analysis_temporal_mode],
+                  ["Alpha-memory posture", data.queue.alpha_memory_temporal_posture],
+                  ["Alpha-memory binding head", <Token>{data.queue.alpha_registry_head_entry_hash ?? "None (not bound)"}</Token>],
+                  ["Discovery registry head", <Token>{data.discovery_registry_head_entry_hash ?? "—"}</Token>],
+                  ["Unused capacity reasons", data.queue.unused_capacity_reason_codes.join(", ") || "None"],
+                  ["Prior-only markets", data.queue.prior_only_market_ids.join(", ") || "None"],
+                  ["Policy", <>{data.policy.policy_version} · <Token>{data.policy.alpha_discovery_policy_id}</Token></>],
+                  [
+                    "Policy slots (queue capacity / exploration / audit / per category)",
+                    `${data.policy.queue_capacity} / ${data.policy.exploration_slots} / ${data.policy.audit_slots} / ${data.policy.max_per_category}`,
+                  ],
+                  [
+                    "Recorded freshness thresholds (metadata / book / rule, s)",
+                    `${data.policy.metadata_freshness_seconds} / ${data.policy.order_book_freshness_seconds} / ${data.policy.resolution_rule_freshness_seconds}`,
+                  ],
+                ]}
+              />
+            </Panel>
+            <div className={triage ? "split" : undefined}>
+              <div className="detail-stack">
+                {LANE_SECTIONS.map(([lane, title, description]) => (
+                  <Panel key={lane} title={`${title} · ${data.lanes[lane].length}`}>
+                    <p className="muted">{description}</p>
+                    {data.lanes[lane].length === 0 ? (
+                      <p className="muted">No triage decisions in this lane.</p>
+                    ) : (
+                      <DataTable label={title} headers={["Market", "Research priority", "Readiness / reopen", "Alpha refs"]}>
+                        {data.lanes[lane].map((item) => (
+                          <tr
+                            key={item.market_triage_decision_id}
+                            className={item.market_triage_decision_id === triage ? "selected" : undefined}
+                          >
+                            <td>
+                              <Button variant="link" onClick={() => setTriage(item.market_triage_decision_id)}>
+                                <span className="token">{item.market_id}</span>
+                              </Button>
+                              <br />
+                              <span className="muted">
+                                {item.category ?? "Uncategorized"}
+                                {item.newly_observed_locally ? " · newly observed locally" : ""}
+                              </span>
+                            </td>
+                            <td>
+                              {item.priority_class}
+                              <br />
+                              <span className="muted">{item.reason_codes.join(", ")}</span>
+                            </td>
+                            <td>
+                              {item.readiness}
+                              <br />
+                              <span className="muted">{item.reopen_disposition}</span>
+                            </td>
+                            <td className="num">
+                              {item.matched_candidate_ids.length} candidates
+                              <br />
+                              {item.matched_research_episode_ids.length} episodes
+                            </td>
+                          </tr>
+                        ))}
+                      </DataTable>
+                    )}
+                  </Panel>
+                ))}
+              </div>
+              {triage && <TriageDetailPanel marketTriageDecisionId={triage} onClose={() => setTriage(null)} />}
+            </div>
+          </>
+        )}
+      </QueryState>
+    </>
+  );
+}
+
+function AlphaView() {
+  const [tab, setTab] = useState<"memory" | "discovery">("memory");
+  return (
+    <>
+      <div className="tabs" role="tablist" aria-label="Alpha research workspace">
+        <button type="button" role="tab" aria-selected={tab === "memory"} className="tab" onClick={() => setTab("memory")}>
+          Research Memory
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "discovery"}
+          className="tab"
+          onClick={() => setTab("discovery")}
+        >
+          Discovery Queue
+        </button>
+      </div>
+      <div role="tabpanel">{tab === "memory" ? <ResearchMemoryPane /> : <DiscoveryQueuePane />}</div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Shell and routes
 // ---------------------------------------------------------------------------
 
@@ -915,6 +1554,7 @@ export const VIEWS: readonly ViewDefinition[] = [
   { path: "/experiments", label: "Experiments", family: "experiments", element: <ExperimentsView /> },
   { path: "/strategies", label: "Strategies", family: "strategies", element: <StrategiesView /> },
   { path: "/hermes", label: "Hermes", family: "hermes", element: <HermesView /> },
+  { path: "/alpha", label: "Alpha Research", family: "alpha", element: <AlphaView /> },
   { path: "/paper", label: "Paper Operations", family: "paper", element: <PaperView /> },
   { path: "/audit", label: "Audit / Health", family: "audit", element: <AuditView /> },
 ];
@@ -949,6 +1589,7 @@ export function ControlCenter() {
           <strong>READ ONLY CONTROL CENTER</strong>
           <span>Simulated paper only</span>
           <span>Hermes: soft judgments only</span>
+          <span>Alpha: research records only</span>
           <span>No execution or live authority</span>
         </div>
       </aside>
