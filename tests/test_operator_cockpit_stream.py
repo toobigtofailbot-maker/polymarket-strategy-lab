@@ -848,7 +848,16 @@ def test_s16_asgi_streaming_response_contract_is_bounded_and_disconnect_safe(mon
         )
         start = sent[0]
         assert start["type"] == "http.response.start" and start["status"] == 200
-        assert start["headers"] == [(b"content-type", b"text/event-stream"), (b"cache-control", b"no-cache")]
+        # Exact SSE headers; the existing CORS middleware may add `vary: Origin` depending on the
+        # installed Starlette version. Anything else (proxy/deployment headers) is rejected.
+        header_names = [name for name, _value in start["headers"]]
+        assert len(header_names) == len(set(header_names)), header_names
+        headers = dict(start["headers"])
+        assert headers[b"content-type"] == b"text/event-stream"
+        assert headers[b"cache-control"] == b"no-cache"
+        assert set(headers) <= {b"content-type", b"cache-control", b"vary"}, headers
+        if b"vary" in headers:
+            assert headers[b"vary"] == b"Origin", headers
         chunks = [m["body"] for m in sent[1:] if m["type"] == "http.response.body" and m["body"]]
         frames = [frame for chunk in chunks for frame in _parse_frames(chunk)]
         assert len(frames) == 4, spec_version
