@@ -328,7 +328,7 @@ def test_o05_no_active_policy_valid_state(world, fixed_clock, tmp_path) -> None:
     assert empty_body["lifecycle_store_head_entry_hash"] is None
 
 
-def test_o06_reservation_projection(world, fixed_clock) -> None:
+def test_o06_to_o08_reservations_and_canonical_reasons(world, fixed_clock) -> None:
     _append(world, _health(world.root, "NEW", "WATCH", t=140))
     _append(world, build_strategy_restriction_receipt(
         strategy_version_id=world.root.strategy_version_id, restriction_key="cap.1",
@@ -401,7 +401,7 @@ def test_o08_o09_canonical_rejection_reasons_are_http_200(world, fixed_clock) ->
     assert [r["restriction_kind"] for r in item["active_restrictions"]] == ["PAUSE_NEW_EXPOSURE"]
 
 
-def test_o10_invalid_sources_source_unavailable_only(world, fixed_clock, tmp_path, monkeypatch) -> None:
+def test_o09_to_o11_closed_errors_and_unchanged_bytes(world, fixed_clock, tmp_path, monkeypatch) -> None:
     assert _get(_app(None), ROUTE) == UNAVAILABLE
     missing = tmp_path / "missing" / "lifecycle.sqlite3"
     garbage = tmp_path / "garbage.sqlite3"
@@ -447,7 +447,7 @@ def test_o11_store_bytes_unchanged(world, fixed_clock) -> None:
     assert _digest(world.lifecycle) == before
 
 
-def test_o12_route_get_only_query_rejected_total_25(world, fixed_clock) -> None:
+def test_o12_exact_route_method_query_and_total(world, fixed_clock) -> None:
     app = _app(world)
     domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
     assert len(domain) == 25
@@ -492,8 +492,55 @@ def test_o13_module_boundary() -> None:
 
 
 # ---------------------------------------------------------------------------
-# O14-O18 composition, frontend and Storybook
+# O13-O18 composition, frontend and Storybook
 # ---------------------------------------------------------------------------
+
+
+GATEWAY_STATUS_KEYS = {
+    "read_only", "authority_state", "disabled", "disable_reason", "credential_configured",
+    "public_signer", "public_funder", "reconciliation_state", "heartbeat_state",
+    "user_stream_state", "access_state", "rate_limit_until_ns", "prepared_order_count",
+    "mutation_attempt_count", "open_order_count", "gate_b_authorized",
+    "restricted_live_available", "restricted_live", "gate_b",
+}
+GATEWAY_AUDIT_KEYS = {"sequence", "event_id", "event_type", "event_time_ns", "event_hash"}
+
+
+def test_o13_gateway_composition_boundary(tmp_path) -> None:
+    """OPS reads gateway state only through the existing sanitized HTTP projections."""
+    app = _app(None, gateway=_gateway_store(tmp_path))
+    status_code, status = _get(app, "/api/gateway/status")
+    assert status_code == 200 and set(status) == GATEWAY_STATUS_KEYS
+    audit_code, audit = _get(app, "/api/gateway/audit")
+    assert audit_code == 200 and audit["items"]
+    assert all(set(item) == GATEWAY_AUDIT_KEYS for item in audit["items"])
+    assert "execution_gateway" not in _module_code()
+    api_source = (FRONTEND / "api.ts").read_text(encoding="utf-8")
+    assert api_source.count('"/gateway/status"') == 1 and api_source.count('"/gateway/audit"') == 1
+    section = _ops_frontend_section()
+    for field in ("authority_state", "access_state", "reconciliation_state", "heartbeat_state",
+                  "restricted_live", "event_hash"):
+        assert field in section, field
+    # Recorded gateway values are labelled recorded and never fed into portfolio state.
+    assert "Recorded gateway access state" in section
+    assert not re.search(r"capacity[^\n]*access_state|access_state[^\n]*capacity", section)
+
+
+def test_o13_paper_composition_boundary(tmp_path) -> None:
+    """OPS reads simulated paper state only through the existing summary/risk projections."""
+    app = _app(None, paper=_paper_store(tmp_path))
+    summary_code, summary = _get(app, "/api/paper/summary")
+    assert summary_code == 200 and summary["simulated_paper_only"] is True
+    risk_code, risk = _get(app, "/api/paper/risk")
+    assert risk_code == 200 and set(risk) == {
+        "limits", "utilization", "latest_decision", "deny_count", "resolution_pending",
+    }
+    assert "paper_trading" not in _module_code()
+    section = _ops_frontend_section()
+    assert "SIMULATED PAPER ONLY." in section
+    for detail in ("paperOrdersQuery", "paperFillsQuery", "paperPositionsQuery", "/paper/orders",
+                   "/paper/fills", "/paper/positions"):
+        assert detail not in section, detail
 
 
 def test_o14_frontend_ops_route_family_and_keys() -> None:
@@ -543,7 +590,7 @@ def test_o15_source_independence(world, fixed_clock, tmp_path) -> None:
     assert "isLoading" not in section and "isError &&" not in section
 
 
-def test_o16_no_semantic_authority_promotion(world, fixed_clock) -> None:
+def test_o15_to_o18_no_authority_promotion_or_realtime(world, fixed_clock) -> None:
     body = _portfolio(_app(world))
     serialized = json.dumps(body)
     section = _ops_frontend_section()
