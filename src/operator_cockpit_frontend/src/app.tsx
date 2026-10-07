@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useIsFetching, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { Navigate, NavLink, Route, Routes, useLocation } from "react-router";
 import {
+  advanceStreamBaseline,
   alphaCandidateDetailQuery,
   alphaCandidatesQuery,
   alphaDiscoveryQueueQuery,
@@ -27,8 +28,12 @@ import {
   paperPositionsQuery,
   paperRiskQuery,
   paperSummaryQuery,
+  parseStreamEvent,
+  STREAM_EVENT_NAMES,
   strategiesQuery,
   strategyDetailQuery,
+  streamEventUrl,
+  streamStatusQuery,
   toSafeErrorCode,
   type AlphaResolutionStatus,
   type AlphaSourceReference,
@@ -50,6 +55,8 @@ import {
   type PaperSummary,
   type QueryFamily,
   type ResearchResultState,
+  type StreamBaseline,
+  type StreamEventName,
 } from "./api";
 
 // ---------------------------------------------------------------------------
@@ -1930,6 +1937,93 @@ function RefreshControl({ family }: { family: QueryFamily }) {
   );
 }
 
+// S10-CC-STREAM-01: the single centralized auto-refresh transport. It owns the only browser stream,
+// opens it only when the backend reports streaming enabled, and only ever invalidates the active
+// family so the existing HTTP snapshots are re-read. It never writes query data, never retries on
+// its own (native browser reconnect only) and never asserts domain freshness.
+type TransportState = "Disabled" | "Connecting" | "Connected" | "Resyncing" | "Disconnected";
+const TRANSPORT_TONE: Record<TransportState, Tone> = {
+  Disabled: "neutral",
+  Connecting: "neutral",
+  Connected: "success",
+  Resyncing: "warning",
+  Disconnected: "warning",
+};
+export const STREAM_NOTICE =
+  "Auto-refresh updates this workspace from the existing authoritative HTTP snapshots. Stream connection state is transport status, not domain freshness or trading readiness.";
+
+// Integer nanoseconds -> UTC timestamp via BigInt; the server signal time is never coerced to an
+// unsafe JavaScript number and the browser clock is never consulted.
+const signalTimeUtc = (serverTimeNs: string) => new Date(Number(BigInt(serverTimeNs) / 1_000_000n)).toISOString();
+
+function StreamRefreshController({ family }: { family: QueryFamily }) {
+  const queryClient = useQueryClient();
+  const status = useQuery(streamStatusQuery);
+  const enabled = status.data?.enabled === true;
+  const [transport, setTransport] = useState<{ state: TransportState; signalNs: string | null }>({
+    state: "Disabled",
+    signalNs: null,
+  });
+
+  useEffect(() => {
+    if (!enabled) return;
+    let open = true;
+    let baseline: StreamBaseline | null = null;
+    const source = new EventSource(streamEventUrl(family));
+    setTransport({ state: "Connecting", signalNs: null });
+    const reread = (resync: boolean) => {
+      // Never abort an in-flight re-read: a projection slower than the cadence must still land.
+      const settled = queryClient.invalidateQueries({ queryKey: familyKey(family) }, { cancelRefetch: false });
+      if (!resync) return void settled;
+      void settled.finally(() => {
+        if (open) setTransport((current) => (current.state === "Resyncing" ? { ...current, state: "Connected" } : current));
+      });
+    };
+    const listeners = (Object.keys(STREAM_EVENT_NAMES) as StreamEventName[]).map((name) => {
+      const listener = (message: MessageEvent) => {
+        const event = parseStreamEvent(name, message.data, family);
+        if (event === null) {
+          // Malformed transport input is dropped; the next valid event takes the resync path.
+          baseline = null;
+          return;
+        }
+        const step = advanceStreamBaseline(baseline, event);
+        baseline = step.baseline;
+        setTransport({ state: step.resync ? "Resyncing" : "Connected", signalNs: event.server_time_ns });
+        if (step.invalidate) reread(step.resync);
+      };
+      source.addEventListener(name, listener);
+      return [name, listener] as const;
+    });
+    // Native reconnect only. A reconnect is a new server connection whose first event resyncs.
+    source.onerror = () => {
+      baseline = null;
+      setTransport((current) => ({ ...current, state: "Disconnected" }));
+    };
+    return () => {
+      open = false;
+      for (const [name, listener] of listeners) source.removeEventListener(name, listener);
+      source.onerror = null;
+      source.close();
+    };
+  }, [enabled, family, queryClient]);
+
+  const state: TransportState = enabled ? transport.state : "Disabled";
+  return (
+    <div className="stream-indicator">
+      {/* Only the state is a live region; the signal time changes every tick and is not announced. */}
+      <span role="status">
+        <StatusPill tone={TRANSPORT_TONE[state]}>Auto-refresh: {state}</StatusPill>
+      </span>
+      {enabled && transport.signalNs !== null && (
+        <span className="stream-signal">
+          Server refresh-signal time <code>{signalTimeUtc(transport.signalNs)}</code>
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function ControlCenter() {
   const { pathname } = useLocation();
   const active = VIEWS.find((view) => view.path === pathname) ?? VIEWS[0];
@@ -1959,8 +2053,12 @@ export function ControlCenter() {
             <div className="eyebrow">Validated cockpit evidence · WP171 / WP173</div>
             <h1>{active.label}</h1>
           </div>
-          <RefreshControl family={active.family} />
+          <div className="page-actions">
+            <StreamRefreshController family={active.family} />
+            <RefreshControl family={active.family} />
+          </div>
         </header>
+        <p className="stream-notice">{STREAM_NOTICE}</p>
         <Routes>
           <Route path="/" element={<Navigate to="/overview" replace />} />
           {VIEWS.map((view) => (

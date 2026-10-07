@@ -39,6 +39,7 @@ import {
   type PaperSummary,
   type StrategyDetail,
   type StrategySummary,
+  type StreamStatus,
 } from "./api";
 import { ControlCenter } from "./app";
 
@@ -267,10 +268,36 @@ const meta = preview.meta({
   args: { path: "/overview" },
 });
 
+// S10-CC-STREAM-01: every story receives the exact disabled transport status, so the shell never
+// opens a browser stream in Storybook. No story mocks or opens a real stream.
+const streamStatusDisabled: StreamStatus = {
+  read_only: true,
+  enabled: false,
+  transport: "SSE",
+  semantics: "SERVER_PACED_ACTIVE_FAMILY_REFRESH",
+  source_push: false,
+  canonical_event_stream: false,
+  domain_freshness_guarantee: false,
+  replay_available: false,
+  base_tick_seconds: 5,
+  refresh_seconds_by_family: {
+    overview: 10,
+    market: 5,
+    experiments: 30,
+    strategies: 30,
+    hermes: 30,
+    alpha: 30,
+    ops: 5,
+    paper: 5,
+    audit: 10,
+  },
+};
+const streamStatusDisabledHandler = http.get("/api/stream/status", () => HttpResponse.json(streamStatusDisabled));
+
 const mock =
   (...items: (HttpHandler | HttpHandler[])[]) =>
   ({ msw }: { msw: { use: (...handlers: HttpHandler[]) => void } }) => {
-    msw.use(...items.flat());
+    msw.use(streamStatusDisabledHandler, ...items.flat());
   };
 
 export const OverviewHealthy = meta.story({

@@ -106,7 +106,7 @@ authority; live DISABLED; capital/orders USD 0 / 0. Contract:
 record: `docs/status_entries/S10-CC-RESEARCH-02.md`. Merged via PR #225 (head
 `d4075ea344a318897e5cd755eb691a2bd45daa89`, merge `2685429aca6c0b655308a562a693d3075c1994a4`).
 
-## S10-CC-OPS-01 Control Center Portfolio / Risk / Runtime Operations Read Model (current Control Center implementation target, open branch)
+## S10-CC-OPS-01 Control Center Portfolio / Risk / Runtime Operations Read Model (merged historical predecessor: PR #226)
 
 FAST, risk 2, exact 16-path L scope, deterministic readiness, no certificate. Frozen base
 `2685429aca6c0b655308a562a693d3075c1994a4` (PR #225 / S10-CC-RESEARCH-02 merged: YES, head
@@ -130,8 +130,37 @@ registry, EXEC-FEAS/Gate-C history, LIVE-ORCH drill-down, host-currentness or ge
 StrategyLifecycle, paper or gateway source change or mutation, new persistence, credential, product
 network, dependency/workflow change, execution or live authority; live DISABLED; capital/orders USD 0 / 0.
 Contract: `docs/control_center_ops_read_model_contract.md`; package: `docs/wp_specs/S10-CC-OPS-01/`;
-stable record: `docs/status_entries/S10-CC-OPS-01.md`. Successor S10-CC-STREAM-01 is separately gated;
-merge NOT AUTHORIZED (Karl only).
+stable record: `docs/status_entries/S10-CC-OPS-01.md`. Merged via PR #226 (head
+`90d30129ce0f3282395b6f319ce25c622191d39b`, merge `7bba7f0d6657364b9358d1a4a96807f024db0533`).
+
+## S10-CC-STREAM-01 Control Center Streaming / Freshness / Gap / Resync Layer (current Control Center implementation target, open branch)
+
+RUNTIME, risk 3, exact 17-path L scope, deterministic readiness, no certificate. Frozen base
+`7bba7f0d6657364b9358d1a4a96807f024db0533` (PR #226 / S10-CC-OPS-01 merged: YES, head
+`90d30129ce0f3282395b6f319ce25c622191d39b`). Default-off, request-scoped, same-origin auto-refresh
+transport: the new transport-only module `src/operator_cockpit_stream.py` (stdlib only; no canonical
+store, filesystem, environment, network-client or WebSocket import; no persistence) and the appended
+`CockpitConfig.streaming_enabled` kill switch (exact bool, default `False`, enabled only by the explicit
+`--enable-streaming` CLI flag). `src/operator_cockpit.py` adds exactly two GET routes,
+`/api/stream/status` (exact transport-only configuration; any query `INVALID_INPUT`) and
+`/api/stream/events?family=<QueryFamily>` (one closed family query validated before enablement; valid but
+disabled `503 STREAM_DISABLED`; enabled `text/event-stream`), for 27 `/api` routes in total. The only
+loop is one SSE wait/emit generator per connected request: a fresh `ccstream:` id, sequence 1 and
+`RESYNC_REQUIRED` first, then a 5-second base tick emitting `REFRESH_DUE` at the fixed family cadence
+(overview 10, market 5, experiments 30, strategies 30, hermes 30, alpha 30, ops 5, paper 5, audit 10
+seconds) or `HEARTBEAT`, with a +1 connection-local sequence and decimal-string `server_time_ns`; it
+stops on disconnect or cancellation with no retry, background task, replay buffer or persisted history.
+The frontend adds one centralized shell `StreamRefreshController` that owns the only browser stream for
+the active family; a new connection id or a same-connection sequence gap resyncs the active family over
+HTTP, `RESYNC_REQUIRED`/`REFRESH_DUE` invalidate only `familyKey(activeFamily)`, `HEARTBEAT` invalidates
+nothing, malformed events are dropped, and manual Refresh and the conservative Query defaults are
+unchanged. Storybook answers `/api/stream/status` with the exact disabled DTO for every story. Transport
+state is never domain freshness, source change, market-data gap, account/host/network currentness,
+incident state or execution/live authority. No canonical source change or mutation, credential, account
+read, product network, dependency/workflow change, command, deployment, execution or live authority;
+live DISABLED; capital/orders USD 0 / 0. Contract: `docs/control_center_streaming_contract.md`; package:
+`docs/wp_specs/S10-CC-STREAM-01/`; stable record: `docs/status_entries/S10-CC-STREAM-01.md`. Successors
+S10-CC-CMD-01 and S10-CC-PROD-01 are separately gated; merge NOT AUTHORIZED (Karl only).
 
 ## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
 

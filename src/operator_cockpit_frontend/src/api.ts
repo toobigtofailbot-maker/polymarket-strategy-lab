@@ -860,8 +860,151 @@ export const auditRecentQuery = queryOptions({
   queryFn: ({ signal }) => getJson<ListResponse<AuditItem>>("/audit/recent", signal),
 });
 
+// S10-CC-STREAM-01 transport. The default-off server stream carries transport metadata only: it
+// tells the shell when to re-read the active family's existing HTTP snapshots. A transport
+// connection, sequence, heartbeat or signal time is never domain freshness, a source change or
+// any account, host, network, execution or live readiness.
+export const STREAM_SCHEMA_VERSION = "1.0.0";
+export const STREAM_FAMILIES = [
+  "overview",
+  "market",
+  "experiments",
+  "strategies",
+  "hermes",
+  "alpha",
+  "ops",
+  "paper",
+  "audit",
+] as const satisfies readonly QueryFamily[];
+export type StreamEventKind = "RESYNC_REQUIRED" | "REFRESH_DUE" | "HEARTBEAT";
+export type StreamEventName = "resync" | "refresh" | "heartbeat";
+export const STREAM_EVENT_NAMES: Record<StreamEventName, StreamEventKind> = {
+  resync: "RESYNC_REQUIRED",
+  refresh: "REFRESH_DUE",
+  heartbeat: "HEARTBEAT",
+};
+export type StreamStatus = {
+  read_only: true;
+  enabled: boolean;
+  transport: "SSE";
+  semantics: "SERVER_PACED_ACTIVE_FAMILY_REFRESH";
+  source_push: false;
+  canonical_event_stream: false;
+  domain_freshness_guarantee: false;
+  replay_available: false;
+  base_tick_seconds: 5;
+  refresh_seconds_by_family: Record<QueryFamily, number>;
+};
+export type StreamEvent = {
+  schema_version: "1.0.0";
+  connection_id: string;
+  sequence: number;
+  kind: StreamEventKind;
+  family: QueryFamily;
+  server_time_ns: string;
+};
+
+const STREAM_STATUS_KEYS = [
+  "base_tick_seconds",
+  "canonical_event_stream",
+  "domain_freshness_guarantee",
+  "enabled",
+  "read_only",
+  "refresh_seconds_by_family",
+  "replay_available",
+  "semantics",
+  "source_push",
+  "transport",
+];
+const STREAM_EVENT_KEYS = ["connection_id", "family", "kind", "schema_version", "sequence", "server_time_ns"];
+const STREAM_CONNECTION_ID_RE = /^ccstream:[0-9a-f]{32}$/;
+const STREAM_SERVER_TIME_NS_RE = /^(0|[1-9][0-9]{0,19})$/;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const hasExactKeys = (record: Record<string, unknown>, keys: readonly string[]) =>
+  Object.keys(record).sort().join(",") === keys.join(",");
+
+/** Strict status validation: anything but the exact transport DTO is MALFORMED_RESPONSE. */
+export function parseStreamStatus(body: unknown): StreamStatus {
+  if (!isRecord(body) || !hasExactKeys(body, STREAM_STATUS_KEYS)) throw new SafeApiError("MALFORMED_RESPONSE");
+  const cadence = body.refresh_seconds_by_family;
+  if (
+    body.read_only !== true ||
+    typeof body.enabled !== "boolean" ||
+    body.transport !== "SSE" ||
+    body.semantics !== "SERVER_PACED_ACTIVE_FAMILY_REFRESH" ||
+    body.source_push !== false ||
+    body.canonical_event_stream !== false ||
+    body.domain_freshness_guarantee !== false ||
+    body.replay_available !== false ||
+    body.base_tick_seconds !== 5 ||
+    !isRecord(cadence) ||
+    !hasExactKeys(cadence, [...STREAM_FAMILIES].sort()) ||
+    !STREAM_FAMILIES.every((family) => {
+      const seconds = cadence[family];
+      return typeof seconds === "number" && Number.isSafeInteger(seconds) && seconds > 0 && seconds % 5 === 0;
+    })
+  ) {
+    throw new SafeApiError("MALFORMED_RESPONSE");
+  }
+  return body as StreamStatus;
+}
+
+/**
+ * Strict SSE data validation for one named event on the active family's stream. Returns null for
+ * anything else; malformed transport input never becomes query data and is never rendered.
+ */
+export function parseStreamEvent(eventName: StreamEventName, data: unknown, family: QueryFamily): StreamEvent | null {
+  if (typeof data !== "string" || data.length > 512) return null;
+  let value: unknown;
+  try {
+    value = JSON.parse(data);
+  } catch {
+    return null;
+  }
+  if (!isRecord(value) || !hasExactKeys(value, STREAM_EVENT_KEYS)) return null;
+  const { schema_version, connection_id, sequence, kind, server_time_ns } = value;
+  if (schema_version !== STREAM_SCHEMA_VERSION) return null;
+  if (typeof connection_id !== "string" || !STREAM_CONNECTION_ID_RE.test(connection_id)) return null;
+  if (typeof sequence !== "number" || !Number.isSafeInteger(sequence) || sequence < 1) return null;
+  const expectedKind = STREAM_EVENT_NAMES[eventName];
+  if (kind !== expectedKind) return null;
+  if (value.family !== family) return null;
+  if (typeof server_time_ns !== "string" || !STREAM_SERVER_TIME_NS_RE.test(server_time_ns)) return null;
+  return { schema_version: STREAM_SCHEMA_VERSION, connection_id, sequence, kind: expectedKind, family, server_time_ns };
+}
+
+// The only transport state kept per browser stream: the current connection id and last sequence.
+export type StreamBaseline = { connectionId: string; sequence: number };
+export type StreamStep = { baseline: StreamBaseline; resync: boolean; invalidate: boolean };
+
+/**
+ * Gap/resync rules. A first event, a new connection id or a same-connection sequence other than
+ * last + 1 is a transport gap: re-read the active family over HTTP (there is no replay). Otherwise
+ * RESYNC_REQUIRED and REFRESH_DUE re-read the active family and HEARTBEAT re-reads nothing. The
+ * newest valid event always becomes the baseline.
+ */
+export function advanceStreamBaseline(baseline: StreamBaseline | null, event: StreamEvent): StreamStep {
+  const next = { connectionId: event.connection_id, sequence: event.sequence };
+  const continuous =
+    baseline !== null && baseline.connectionId === event.connection_id && event.sequence === baseline.sequence + 1;
+  if (!continuous || event.kind === "RESYNC_REQUIRED") return { baseline: next, resync: true, invalidate: true };
+  return { baseline: next, resync: false, invalidate: event.kind === "REFRESH_DUE" };
+}
+
+/** Same-origin stream URL for one active query family. */
+export const streamEventUrl = (family: QueryFamily) => API_BASE + "/stream/events?family=" + encodeURIComponent(family);
+
+// Global transport status (not a page family): manual Refresh never touches it.
+export const streamStatusQuery = queryOptions({
+  queryKey: ["cc", "stream", "status"] as const,
+  queryFn: async ({ signal }) => parseStreamStatus(await getJson<unknown>("/stream/status", signal)),
+});
+
 // Cockpit reads can replay verified stores, so nothing refetches on its own: no retry, no
-// focus/reconnect refetch, no interval. Data changes only when the operator presses Refresh.
+// focus/reconnect refetch, no interval. Data changes only when the operator presses Refresh or,
+// when the backend stream is explicitly enabled, when its signal invalidates the active family.
 // Query-cache staleness is an implementation detail, never domain freshness.
 export function createQueryClient(): QueryClient {
   return new QueryClient({

@@ -450,7 +450,7 @@ def test_o11_store_bytes_unchanged(world, fixed_clock) -> None:
 def test_o12_exact_route_method_query_and_total(world, fixed_clock) -> None:
     app = _app(world)
     domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
-    assert len(domain) == 25
+    assert len(domain) == 27
     assert domain[ROUTE] == {"GET"}
     assert [path for path in domain if path.startswith("/api/ops")] == [ROUTE]
     for method in ("POST", "PUT", "PATCH", "DELETE"):
@@ -620,9 +620,16 @@ def test_o17_no_mutation_or_realtime_primitives() -> None:
     app_source = (FRONTEND / "app.tsx").read_text(encoding="utf-8")
     api_source = (FRONTEND / "api.ts").read_text(encoding="utf-8")
     combined = app_source + api_source + _ops_stories_section()
-    for banned in ("useMutation", "EventSource", "WebSocket", "refetchInterval", "setInterval",
+    for banned in ("useMutation", "WebSocket", "refetchInterval", "setInterval",
                    "setTimeout", "localStorage", "sendBeacon"):
         assert banned not in combined, banned
+    # S10-CC-STREAM-01: OpsView owns no realtime loop; only the centralized shell
+    # StreamRefreshController may construct the single browser stream.
+    assert "EventSource" not in api_source + _ops_stories_section() + _ops_frontend_section()
+    assert app_source.count("new EventSource(") == 1
+    controller = app_source[app_source.index("function StreamRefreshController("):]
+    controller = controller[: controller.index("\n}\n")]
+    assert app_source.count("EventSource") == controller.count("EventSource")
     assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", app_source + api_source)
     assert api_source.count('method: "GET"') == 1
     for label in (">Run<", ">Approve<", ">Apply<", ">Allocate<", ">Pause<", ">Arm<", ">Halt<",
