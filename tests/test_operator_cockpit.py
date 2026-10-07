@@ -393,6 +393,8 @@ def test_exact_routes_limits_errors_and_no_mutation_routes(
         "/api/alpha/discovery/queue": {"GET"},
         "/api/alpha/discovery/triage/{market_triage_decision_id}": {"GET"},
         "/api/ops/portfolio": {"GET"},
+        "/api/stream/status": {"GET"},
+        "/api/stream/events": {"GET"},
     }
     assert _get(app, "/api/market-truth/recent")[1]["limit"] == 50
     for accepted in ("1", "100"):

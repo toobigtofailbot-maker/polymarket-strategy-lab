@@ -1,4 +1,4 @@
-"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02/S10-CC-OPS-01 local read-only cockpit over evidence."""
+"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02/S10-CC-OPS-01/S10-CC-STREAM-01 local read-only cockpit."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from src.data_layer.analytical_research import (
     LifecycleReceipt,
@@ -41,6 +41,7 @@ from src.execution_gateway.store import GatewayStoreError, read_gateway_projecti
 from src.execution_gateway.gateway import GatewayError, read_gate_b_evidence
 from src import operator_cockpit_ops as ops
 from src import operator_cockpit_research as research
+from src import operator_cockpit_stream as stream
 
 
 MARKET_APPLICATION_ID = 1_347_242_297
@@ -52,6 +53,7 @@ ERROR_STATUS = {
     "NOT_FOUND": 404,
     "SOURCE_UNAVAILABLE": 503,
     "INTERNAL_ERROR": 500,
+    "STREAM_DISABLED": 503,
 }
 EXPERIMENT_ID_RE = re.compile(r"^experiment:sha256:[0-9a-f]{64}$")
 _ASCII_INTEGER_RE = re.compile(r"^[0-9]+$")
@@ -123,8 +125,12 @@ class CockpitConfig:
     hermes_strategy_manager_path: Path | None = None
     alpha_factory_registry_path: Path | None = None
     alpha_discovery_registry_path: Path | None = None
+    # S10-CC-STREAM-01: default-off kill switch for the request-scoped refresh-signal stream.
+    streaming_enabled: bool = False
 
     def __post_init__(self) -> None:
+        if type(self.streaming_enabled) is not bool:
+            raise TypeError("streaming_enabled must be bool")
         for value in (
             self.market_truth_path,
             self.experiment_registry_path,
@@ -1098,6 +1104,32 @@ def create_app(config: CockpitConfig) -> FastAPI:
         evaluated_at_ns = time.time_ns()
         return ops.portfolio_projection(config.strategy_lifecycle_path, evaluated_at_ns)
 
+    # S10-CC-STREAM-01: default-off same-origin refresh/resync signal transport. GET only; the
+    # events carry transport metadata only and never canonical domain payloads. Existing GET
+    # projections stay the sole authoritative data surfaces.
+    @app.get("/api/stream/status")
+    async def stream_status(request: Request) -> dict[str, Any]:
+        if list(request.query_params.multi_items()):
+            raise CockpitError("INVALID_INPUT")
+        return stream.stream_status(config.streaming_enabled)
+
+    @app.get("/api/stream/events")
+    async def stream_events(request: Request) -> StreamingResponse:
+        pairs = list(request.query_params.multi_items())
+        if (
+            len(pairs) != 1
+            or pairs[0][0] != "family"
+            or pairs[0][1] not in stream.STREAM_FAMILIES
+        ):
+            raise CockpitError("INVALID_INPUT")
+        if not config.streaming_enabled:
+            raise CockpitError("STREAM_DISABLED")
+        return StreamingResponse(
+            stream.event_stream(pairs[0][1], request.is_disconnected),
+            media_type="text/event-stream",
+            headers={"Content-Type": "text/event-stream", "Cache-Control": "no-cache"},
+        )
+
     return app
 
 
@@ -1114,6 +1146,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--alpha-factory-registry", type=Path)
     parser.add_argument("--alpha-discovery-registry", type=Path)
     parser.add_argument("--port", default=8000, type=int)
+    parser.add_argument("--enable-streaming", action="store_true", default=False)
     args = parser.parse_args(argv)
     if args.port < 1 or args.port > 65_535:
         parser.error("--port must be between 1 and 65535")
@@ -1130,6 +1163,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.hermes_strategy_manager_store,
                 args.alpha_factory_registry,
                 args.alpha_discovery_registry,
+                streaming_enabled=args.enable_streaming,
             )
         ),
         host="127.0.0.1",

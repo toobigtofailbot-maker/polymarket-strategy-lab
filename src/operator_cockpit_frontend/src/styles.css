@@ -654,6 +654,36 @@ td.num {
   font-size: var(--cc-text-sm);
 }
 
+/* S10-CC-STREAM-01 shell auto-refresh transport indicator (transport status only). */
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--cc-space-3);
+  min-width: 0;
+}
+
+.stream-indicator {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cc-space-2);
+  min-width: 0;
+}
+
+.stream-signal {
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-xs);
+  overflow-wrap: anywhere;
+}
+
+.stream-notice {
+  margin: calc(-1 * var(--cc-space-3)) 0 var(--cc-space-4);
+  color: var(--cc-text-subtle);
+  font-size: var(--cc-text-xs);
+}
+
 @media (max-width: 1100px) {
   .split {
     grid-template-columns: minmax(0, 1fr);
@@ -682,5 +712,9 @@ td.num {
   .page-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .page-actions {
+    justify-content: flex-start;
   }
 }

@@ -597,7 +597,7 @@ def test_r12_research_routes_are_get_only(world: World) -> None:
         for route in app.routes
         if route.path.startswith("/api/")
     }
-    assert len(domain) == 25
+    assert len(domain) == 27
     for route in RESEARCH_ROUTES + ALPHA_ROUTES:
         assert domain[route] == {"GET"}
     targets = (
@@ -733,9 +733,16 @@ def test_frontend_research_surface_is_read_only_and_bounded() -> None:
     for key in ('"strategies", "list"', '"strategies", "detail"', '"hermes", "list"', '"hermes", "detail"'):
         assert key in api_source, key
     combined = app_source + api_source
-    for banned in ("setInterval", "refetchInterval", "EventSource", "WebSocket", "localStorage",
+    for banned in ("setInterval", "refetchInterval", "WebSocket", "localStorage",
                    "zustand", "error.message", "useMutation"):
         assert banned not in combined, banned
+    # S10-CC-STREAM-01: only the centralized shell StreamRefreshController may construct the single
+    # browser stream; research/alpha/ops views own no realtime primitive.
+    assert "EventSource" not in api_source
+    assert app_source.count("new EventSource(") == 1
+    controller = app_source[app_source.index("function StreamRefreshController("):]
+    controller = controller[: controller.index("\n}\n")]
+    assert app_source.count("EventSource") == controller.count("EventSource")
     assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", combined)
     for label in (">Run<", ">Reassess<", ">Approve<", ">Apply<", ">Allocate<", ">Pause<",
                   ">Scale<", ">Trade<"):
@@ -1473,7 +1480,7 @@ def test_a28_store_bytes_unchanged(tmp_path: Path) -> None:
 def test_a29_a30_alpha_routes_get_only_total_24(alpha_world: AlphaWorld) -> None:
     app = alpha_world.app()
     domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
-    assert len(domain) == 25
+    assert len(domain) == 27
     for route in ALPHA_ROUTES:
         assert domain[route] == {"GET"}
     for target in _alpha_targets(alpha_world):
@@ -1567,9 +1574,16 @@ def test_a35_to_a39_frontend_alpha_surface() -> None:
     assert len(re.findall(r'\["cc", "alpha"', api_source)) == 6
     # A37: no polling, realtime, mutation or automatic source fetch.
     combined = app_source + api_source
-    for banned in ("setInterval", "refetchInterval", "EventSource", "WebSocket", "useMutation",
+    for banned in ("setInterval", "refetchInterval", "WebSocket", "useMutation",
                    "localStorage", "zustand", "error.message", "<iframe", "href={source"):
         assert banned not in combined, banned
+    # S10-CC-STREAM-01: only the centralized shell StreamRefreshController may construct the single
+    # browser stream; research/alpha/ops views own no realtime primitive.
+    assert "EventSource" not in api_source
+    assert app_source.count("new EventSource(") == 1
+    controller = app_source[app_source.index("function StreamRefreshController("):]
+    controller = controller[: controller.index("\n}\n")]
+    assert app_source.count("EventSource") == controller.count("EventSource")
     assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", combined)
     for label in (">Run<", ">Approve<", ">Qualify<", ">Promote<", ">Trade<", ">Reopen<", ">Allocate<"):
         assert label not in app_source, label

@@ -1,0 +1,659 @@
+# S10-CC-STREAM-01 — Control Center Streaming / Freshness / Gap / Resync Layer
+
+## 0. Package Identity
+
+- WP ID: S10-CC-STREAM-01
+- Repository: toobigtofailbot-maker/polymarket-strategy-lab
+- Package class: CONTROL_CENTER_SSE_ACTIVE_FAMILY_REFRESH_GAP_RESYNC_RUNTIME
+- Package size class: L (exact 17 / 20 paths)
+- Risk level: 3; capital at risk: USD 0; evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+- Base branch: main; frozen base: 7bba7f0d6657364b9358d1a4a96807f024db0533
+- Required predecessor: PR #226 / S10-CC-OPS-01, head 90d30129ce0f3282395b6f319ce25c622191d39b, merge 7bba7f0d6657364b9358d1a4a96807f024db0533
+- Suggested branch: claude/s10-cc-stream-01-sse-freshness-gap-resync
+- Review owner: Side17; merge authority: Karl only
+
+Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: true
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Recommended Claude/Codex Mode:
+- Use the strongest available coding model with high reasoning for startup contract compilation and runtime-boundary review; normal coding mode after scope/readiness are proven.
+- `scheduler:true` authorizes only one default-off, request-scoped SSE wait/emit loop per connected Control Center browser stream. It does not authorize a daemon, source poller, background worker, retry worker, product WebSocket, Hermes runtime, paper engine or execution runtime.
+- Ordinary same-capability defects inside the exact 17 paths are corrected in the same run. Stop only for a hard stop below.
+
+## 1. Objective
+
+Add the first bounded Control Center auto-refresh transport without creating a new canonical event bus, freshness oracle, source poller or execution runtime.
+
+Architecture:
+
+```text
+existing authoritative HTTP GET projections
+        ↑
+TanStack Query active-family invalidation / re-fetch
+        ↑
+same-origin EventSource
+        ↑
+default-off request-scoped SSE refresh/resync signal stream
+```
+
+Add exactly two backend GET routes:
+
+```text
+GET /api/stream/status
+GET /api/stream/events?family=<QueryFamily>
+```
+
+SSE carries transport metadata only. It never carries canonical market, experiment, StrategyLifecycle, Hermes, Alpha, OPS, paper or gateway payloads. Existing HTTP GET projections remain the sole authoritative data surfaces.
+
+Permanent semantic separation:
+
+```text
+transport connected != domain fresh
+transport sequence != canonical store sequence
+REFRESH_DUE != source changed
+transport gap != market-data gap
+server signal time != market/account observation time
+recorded gateway state != current host/network/account truth
+SSE refresh != command/execution/live authority
+```
+
+## 2. Hard start gate and guard discovery
+
+Before substantive editing:
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+git merge-base --is-ancestor 90d30129ce0f3282395b6f319ce25c622191d39b HEAD
+git branch --list claude/s10-cc-stream-01-sse-freshness-gap-resync
+git branch -r --list origin/claude/s10-cc-stream-01-sse-freshness-gap-resync
+gh pr list --state open --json number,title,headRefName,baseRefName
+```
+
+Require:
+- `HEAD == origin/main == 7bba7f0d6657364b9358d1a4a96807f024db0533`;
+- PR #226 merged and predecessor head is an ancestor;
+- working tree clean;
+- no local/remote STREAM-01 branch or open STREAM-01 PR;
+- repo truth does not already claim STREAM-01 complete.
+
+Otherwise: `STOP S10_CC_STREAM_01_BASE_DRIFT`.
+
+Before editing, mechanically re-run changed-surface guard discovery. Search at minimum for:
+
+```text
+operator_cockpit.py
+CockpitConfig(
+/api/ exact route sets
+len(domain)
+QueryFamily
+familyKey
+EventSource
+WebSocket
+setInterval
+refetchInterval
+manual Refresh
+staleTime: Infinity
+/overview /markets /experiments /strategies /hermes /alpha /ops /paper /audit
+APPROVED_SRC_SCOPES
+foundation.stories.tsx
+```
+
+Known compatibility edits are already inside the exact scope:
+`tests/test_operator_cockpit.py`, `tests/test_operator_cockpit_research.py`,
+`tests/test_operator_cockpit_ops.py`, `tests/test_architecture_boundaries.py`.
+If another changed-surface guard outside the exact 17 paths must change: `STOP S10_CC_STREAM_01_SCOPE_INCOMPATIBLE`.
+
+## 3. Context budget
+
+Read first:
+- `AGENTS.md`
+- `AI_CODING_AGENT_START_HERE.md`
+- `CLAUDE_START_HERE.md`
+- `CODEX_START_HERE.md`
+- `docs/project_status.md`
+- `docs/repo_truth_index.md`
+- `docs/deferred_items_log.md`
+- `docs/ai/codex/README.md`
+- `docs/ai/codex/WP_DRAFTING_STANDARD.md`
+- `docs/ai/codex/WP_SPEC_STANDARD.md`
+- `docs/ai/codex/VALIDATION_MATRIX.md`
+- `docs/ai/codex/PROTECTED_PATHS.md`
+
+Read for this WP:
+- the exact 17 changed paths;
+- `docs/interactive_operator_cockpit_contract.md`;
+- `docs/control_center_strategy_hermes_research_contract.md`;
+- `docs/control_center_alpha_research_contract.md`;
+- `docs/control_center_ops_read_model_contract.md`;
+- current frontend route/query-family implementation.
+
+Read only if blocked:
+- canonical source/store implementations to confirm a boundary, never to modify them.
+
+Do not touch:
+- `src/data_layer/**`, `src/strategy_lifecycle/**`, `src/research_runtime/**`;
+- `src/paper_trading/**`, `src/execution_gateway/**`, `src/execution_feasibility/**`, `src/exploratory_gate_c/**`;
+- `src/monitoring/**`, `src/risk_engine/**`, `src/strategy_modules/**`;
+- `tools/**`, `.github/**`, dependency/lock files;
+- credentials/secrets/config/local_data/generated artifacts;
+- frontend `.storybook/**` and `public/**`.
+
+## 4. Authority / Non-Authority
+
+Authorized:
+- exact 17 paths only;
+- one new `src/operator_cockpit_stream.py` transport module;
+- append `streaming_enabled: bool = False` to `CockpitConfig` and add explicit `--enable-streaming` CLI opt-in;
+- one request-scoped async SSE loop per connected `/api/stream/events` request when enabled;
+- fixed server-owned cadence and transport-only sequence/gap/resync semantics;
+- one centralized browser `EventSource` for the active query family;
+- active-family TanStack invalidation/re-fetch only;
+- deterministic tests, Storybook disabled-mode handler, docs/status/package evidence.
+
+Not authorized:
+- background task, daemon, service worker, scheduler job, product/source poller or custom retry worker;
+- any canonical store read inside `operator_cockpit_stream.py`;
+- source-head polling, writer hooks, global event bus, replay database/buffer or persistent transport history;
+- WebSocket, client `setInterval`, TanStack `refetchInterval` or custom browser reconnect timer;
+- external/product network, market WebSocket subscription or gateway authenticated user-stream subscription;
+- credentials, private account/balance/allowance/order/trade reads;
+- StrategyLifecycle/Hermes/Alpha/paper/gateway canonical mutation;
+- incident/alert registry, generic currentness/freshness oracle, host/network eligibility or fresh geoblock claim;
+- operator command, POST/PUT/PATCH/DELETE API, CSRF/auth, mutation receipt;
+- dependency/lock/workflow change;
+- deployment/Tailscale/VPS/proxy/TLS/firewall work;
+- execution, live, order, capital or merge authority.
+
+Authority posture:
+- Runtime/scheduler: YES, only the bounded request-scoped SSE loop.
+- External/product network: NO.
+- Canonical evidence: transport presentation only; no new canonical owner.
+- Strategy/paper/execution/live: NO.
+- Credentials/account: NO.
+- Merge: NO — Karl only.
+
+## 5. Exact changed-file scope (17)
+
+1. `src/operator_cockpit.py`
+2. `src/operator_cockpit_stream.py`
+3. `tests/test_operator_cockpit_stream.py`
+4. `tests/test_operator_cockpit.py`
+5. `tests/test_operator_cockpit_research.py`
+6. `tests/test_operator_cockpit_ops.py`
+7. `tests/test_architecture_boundaries.py`
+8. `src/operator_cockpit_frontend/src/api.ts`
+9. `src/operator_cockpit_frontend/src/app.tsx`
+10. `src/operator_cockpit_frontend/src/styles.css`
+11. `src/operator_cockpit_frontend/src/foundation.stories.tsx`
+12. `docs/control_center_streaming_contract.md`
+13. `docs/project_status.md`
+14. `docs/repo_truth_index.md`
+15. `docs/status_entries/S10-CC-STREAM-01.md`
+16. `docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt`
+17. `docs/wp_specs/S10-CC-STREAM-01/wp_spec.json`
+
+Historical compatibility edits:
+- `tests/test_operator_cockpit.py`: add only `/api/stream/status` and `/api/stream/events` to the exact GET route set; final `/api` route count exactly 27; preserve all existing route semantics.
+- `tests/test_operator_cockpit_research.py`: narrow only the historical broad no-EventSource guard so Research/Alpha views still own no timer/realtime/mutation primitive while the centralized shell controller may own exactly one EventSource construction site. Keep WebSocket, `setInterval`, `refetchInterval`, `useMutation` and mutation-method bans.
+- `tests/test_operator_cockpit_ops.py`: same narrow compatibility correction; `OpsView` owns no realtime loop and only the centralized shell controller may own the single EventSource.
+- `tests/test_architecture_boundaries.py`: add exactly `src/operator_cockpit_stream.py` to `APPROVED_SRC_SCOPES` with truthful RUNTIME/Risk-3 request-scoped transport wording; no wildcard and no unrelated allowlist change.
+
+A required 18th path is a hard stop.
+
+## 6. Compatibility / impossibility lock
+
+| Required behavior | Existing owner/mechanism | Decision |
+|---|---|---|
+| authoritative page data | existing GET projections | PRESERVE |
+| active-family auto-refresh | TanStack query families | IMPLEMENT through SSE invalidation |
+| server transport sequence | no canonical owner needed | IMPLEMENT connection-local only |
+| reconnect/gap recovery | HTTP snapshot reread | IMPLEMENT full active-family resync |
+| manual refresh | existing shell | PRESERVE |
+| domain freshness | each existing domain | PRESERVE; do not synthesize |
+| global cross-store canonical sequence | none | FORBID |
+| source-native unified push | none | FORBID |
+| periodic canonical-store head polling | verified loaders/direct DB reads | FORBID in STREAM-01 |
+| browser polling | TanStack interval/timer | FORBID |
+| WebSocket | unnecessary bidirectional transport | FORBID |
+| replay buffer/persistence | no owner/need | FORBID |
+| current account/host/network truth | protected runtime owners | DEFER |
+| incident lifecycle | no canonical owner | DEFER |
+| commands | S10-CC-CMD-01 | DEFER |
+| production/private deployment | S10-CC-PROD-01 | DEFER |
+
+If implementation needs a FORBID/DEFER row, stop rather than widening this WP.
+
+## 7. Backend transport contract
+
+Create `src/operator_cockpit_stream.py` as a transport-only module.
+
+Frozen constants:
+
+```text
+STREAM_SCHEMA_VERSION = "1.0.0"
+BASE_TICK_SECONDS = 5
+STREAM_EVENT_KINDS = ("RESYNC_REQUIRED", "REFRESH_DUE", "HEARTBEAT")
+STREAM_FAMILY_REFRESH_SECONDS = {
+  "overview": 10,
+  "market": 5,
+  "experiments": 30,
+  "strategies": 30,
+  "hermes": 30,
+  "alpha": 30,
+  "ops": 5,
+  "paper": 5,
+  "audit": 10,
+}
+```
+
+Important: `market` is the existing `QueryFamily` token; `/markets` remains the frontend route. Do not introduce a parallel `markets` family token.
+
+The module may use standard-library async/time/UUID/JSON/typing helpers only. It must not import `sqlite3`, canonical domain/store modules, FastAPI/Starlette request models, filesystem/path/env/subprocess/network-client modules or WebSocket libraries.
+
+Use deterministic internal test seams for sleeper, clock and connection-id factory; production defaults remain `asyncio.sleep`, `time.time_ns` and UUID4-derived IDs. Test seams are not exposed through HTTP, CLI, env or config.
+
+Connection id grammar:
+
+```text
+ccstream:<32 lowercase hex>
+```
+
+Every new connection:
+1. creates a fresh connection id;
+2. starts `sequence = 1`;
+3. emits `RESYNC_REQUIRED` immediately;
+4. then waits on the 5-second base tick;
+5. emits `REFRESH_DUE` when the selected family cadence is due, otherwise `HEARTBEAT`;
+6. increments sequence by exactly one per emitted event;
+7. terminates on disconnect/cancellation without internal retry or background continuation.
+
+The loop exists only while that HTTP request is connected. No app-start/global background task.
+
+Event JSON has exactly:
+
+```text
+schema_version
+connection_id
+sequence
+kind
+family
+server_time_ns
+```
+
+`server_time_ns` is a decimal string, not a JSON number. Transport sequence is positive integer and connection-local only.
+
+SSE framing:
+
+```text
+id: <connection_id>:<sequence>
+event: resync|refresh|heartbeat
+data: <compact JSON envelope>
+
+```
+
+No `retry:` directive. No domain payload. No path/error/secret/private data.
+
+`REFRESH_DUE` means only server cadence says to re-fetch. It does not mean source changed or data is fresh/stale. `HEARTBEAT` means only transport emitted a scheduled connection event.
+
+## 8. Backend config and exact API semantics
+
+Append to `CockpitConfig`, preserving all existing positional compatibility:
+
+```text
+streaming_enabled: bool = False
+```
+
+Require exact bool type. Add CLI flag:
+
+```text
+--enable-streaming
+```
+
+using explicit default-off `store_true`. No environment fallback or config discovery.
+
+Add `STREAM_DISABLED -> 503` to the backend closed error map.
+
+### 8.1 `GET /api/stream/status`
+
+GET only. Any query pair -> `400 INVALID_INPUT`.
+
+Exact response:
+
+```text
+read_only: true
+enabled: <bool>
+transport: "SSE"
+semantics: "SERVER_PACED_ACTIVE_FAMILY_REFRESH"
+source_push: false
+canonical_event_stream: false
+domain_freshness_guarantee: false
+replay_available: false
+base_tick_seconds: 5
+refresh_seconds_by_family: <exact STREAM_FAMILY_REFRESH_SECONDS mapping>
+```
+
+It is transport configuration only, never domain freshness/currentness.
+
+### 8.2 `GET /api/stream/events?family=<family>`
+
+Validate query shape before enablement:
+- exactly one query pair;
+- key exactly `family`;
+- value exactly one of the nine QueryFamily tokens above;
+- duplicate/unknown/extra/missing -> `400 INVALID_INPUT`.
+
+Valid family while streaming disabled -> exactly `503 {"error":{"code":"STREAM_DISABLED"}}`.
+
+When enabled return `StreamingResponse` with:
+
+```text
+Content-Type: text/event-stream
+Cache-Control: no-cache
+```
+
+and the request-scoped generator. Do not add proxy/deployment-specific headers in this WP.
+
+POST/PUT/PATCH/DELETE remain 405. Final `/api` route set exactly 27.
+
+No existing API DTO/route semantics change.
+
+## 9. Frontend contract
+
+Preserve the nine primary routes and exact existing QueryFamily vocabulary:
+
+```text
+overview
+market
+experiments
+strategies
+hermes
+alpha
+ops
+paper
+audit
+```
+
+No new primary frontend route.
+
+In `api.ts` add:
+- exact `StreamStatus` DTO;
+- exact `StreamEvent` DTO;
+- a global `streamStatusQuery` key `['cc','stream','status']` calling `/stream/status`;
+- a same-origin `streamEventUrl(family)` helper;
+- a strict parser/validator for SSE event data.
+
+The parser validates exact keys, schema version, connection-id grammar, positive integer sequence, known kind, expected family and decimal-string `server_time_ns`. Malformed input never becomes query data and never renders raw input/error text.
+
+In `app.tsx` add one centralized `StreamRefreshController` in the shell. Exactly one `new EventSource(...)` construction site is permitted in frontend source.
+
+Behavior:
+- if stream status is disabled: do not construct EventSource; show `Auto-refresh: Disabled`;
+- on enabled active family: open one EventSource for that family;
+- effect cleanup closes it on family change/unmount;
+- native EventSource reconnect is allowed; no custom reconnect timer/backoff;
+- `onerror` may mark transport disconnected but must not close the source merely to implement a custom retry;
+- every newly observed connection id triggers resync;
+- same-connection non-consecutive sequence triggers resync;
+- `RESYNC_REQUIRED` triggers active-family invalidation;
+- `REFRESH_DUE` triggers active-family invalidation;
+- `HEARTBEAT` updates transport metadata only and does not invalidate queries;
+- SSE events never call `setQueryData` with canonical domain content;
+- manual Refresh remains unchanged and always usable;
+- `staleTime: Infinity`, retry false, focus/reconnect Query refetch false remain unchanged;
+- no `setInterval`, `refetchInterval`, WebSocket, local/session storage or mutation client method.
+
+Use only:
+
+```text
+queryClient.invalidateQueries({ queryKey: familyKey(activeFamily) })
+```
+
+for stream-driven resync/refresh. Never invalidate every `cc` query family.
+
+Transport UI states may be Disabled / Connecting / Connected / Resyncing / Disconnected. Visible wording must say transport/auto-refresh, not system/domain health. Include the notice:
+
+`Auto-refresh updates this workspace from the existing authoritative HTTP snapshots. Stream connection state is transport status, not domain freshness or trading readiness.`
+
+If displaying `server_time_ns`, label it as server refresh-signal time and convert without unsafe nanosecond-number coercion. No browser clock drives domain freshness.
+
+Add only minimal responsive styling for the shell transport indicator; preserve no page-level overflow at 375 px.
+
+## 10. Reconnect / gap / resync rules
+
+There is no replay buffer and no persistent transport history.
+
+`Last-Event-ID` is not used to resume prior connection history. A reconnect starts a new server connection id and the first server event is always `RESYNC_REQUIRED`.
+
+Frontend state for one EventSource object tracks only current transport connection id and last sequence.
+
+Rules:
+- first valid event / changed connection id -> resync active family;
+- same connection + `sequence == last_sequence + 1` -> normal processing;
+- same connection + any other sequence -> transport gap -> resync active family;
+- after resync, the newest valid event becomes the local transport baseline;
+- a transport gap is never labeled a market-data gap;
+- no attempt is made to replay canonical domain events.
+
+## 11. Domain-freshness and authority wording
+
+STREAM-01 must not synthesize global freshness/currentness.
+
+Preserve existing domain-owned concepts such as market `received_at`, paper `last_market_receive_ns`, gateway recorded heartbeat/user-stream/access/reconciliation fields, Hermes information cutoff, Alpha discovery `as_of`, and policy/allocation validity windows.
+
+Forbidden promotion includes:
+
+```text
+data fresh
+market current
+account current
+host current
+network eligible
+execution ready
+live ready
+real-time market feed
+source changed
+canonical event stream
+incident/alert state
+```
+
+when asserted from the SSE transport itself.
+
+Recorded gateway warnings from OPS-01 remain unchanged. Auto-refreshing recorded evidence more often does not convert it into a fresh account/host/network check.
+
+## 12. Storybook / MSW
+
+Do not open a real EventSource in Storybook.
+
+Add one deterministic shared MSW handler:
+
+```text
+GET /api/stream/status -> enabled=false with the exact StreamStatus DTO
+```
+
+Wire it through the existing shared `mock(...)` helper so all existing stories receive the disabled-stream response without repetitive per-story edits. Existing domain stories otherwise remain unchanged; no live-SSE Storybook harness or new dependency.
+
+The preview catch-all remains closed. No Storybook request escapes to a real backend.
+
+## 13. Required focused tests
+
+Create `tests/test_operator_cockpit_stream.py` and cover at least:
+
+- S01 `test_s01_streaming_defaults_off_and_requires_explicit_enable`: appended config default false, exact bool, CLI opt-in only, no env fallback.
+- S02 `test_s02_status_contract_and_query_closure`: exact status DTO; query rejected; no freshness claim.
+- S03 `test_s03_events_route_family_validation_disabled_and_method_closure`: exact family query, disabled 503, GET only, final API count 27.
+- S04 `test_s04_first_event_is_connection_local_resync_sequence_one`: fresh id, seq1, exact envelope/framing.
+- S05 `test_s05_fixed_family_cadence_heartbeat_and_refresh_due`: fake sleeper proves exact 5/10/30-second schedule with `market` singular.
+- S06 `test_s06_sequence_is_monotonic_connection_local_and_not_persisted`: +1 only; new connection restarts at 1 with new id.
+- S07 `test_s07_disconnect_and_cancellation_terminate_without_retry_or_orphan_loop`: bounded async termination.
+- S08 `test_s08_stream_module_has_no_domain_store_network_filesystem_or_persistence_imports`: strict AST/text boundary.
+- S09 `test_s09_sse_payload_is_transport_metadata_only_and_server_time_ns_is_string`: exact keys and no domain payload.
+- S10 `test_s10_frontend_has_one_central_eventsource_and_no_client_polling_or_websocket`: exactly one EventSource; no setInterval/refetchInterval/WebSocket/custom retry timer.
+- S11 `test_s11_frontend_resync_refresh_heartbeat_and_gap_invalidation_semantics`: resync/refresh/gap active-family invalidation; heartbeat none.
+- S12 `test_s12_frontend_route_switch_cleanup_and_manual_refresh_preserved`: close old stream, new family stream, manual Refresh unchanged.
+- S13 `test_s13_frontend_parser_fails_closed_on_wrong_family_sequence_or_shape`: malformed data cannot become domain query data.
+- S14 `test_s14_storybook_uses_shared_disabled_stream_handler_and_opens_no_real_stream`: deterministic stories.
+- S15 `test_s15_transport_wording_never_promotes_freshness_currentness_or_trading_authority`: semantic separation.
+- S16 `test_s16_asgi_streaming_response_contract_is_bounded_and_disconnect_safe`: actual StreamingResponse integration path with deterministic local seams, no external network.
+
+Historical compatibility tests are updated only as Section 5 requires.
+
+## 14. RUNTIME validation / evidence plan
+
+Keep PR DRAFT while source changes. Local-first only.
+
+While editing run focused stream/cockpit/frontend checks. On the stable candidate run:
+- stream + cockpit/research/OPS + architecture tests;
+- existing Control Center/frontend regression tests;
+- `npm ci`, typecheck, production build, Storybook static build, Storybook smoke, `npm audit --audit-level=high`;
+- readiness `--check-diff` and exact-scope helper;
+- explicit unchanged-source diff for all forbidden canonical/runtime families and dependency/workflow files;
+- `git diff --check`, generated-artifact guard, available security checks with unavailable tools reported honestly;
+- one authoritative local full pytest suite on the stable exact head;
+- one combined **independent read-only implementation review in a separate reviewer context** on the stable exact head, covering loop termination, kill switch, cadence, framing, reconnect/gap semantics, cleanup and authority boundaries; disposition must PASS before Ready-for-review;
+- then transition PR Ready once and require one complete exact-head hosted nine-job matrix;
+- after final PR evidence is posted, re-fetch the posted body and run the canonical PR evidence consistency guard.
+
+Any source/workflow change after hosted PASS invalidates hosted evidence and requires fresh exact-head hosted CI. Do not use hosted CI as the development loop.
+
+Runtime/product-network truth:
+- same-origin/loopback cockpit transport only;
+- product Polymarket requests: 0;
+- credentials/account reads: 0;
+- paper/execution/live actions: 0;
+- capital: USD 0.
+
+## 15. Negative-test matrix
+
+Negative matrix required: YES.
+
+N01 base drift -> STOP.
+N02 18th changed path -> STOP.
+N03 dependency/lock/workflow change -> STOP.
+N04 streaming defaults enabled -> FAIL.
+N05 cadence/family supplied outside the closed contract -> FAIL.
+N06 unknown/duplicate/missing/extra family query accepted -> FAIL.
+N07 SSE event contains domain payload or raw path/error/private data -> FAIL.
+N08 transport sequence promoted to canonical/global sequence -> FAIL.
+N09 stream module imports/reads a canonical store/domain runtime -> FAIL.
+N10 custom retry/background daemon/global task/source poller -> STOP.
+N11 generator survives disconnect/cancellation -> FAIL.
+N12 browser `setInterval`/`refetchInterval` or custom reconnect timer -> FAIL.
+N13 browser WebSocket -> FAIL.
+N14 more than one EventSource construction site -> FAIL.
+N15 reconnect/new connection without resync -> FAIL.
+N16 same-connection sequence gap without resync -> FAIL.
+N17 heartbeat invalidates domain queries -> FAIL.
+N18 stream invalidates inactive/all query families -> FAIL.
+N19 manual Refresh removed or altered to global refresh -> FAIL.
+N20 transport state presented as domain freshness/currentness/trading readiness -> FAIL.
+N21 host/network/account truth, incident lifecycle or source-changed claim inferred -> STOP.
+N22 command/mutation route added -> STOP.
+N23 external/product network or authenticated user stream invoked -> STOP.
+N24 Storybook opens a real stream -> FAIL.
+N25 stable exact-head independent runtime review/full suite/hosted evidence missing -> Ready for review NO.
+
+## 16. Concrete hard stops
+
+`STOP S10_CC_STREAM_01_BASE_DRIFT` — main no longer equals the frozen base.
+
+`STOP S10_CC_STREAM_01_SCOPE_INCOMPATIBLE` — a required guard/change lies outside the exact 17 paths.
+
+`STOP S10_CC_STREAM_01_SOURCE_OWNER_CHANGE_REQUIRED` — correct implementation would require canonical source/store modification, source-head polling or writer hooks.
+
+`STOP S10_CC_STREAM_01_RUNTIME_BROADENING_REQUIRED` — correct implementation would require a daemon/background worker, custom retry scheduler, product network, WebSocket source client or persistent event bus.
+
+`STOP S10_CC_STREAM_01_PROTECTED_AUTHORITY_REQUIRED` — credentials/account, paper mutation, execution, live, order or economic authority becomes necessary.
+
+`STOP S10_CC_STREAM_01_COMMAND_OR_DEPLOYMENT_REQUIRED` — command/auth/CSRF or production deployment work becomes necessary.
+
+`STOP S10_CC_STREAM_01_DEPENDENCY_OR_WORKFLOW_CHANGE` — any dependency, lock or workflow change is needed.
+
+`STOP S10_CC_STREAM_01_VALIDATION_NOT_REPRODUCIBLE` — stable exact-head RUNTIME validation, independent implementation review or hosted verification cannot be completed.
+
+Ordinary implementation/test defects inside this exact capability and scope are fixed in the same run without reopening authority.
+
+## 17. Successor boundary
+
+After Side17 review and Karl merge, next separately gated:
+
+`S10-CC-CMD-01` — protected operator commands/auth/preconditions/idempotency/receipt/audit only after its own pre-draft.
+
+Then `S10-CC-PROD-01` — private production deployment/monitoring/mobile hardening.
+
+STREAM-01 does not authorize either. Command correctness must never depend on SSE; future commands still return canonical receipts and re-read canonical HTTP snapshots.
+
+## 18. Report-back
+
+Success token: `READY_FOR_SIDE17_CC_STREAM_01_REVIEW`.
+
+Report concisely:
+- frozen base, predecessor, branch, PR and exact head;
+- exact 17/17 paths;
+- RUNTIME/Risk-3 readiness and scope result;
+- default-off kill switch and explicit CLI enable proof;
+- exact two stream GET routes / total 27 APIs;
+- cadence table and `market` QueryFamily-token proof;
+- request-scoped loop termination/cancellation proof;
+- transport-only envelope/sequence/no-replay proof;
+- frontend one-EventSource active-family resync/refresh/gap behavior and manual fallback;
+- no canonical-source/product-network/credential/paper/execution/live change or action;
+- frontend/security/full-suite results;
+- independent exact-head implementation-review disposition;
+- exact-head hosted run and all nine jobs;
+- re-fetched posted PR evidence guard;
+- evidence mode, `Ready for review: YES`, `Merge authorized: NO`.
+
+On hard stop, return the exact stop token and evidence; do not widen scope.
+
+## 19. Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scope|changed_files|final|REQUIRE|exact_seventeen_paths|scope.exact_paths|R002
+NR002|runtime|streaming|startup|REQUIRE|default_off_explicit_enable|runtime.default_off|R003
+NR003|runtime|sse_loop|connected_request|REQUIRE|request_scoped_only|runtime.request_scoped_loop|R004
+NR004|runtime|cadence|connected_request|REQUIRE|fixed_server_owned_schedule|runtime.cadence|R005
+NR005|transport|event_envelope|emit|REQUIRE|metadata_only_exact_fields|transport.event_envelope|R006
+NR006|transport|sequence|connection|REQUIRE|connection_local_monotonic|transport.sequence|R007
+NR007|transport|reconnect|new_connection|REQUIRE|resync_no_replay|transport.reconnect_resync|R008
+NR008|api|stream_status|request|REQUIRE|get_only_exact_transport_config|api.stream_status|R009
+NR009|api|stream_events|request|REQUIRE|get_only_closed_family_query|api.stream_events|R010
+NR010|architecture|stream_module|all|FORBID|canonical_source_reads_or_network_clients|architecture.no_source_reads|R011
+NR011|frontend|eventsource|enabled_active_family|REQUIRE|one_central_construction_site|frontend.central_eventsource|R012
+NR012|frontend|refresh|resync_or_refresh_due|REQUIRE|active_family_invalidation_only|frontend.active_family_refresh|R013
+NR013|frontend|gap|sequence_discontinuity|REQUIRE|active_family_http_resync|frontend.gap_resync|R014
+NR014|frontend|manual_refresh|all_modes|REQUIRE|preserved_active_family_fallback|frontend.manual_refresh|R015
+NR015|semantics|freshness|all|FORBID|transport_to_domain_promotion|semantics.freshness_separation|R016
+NR016|storybook|transport|all_stories|REQUIRE|shared_disabled_status_no_real_stream|storybook.disabled_transport|R017
+NR017|architecture|historical_guards|final|REQUIRE|narrow_eventsource_exception_only|architecture.compatibility_guards|R018
+NR018|governance|dependencies_workflows|final|FORBID|dependency_or_workflow_change|governance.no_dependency_workflow|R019
+NR019|validation|runtime_boundaries|stable|REQUIRE|disconnect_rate_no_network_proof|validation.runtime_boundaries|R020
+NR020|validation|frontend|stable|REQUIRE|type_build_storybook_audit|validation.frontend|R021
+NR021|validation|local_first|stable|REQUIRE|one_full_local_then_exact_head_hosted|validation.local_first_hosted_final|R022
+NR022|review|runtime_implementation|stable_exact_head|REQUIRE|independent_read_only_pass|review.independent_runtime|R023
+NR023|evidence|posted_pr|final_review|REQUIRE|refetched_body_guard_pass|evidence.posted_exact_head|R024
+END_NORMATIVE_RULE_MATRIX_V1

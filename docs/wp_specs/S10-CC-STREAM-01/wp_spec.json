@@ -1,0 +1,959 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CC-STREAM-01",
+    "title": "Control Center Streaming / Freshness / Gap / Resync Layer",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "CONTROL_CENTER_SSE_ACTIVE_FAMILY_REFRESH_GAP_RESYNC_RUNTIME",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 226,
+      "head_sha": "90d30129ce0f3282395b6f319ce25c622191d39b",
+      "merge_sha": "7bba7f0d6657364b9358d1a4a96807f024db0533"
+    },
+    "suggested_branch": "claude/s10-cc-stream-01-sse-freshness-gap-resync",
+    "objective": "Add a default-off request-scoped same-origin SSE transport that emits transport-only active-query-family refresh/resync signals with fixed cadence, connection-local sequence, gap/reconnect recovery and manual-refresh fallback while keeping every existing HTTP GET projection as the sole canonical data owner and adding no product network, credentials/account, command, paper mutation, execution, live or deployment authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_stream.py",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_architecture_boundaries.py",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "docs/control_center_streaming_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-STREAM-01.md",
+      "docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-STREAM-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_stream.py",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_architecture_boundaries.py",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "docs/control_center_streaming_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-STREAM-01.md",
+      "docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-STREAM-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "tools/",
+      ".github/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "src/strategy_lifecycle/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/research_runtime/",
+      "src/data_layer/",
+      "src/monitoring/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/operator_cockpit_frontend/public/",
+      "src/operator_cockpit_frontend/.storybook/"
+    ],
+    "max_changed_files": 17,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "rollback_surface": "Revert S10-CC-STREAM-01. The stream module, streaming_enabled config/CLI flag, two /api/stream GET routes, centralized shell EventSource/controller/status indicator, shared disabled Storybook handler and stream contract/status/package disappear. Existing canonical domain stores, read models, dependencies, workflows, credentials, commands, deployment and live/economic state are not migrated or changed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": true
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": true,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "STREAM-01 adds one default-off config/CLI opt-in, two GET-only backend stream surfaces and one centralized frontend EventSource transport while preserving all existing canonical GET projection owners.",
+    "items": [
+      {
+        "surface": "CockpitConfig.streaming_enabled / --enable-streaming",
+        "before": "absent; Control Center refresh is manual only",
+        "after": "streaming_enabled exact bool appended with default false and explicit CLI store_true opt-in",
+        "change_authorized": true,
+        "compatibility_requirement": "append-only config field preserves all positional calls; no environment fallback or automatic enablement",
+        "authority": "LOCAL_RUNTIME_KILL_SWITCH"
+      },
+      {
+        "surface": "GET /api/stream/status",
+        "before": "absent",
+        "after": "transport-only static runtime configuration/status for default-off SSE and exact per-family cadence",
+        "change_authorized": true,
+        "compatibility_requirement": "GET only; no query; no source reads; no domain freshness/currentness; no external network",
+        "authority": "READ_ONLY_TRANSPORT_STATUS"
+      },
+      {
+        "surface": "GET /api/stream/events?family=<QueryFamily>",
+        "before": "absent",
+        "after": "request-scoped text/event-stream emitting RESYNC_REQUIRED, REFRESH_DUE and HEARTBEAT transport metadata",
+        "change_authorized": true,
+        "compatibility_requirement": "GET only; exactly one closed family query; valid disabled -> STREAM_DISABLED; no domain payload/replay/persistence; total /api routes exactly 27",
+        "authority": "REQUEST_SCOPED_SSE_REFRESH_TRANSPORT"
+      },
+      {
+        "surface": "frontend StreamRefreshController",
+        "before": "manual active-family Refresh only; no EventSource",
+        "after": "one centralized EventSource for the active query family when backend status is enabled, with transport status/gap/resync and manual fallback",
+        "change_authorized": true,
+        "compatibility_requirement": "one construction site; no WebSocket/client polling/custom retry; invalidates only active family and never writes canonical query payload from SSE",
+        "authority": "READ_ONLY_AUTO_REFRESH_PRESENTATION"
+      },
+      {
+        "surface": "existing Control Center HTTP GET projections",
+        "before": "sole authoritative query data owners",
+        "after": "unchanged; re-fetched on stream invalidation/resync",
+        "change_authorized": false,
+        "compatibility_requirement": "no DTO/source semantics or canonical owner changes",
+        "authority": "EXISTING_CANONICAL_READ_PROJECTIONS"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "STREAM-01 must mechanically bind the narrow Risk-3 request-scoped runtime, fixed cadence, transport-only sequence/gap/resync semantics, frontend invalidation and non-authority boundaries.",
+    "items": [
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the 17 declared package paths change; no 18th path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.default_off",
+        "source": "CONSTANT",
+        "type": "runtime_rule",
+        "required_rule": "streaming_enabled is appended to CockpitConfig as exact bool false by default; only --enable-streaming store_true enables it; no environment/config fallback",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.request_scoped_loop",
+        "source": "CONSTANT",
+        "type": "runtime_rule",
+        "required_rule": "the only scheduled loop is one request-scoped SSE wait/emit generator per connected browser; it terminates on disconnect/cancellation and creates no startup/global/background task or custom retry worker",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "runtime.cadence",
+        "source": "CONSTANT",
+        "type": "runtime_rule",
+        "required_rule": "BASE_TICK_SECONDS is exactly 5 and refresh cadence is overview10 market5 experiments30 strategies30 hermes30 alpha30 ops5 paper5 audit10; callers cannot override cadence",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.event_envelope",
+        "source": "CONSTANT",
+        "type": "transport_contract",
+        "required_rule": "every SSE event contains exactly schema_version, connection_id, sequence, kind, family, server_time_ns; server_time_ns is a decimal string and the event carries no canonical domain payload",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.sequence",
+        "source": "CONSTANT",
+        "type": "transport_contract",
+        "required_rule": "sequence starts at 1 for each fresh ccstream UUID connection and increments exactly one per emitted event; it is non-persistent, connection-local and non-canonical",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "transport.reconnect_resync",
+        "source": "CONSTANT",
+        "type": "transport_contract",
+        "required_rule": "every new/reconnected server connection emits RESYNC_REQUIRED first; no replay buffer or Last-Event-ID resume is implemented; browser sequence/connection discontinuity triggers active-family HTTP resync",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "api.stream_status",
+        "source": "CONSTANT",
+        "type": "route_set",
+        "required_rule": "GET /api/stream/status accepts no query and returns only the exact transport configuration/status fields with no domain freshness claim",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "api.stream_events",
+        "source": "CONSTANT",
+        "type": "route_set",
+        "required_rule": "GET /api/stream/events requires exactly one family query from the existing nine QueryFamily tokens, validates query before enablement, returns STREAM_DISABLED when valid but disabled, and final /api route count is 27",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "architecture.no_source_reads",
+        "source": "CONSTANT",
+        "type": "boundary",
+        "required_rule": "operator_cockpit_stream.py imports no canonical domain/store, sqlite/filesystem/env/subprocess/network-client/WebSocket module and performs no source-head polling or persistence",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.central_eventsource",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "frontend has exactly one EventSource construction site in one centralized shell StreamRefreshController; no WebSocket, setInterval, refetchInterval, custom reconnect timer or persistent browser stream state",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.active_family_refresh",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "RESYNC_REQUIRED and REFRESH_DUE invalidate only familyKey(activeFamily); HEARTBEAT never invalidates canonical query data and SSE never writes canonical data with setQueryData",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R013",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.gap_resync",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "new connection id or same-connection non-consecutive sequence enters resync and invalidates only the active family; transport gaps are never called market-data gaps",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R014",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.manual_refresh",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "existing manual Refresh remains available in disabled/disconnected/connected modes and keeps its active-family-only semantics; TanStack retry/focus/reconnect/staleTime defaults remain unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R015",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "semantics.freshness_separation",
+        "source": "CONSTANT",
+        "type": "semantic_boundary",
+        "required_rule": "transport connection, heartbeat, sequence, signal time, refresh due and gap are never promoted to domain freshness/currentness, source-changed, incident, host/network/account readiness, Gate-C, execution-ready or live-ready truth",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R016",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storybook.disabled_transport",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "the shared Storybook mock helper answers /api/stream/status with the exact enabled=false DTO for every story so Storybook constructs no EventSource and no request escapes",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R017",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "architecture.compatibility_guards",
+        "source": "CONSTANT",
+        "type": "compatibility_rule",
+        "required_rule": "historical route/no-realtime/source-allowlist guards change only as required: API total 27, one central EventSource exception, and one exact operator_cockpit_stream.py allowlist entry",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R018",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.no_dependency_workflow",
+        "source": "CONSTANT",
+        "type": "boundary",
+        "required_rule": "no dependency, lock, workflow, canonical source family, command/auth, deployment, credential/account, paper, execution or live file changes occur",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R019",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.runtime_boundaries",
+        "source": "CONSTANT",
+        "type": "validation_rule",
+        "required_rule": "focused deterministic tests prove rate boundary, request-scoped termination/cancellation, no source read, no external product network and bounded ASGI StreamingResponse behavior",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R020",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.frontend",
+        "source": "CONSTANT",
+        "type": "validation_rule",
+        "required_rule": "frontend typecheck/build/Storybook/smoke/npm audit pass and 375px shell indicator has no page-level overflow",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R021",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.local_first_hosted_final",
+        "source": "CONSTANT",
+        "type": "validation_rule",
+        "required_rule": "one authoritative local full suite passes on stable exact head before one final exact-head hosted nine-job matrix; any later source/workflow change invalidates hosted evidence",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R022",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "review.independent_runtime",
+        "source": "CONSTANT",
+        "type": "validation_rule",
+        "required_rule": "one separate read-only reviewer context reviews the stable exact head for runtime-loop termination, kill switch, cadence, framing, gap/reconnect cleanup and authority boundaries and returns PASS before Ready-for-review",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R023",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "evidence.posted_exact_head",
+        "source": "CONSTANT",
+        "type": "evidence_rule",
+        "required_rule": "final PR body is posted, re-fetched, bound to exact final head and hosted run, and canonical PR evidence guard passes before Ready for review YES",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R024",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names, closed transport states and bounded validation evidence only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No canonical product identity is introduced; connection ids and transport event ids are explicitly ephemeral non-canonical runtime metadata.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical governed RUNTIME WP lifecycle; sending this exact package to the executor authorizes only the bounded implementation after deterministic readiness passes.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic RUNTIME readiness passes with the Risk-3 scheduler mirror, exact 17-path scope and no unresolved decision; no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sends this exact STREAM-01 package to the executor with an instruction to proceed and readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "only the exact 17 paths change and stable-candidate RUNTIME validation plus the required separate read-only implementation review pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema 1.0.0 fixed failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Bounded examples prove exact 17-path scope and reject one-fault protected/dependency/live widening while retaining the intentional scheduler authority.",
+    "items": [
+      {
+        "example_id": "valid_exact_seventeen_path_runtime_change_set",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_stream.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_streaming_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-STREAM-01.md",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_spec.json"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_eighteenth_execution_gateway_path",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_stream.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_streaming_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-STREAM-01.md",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_spec.json",
+            "src/execution_gateway/store.py"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_dependency_lock_change",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_stream.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_streaming_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-STREAM-01.md",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_spec.json",
+            "src/operator_cockpit_frontend/package-lock.json"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_live_authority",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "AUTHORITY_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_stream.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_streaming_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-STREAM-01.md",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-STREAM-01/wp_spec.json"
+          ],
+          "authority_live": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R024 bind frozen base, exact RUNTIME scope, transport semantics, historical compatibility, local-first validation, independent implementation review, hosted CI and re-fetched posted evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "frozen base and predecessor start gate",
+        "command": "git rev-parse HEAD && git merge-base --is-ancestor 90d30129ce0f3282395b6f319ce25c622191d39b HEAD",
+        "expected_result": "HEAD equals 7bba7f0d6657364b9358d1a4a96807f024db0533, predecessor head is an ancestor, tree is clean, and no existing STREAM-01 branch/PR conflicts"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "RUNTIME readiness and exact 17-path diff",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-STREAM-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-STREAM-01/wp_spec.json --repo-root . --check-diff --base 7bba7f0d6657364b9358d1a4a96807f024db0533 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY with deterministic RUNTIME readiness, no certificate, exact 17-path diff and no out-of-scope path"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_s01_streaming_defaults_off_and_requires_explicit_enable",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "streaming defaults off, exact bool/config positional compatibility holds, only explicit CLI flag enables, and no env fallback exists"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_s07_disconnect_and_cancellation_terminate_without_retry_or_orphan_loop",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "request-scoped generator terminates on disconnect/cancellation with no retry/background continuation"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_s05_fixed_family_cadence_heartbeat_and_refresh_due",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "base tick and all nine exact family refresh cadences are frozen and caller-unconfigurable; market is the exact QueryFamily token"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_s09_sse_payload_is_transport_metadata_only_and_server_time_ns_is_string",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "SSE envelope/framing contains transport metadata only, exact keys and decimal-string server_time_ns"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_s06_sequence_is_monotonic_connection_local_and_not_persisted",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "sequence is +1 per event on one connection; a new connection has a fresh id and starts at sequence 1"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_s04_first_event_is_connection_local_resync_sequence_one",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "every connection begins with RESYNC_REQUIRED sequence 1; no replay/resume state is created"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_s02_status_contract_and_query_closure",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "status route returns exact transport-only DTO and rejects every query pair"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_s03_events_route_family_validation_disabled_and_method_closure",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit.py",
+        "expected_result": "events route requires one valid family, validates before enablement, disabled is closed 503, mutation methods are 405, and exact API total is 27"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_s08_stream_module_has_no_domain_store_network_filesystem_or_persistence_imports",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "stream module has no canonical source/store, filesystem/env/subprocess/network/WebSocket/persistence dependency or source-head polling"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_s10_frontend_has_one_central_eventsource_and_no_client_polling_or_websocket",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_research.py tests/test_operator_cockpit_ops.py",
+        "expected_result": "exactly one centralized EventSource site exists; no WebSocket/client polling/custom reconnect timer/mutation broadening"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_s11_frontend_resync_refresh_heartbeat_and_gap_invalidation_semantics",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "resync and refresh invalidate only active family while heartbeat never invalidates canonical query data"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_s13_frontend_parser_fails_closed_on_wrong_family_sequence_or_shape",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "wrong-family/malformed transport input cannot become canonical query data and sequence discontinuity takes the resync path"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_s12_frontend_route_switch_cleanup_and_manual_refresh_preserved",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_research.py tests/test_operator_cockpit_ops.py",
+        "expected_result": "route switch cleanup closes old source, new active family binds new stream, and manual active-family Refresh/query defaults remain unchanged"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_s15_transport_wording_never_promotes_freshness_currentness_or_trading_authority",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_ops.py",
+        "expected_result": "transport wording never asserts source change, domain freshness/currentness, incident, account/host/network readiness, Gate-C, execution or live authority"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_s14_storybook_uses_shared_disabled_stream_handler_and_opens_no_real_stream",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "shared Storybook mock helper returns enabled=false status for every story and no story opens a real EventSource"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "historical route realtime and architecture guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py tests/test_operator_cockpit_research.py tests/test_operator_cockpit_ops.py tests/test_architecture_boundaries.py",
+        "expected_result": "historical guards are narrowed only for the centralized EventSource, exact route count is 27 and one exact stream source allowlist entry is added"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "validation",
+        "test": "scope dependencies workflows and canonical-source preservation",
+        "command": "python tools/git/diff_scope_summary.py --base 7bba7f0d6657364b9358d1a4a96807f024db0533 --head HEAD --wp-spec docs/wp_specs/S10-CC-STREAM-01/wp_spec.json --require-exact-scope",
+        "expected_result": "exact 17 paths with no dependency/lock/workflow/canonical-domain/out-of-scope change; forbidden-family git diff checks are separately recorded"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "test_s16_asgi_streaming_response_contract_is_bounded_and_disconnect_safe",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "deterministic ASGI StreamingResponse integration proves media type/cache control/bounded events/disconnect without external product network"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "frontend",
+        "test": "frontend type build Storybook smoke and dependency audit",
+        "command": "npm --prefix src/operator_cockpit_frontend run typecheck && npm --prefix src/operator_cockpit_frontend run build && npm --prefix src/operator_cockpit_frontend run build-storybook && npm --prefix src/operator_cockpit_frontend audit --audit-level=high",
+        "expected_result": "frontend compiles/builds, deterministic Storybook build succeeds with disabled stream handler and high-severity audit reports zero applicable high vulnerabilities"
+      },
+      {
+        "requirement_id": "R022",
+        "source": "pytest",
+        "test": "one authoritative local full suite then exact-head hosted matrix",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one stable-candidate full repository suite passes before one Ready-for-review transition triggers a complete exact-head hosted nine-job matrix"
+      },
+      {
+        "requirement_id": "R023",
+        "source": "independent_review",
+        "test": "separate exact-head RUNTIME implementation review",
+        "command": "git rev-parse HEAD",
+        "expected_result": "a separate read-only reviewer context binds the stable exact head and returns PASS on loop termination, kill switch, cadence, SSE framing, reconnect/gap cleanup and authority boundaries before Ready-for-review"
+      },
+      {
+        "requirement_id": "R024",
+        "source": "pr_evidence",
+        "test": "re-fetched posted exact-head PR evidence",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body posted-pr-body.md --expected-head FINAL_HEAD_SHA --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "re-fetched posted PR body binds final head, RUNTIME independent review and hosted run; guard exits 0; evidence mode is truthful and Ready for review is YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CC-CMD-01",
+    "next_title": "Control Center Protected Operator Commands",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-CMD-01",
+    "forbidden_in_this_wp": [
+      "operator mutation routes, command authentication, CSRF, idempotency receipts or action audit",
+      "production/private deployment, Tailscale, reverse proxy, TLS, VPS, firewall or mobile hardening",
+      "WebSocket or source-native market/gateway streaming",
+      "source-head polling, writer hooks, global event bus, replay buffer/database or persistent transport history",
+      "canonical global cross-store event sequence or transport-to-domain freshness/currentness promotion",
+      "execution-host-currentness invocation, fresh geoblock or execution-network-eligibility claim",
+      "authenticated account, balance, allowance, private order or private trade reads",
+      "incident/alert registry or lifecycle",
+      "StrategyLifecycle, Hermes, Alpha, paper, gateway, EXEC-FEAS or Gate-C canonical-source mutation",
+      "dependency, lockfile or workflow change",
+      "credentials, signing, order submission/cancel, execution, live or capital",
+      "merge"
+    ]
+  }
+}
