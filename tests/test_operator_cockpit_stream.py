@@ -51,6 +51,16 @@ FIXED_ID = "ccstream:" + "0123456789abcdef" * 2
 OTHER_ID = "ccstream:" + "fedcba9876543210" * 2
 
 
+@pytest.fixture(autouse=True)
+def _no_real_stream_wait(monkeypatch):
+    """Fail fast instead of hanging if any test reaches the production sleeper."""
+
+    async def forbidden_sleep(_seconds: float) -> None:
+        raise AssertionError("the real stream sleeper must never run in tests")
+
+    monkeypatch.setattr(stream, "_sleep", forbidden_sleep)
+
+
 def _status(enabled: bool) -> dict:
     return {
         "read_only": True,
@@ -391,6 +401,9 @@ def test_s04_first_event_is_connection_local_resync_sequence_one() -> None:
     ids = {stream._default_connection_id() for _ in range(50)}
     assert len(ids) == 50 and all(stream.CONNECTION_ID_RE.fullmatch(item) for item in ids)
     assert stream._new_connection_id is stream._default_connection_id
+    module_source = _source(MODULE)
+    assert "_sleep: Sleeper = asyncio.sleep" in module_source
+    assert "_clock_ns: Callable[[], int] = time.time_ns" in module_source
     for family in FAMILIES:
         frames, _ = _collect(family, 1)
         assert frames[0]["event"] == "resync"
