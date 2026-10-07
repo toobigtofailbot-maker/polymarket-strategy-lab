@@ -20,12 +20,17 @@ import {
   type ContextStatus,
   type Experiment,
   type ExperimentDetail,
+  type GatewayAuditItem,
+  type GatewayStatus,
   type Health,
   type HermesAssessmentDetail,
   type HermesAssessmentItem,
   type LatestHermesAssessment,
   type ListResponse,
   type MarketItem,
+  type OpsActivePolicy,
+  type OpsPortfolio,
+  type OpsStrategyReservation,
   type Overview,
   type PaperFill,
   type PaperOrder,
@@ -1136,5 +1141,303 @@ export const AlphaDiscoverySourceUnavailable = meta.story({
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(await canvas.findByRole("tab", { name: "Discovery Queue" }));
     await canvas.findByText("SOURCE_UNAVAILABLE");
+  },
+});
+
+// ---------------------------------------------------------------------------
+// S10-CC-OPS-01 operations states. Every /ops request (portfolio, gateway status/audit, paper
+// summary/risk) is answered by a closed handler below; the /api/ops/* fallback is closed too.
+// ---------------------------------------------------------------------------
+
+const opsHash = (seed: string) => seed.repeat(64).slice(0, 64);
+const opsPolicyId = "portfolioauthoritypolicy:sha256:" + opsHash("7");
+const opsVersionA = "strategyversion:sha256:" + opsHash("a");
+const opsVersionB = "strategyversion:sha256:" + opsHash("b");
+const opsVersionC = "strategyversion:sha256:" + opsHash("c");
+const opsEvaluatedAt = 1791547200000000000;
+
+const opsActivePolicy: OpsActivePolicy = {
+  policy_id: opsPolicyId,
+  predecessor_policy_id: null,
+  policy_label: "Global envelope fixture",
+  venue_scope: ["POLYMARKET"],
+  account_scope_ref: "account:public-scope-fixture",
+  effective_from_ns: 1790000000000000000,
+  expires_at_ns: null,
+  limits: {
+    global_capital_at_risk_max_usd: "1000",
+    global_gross_exposure_max_usd: "1000",
+    global_daily_loss_max_usd: "100",
+    global_drawdown_max_usd: "200",
+    global_cumulative_loss_max_usd: "300",
+    exploratory_pool_max_usd: "300",
+    validated_pool_max_usd: "300",
+    mature_pool_max_usd: "300",
+    max_exploratory_per_strategy_usd: "100",
+    max_validated_per_strategy_usd: "200",
+    max_mature_per_strategy_usd: "300",
+    max_per_market_usd: "50",
+    max_order_notional_usd: "10",
+    max_active_strategies: 3,
+    max_active_markets: 10,
+    max_simultaneous_open_orders: 20,
+    max_mutations_per_minute: 60,
+  },
+  allowed_order_styles: ["AGGRESSIVE_TAKER", "PASSIVE_MAKER"],
+  created_time_ns: 1790000000000000000,
+};
+
+const opsReservation = (overrides: Partial<OpsStrategyReservation>): OpsStrategyReservation => ({
+  allocation_id: "strategyriskallocation:sha256:" + opsHash("1"),
+  strategy_version_id: opsVersionA,
+  strategy_label: "weather-root",
+  policy_id: opsPolicyId,
+  risk_band: "EXPLORATORY_LIVE",
+  active_budget_usd: "50",
+  allocation_basis: "DIRECT_DECISION",
+  valid_from_ns: 1790500000000000000,
+  valid_until_ns: null,
+  active_at_evaluation: true,
+  health_state: "HEALTHY",
+  capacity_status: "PORTFOLIO_CAPACITY_VALID",
+  capacity_reason_codes: [],
+  active_restrictions: [],
+  ...overrides,
+});
+
+const OPS_NON_AUTHORITY: OpsPortfolio["non_authority"] = {
+  budget_reservation_only: true,
+  actual_account_exposure_not_measured: true,
+  orders_not_measured: true,
+  fills_not_measured: true,
+  pnl_not_measured: true,
+  gate_c_not_implied: true,
+  execution_not_implied: true,
+  live_not_implied: true,
+};
+
+const opsPortfolio: OpsPortfolio = {
+  read_only: true,
+  evaluated_at_ns: opsEvaluatedAt,
+  lifecycle_store_head_entry_hash: opsHash("e"),
+  active_policy: opsActivePolicy,
+  capacity: {
+    status: "PORTFOLIO_CAPACITY_VALID",
+    reason_codes: [],
+    evaluated_at_ns: opsEvaluatedAt,
+    policy_id: opsPolicyId,
+    reserved_budget_usd: { exploratory: "50", validated: "0", mature: "0", total: "50" },
+    active_real_risk_strategy_count: 1,
+  },
+  strategy_reservations: [
+    opsReservation({}),
+    opsReservation({
+      allocation_id: "strategyriskallocation:sha256:" + opsHash("2"),
+      strategy_version_id: opsVersionB,
+      strategy_label: "weather-child",
+      active_budget_usd: "40",
+      allocation_basis: "PARENT_INHERITANCE",
+      valid_from_ns: 1795000000000000000,
+      active_at_evaluation: false,
+      health_state: "NEW",
+    }),
+  ],
+  non_authority: OPS_NON_AUTHORITY,
+};
+
+const opsPortfolioNoPolicy: OpsPortfolio = {
+  ...opsPortfolio,
+  active_policy: null,
+  capacity: {
+    status: "PORTFOLIO_CAPACITY_REJECTED",
+    reason_codes: ["POLICY_NOT_ACTIVE"],
+    evaluated_at_ns: opsEvaluatedAt,
+    policy_id: null,
+    reserved_budget_usd: { exploratory: "0", validated: "0", mature: "0", total: "0" },
+    active_real_risk_strategy_count: 0,
+  },
+  strategy_reservations: [opsReservation({ capacity_status: null, capacity_reason_codes: [] })],
+};
+
+const opsPortfolioRejected: OpsPortfolio = {
+  ...opsPortfolio,
+  capacity: {
+    ...opsPortfolio.capacity,
+    status: "PORTFOLIO_CAPACITY_REJECTED",
+    reason_codes: ["RESTRICTION_BLOCKS_ACTIVE_RISK"],
+    reserved_budget_usd: { exploratory: "50", validated: "0", mature: "0", total: "50" },
+  },
+  strategy_reservations: [
+    opsReservation({
+      strategy_version_id: opsVersionC,
+      strategy_label: "weather-restricted",
+      capacity_status: "PORTFOLIO_CAPACITY_REJECTED",
+      capacity_reason_codes: ["RESTRICTION_BLOCKS_ACTIVE_RISK"],
+      active_restrictions: [
+        {
+          restriction_receipt_id: "strategyrestriction:sha256:" + opsHash("9"),
+          restriction_key: "pause.fixture",
+          restriction_kind: "PAUSE_NEW_EXPOSURE",
+          max_active_budget_usd: null,
+          created_time_ns: 1791000000000000000,
+        },
+      ],
+    }),
+  ],
+};
+
+const gatewayStatus: GatewayStatus = {
+  read_only: true,
+  authority_state: "A0_DISABLED",
+  disabled: true,
+  disable_reason: "OPERATOR_DISABLED",
+  credential_configured: false,
+  reconciliation_state: "REQUIRED",
+  heartbeat_state: "DISABLED",
+  user_stream_state: "DISCONNECTED",
+  access_state: "UNKNOWN",
+  rate_limit_until_ns: null,
+  prepared_order_count: 0,
+  mutation_attempt_count: 0,
+  open_order_count: 0,
+  gate_b_authorized: false,
+  restricted_live_available: false,
+  restricted_live: {
+    armed: false,
+    halted: false,
+    create_attempt_count: 0,
+    capital_at_risk_pusd: "0",
+    capital_committed_pusd: "0",
+    reconciliation_state: "REQUIRED",
+  },
+};
+
+const gatewayStatusRestrictedLive: GatewayStatus = {
+  ...gatewayStatus,
+  authority_state: "A3_RESTRICTED_LIVE",
+  disabled: false,
+  disable_reason: null,
+  access_state: "ELIGIBLE",
+  reconciliation_state: "HEALTHY",
+  heartbeat_state: "HEALTHY",
+  restricted_live_available: true,
+  restricted_live: {
+    armed: false,
+    halted: true,
+    create_attempt_count: 1,
+    capital_at_risk_pusd: "0",
+    capital_committed_pusd: "0",
+    reconciliation_state: "HEALTHY",
+  },
+};
+
+const gatewayAudit: GatewayAuditItem[] = [
+  {
+    sequence: 2,
+    event_id: "gatewayevent:sha256:" + opsHash("4"),
+    event_type: "GATEWAY_DISABLED",
+    event_time_ns: 1791000000000000000,
+    event_hash: opsHash("5"),
+  },
+  {
+    sequence: 1,
+    event_id: "gatewayevent:sha256:" + opsHash("3"),
+    event_type: "GATEWAY_INITIALIZED",
+    event_time_ns: 1790000000000000000,
+    event_hash: opsHash("6"),
+  },
+];
+
+const opsHandlers = {
+  portfolio: (body: OpsPortfolio) => http.get("/api/ops/portfolio", () => HttpResponse.json(body)),
+  portfolioUnavailable: http.get("/api/ops/portfolio", () => closedError("SOURCE_UNAVAILABLE", 503)),
+  gateway: (status: GatewayStatus) => [
+    http.get("/api/gateway/status", () => HttpResponse.json(status)),
+    http.get("/api/gateway/audit", () => HttpResponse.json(list(gatewayAudit))),
+  ],
+  gatewayUnavailable: http.get("/api/gateway/*", () => closedError("SOURCE_UNAVAILABLE", 503)),
+  paper: [
+    http.get("/api/paper/summary", () => HttpResponse.json(paperSummary)),
+    http.get("/api/paper/risk", () => HttpResponse.json(paperRisk)),
+  ],
+  paperUnavailable: http.get("/api/paper/*", () => closedError("SOURCE_UNAVAILABLE", 503)),
+  fallback: http.get("/api/ops/*", () => closedError("NOT_FOUND", 404)),
+};
+
+// Exactly the two panels of the failed source show the closed code; every other panel stays usable.
+const expectTwoUnavailable = async (canvas: { findAllByText: (text: string) => Promise<HTMLElement[]> }) => {
+  const unavailable = await canvas.findAllByText("SOURCE_UNAVAILABLE");
+  if (unavailable.length !== 2) throw new Error("expected exactly two unavailable OPS surfaces");
+};
+
+export const OpsAllSourcesAvailable = meta.story({
+  args: { path: "/ops" },
+  beforeEach: mock(opsHandlers.portfolio(opsPortfolio), opsHandlers.gateway(gatewayStatus), opsHandlers.paper, opsHandlers.fallback),
+  play: async ({ canvas }) => {
+    await canvas.findByText("Budget reservations — not actual account exposure.");
+    await canvas.findByText("SIMULATED PAPER ONLY.");
+    await canvas.findByText("Recorded gateway state — not a fresh account, host or network check.");
+    await canvas.findByText("GATEWAY_DISABLED");
+  },
+});
+
+export const OpsNoActivePolicy = meta.story({
+  args: { path: "/ops" },
+  beforeEach: mock(
+    opsHandlers.portfolio(opsPortfolioNoPolicy),
+    opsHandlers.gateway(gatewayStatus),
+    opsHandlers.paper,
+    opsHandlers.fallback,
+  ),
+  play: async ({ canvas }) => {
+    await canvas.findByText("POLICY_NOT_ACTIVE");
+    await canvas.findByText("No per-strategy result from the canonical evaluator");
+  },
+});
+
+export const OpsCapacityRejectedRestriction = meta.story({
+  args: { path: "/ops" },
+  beforeEach: mock(
+    opsHandlers.portfolio(opsPortfolioRejected),
+    opsHandlers.gateway(gatewayStatus),
+    opsHandlers.paper,
+    opsHandlers.fallback,
+  ),
+  play: async ({ canvas }) => {
+    await canvas.findByText("pause.fixture");
+  },
+});
+
+export const OpsGatewayUnavailable = meta.story({
+  args: { path: "/ops" },
+  beforeEach: mock(opsHandlers.portfolio(opsPortfolio), opsHandlers.gatewayUnavailable, opsHandlers.paper, opsHandlers.fallback),
+  play: async ({ canvas }) => {
+    await canvas.findByText("Global envelope fixture");
+    await canvas.findByText("Paper free cash");
+    await expectTwoUnavailable(canvas);
+  },
+});
+
+export const OpsPaperUnavailable = meta.story({
+  args: { path: "/ops" },
+  beforeEach: mock(opsHandlers.portfolio(opsPortfolio), opsHandlers.gateway(gatewayStatus), opsHandlers.paperUnavailable, opsHandlers.fallback),
+  play: async ({ canvas }) => {
+    await canvas.findByText("Global envelope fixture");
+    await canvas.findByText("GATEWAY_DISABLED");
+    await expectTwoUnavailable(canvas);
+  },
+});
+
+export const OpsRecordedRestrictedLive = meta.story({
+  args: { path: "/ops" },
+  beforeEach: mock(
+    opsHandlers.portfolio(opsPortfolio),
+    opsHandlers.gateway(gatewayStatusRestrictedLive),
+    opsHandlers.paper,
+    opsHandlers.fallback,
+  ),
+  play: async ({ canvas }) => {
+    await canvas.findByText("A3_RESTRICTED_LIVE");
+    await canvas.findByText("Recorded restricted-live summary");
   },
 });

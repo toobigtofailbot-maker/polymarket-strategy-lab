@@ -79,7 +79,7 @@ stable record: `docs/status_entries/S10-CC-RESEARCH-01.md`. Merged via PR #224 (
 `4dd11f1b35bf49cb14d3e03d257f775926ddf116`, merge `e8fbba6436020d543816e1be3fd45ad9c74dffd7`); its
 Alpha exclusion is superseded by S10-CC-RESEARCH-02's verified read-only Alpha projections.
 
-## S10-CC-RESEARCH-02 Control Center Alpha Factory + Evidence / Research Lineage (current Control Center implementation target, open branch)
+## S10-CC-RESEARCH-02 Control Center Alpha Factory + Evidence / Research Lineage (merged historical predecessor: PR #225)
 
 FAST, risk 2, exact 15-path L scope, deterministic readiness, no certificate. Frozen base
 `e8fbba6436020d543816e1be3fd45ad9c74dffd7` (PR #224 / S10-CC-RESEARCH-01 merged: YES, head
@@ -103,8 +103,35 @@ No new persistence, Strategy/Hermes inferred Alpha join, qualification/AF1 histo
 mutation, Hermes invocation, product network, credential, dependency/workflow change, execution or live
 authority; live DISABLED; capital/orders USD 0 / 0. Contract:
 `docs/control_center_alpha_research_contract.md`; package: `docs/wp_specs/S10-CC-RESEARCH-02/`; stable
-record: `docs/status_entries/S10-CC-RESEARCH-02.md`. Successor S10-CC-OPS-01 is separately gated; merge
-NOT AUTHORIZED (Karl only).
+record: `docs/status_entries/S10-CC-RESEARCH-02.md`. Merged via PR #225 (head
+`d4075ea344a318897e5cd755eb691a2bd45daa89`, merge `2685429aca6c0b655308a562a693d3075c1994a4`).
+
+## S10-CC-OPS-01 Control Center Portfolio / Risk / Runtime Operations Read Model (current Control Center implementation target, open branch)
+
+FAST, risk 2, exact 16-path L scope, deterministic readiness, no certificate. Frozen base
+`2685429aca6c0b655308a562a693d3075c1994a4` (PR #225 / S10-CC-RESEARCH-02 merged: YES, head
+`d4075ea344a318897e5cd755eb691a2bd45daa89`). Read-only portfolio-operations projection: the new pure
+module `src/operator_cockpit_ops.py` reads StrategyLifecycle only through `load_strategy_lifecycle_store`
+and evaluates capacity only through the canonical `evaluate_portfolio_capacity`, called exactly once per
+request at one backend `time.time_ns()` value (no `sqlite3`, open, append, init, second validator or
+capacity arithmetic; no paper, gateway, LIVE-ORCH, Gate-C, EXEC-FEAS, deployment or network import).
+`src/operator_cockpit.py` adds exactly one GET route `/api/ops/portfolio` over the existing
+`strategy_lifecycle_path` (25 `/api` routes in total; any query `INVALID_INPUT`; closed
+`SOURCE_UNAVAILABLE`). The response carries the exact same-snapshot active policy with all 17 money/count
+limits (or `null`), the canonical capacity result (no active policy and canonical rejections are HTTP 200
+domain states), budget reservations with window truth, health, the exact per-strategy capacity result and
+active restrictions, and fixed non-authority flags. The frontend adds one `/ops` workspace with the `ops`
+query family and five OPS-owned keys that compose the existing `/api/paper/summary`, `/api/paper/risk`,
+`/api/gateway/status` and `/api/gateway/audit` projections unchanged, with independent source panels,
+manual refresh and six Storybook/MSW states. Budget reservations are not actual account exposure; paper
+stays `SIMULATED PAPER ONLY` and is never merged with reservation economics; recorded gateway state is
+never current account, host or network truth, Gate-C eligibility or live readiness; no incident/alert
+registry, EXEC-FEAS/Gate-C history, LIVE-ORCH drill-down, host-currentness or geoblock request. No
+StrategyLifecycle, paper or gateway source change or mutation, new persistence, credential, product
+network, dependency/workflow change, execution or live authority; live DISABLED; capital/orders USD 0 / 0.
+Contract: `docs/control_center_ops_read_model_contract.md`; package: `docs/wp_specs/S10-CC-OPS-01/`;
+stable record: `docs/status_entries/S10-CC-OPS-01.md`. Successor S10-CC-STREAM-01 is separately gated;
+merge NOT AUTHORIZED (Karl only).
 
 ## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
 

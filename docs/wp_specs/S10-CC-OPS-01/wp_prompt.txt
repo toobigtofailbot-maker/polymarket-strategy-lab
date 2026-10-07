@@ -1,0 +1,678 @@
+# S10-CC-OPS-01 — Control Center Portfolio / Risk / Runtime Operations Read Model
+
+## 0. Package Identity
+
+- WP ID: S10-CC-OPS-01
+- Repository: toobigtofailbot-maker/polymarket-strategy-lab
+- Package class: CONTROL_CENTER_PORTFOLIO_RISK_RUNTIME_OPS_READ_MODEL
+- Package size class: L (exact 16 / 20 paths)
+- Risk level: 2; capital at risk: USD 0; evidence mode: PRIVATE_REPO_MANUAL_VERIFIED
+- Base branch: main; frozen base: 2685429aca6c0b655308a562a693d3075c1994a4
+- Required predecessor: PR #225 / S10-CC-RESEARCH-02, head d4075ea344a318897e5cd755eb691a2bd45daa89, merge 2685429aca6c0b655308a562a693d3075c1994a4
+- Suggested branch: claude/s10-cc-ops-01-portfolio-risk-runtime-read-model
+- Review owner: Side17; merge authority: Karl only
+
+Governance track expected: FAST
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+Recommended Claude/Codex Mode:
+- Model/reasoning: strongest available coding model with high reasoning for startup contract compilation; normal coding mode after scope is proven.
+- Reason: this is a read-only cross-domain presentation WP whose main risk is semantic promotion, not algorithmic complexity.
+- Escalate or STOP only for a hard stop below; ordinary same-capability defects inside the exact scope are corrected in the same run.
+
+## 1. Objective
+
+Add one truthful read-only `/ops` Control Center workspace without creating a second portfolio,
+risk, execution, currentness or incident truth system.
+
+The workspace composes:
+1. canonical StrategyLifecycle portfolio authority + budget reservations + the existing
+   `evaluate_portfolio_capacity(snapshot, at_time_ns)` evaluator through one new pure read model;
+2. the already-existing `/api/paper/summary` and `/api/paper/risk` projections, visibly
+   `SIMULATED PAPER ONLY`;
+3. the already-existing `/api/gateway/status` and `/api/gateway/audit` sanitized projections,
+   visibly recorded gateway state rather than a fresh account/host/network check.
+
+Add exactly one backend API route: `GET /api/ops/portfolio`.
+Add exactly one primary frontend route: `/ops`.
+
+The permanent semantic separation is:
+
+```text
+portfolio policy/reservations
+!= actual account exposure
+!= paper account/risk
+!= recorded gateway state
+!= current authenticated account risk
+!= EXECUTION_HOST_CURRENT
+!= EXECUTION_NETWORK_ELIGIBLE
+!= Gate-C eligibility
+!= execution/live authority
+```
+
+## 2. Hard merge/start gate
+
+Before substantive editing:
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+git merge-base --is-ancestor d4075ea344a318897e5cd755eb691a2bd45daa89 HEAD
+git branch --list claude/s10-cc-ops-01-portfolio-risk-runtime-read-model
+git branch -r --list origin/claude/s10-cc-ops-01-portfolio-risk-runtime-read-model
+gh pr list --state open --json number,title,headRefName,baseRefName
+```
+
+Require:
+- `HEAD == origin/main == 2685429aca6c0b655308a562a693d3075c1994a4`;
+- PR #225 merged; predecessor head is an ancestor;
+- working tree clean;
+- no local/remote branch or open PR for S10-CC-OPS-01;
+- repo truth does not already claim S10-CC-OPS-01 complete.
+
+If main moved or any conflicting/open implementation exists: `STOP S10_CC_OPS_01_BASE_DRIFT`.
+
+Before editing, mechanically re-run changed-surface guard discovery. Search every test/document that
+directly reads or asserts the changed surfaces, at minimum:
+
+```text
+operator_cockpit.py
+operator_cockpit_ops.py
+/api/ route exact sets
+len(domain)
+RESEARCH_ROUTES
+ALPHA_ROUTES
+QueryFamily
+/overview /markets /experiments /strategies /hermes /alpha /paper /audit
+APPROVED_SRC_SCOPES
+foundation.stories.tsx
+src/operator_cockpit_frontend/src/app.tsx
+src/operator_cockpit_frontend/src/api.ts
+```
+
+Known required historical compatibility guards are already in the 16-path scope:
+`tests/test_operator_cockpit.py`, `tests/test_operator_cockpit_research.py`,
+`tests/test_architecture_boundaries.py`. If another guard outside the exact 16 paths must change:
+`STOP S10_CC_OPS_01_SCOPE_INCOMPATIBLE`.
+
+## 3. Context budget
+
+Read first:
+- `AGENTS.md`
+- `AI_CODING_AGENT_START_HERE.md`
+- `CLAUDE_START_HERE.md`
+- `docs/project_status.md`
+- `docs/repo_truth_index.md`
+- `docs/ai/codex/WP_DRAFTING_STANDARD.md`
+- `docs/ai/codex/WP_SPEC_STANDARD.md`
+- `docs/ai/codex/VALIDATION_MATRIX.md`
+- `docs/ai/codex/PROTECTED_PATHS.md`
+
+Read for this WP:
+- the exact 16 changed paths;
+- `src/strategy_lifecycle/{__init__.py,models.py,policy.py,store.py}` read-only;
+- `docs/strategy_lifecycle_portfolio_authority_contract.md`;
+- `src/execution_gateway/store.py`, `src/execution_gateway/gateway.py`,
+  `docs/live_orchestration_contract.md` read-only only to preserve existing projection semantics;
+- relevant paper projection implementation/tests read-only only.
+
+Do not touch:
+- `src/strategy_lifecycle/**`
+- `src/execution_gateway/**`
+- `src/paper_trading/**`
+- `src/execution_feasibility/**`
+- `src/exploratory_gate_c/**`
+- `tools/**`
+- `.github/**`
+- dependency/lock files
+- credentials/secrets/config/local_data/generated artifacts.
+
+## 4. Authority / Non-Authority
+
+Authorized:
+- exact 16 paths only;
+- one new pure module `src/operator_cockpit_ops.py`;
+- read-only use of `load_strategy_lifecycle_store`, `RISK_BANDS`,
+  `evaluate_portfolio_capacity` and verified snapshot/model objects;
+- one new GET-only `/api/ops/portfolio` route using the already-configured
+  `strategy_lifecycle_path`;
+- one `/ops` frontend route and `ops` TanStack Query family;
+- frontend consumption of existing paper/gateway GET endpoints;
+- deterministic Storybook/MSW states;
+- docs/status/package evidence.
+
+Not authorized:
+- any StrategyLifecycle append/init/mutation or second validator;
+- direct SQLite in `operator_cockpit_ops.py`;
+- any change under `src/strategy_lifecycle/**`, `src/execution_gateway/**`,
+  `src/paper_trading/**`, deployment or execution-feasibility/Gate-C sources;
+- authenticated/private account reads, credentials, signer/session creation;
+- LIVE-ORCH invocation, preflight, canary, reconcile or economic mutation;
+- host-currentness execution, subprocess, deployment tooling or geoblock/network request;
+- new portfolio/risk/currentness/incident persistence;
+- synthetic EXEC-FEAS or Gate-C history;
+- polling, SSE, WebSocket, scheduler/daemon;
+- mutation routes or operator commands;
+- dependency/lock/workflow changes;
+- merge.
+
+Authority posture:
+- Implementation: YES, bounded read model/UI only.
+- Report/export: NO new export.
+- Paper: NO; consume existing read-only paper HTTP projections only.
+- Execution: NO; consume existing sanitized gateway HTTP projections only.
+- Live: NO.
+- Credentials/account: NO.
+- Runtime/scheduler: NO.
+- Canonical evidence: presentation/projection only; no new canonical owner.
+- Network: NO product/runtime network.
+- Dependencies: NO.
+
+## 5. Exact changed-file scope (16)
+
+1. `src/operator_cockpit.py`
+2. `src/operator_cockpit_ops.py`
+3. `tests/test_operator_cockpit_ops.py`
+4. `tests/test_operator_cockpit.py`
+5. `tests/test_operator_cockpit_research.py`
+6. `tests/test_architecture_boundaries.py`
+7. `src/operator_cockpit_frontend/src/api.ts`
+8. `src/operator_cockpit_frontend/src/app.tsx`
+9. `src/operator_cockpit_frontend/src/styles.css`
+10. `src/operator_cockpit_frontend/src/foundation.stories.tsx`
+11. `docs/control_center_ops_read_model_contract.md`
+12. `docs/project_status.md`
+13. `docs/repo_truth_index.md`
+14. `docs/status_entries/S10-CC-OPS-01.md`
+15. `docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt`
+16. `docs/wp_specs/S10-CC-OPS-01/wp_spec.json`
+
+Historical compatibility edits:
+- `tests/test_operator_cockpit.py`: extend the exact API route set by
+  `/api/ops/portfolio` only; total becomes exactly 25. No unrelated assertion rewrite.
+- `tests/test_operator_cockpit_research.py`: extend the exact primary frontend route/navigation
+  guard by `/ops` only and preserve its corrected word-boundary mutation guard. `/api/health`
+  exact-key semantics stay unchanged.
+- `tests/test_architecture_boundaries.py`: add exactly `src/operator_cockpit_ops.py` to the
+  source allowlist with truthful explanatory wording. No wildcard and no other allowlist entry.
+
+A 17th changed path is a hard stop.
+
+## 6. Compatibility / impossibility lock
+
+| Required behavior | Existing owner | Allowed implementation | Decision |
+|---|---|---|---|
+| portfolio policy/reservations | verified STRAT-LIFE loader | pure read projection | IMPLEMENT |
+| portfolio capacity | `evaluate_portfolio_capacity` | call exact evaluator once | IMPLEMENT |
+| paper account/risk summary | existing cockpit paper APIs | frontend composition only | IMPLEMENT |
+| gateway runtime status/audit | existing cockpit gateway APIs | frontend composition only | IMPLEMENT |
+| full LIVE-ORCH episode drill-down | non-public gateway checkpoint | would require execution source widening | DEFER |
+| fresh private account risk | authenticated LIVE-ORCH truth | credentials/account boundary | FORBID |
+| current host currentness | deployment runtime evaluator | host/subprocess boundary | DEFER |
+| current network eligibility | fresh geoblock proof | product-network boundary | DEFER |
+| generic EXEC-FEAS/Gate-C history | no canonical registry | new persistence | DEFER |
+| incident/alert lifecycle | no canonical registry | new subsystem | DEFER |
+| realtime stream | no stream contract | STREAM package | DEFER |
+| operator mutations | no command/auth contract | CMD package | DEFER |
+
+If implementation requires any DEFER/FORBID row, stop rather than widening this WP.
+
+## 7. Backend read-model contract
+
+Create `src/operator_cockpit_ops.py`.
+
+It defines its own closed projection error type and pure projection function(s). It may import
+only public StrategyLifecycle records/helpers needed for this read projection, including:
+`RISK_BANDS`, `StrategyLifecycleSnapshot`, `load_strategy_lifecycle_store`,
+`evaluate_portfolio_capacity`. It must not import the paper, execution-gateway, LIVE-ORCH,
+Gate-C, EXEC-FEAS, deployment or network families.
+
+Source rule:
+- `strategy_lifecycle_path` is required for `/api/ops/portfolio`;
+- load only through `load_strategy_lifecycle_store(path)`;
+- require `result.is_valid` and a non-null `StrategyLifecycleSnapshot`;
+- any unconfigured, missing, invalid-path, wrong-schema, tampered, malformed or unexpected
+  source/projection failure -> `503 SOURCE_UNAVAILABLE` only;
+- no path, exception text, raw store value or traceback is emitted;
+- reads leave source bytes unchanged.
+
+Evaluation time:
+- `operator_cockpit.py` captures exactly one `time.time_ns()` value per
+  `/api/ops/portfolio` request after query validation;
+- passes that exact integer to the projection;
+- the projection calls `evaluate_portfolio_capacity(snapshot, evaluated_at_ns)` exactly once;
+- the same value drives every allocation `active_at_evaluation` check and response
+  `evaluated_at_ns`;
+- browser time never drives capacity semantics.
+
+## 8. `GET /api/ops/portfolio` exact response semantics
+
+No defined query parameters. Any query pair -> `400 INVALID_INPUT`.
+GET only; POST/PUT/PATCH/DELETE -> 405.
+Total `/api` route set after this WP: exactly 25.
+
+Top-level keys:
+
+```text
+read_only
+evaluated_at_ns
+lifecycle_store_head_entry_hash
+active_policy
+capacity
+strategy_reservations
+non_authority
+```
+
+`read_only` is always true.
+
+### 8.1 active_policy
+
+If `snapshot.active_policy_id is None`, return `null`.
+
+Otherwise resolve that exact policy from the same verified snapshot and return:
+
+```text
+policy_id
+predecessor_policy_id
+policy_label
+venue_scope
+account_scope_ref
+effective_from_ns
+expires_at_ns
+limits
+allowed_order_styles
+created_time_ns
+```
+
+`limits` contains exactly all policy money/count limit fields:
+
+```text
+global_capital_at_risk_max_usd
+global_gross_exposure_max_usd
+global_daily_loss_max_usd
+global_drawdown_max_usd
+global_cumulative_loss_max_usd
+exploratory_pool_max_usd
+validated_pool_max_usd
+mature_pool_max_usd
+max_exploratory_per_strategy_usd
+max_validated_per_strategy_usd
+max_mature_per_strategy_usd
+max_per_market_usd
+max_order_notional_usd
+max_active_strategies
+max_active_markets
+max_simultaneous_open_orders
+max_mutations_per_minute
+```
+
+Do not rename these limits as actual exposure/balance/utilization.
+
+### 8.2 capacity
+
+Project the canonical evaluator exactly:
+
+```text
+status
+reason_codes
+evaluated_at_ns
+policy_id
+reserved_budget_usd:
+  exploratory
+  validated
+  mature
+  total
+active_real_risk_strategy_count
+```
+
+Mapping:
+- exploratory <- `exploratory_active_usd`
+- validated <- `validated_active_usd`
+- mature <- `mature_active_usd`
+- total <- `total_active_usd`
+
+No extra capacity arithmetic is permitted outside the canonical evaluator.
+
+A valid store with no active policy is a valid HTTP 200 domain state:
+- `active_policy = null`;
+- capacity status/reasons are the exact canonical evaluator output, including
+  `POLICY_NOT_ACTIVE`;
+- it is not `SOURCE_UNAVAILABLE`.
+
+### 8.3 strategy_reservations
+
+Return every current `snapshot.current_allocation_by_strategy_version` record with:
+
+```text
+allocation_id
+strategy_version_id
+strategy_label
+policy_id
+risk_band
+active_budget_usd
+allocation_basis
+valid_from_ns
+valid_until_ns
+active_at_evaluation
+health_state
+capacity_status
+capacity_reason_codes
+active_restrictions
+```
+
+`active_at_evaluation` means only `allocation.is_active_at(evaluated_at_ns)`.
+It does not itself mean policy/capacity/live eligibility.
+
+`capacity_status` / `capacity_reason_codes`:
+- use the exact `capacity.strategy_result(strategy_version_id)` when present;
+- if the canonical evaluator returns no per-strategy result (for example, no active policy),
+  return `capacity_status = null` and `capacity_reason_codes = []`;
+- never invent a rejection reason.
+
+`active_restrictions` contains only:
+
+```text
+restriction_receipt_id
+restriction_key
+restriction_kind
+max_active_budget_usd
+created_time_ns
+```
+
+Resolve `strategy_label`, health and restrictions from the same snapshot only.
+
+Ordering:
+1. `active_at_evaluation` true before false;
+2. risk-band order from canonical `RISK_BANDS`;
+3. `strategy_label` ascending;
+4. `strategy_version_id` ascending.
+
+### 8.4 non_authority
+
+Exactly:
+
+```text
+budget_reservation_only: true
+actual_account_exposure_not_measured: true
+orders_not_measured: true
+fills_not_measured: true
+pnl_not_measured: true
+gate_c_not_implied: true
+execution_not_implied: true
+live_not_implied: true
+```
+
+## 9. Existing paper/gateway source contract — compose, do not re-read
+
+Do not add a backend aggregate endpoint.
+
+The `/ops` browser independently consumes existing:
+
+```text
+/api/paper/summary
+/api/paper/risk
+/api/gateway/status
+/api/gateway/audit
+```
+
+Do not change their backend DTOs or semantics.
+
+Paper panel label: `SIMULATED PAPER ONLY`.
+Do not combine paper PnL/cash with STRAT-LIFE budget reservations.
+
+Gateway panel labels:
+- `Recorded gateway state`
+- `Recorded gateway access state`
+- notice: `Persisted gateway evidence; not a fresh account, host or network eligibility check.`
+
+The gateway's recorded `access_state`, heartbeat, reconciliation and restricted-live summary
+must never be promoted to:
+- current authenticated account truth;
+- `EXECUTION_HOST_CURRENT`;
+- `EXECUTION_NETWORK_ELIGIBLE`;
+- Gate-C eligibility;
+- live readiness.
+
+Gateway audit rows remain exact source metadata: sequence, event_id, event_type, event_time_ns,
+event_hash. UI label: `Recent recorded gateway events`, never incident/alert/real-time stream.
+
+No canonical incident/alert registry exists in this WP; do not invent one.
+
+## 10. Frontend contract
+
+Add exactly one primary route/nav item: `/ops`.
+Existing primary routes remain:
+`/overview`, `/markets`, `/experiments`, `/strategies`, `/hermes`, `/alpha`, `/paper`, `/audit`.
+
+Add `ops` to `QueryFamily`.
+
+Use OPS-owned keys so manual Refresh on `/ops` invalidates only OPS queries:
+
+```text
+["cc","ops","portfolio"]
+["cc","ops","gateway","status"]
+["cc","ops","gateway","audit"]
+["cc","ops","paper","summary"]
+["cc","ops","paper","risk"]
+```
+
+The latter four call the existing gateway/paper URLs; do not reuse their other page-family keys.
+
+Preserve Foundation query defaults:
+- retry false;
+- no focus/reconnect refetch;
+- `staleTime: Infinity`;
+- no `refetchInterval`, polling, EventSource or WebSocket;
+- manual Refresh only.
+
+Recommended `/ops` sections:
+1. Portfolio Authority — policy, reservation totals, canonical capacity state.
+2. Recorded Runtime / Gateway — authority/access/reconciliation/heartbeat + recorded restricted-live summary.
+3. Simulated Paper Risk — compact summary/risk only; detailed orders/fills/positions stay `/paper`.
+4. Strategy Reservations — allocation window, health, restrictions and canonical capacity status.
+5. Recent Recorded Gateway Events — existing audit metadata.
+
+Required visible semantic notices:
+- `Budget reservations — not actual account exposure.`
+- `SIMULATED PAPER ONLY.`
+- `Recorded gateway state — not a fresh account, host or network check.`
+
+Do not add charts/data-grid/state/WS/date dependencies. Existing primitives are sufficient.
+No page-level horizontal overflow at 375 px.
+
+## 11. Storybook / MSW
+
+Extend the existing deterministic `foundation.stories.tsx`; all requests remain intercepted and
+no story reaches a real backend.
+
+Required OPS states:
+1. all sources available;
+2. no active portfolio policy;
+3. portfolio capacity rejected / strategy restriction visible;
+4. gateway unavailable while portfolio + paper remain usable;
+5. paper unavailable while portfolio + gateway remain usable;
+6. recorded restricted-live/gateway state.
+
+Add closed MSW handlers for every `/api/ops`, gateway and paper request made by an OPS story.
+Do not alter existing non-OPS stories except mechanically necessary shared fixture typing.
+
+## 12. Required focused tests
+
+Create `tests/test_operator_cockpit_ops.py` and cover at least:
+
+- O01 verified lifecycle loader only; no direct store access/second validator.
+- O02 canonical `evaluate_portfolio_capacity` is called exactly once with the same verified snapshot.
+- O03 one request-time `evaluated_at_ns` drives evaluator, allocation windows and response.
+- O04 exact active-policy field coverage including every money/count limit.
+- O05 valid no-active-policy state returns 200 + null policy + canonical `POLICY_NOT_ACTIVE`.
+- O06 reservation projection: strategy label, health, allocation, restrictions, canonical capacity result.
+- O07 future/expired allocation windows are truthful and not promoted to eligibility.
+- O08 canonical health/restriction/capacity rejection reasons are preserved exactly.
+- O09 canonical capacity rejection is HTTP 200 domain truth, not source failure.
+- O10 invalid/tampered/unconfigured lifecycle source -> only 503 SOURCE_UNAVAILABLE/no echo.
+- O11 lifecycle store bytes unchanged after reads.
+- O12 `/api/ops/portfolio` GET only, any query -> 400, total `/api` routes exactly 25.
+- O13 `operator_cockpit_ops.py` AST/text boundary: no sqlite3/paper/execution/live/Gate-C/
+  EXEC-FEAS/deployment/network/subprocess/append/init imports or calls.
+- O14 frontend exact new `/ops` route + `ops` family/keys; existing routes preserved.
+- O15 source independence: one unavailable source leaves other OPS panels usable.
+- O16 no semantic authority promotion (`trade-ready`, `execution-ready`, `live-ready`,
+  `network eligible`, `host current`, `actual live exposure` as asserted states/fields).
+- O17 no mutation/realtime primitives: no useMutation, POST/PUT/PATCH/DELETE client methods,
+  EventSource, WebSocket, refetchInterval or setInterval.
+- O18 Storybook/MSW closes every OPS request; no external request escape.
+
+Preserve and update the three known historical compatibility guards exactly as Section 5 states.
+
+## 13. Validation / evidence plan
+
+Local-first. Keep PR DRAFT while source changes.
+
+Run focused/adjacent checks, then:
+- cockpit OPS + existing cockpit/research + architecture tests;
+- canonical StrategyLifecycle regressions;
+- gateway store/gateway regressions with gateway source byte-unchanged;
+- paper regressions with paper source byte-unchanged;
+- `npm ci`, typecheck, production build, Storybook static build, Storybook smoke,
+  `npm audit --audit-level=high`;
+- readiness `--check-diff`;
+- exact-scope helper `--require-exact-scope`;
+- `git diff --check`;
+- generated-artifact guard;
+- available security checks, reporting unavailable tools honestly;
+- one authoritative local full pytest suite on the stable exact head;
+- then mark Ready once and require one complete exact-head hosted 9-job matrix;
+- after posting the final PR body, re-fetch it and run the PR evidence consistency guard.
+
+Any source/workflow change after hosted PASS invalidates hosted evidence and requires fresh exact-head CI.
+Do not use hosted CI as the iterative development loop.
+
+## 14. Negative-test matrix
+
+Negative matrix required: YES.
+
+N01 main/base drift -> STOP.
+N02 17th changed path -> STOP.
+N03 direct lifecycle SQLite/second validator -> FAIL.
+N04 any canonical StrategyLifecycle/gateway/paper source modification -> STOP.
+N05 malformed/unavailable lifecycle source leaks path/raw exception -> FAIL.
+N06 no-active-policy mapped to 503 -> FAIL.
+N07 second capacity calculation or frontend capacity arithmetic -> FAIL.
+N08 browser clock drives capacity -> FAIL.
+N09 paper values merged with live/reservation economics -> FAIL.
+N10 gateway recorded access promoted to current network eligibility -> FAIL.
+N11 host currentness or geoblock request invoked -> STOP.
+N12 full LIVE-ORCH episode reader added by widening execution source -> STOP.
+N13 incident/alert lifecycle invented -> STOP.
+N14 mutation/realtime primitive added -> STOP.
+N15 dependency/lock/workflow change -> STOP.
+N16 POST/PUT/PATCH/DELETE on the new API route does not remain 405 -> FAIL.
+N17 unknown query accepted by `/api/ops/portfolio` -> FAIL.
+N18 frontend source failure suppresses unrelated OPS panels -> FAIL.
+N19 page-level 375 px overflow -> FAIL.
+N20 final validation/evidence not exact-head -> Ready for review NO.
+
+## 15. Concrete hard stops
+
+`STOP S10_CC_OPS_01_BASE_DRIFT` — main no longer equals the frozen base.
+
+`STOP S10_CC_OPS_01_SCOPE_INCOMPATIBLE` — any required changed-surface guard lies outside the
+16-path scope or a 17th path is necessary.
+
+`STOP S10_CC_OPS_01_CANONICAL_OWNER_CHANGE_REQUIRED` — the feature cannot be implemented without
+changing StrategyLifecycle, gateway, paper, EXEC-FEAS, Gate-C or deployment canonical/runtime source.
+
+`STOP S10_CC_OPS_01_PROTECTED_RUNTIME_REQUIRED` — implementation would need credentials, private
+account truth, LIVE-ORCH, execution, geoblock/network, host currentness, scheduler or mutation.
+
+`STOP S10_CC_OPS_01_DEPENDENCY_OR_WORKFLOW_CHANGE` — any dependency, lock or workflow change is needed.
+
+`STOP S10_CC_OPS_01_TRUTH_SYNTHESIS_REQUIRED` — requested UI truth would require inventing current
+host/network/account readiness, incident state, Gate-C history or EXEC-FEAS history without a
+canonical owner.
+
+`STOP S10_CC_OPS_01_VALIDATION_NOT_REPRODUCIBLE` — final source changes cannot be followed by
+required local validation and exact-head hosted verification.
+
+Ordinary implementation/test defects inside the exact authorized capability and paths are fixed
+in the same run without asking Karl for another authorization.
+
+## 16. Successor boundary
+
+After Side17 review and Karl merge, next separately gated:
+`S10-CC-STREAM-01` — Control Center streaming/currentness transport design and implementation only
+after its own pre-draft proves sequence, freshness, gap and resync ownership.
+
+Later:
+`S10-CC-CMD-01`, then `S10-CC-PROD-01`.
+
+OPS-01 authorizes none of those. The separate live/network lane remains independently governed.
+
+## 17. Report-back
+
+Success token: `READY_FOR_SIDE17_CC_OPS_01_REVIEW`.
+
+Report concisely:
+- frozen base, predecessor, branch, PR and exact head;
+- exact 16/16 paths;
+- readiness + scope guard;
+- `/api/ops/portfolio` and total 25 GET routes;
+- canonical loader/evaluator proofs and no-policy behavior;
+- `/ops` source-independence and semantic-separation proof;
+- gateway/paper canonical source byte-unchanged proof;
+- focused/adjacent/frontend/security/full-suite results;
+- exact-head hosted run and all nine jobs;
+- posted PR evidence guard;
+- evidence mode and authority attestation;
+- `Ready for review: YES`;
+- `Merge authorized: NO`.
+
+On hard stop, return the exact stop token and evidence; do not widen scope.
+
+## 18. Normative rule matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scope|changed_files|final|REQUIRE|exact_sixteen_paths|scope.exact_paths|R002
+NR002|source|lifecycle|read|REQUIRE|verified_loader_only|portfolio.verified_loader|R003
+NR003|portfolio|capacity|request|REQUIRE|canonical_evaluator_once|portfolio.capacity_evaluator|R004
+NR004|portfolio|evaluation_time|request|REQUIRE|one_backend_time|portfolio.evaluation_time|R005
+NR005|portfolio|policy|projection|REQUIRE|complete_active_policy_limits|portfolio.active_policy|R006
+NR006|portfolio|no_policy|valid_store|REQUIRE|http_200_canonical_rejection|portfolio.no_policy_state|R007
+NR007|portfolio|reservations|projection|REQUIRE|same_snapshot_semantics|portfolio.reservations|R008
+NR008|source|errors|failure|REQUIRE|closed_source_unavailable_no_echo|portfolio.closed_errors|R009
+NR009|api|ops_portfolio|final|REQUIRE|get_only_no_query_total_25|api.ops_portfolio|R010
+NR010|gateway|runtime_state|ops_ui|REQUIRE|compose_existing_sanitized_api_only|ops.gateway_composition|R011
+NR011|paper|risk_state|ops_ui|REQUIRE|compose_existing_simulated_api_only|ops.paper_composition|R012
+NR012|frontend|ops|final|REQUIRE|one_ops_route_one_query_family|frontend.ops_route|R013
+NR013|frontend|source_independence|one_failure|REQUIRE|other_panels_remain_usable|frontend.source_independence|R014
+NR014|semantics|authority|all|FORBID|currentness_exposure_live_promotion|semantics.no_authority_promotion|R015
+NR015|architecture|canonical_sources|final|REQUIRE|gateway_paper_lifecycle_unchanged|architecture.canonical_sources_unchanged|R016
+NR016|validation|canonical_regressions|stable|REQUIRE|strategy_gateway_paper_regressions|validation.canonical_regressions|R017
+NR017|governance|dependencies_workflows|final|FORBID|dependency_or_workflow_change|governance.no_dependency_workflow_change|R018
+NR018|validation|local_first|stable|REQUIRE|one_full_local_then_exact_head_hosted|validation.local_first_hosted_final|R019
+NR019|evidence|posted_pr|final_review|REQUIRE|refetched_body_guard_pass|evidence.posted_exact_head|R020
+END_NORMATIVE_RULE_MATRIX_V1
