@@ -16,6 +16,11 @@ import {
   hermesAssessmentDetailQuery,
   hermesAssessmentsQuery,
   marketRecentQuery,
+  opsGatewayAuditQuery,
+  opsGatewayStatusQuery,
+  opsPaperRiskQuery,
+  opsPaperSummaryQuery,
+  opsPortfolioQuery,
   overviewQuery,
   paperFillsQuery,
   paperOrdersQuery,
@@ -27,13 +32,22 @@ import {
   toSafeErrorCode,
   type AlphaResolutionStatus,
   type AlphaSourceReference,
+  type CapacityStatus,
   type ContextStatus,
   type DiscoveryLaneName,
+  type GatewayAuditItem,
+  type GatewayStatus,
   type HermesNonAuthority,
   type JsonValue,
   type LatestHermesAssessment,
   type LifecycleAllocation,
   type ListResponse,
+  type OpsActivePolicy,
+  type OpsPolicyLimits,
+  type OpsPortfolio,
+  type OpsStrategyReservation,
+  type PaperRisk,
+  type PaperSummary,
   type QueryFamily,
   type ResearchResultState,
 } from "./api";
@@ -1543,6 +1557,350 @@ function AlphaView() {
 }
 
 // ---------------------------------------------------------------------------
+// S10-CC-OPS-01 operations view: portfolio policy / budget reservations, recorded gateway
+// state and simulated paper risk. Read only. Each source loads and fails independently, and
+// no value from one source is combined with another. Capacity comes only from the backend's
+// canonical evaluator at the backend evaluation time; the browser clock is never used.
+// ---------------------------------------------------------------------------
+
+const CAPACITY_TONE: Record<CapacityStatus, Tone> = {
+  PORTFOLIO_CAPACITY_VALID: "success",
+  PORTFOLIO_CAPACITY_REJECTED: "warning",
+};
+
+function CapacityPill({ status }: { status: CapacityStatus }) {
+  return <StatusPill tone={CAPACITY_TONE[status]}>{status}</StatusPill>;
+}
+
+function ReasonCodes({ codes }: { codes: string[] }) {
+  if (codes.length === 0) return <span className="muted">None</span>;
+  return (
+    <span className="tag-row">
+      {codes.map((code) => (
+        <Token key={code}>{code}</Token>
+      ))}
+    </span>
+  );
+}
+
+const POLICY_LIMIT_LABELS: [keyof OpsPolicyLimits, string][] = [
+  ["global_capital_at_risk_max_usd", "Global capital-at-risk ceiling (USD)"],
+  ["global_gross_exposure_max_usd", "Global gross exposure ceiling (USD)"],
+  ["global_daily_loss_max_usd", "Global daily loss ceiling (USD)"],
+  ["global_drawdown_max_usd", "Global drawdown ceiling (USD)"],
+  ["global_cumulative_loss_max_usd", "Global cumulative loss ceiling (USD)"],
+  ["exploratory_pool_max_usd", "Exploratory pool ceiling (USD)"],
+  ["validated_pool_max_usd", "Validated pool ceiling (USD)"],
+  ["mature_pool_max_usd", "Mature pool ceiling (USD)"],
+  ["max_exploratory_per_strategy_usd", "Exploratory per-strategy ceiling (USD)"],
+  ["max_validated_per_strategy_usd", "Validated per-strategy ceiling (USD)"],
+  ["max_mature_per_strategy_usd", "Mature per-strategy ceiling (USD)"],
+  ["max_per_market_usd", "Per-market ceiling (USD)"],
+  ["max_order_notional_usd", "Order notional ceiling (USD)"],
+  ["max_active_strategies", "Max active strategies"],
+  ["max_active_markets", "Max active markets"],
+  ["max_simultaneous_open_orders", "Max simultaneous open orders"],
+  ["max_mutations_per_minute", "Max mutations per minute"],
+];
+
+function ActivePolicy({ policy }: { policy: OpsActivePolicy | null }) {
+  if (!policy) {
+    return (
+      <p className="muted">
+        No active portfolio policy in the verified lifecycle store. Capacity below is the canonical evaluator result for
+        that state.
+      </p>
+    );
+  }
+  return (
+    <>
+      <DetailList
+        items={[
+          ["Policy", policy.policy_label],
+          ["Policy ID", <Token>{policy.policy_id}</Token>],
+          ["Predecessor policy", <Token>{policy.predecessor_policy_id ?? "None"}</Token>],
+          ["Venue scope", policy.venue_scope.join(", ")],
+          ["Account scope ref", <Token>{policy.account_scope_ref}</Token>],
+          ["Effective from (ns)", <span className="mono">{policy.effective_from_ns}</span>],
+          ["Expires at (ns)", <span className="mono">{policy.expires_at_ns ?? "No expiry"}</span>],
+          ["Allowed order styles", policy.allowed_order_styles.join(", ")],
+          ["Created (ns)", <span className="mono">{policy.created_time_ns}</span>],
+        ]}
+      />
+      <h3 className="subsection-title">Policy ceilings (limits, not utilization)</h3>
+      <dl className="coverage-grid">
+        {POLICY_LIMIT_LABELS.map(([key, label]) => (
+          <div key={key}>
+            <dt>{label}</dt>
+            <dd>{policy.limits[key]}</dd>
+          </div>
+        ))}
+      </dl>
+    </>
+  );
+}
+
+function PortfolioAuthorityPanel({ portfolio }: { portfolio: UseQueryResult<OpsPortfolio> }) {
+  return (
+    <Panel title="Portfolio Authority">
+      <Notice>
+        <strong>Budget reservations — not actual account exposure.</strong> Orders, fills, PnL and account balances are
+        not measured here. Nothing here implies Gate-C eligibility, execution or live authority.
+      </Notice>
+      <QueryState query={portfolio} label="portfolio authority">
+        {(data) => (
+          <div className="detail-stack">
+            <DetailList
+              items={[
+                ["Canonical capacity", <CapacityPill status={data.capacity.status} />],
+                ["Capacity reasons", <ReasonCodes codes={data.capacity.reason_codes} />],
+                ["Backend evaluation time (ns)", <span className="mono">{data.evaluated_at_ns}</span>],
+                ["Lifecycle store head", <Token>{data.lifecycle_store_head_entry_hash ?? "Empty store"}</Token>],
+              ]}
+            />
+            <MetricGrid>
+              <Metric label="Exploratory reserved (USD)" value={data.capacity.reserved_budget_usd.exploratory} />
+              <Metric label="Validated reserved (USD)" value={data.capacity.reserved_budget_usd.validated} />
+              <Metric label="Mature reserved (USD)" value={data.capacity.reserved_budget_usd.mature} />
+              <Metric label="Total reserved (USD)" value={data.capacity.reserved_budget_usd.total} />
+              <Metric label="Strategies holding reservations" value={data.capacity.active_real_risk_strategy_count} />
+            </MetricGrid>
+            <section className="evidence-section">
+              <h3>Active portfolio policy</h3>
+              <ActivePolicy policy={data.active_policy} />
+            </section>
+          </div>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function RecordedGatewayPanel({ status }: { status: UseQueryResult<GatewayStatus> }) {
+  return (
+    <Panel title="Recorded Runtime / Gateway">
+      <Notice>
+        <strong>Recorded gateway state — not a fresh account, host or network check.</strong> Persisted gateway evidence;
+        not a fresh account, host or network eligibility check.
+      </Notice>
+      <QueryState query={status} label="recorded gateway state">
+        {(data) => (
+          <div className="detail-stack">
+            <DetailList
+              items={[
+                ["Recorded gateway state", <StatusPill>{data.authority_state}</StatusPill>],
+                ["Recorded disable reason", data.disable_reason ?? "None recorded"],
+                ["Recorded gateway access state", <StatusPill>{data.access_state}</StatusPill>],
+                ["Recorded reconciliation", data.reconciliation_state],
+                ["Recorded heartbeat", data.heartbeat_state],
+                ["Recorded user stream", data.user_stream_state],
+                ["Recorded open order count", data.open_order_count],
+                ["Recorded prepared / mutation attempts", `${data.prepared_order_count} / ${data.mutation_attempt_count}`],
+              ]}
+            />
+            <section className="evidence-section">
+              <h3>Recorded restricted-live summary</h3>
+              <DetailList
+                items={[
+                  ["Restricted-live recorded", yesNo(data.restricted_live_available)],
+                  ["Recorded armed / halted", `${yesNo(data.restricted_live.armed)} / ${yesNo(data.restricted_live.halted)}`],
+                  ["Recorded create attempts", data.restricted_live.create_attempt_count],
+                  ["Recorded capital at risk (pUSD)", data.restricted_live.capital_at_risk_pusd],
+                  ["Recorded capital committed (pUSD)", data.restricted_live.capital_committed_pusd],
+                  ["Recorded restricted-live reconciliation", data.restricted_live.reconciliation_state],
+                ]}
+              />
+            </section>
+          </div>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function SimulatedPaperPanel({
+  summary,
+  risk,
+}: {
+  summary: UseQueryResult<PaperSummary>;
+  risk: UseQueryResult<PaperRisk>;
+}) {
+  return (
+    <Panel title="Simulated Paper Risk">
+      <Notice>
+        <strong>SIMULATED PAPER ONLY.</strong> Paper cash and PnL are never combined with portfolio budget reservations or
+        recorded gateway state. Detailed orders, fills and positions stay on Paper Operations.
+      </Notice>
+      <QueryState query={summary} label="simulated paper summary">
+        {(data) => (
+          <MetricGrid>
+            <Metric label="Paper control" value={data.control_state} />
+            <Metric label="Paper reconciliation" value={data.reconciliation_state} />
+            <Metric label="Paper free cash" value={data.free_cash} />
+            <Metric label="Paper equity" value={data.equity ?? "Unavailable"} />
+            <Metric label="Paper realized PnL" value={data.realized_pnl} />
+            <Metric label="Paper unrealized PnL" value={data.unrealized_pnl ?? "Unavailable"} />
+          </MetricGrid>
+        )}
+      </QueryState>
+      <QueryState query={risk} label="simulated paper risk">
+        {(data) => (
+          <DetailList
+            items={[
+              ["Paper open orders", `${data.utilization.open_orders} / ${data.utilization.max_open_orders}`],
+              ["Paper reserved cash", data.utilization.reserved_cash],
+              ["Paper risk denials", data.deny_count],
+              ["Latest paper risk decision", data.latest_decision?.result ?? "None"],
+              ["Paper resolution pending", data.resolution_pending.join(", ") || "None"],
+            ]}
+          />
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function ReservationWindow({ item }: { item: OpsStrategyReservation }) {
+  return (
+    <>
+      <span className="mono">
+        {item.valid_from_ns} → {item.valid_until_ns ?? "open"}
+      </span>
+      <br />
+      <StatusPill tone={item.active_at_evaluation ? "neutral" : "warning"}>
+        {item.active_at_evaluation ? "Inside window at evaluation" : "Outside window at evaluation"}
+      </StatusPill>
+    </>
+  );
+}
+
+function StrategyReservationsPanel({ portfolio }: { portfolio: UseQueryResult<OpsPortfolio> }) {
+  return (
+    <Panel title="Strategy Reservations">
+      <p className="muted">
+        A reservation window only says whether the allocation window covers the backend evaluation time. It is not
+        policy, capacity, Gate-C or live eligibility.
+      </p>
+      <QueryState
+        query={portfolio}
+        label="strategy reservations"
+        isEmpty={(data) => data.strategy_reservations.length === 0}
+      >
+        {(data) => (
+          <DataTable
+            label="Strategy reservations"
+            headers={["Strategy", "Reserved budget", "Window", "Health", "Canonical capacity", "Active restrictions"]}
+          >
+            {data.strategy_reservations.map((item) => (
+              <tr key={item.allocation_id}>
+                <td>
+                  {item.strategy_label}
+                  <br />
+                  <Token>{item.strategy_version_id}</Token>
+                </td>
+                <td>
+                  {item.risk_band} · {item.active_budget_usd} USD
+                  <br />
+                  <span className="muted">{item.allocation_basis}</span>
+                </td>
+                <td>
+                  <ReservationWindow item={item} />
+                </td>
+                <td>
+                  <StatusPill>{item.health_state ?? "Unknown"}</StatusPill>
+                </td>
+                <td>
+                  {item.capacity_status ? (
+                    <>
+                      <CapacityPill status={item.capacity_status} />
+                      <br />
+                      <ReasonCodes codes={item.capacity_reason_codes} />
+                    </>
+                  ) : (
+                    <span className="muted">No per-strategy result from the canonical evaluator</span>
+                  )}
+                </td>
+                <td>
+                  {item.active_restrictions.length === 0 ? (
+                    <span className="muted">None</span>
+                  ) : (
+                    <ul className="ref-list">
+                      {item.active_restrictions.map((restriction) => (
+                        <li key={restriction.restriction_receipt_id}>
+                          <StatusPill tone="warning">{restriction.restriction_kind}</StatusPill>{" "}
+                          <Token>{restriction.restriction_key}</Token>
+                          {restriction.max_active_budget_usd !== null && (
+                            <> · cap {restriction.max_active_budget_usd} USD</>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </DataTable>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function RecordedGatewayEventsPanel({ audit }: { audit: UseQueryResult<ListResponse<GatewayAuditItem>> }) {
+  return (
+    <Panel title="Recent Recorded Gateway Events">
+      <p className="muted">Persisted gateway audit metadata in recorded sequence order.</p>
+      <QueryState query={audit} label="recorded gateway events" isEmpty={isEmptyList}>
+        {(data) => (
+          <DataTable
+            label="Recent recorded gateway events"
+            headers={["Sequence", "Event type", "Event time (ns)", "Event ID", "Event hash"]}
+          >
+            {data.items.map((item) => (
+              <tr key={item.event_id}>
+                <td className="num">{item.sequence}</td>
+                <td>{item.event_type}</td>
+                <td className="mono">{item.event_time_ns}</td>
+                <td>
+                  <Token>{item.event_id}</Token>
+                </td>
+                <td>
+                  <Token>{item.event_hash}</Token>
+                </td>
+              </tr>
+            ))}
+          </DataTable>
+        )}
+      </QueryState>
+    </Panel>
+  );
+}
+
+function OpsView() {
+  const portfolio = useQuery(opsPortfolioQuery);
+  const gatewayStatus = useQuery(opsGatewayStatusQuery);
+  const gatewayAudit = useQuery(opsGatewayAuditQuery);
+  const paperSummary = useQuery(opsPaperSummaryQuery);
+  const paperRisk = useQuery(opsPaperRiskQuery);
+  return (
+    <>
+      <Notice>
+        <strong>Separate sources, separate meanings.</strong> Portfolio policy and budget reservations, simulated paper
+        state and recorded gateway state are shown side by side, never combined. None of them is current authenticated
+        account risk, host or network eligibility, Gate-C eligibility or execution / live authority.
+      </Notice>
+      <div className="ops-grid">
+        <PortfolioAuthorityPanel portfolio={portfolio} />
+        <RecordedGatewayPanel status={gatewayStatus} />
+        <SimulatedPaperPanel summary={paperSummary} risk={paperRisk} />
+      </div>
+      <StrategyReservationsPanel portfolio={portfolio} />
+      <RecordedGatewayEventsPanel audit={gatewayAudit} />
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Shell and routes
 // ---------------------------------------------------------------------------
 
@@ -1555,6 +1913,7 @@ export const VIEWS: readonly ViewDefinition[] = [
   { path: "/strategies", label: "Strategies", family: "strategies", element: <StrategiesView /> },
   { path: "/hermes", label: "Hermes", family: "hermes", element: <HermesView /> },
   { path: "/alpha", label: "Alpha Research", family: "alpha", element: <AlphaView /> },
+  { path: "/ops", label: "Operations", family: "ops", element: <OpsView /> },
   { path: "/paper", label: "Paper Operations", family: "paper", element: <PaperView /> },
   { path: "/audit", label: "Audit / Health", family: "audit", element: <AuditView /> },
 ];
@@ -1590,6 +1949,7 @@ export function ControlCenter() {
           <span>Simulated paper only</span>
           <span>Hermes: soft judgments only</span>
           <span>Alpha: research records only</span>
+          <span>Ops: reservations + recorded state only</span>
           <span>No execution or live authority</span>
         </div>
       </aside>

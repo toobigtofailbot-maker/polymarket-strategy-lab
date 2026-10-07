@@ -597,7 +597,7 @@ def test_r12_research_routes_are_get_only(world: World) -> None:
         for route in app.routes
         if route.path.startswith("/api/")
     }
-    assert len(domain) == 24
+    assert len(domain) == 25
     for route in RESEARCH_ROUTES + ALPHA_ROUTES:
         assert domain[route] == {"GET"}
     targets = (
@@ -1473,7 +1473,7 @@ def test_a28_store_bytes_unchanged(tmp_path: Path) -> None:
 def test_a29_a30_alpha_routes_get_only_total_24(alpha_world: AlphaWorld) -> None:
     app = alpha_world.app()
     domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
-    assert len(domain) == 24
+    assert len(domain) == 25
     for route in ALPHA_ROUTES:
         assert domain[route] == {"GET"}
     for target in _alpha_targets(alpha_world):
@@ -1555,7 +1555,7 @@ def test_a35_to_a39_frontend_alpha_surface() -> None:
     stories = (FRONTEND / "foundation.stories.tsx").read_text(encoding="utf-8")
     # A35: /alpha is the only new primary route, in the frozen navigation order.
     paths = re.findall(r'\{ path: "(/[a-z]+)"', app_source)
-    assert paths == ["/overview", "/markets", "/experiments", "/strategies", "/hermes", "/alpha", "/paper", "/audit"]
+    assert paths == ["/overview", "/markets", "/experiments", "/strategies", "/hermes", "/alpha", "/ops", "/paper", "/audit"]
     # A36: alpha query family and exactly the six alpha key families.
     assert re.search(r'export type QueryFamily =[^;]*"alpha"', api_source)
     for key in ('["cc", "alpha", "memory"]', '["cc", "alpha", "candidates", "list"]',

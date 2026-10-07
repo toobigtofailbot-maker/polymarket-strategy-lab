@@ -1,4 +1,4 @@
-"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02 local read-only cockpit over evidence."""
+"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02/S10-CC-OPS-01 local read-only cockpit over evidence."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import re
 import sqlite3
+import time
 from typing import Any
 
 from fastapi import FastAPI, Request
@@ -38,6 +39,7 @@ from src.paper_trading.models import (
 from src.paper_trading.store import JournalEvent, PaperStore
 from src.execution_gateway.store import GatewayStoreError, read_gateway_projection
 from src.execution_gateway.gateway import GatewayError, read_gate_b_evidence
+from src import operator_cockpit_ops as ops
 from src import operator_cockpit_research as research
 
 
@@ -864,6 +866,12 @@ def create_app(config: CockpitConfig) -> FastAPI:
     ) -> JSONResponse:
         return _error_response(exc.code)
 
+    @app.exception_handler(ops.OpsProjectionError)
+    async def ops_error_handler(
+        _request: Request, exc: ops.OpsProjectionError
+    ) -> JSONResponse:
+        return _error_response(exc.code)
+
     @app.exception_handler(Exception)
     async def internal_error_handler(
         _request: Request, _exc: Exception
@@ -1079,6 +1087,16 @@ def create_app(config: CockpitConfig) -> FastAPI:
             config.alpha_factory_registry_path,
             market_triage_decision_id,
         )
+
+    # S10-CC-OPS-01: verified StrategyLifecycle portfolio authority, budget reservations
+    # and the canonical capacity evaluator at one backend request time. GET only; budget
+    # reservations are not account exposure and imply no Gate-C, execution or live authority.
+    @app.get("/api/ops/portfolio")
+    async def ops_portfolio(request: Request) -> dict[str, Any]:
+        if list(request.query_params.multi_items()):
+            raise CockpitError("INVALID_INPUT")
+        evaluated_at_ns = time.time_ns()
+        return ops.portfolio_projection(config.strategy_lifecycle_path, evaluated_at_ns)
 
     return app
 

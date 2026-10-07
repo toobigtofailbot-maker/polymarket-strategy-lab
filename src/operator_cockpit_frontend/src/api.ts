@@ -568,6 +568,118 @@ export type DiscoveryTriageResponse = {
   };
 };
 
+// S10-CC-OPS-01 read models. Portfolio policy and budget reservations, simulated paper state and
+// recorded gateway state are separate sources with separate meanings; none of them is current
+// authenticated account risk, host or network currentness, Gate-C eligibility or live authority.
+export type CapacityStatus = "PORTFOLIO_CAPACITY_VALID" | "PORTFOLIO_CAPACITY_REJECTED";
+export type OpsPolicyLimits = {
+  global_capital_at_risk_max_usd: string;
+  global_gross_exposure_max_usd: string;
+  global_daily_loss_max_usd: string;
+  global_drawdown_max_usd: string;
+  global_cumulative_loss_max_usd: string;
+  exploratory_pool_max_usd: string;
+  validated_pool_max_usd: string;
+  mature_pool_max_usd: string;
+  max_exploratory_per_strategy_usd: string;
+  max_validated_per_strategy_usd: string;
+  max_mature_per_strategy_usd: string;
+  max_per_market_usd: string;
+  max_order_notional_usd: string;
+  max_active_strategies: number;
+  max_active_markets: number;
+  max_simultaneous_open_orders: number;
+  max_mutations_per_minute: number;
+};
+export type OpsActivePolicy = {
+  policy_id: string;
+  predecessor_policy_id: string | null;
+  policy_label: string;
+  venue_scope: string[];
+  account_scope_ref: string;
+  effective_from_ns: number;
+  expires_at_ns: number | null;
+  limits: OpsPolicyLimits;
+  allowed_order_styles: string[];
+  created_time_ns: number;
+};
+export type OpsCapacity = {
+  status: CapacityStatus;
+  reason_codes: string[];
+  evaluated_at_ns: number | null;
+  policy_id: string | null;
+  reserved_budget_usd: { exploratory: string; validated: string; mature: string; total: string };
+  active_real_risk_strategy_count: number;
+};
+export type OpsStrategyReservation = {
+  allocation_id: string;
+  strategy_version_id: string;
+  strategy_label: string;
+  policy_id: string;
+  risk_band: string;
+  active_budget_usd: string;
+  allocation_basis: string;
+  valid_from_ns: number;
+  valid_until_ns: number | null;
+  active_at_evaluation: boolean;
+  health_state: string | null;
+  capacity_status: CapacityStatus | null;
+  capacity_reason_codes: string[];
+  active_restrictions: ActiveRestriction[];
+};
+export type OpsNonAuthority = {
+  budget_reservation_only: true;
+  actual_account_exposure_not_measured: true;
+  orders_not_measured: true;
+  fills_not_measured: true;
+  pnl_not_measured: true;
+  gate_c_not_implied: true;
+  execution_not_implied: true;
+  live_not_implied: true;
+};
+export type OpsPortfolio = {
+  read_only: true;
+  evaluated_at_ns: number;
+  lifecycle_store_head_entry_hash: string | null;
+  active_policy: OpsActivePolicy | null;
+  capacity: OpsCapacity;
+  strategy_reservations: OpsStrategyReservation[];
+  non_authority: OpsNonAuthority;
+};
+export type GatewayRestrictedLive = {
+  armed: boolean;
+  halted: boolean;
+  create_attempt_count: number;
+  capital_at_risk_pusd: string;
+  capital_committed_pusd: string;
+  reconciliation_state: string;
+};
+export type GatewayStatus = {
+  read_only: true;
+  authority_state: string;
+  disabled: boolean;
+  disable_reason: string | null;
+  credential_configured: boolean;
+  reconciliation_state: string;
+  heartbeat_state: string;
+  user_stream_state: string;
+  access_state: string;
+  rate_limit_until_ns: number | null;
+  prepared_order_count: number;
+  mutation_attempt_count: number;
+  open_order_count: number;
+  gate_b_authorized: false;
+  restricted_live_available: boolean;
+  restricted_live: GatewayRestrictedLive;
+};
+export type GatewayAuditItem = {
+  sequence: number;
+  event_id: string;
+  event_type: string;
+  event_time_ns: number;
+  event_hash: string;
+};
+
 // Closed error vocabulary: the four backend codes plus two frontend transport codes. Nothing
 // else (URL, path, body, stack, exception text) is ever surfaced to the operator.
 const BACKEND_ERROR_CODES = ["INVALID_INPUT", "NOT_FOUND", "SOURCE_UNAVAILABLE", "INTERNAL_ERROR"] as const;
@@ -623,7 +735,7 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 // Query keys are grouped by route family so a manual refresh can target exactly one page.
-export type QueryFamily = "overview" | "market" | "experiments" | "strategies" | "hermes" | "alpha" | "paper" | "audit";
+export type QueryFamily = "overview" | "market" | "experiments" | "strategies" | "hermes" | "alpha" | "ops" | "paper" | "audit";
 
 export const familyKey = (family: QueryFamily) => ["cc", family] as const;
 
@@ -697,6 +809,28 @@ export const alphaTriageDetailQuery = (marketTriageDecisionId: string) =>
     queryFn: ({ signal }) =>
       getJson<DiscoveryTriageResponse>("/alpha/discovery/triage/" + encodeURIComponent(marketTriageDecisionId), signal),
   });
+// OPS-owned keys: Refresh on /ops invalidates only these, never the paper or other page families,
+// even though four of them read the existing paper and gateway endpoints.
+export const opsPortfolioQuery = queryOptions({
+  queryKey: ["cc", "ops", "portfolio"] as const,
+  queryFn: ({ signal }) => getJson<OpsPortfolio>("/ops/portfolio", signal),
+});
+export const opsGatewayStatusQuery = queryOptions({
+  queryKey: ["cc", "ops", "gateway", "status"] as const,
+  queryFn: ({ signal }) => getJson<GatewayStatus>("/gateway/status", signal),
+});
+export const opsGatewayAuditQuery = queryOptions({
+  queryKey: ["cc", "ops", "gateway", "audit"] as const,
+  queryFn: ({ signal }) => getJson<ListResponse<GatewayAuditItem>>("/gateway/audit", signal),
+});
+export const opsPaperSummaryQuery = queryOptions({
+  queryKey: ["cc", "ops", "paper", "summary"] as const,
+  queryFn: ({ signal }) => getJson<PaperSummary>("/paper/summary", signal),
+});
+export const opsPaperRiskQuery = queryOptions({
+  queryKey: ["cc", "ops", "paper", "risk"] as const,
+  queryFn: ({ signal }) => getJson<PaperRisk>("/paper/risk", signal),
+});
 export const paperSummaryQuery = queryOptions({
   queryKey: [...familyKey("paper"), "summary"],
   queryFn: ({ signal }) => getJson<PaperSummary>("/paper/summary", signal),

@@ -172,6 +172,12 @@ APPROVED_SRC_SCOPES = (
     # qualification, paper, execution or live authority. It is not a src/operator_cockpit*
     # wildcard approval.
     "src/operator_cockpit_research.py",
+    # S10-CC-OPS-01 approves exactly the read-only Control Center portfolio-operations
+    # projection module. It reads StrategyLifecycle portfolio authority only through the
+    # verified loader and evaluates capacity only through the canonical evaluator; it has no
+    # mutation, account, network, credential, paper, execution or live authority. It is not a
+    # src/operator_cockpit* wildcard approval.
+    "src/operator_cockpit_ops.py",
     "src/operator_cockpit_frontend",
     # S10-STRAT-LIFE-01 approves exactly the stdlib-only src/strategy_lifecycle family:
     # local/offline strategy lifecycle and global portfolio-policy state only. It has no
@@ -273,6 +279,10 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     StrategyLifecycle, Hermes strategy-manager, Alpha Factory and Alpha Discovery projections
     (verified loaders only; no mutation, Hermes-runtime, network, credential, qualification,
     paper, execution or live authority).
+    S10-CC-OPS-01 permits src/operator_cockpit_ops.py for the read-only Control Center
+    portfolio-operations projection only (verified StrategyLifecycle loader and canonical
+    capacity evaluator only; no mutation, account, network, credential, paper, execution or
+    live authority).
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

@@ -1,0 +1,864 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CC-OPS-01",
+    "title": "Control Center Portfolio / Risk / Runtime Operations Read Model",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "CONTROL_CENTER_PORTFOLIO_RISK_RUNTIME_OPS_READ_MODEL",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 225,
+      "head_sha": "d4075ea344a318897e5cd755eb691a2bd45daa89",
+      "merge_sha": "2685429aca6c0b655308a562a693d3075c1994a4"
+    },
+    "suggested_branch": "claude/s10-cc-ops-01-portfolio-risk-runtime-read-model",
+    "objective": "Add one bounded read-only /ops Control Center workspace that projects canonical StrategyLifecycle portfolio authority, budget reservations and canonical portfolio capacity through one new GET endpoint, while composing the existing sanitized gateway status/audit and simulated paper summary/risk APIs without changing their canonical owners or inventing current account, host, network, Gate-C, EXEC-FEAS, incident, execution or live truth.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_ops.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_architecture_boundaries.py",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "docs/control_center_ops_read_model_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-OPS-01.md",
+      "docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-OPS-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_ops.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_architecture_boundaries.py",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "docs/control_center_ops_read_model_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-OPS-01.md",
+      "docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-OPS-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "tools/",
+      ".github/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "src/strategy_lifecycle/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/research_runtime/",
+      "src/data_layer/",
+      "src/monitoring/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/operator_cockpit_frontend/public/",
+      "src/operator_cockpit_frontend/.storybook/"
+    ],
+    "max_changed_files": 16,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "rollback_surface": "Revert S10-CC-OPS-01. The single /api/ops/portfolio route, operator_cockpit_ops.py projection, /ops workspace, OPS query keys/stories and OPS contract/status/package disappear. Existing StrategyLifecycle, paper, gateway, research, dependency, workflow, credential, deployment and live state are not migrated or changed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One new GET-only portfolio-operations projection route and one /ops frontend route are added; existing paper/gateway backend APIs are consumed unchanged.",
+    "items": [
+      {
+        "surface": "GET /api/ops/portfolio",
+        "before": "absent",
+        "after": "one verified StrategyLifecycle portfolio-authority, budget-reservation and canonical capacity projection evaluated at one backend request time",
+        "change_authorized": true,
+        "compatibility_requirement": "GET only; no query parameters; closed source errors; total /api route set exactly 25; no mutation, account, network, execution or live authority",
+        "authority": "READ_ONLY_PRESENTATION"
+      },
+      {
+        "surface": "existing paper APIs consumed by /ops",
+        "before": "/api/paper/summary and /api/paper/risk already exist under the paper workspace",
+        "after": "same backend APIs and DTOs are also consumed under OPS-owned frontend query keys",
+        "change_authorized": true,
+        "compatibility_requirement": "paper backend source and DTO semantics unchanged; display remains SIMULATED PAPER ONLY; no engine invocation or mutation",
+        "authority": "EXISTING_READ_ONLY_PRESENTATION"
+      },
+      {
+        "surface": "existing gateway APIs consumed by /ops",
+        "before": "/api/gateway/status and /api/gateway/audit already expose sanitized verified gateway projections",
+        "after": "same backend APIs and DTOs are also consumed under OPS-owned frontend query keys",
+        "change_authorized": true,
+        "compatibility_requirement": "gateway source and DTO semantics unchanged; recorded state is never promoted to current account, host or network truth",
+        "authority": "EXISTING_SANITIZED_READ_ONLY_PRESENTATION"
+      },
+      {
+        "surface": "frontend /ops",
+        "before": "eight primary routes: /overview /markets /experiments /strategies /hermes /alpha /paper /audit",
+        "after": "plus exactly one primary /ops route with one ops query family and five OPS-owned query keys",
+        "change_authorized": true,
+        "compatibility_requirement": "existing routes preserved; conservative Query defaults/manual refresh only; no mutation/realtime primitive or dependency change",
+        "authority": "READ_ONLY_PRESENTATION"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "OPS-01 must mechanically preserve portfolio-reservation semantics, source ownership, read-only composition, authority separation and exact-head validation.",
+    "items": [
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the 16 declared package paths change; no 17th path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.verified_loader",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "StrategyLifecycle is read only through load_strategy_lifecycle_store and a valid non-null StrategyLifecycleSnapshot",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.capacity_evaluator",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "evaluate_portfolio_capacity(snapshot,evaluated_at_ns) is the sole capacity algorithm and is called exactly once per request",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.evaluation_time",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "one backend time.time_ns value drives evaluator, every allocation window check and response evaluated_at_ns",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.active_policy",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "active_policy is null or the exact same-snapshot active policy with every declared money/count limit and allowed_order_styles",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.no_policy_state",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "valid store with no active policy returns HTTP 200 with active_policy null and the exact canonical POLICY_NOT_ACTIVE capacity result",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.reservations",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "every current allocation is projected from the same snapshot with label, health, window truth, exact canonical capacity result when present and active restrictions",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "portfolio.closed_errors",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "unconfigured, invalid, tampered, wrong-schema or unexpected lifecycle projection failure returns SOURCE_UNAVAILABLE only and never echoes path/value/exception",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "api.ops_portfolio",
+        "source": "CONSTANT",
+        "type": "route_set",
+        "required_rule": "exactly one new GET route /api/ops/portfolio; any query is INVALID_INPUT; final /api route count is 25",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ops.gateway_composition",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "frontend uses existing /api/gateway/status and /api/gateway/audit only; execution_gateway source is unchanged and recorded state is labelled recorded",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ops.paper_composition",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "frontend uses existing /api/paper/summary and /api/paper/risk only; paper source is unchanged and display is SIMULATED PAPER ONLY",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.ops_route",
+        "source": "CONSTANT",
+        "type": "route_set",
+        "required_rule": "frontend adds exactly /ops and QueryFamily ops with the five declared keys; existing routes and conservative query defaults remain",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R013",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.source_independence",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "portfolio, gateway and paper queries fail independently so one source failure does not suppress other usable panels",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R014",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "semantics.no_authority_promotion",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "budget reservations are not actual exposure; gateway access is not fresh host/network/account truth; no incident, Gate-C, EXEC-FEAS, execution-ready or live-ready state is invented",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R015",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "architecture.canonical_sources_unchanged",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "src/strategy_lifecycle, src/execution_gateway and src/paper_trading are byte-unchanged by this WP",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R016",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.canonical_regressions",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "StrategyLifecycle, gateway and paper canonical regression suites pass after the read-model/UI change",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R017",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.no_dependency_workflow_change",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "no dependency, lockfile or workflow path changes",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R018",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.local_first_hosted_final",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "focused/adjacent/frontend/security checks and one local full suite pass on the stable candidate before one final exact-head hosted matrix",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R019",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "evidence.posted_exact_head",
+        "source": "CONSTANT",
+        "type": "contract",
+        "required_rule": "re-fetched posted PR body binds final head/hosted evidence and passes the PR evidence consistency guard before Ready for review YES",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R020",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "field names and closed status values only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The Control Center read projection creates no new canonical content-addressed product identity.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical governed FAST WP lifecycle; user sending this package to the executor authorizes only the bounded implementation after deterministic readiness passes.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST readiness passes with no unresolved decision and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sends this exact package to the executor with an instruction to proceed and readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "only the exact 16 paths change and local-first stable-candidate validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema 1.0.0 fixed failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Bounded change-set examples prove exact scope and reject one-fault protected/dependency/live widenings.",
+    "items": [
+      {
+        "example_id": "valid_exact_sixteen_path_change_set",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_ops_read_model_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-OPS-01.md",
+            "docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-OPS-01/wp_spec.json"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_seventeenth_execution_gateway_path",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_ops_read_model_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-OPS-01.md",
+            "docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-OPS-01/wp_spec.json",
+            "src/execution_gateway/store.py"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_dependency_lock_change",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_ops_read_model_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-OPS-01.md",
+            "docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-OPS-01/wp_spec.json",
+            "src/operator_cockpit_frontend/package-lock.json"
+          ],
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_live_authority",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "AUTHORITY_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_frontend/src/styles.css",
+            "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+            "docs/control_center_ops_read_model_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-OPS-01.md",
+            "docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-OPS-01/wp_spec.json"
+          ],
+          "authority_live": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R020 mirror the package requirement-to-evidence traceability from frozen base through exact-head posted evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "frozen base and predecessor start gate",
+        "command": "git rev-parse HEAD && git merge-base --is-ancestor d4075ea344a318897e5cd755eb691a2bd45daa89 HEAD",
+        "expected_result": "HEAD equals 2685429aca6c0b655308a562a693d3075c1994a4, predecessor head is an ancestor, tree is clean, and no existing S10-CC-OPS-01 branch or PR conflicts"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "FAST readiness and exact 16-path diff",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-OPS-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-OPS-01/wp_spec.json --repo-root . --check-diff --base 2685429aca6c0b655308a562a693d3075c1994a4 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY with deterministic FAST readiness, no certificate, exact 16-path diff and no out-of-scope path"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_o01_verified_lifecycle_loader_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "OPS projection uses only load_strategy_lifecycle_store with a valid non-null snapshot and performs no direct persistence access"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_o02_canonical_capacity_evaluator_once",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "evaluate_portfolio_capacity is called exactly once with the verified snapshot and request evaluation time; no second capacity math exists"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_o03_one_request_time",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "one backend time value drives evaluator, allocation window checks and response evaluated_at_ns"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_o04_active_policy_field_coverage",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "active policy response covers every declared policy identity/window/order-style and money/count limit field from the same snapshot"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_o05_no_active_policy_valid_state",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "valid lifecycle with no active policy returns 200, active_policy null, and canonical PORTFOLIO_CAPACITY_REJECTED with POLICY_NOT_ACTIVE"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_o06_to_o08_reservations_and_canonical_reasons",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "reservation window, strategy label, health, restrictions and exact canonical per-strategy capacity status/reasons are projected without promotion"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_o09_to_o11_closed_errors_and_unchanged_bytes",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py",
+        "expected_result": "canonical capacity rejection remains 200; invalid sources return only SOURCE_UNAVAILABLE with no echo; lifecycle bytes are unchanged"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_o12_exact_route_method_query_and_total",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py tests/test_operator_cockpit.py",
+        "expected_result": "new route is GET-only, any query is INVALID_INPUT, existing routes stay unchanged and exact /api total is 25"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_o13_gateway_composition_boundary",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py tests/execution_gateway/test_store_recovery.py tests/execution_gateway/test_gateway.py",
+        "expected_result": "OPS uses existing sanitized gateway HTTP projection only and gateway store/gateway regressions pass with execution_gateway source unchanged"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_o13_paper_composition_boundary",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py tests/paper_trading",
+        "expected_result": "OPS uses existing paper summary/risk HTTP projections only and paper regressions pass with paper source unchanged"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "frontend",
+        "test": "OPS route/query/type/build",
+        "command": "npm --prefix src/operator_cockpit_frontend run typecheck && npm --prefix src/operator_cockpit_frontend run build",
+        "expected_result": "frontend adds exactly /ops and the ops query family/keys while all existing routes compile and production build succeeds"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "frontend",
+        "test": "Storybook source independence and deterministic OPS states",
+        "command": "npm --prefix src/operator_cockpit_frontend run build-storybook",
+        "expected_result": "Storybook static build succeeds with all six required OPS states and MSW intercepting every OPS request"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_o15_to_o18_no_authority_promotion_or_realtime",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_ops.py tests/test_operator_cockpit_research.py",
+        "expected_result": "source independence holds and no current-account/host/network/live/incident promotion, mutation client method, polling, SSE or WebSocket is introduced"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "architecture exact allowlist and canonical source preservation",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py tests/test_operator_cockpit.py tests/test_operator_cockpit_research.py",
+        "expected_result": "only the exact operator_cockpit_ops.py allowlist entry is added and historical route/navigation guards remain truthful"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "canonical StrategyLifecycle plus gateway and paper regressions",
+        "command": "python -m pytest -q -p no:cacheprovider tests/strategy_lifecycle/test_strategy_lifecycle.py tests/execution_gateway/test_store_recovery.py tests/execution_gateway/test_gateway.py tests/paper_trading",
+        "expected_result": "canonical portfolio, gateway and paper suites pass without modifying their source families"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "validation",
+        "test": "scope hygiene artifacts security and dependency preservation",
+        "command": "python tools/git/diff_scope_summary.py --base 2685429aca6c0b655308a562a693d3075c1994a4 --head HEAD --wp-spec docs/wp_specs/S10-CC-OPS-01/wp_spec.json --require-exact-scope",
+        "expected_result": "exact 16 paths, no protected/generated/out-of-scope path, no dependency/lock/workflow change; artifact/security checks are separately recorded honestly"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "pytest",
+        "test": "one authoritative local full suite then exact-head hosted matrix",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one full local repository suite passes on the stable exact head before a single Ready-for-review transition produces one complete exact-head hosted nine-job matrix"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pr_evidence",
+        "test": "re-fetched posted exact-head PR evidence",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body posted-pr-body.md --expected-head FINAL_HEAD_SHA --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "re-fetched posted PR body binds the final head and hosted run, evidence guard exits 0, evidence mode is truthful and Ready for review is YES"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CC-STREAM-01",
+    "next_title": "Control Center Streaming / Freshness / Gap / Resync Layer",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-STREAM-01",
+    "forbidden_in_this_wp": [
+      "SSE, WebSocket, polling or realtime transport",
+      "execution-host-currentness invocation or currentness claim",
+      "fresh geoblock or execution-network-eligibility claim",
+      "authenticated account, balance, allowance, private order or private trade reads",
+      "full LIVE-ORCH episode reader requiring execution-gateway source widening",
+      "generic persisted EXEC-FEAS or Gate-C history",
+      "new incident or alert registry/lifecycle",
+      "protected commands, authentication, CSRF, mutation receipts or operator actions",
+      "StrategyLifecycle, gateway or paper canonical-source mutation",
+      "dependency, lockfile or workflow change",
+      "credentials, order signing/submission/cancel, execution, live or capital",
+      "deployment",
+      "merge"
+    ]
+  }
+}
