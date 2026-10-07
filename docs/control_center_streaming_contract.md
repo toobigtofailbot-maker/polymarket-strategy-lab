@@ -218,6 +218,13 @@ first interrupt of a locally launched cockpit may wait for that stream, and a se
 forces the exit. Closing the browser tab ends the stream at the next base tick. This is standard
 uvicorn behavior and is not a background task.
 
+The local Vite dev proxy (`vite.config.ts`, unchanged by this WP) does not end the browser side of an
+already-started stream when the loopback backend process is killed. A direct loopback connection does
+end at once. Through the dev proxy, the shell can therefore keep showing `Auto-refresh: Connected`
+after a hard backend stop until the page is reloaded. No refresh signals arrive in that state, and
+manual Refresh still reports the closed safe error. Detecting this in the browser would need a timer,
+which this WP forbids. Proxy behavior belongs to the separately gated S10-CC-PROD-01 deployment work.
+
 ## Deferred / forbidden (unchanged by this WP)
 
 | Concern | Status |
