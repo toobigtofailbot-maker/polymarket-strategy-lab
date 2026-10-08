@@ -1,0 +1,1059 @@
+# S10-CC-CMD-01 — Protected Operator Commands
+
+## 0. Package Identity
+
+- WP ID: S10-CC-CMD-01
+- Repository: toobigtofailbot-maker/polymarket-strategy-lab
+- Package class: PROTECTED_CONTROL_CENTER_LIFECYCLE_GOVERNANCE_COMMANDS
+- Package size class: L (exact 20 / 20 paths)
+Governance track expected: PROTECTED
+- Risk level: 4
+- Capital at risk during implementation/CI: USD 0
+- Orders during implementation/CI: 0
+- Real trading credentials during implementation/CI: NO
+- Authenticated Polymarket account access during implementation/CI: NO
+- External/product network during implementation/CI: NO
+- Gate C / LIVE-ORCH activation during implementation/CI: NO
+- Base branch: main
+- Frozen base / predecessor merge: a78809ddb62cf143ac85ee297e87f961aa9b61f9
+- Required predecessor: PR #227 / S10-CC-STREAM-01
+- Required predecessor head: f344979f8f620519175defe627a5829b569b665d
+- Suggested branch: claude/s10-cc-cmd-01-protected-operator-commands
+- Review owner: Side17
+- Merge authority: Karl only
+- Independent pre-implementation certificate: REQUIRED
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: true
+scheduler: false
+hermes_runtime: false
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+### Protected-package state
+
+This prompt and its matching `wp_spec.json` are a frozen draft package, not implementation authority.
+
+Before product implementation:
+
+1. a genuinely independent reviewer must verify the exact prompt/spec bytes and create `docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json`;
+2. the canonical readiness gate must return `IMPLEMENTATION_READY` against those exact certified bytes;
+3. Karl/Side17 must authorize implementation of the certified package.
+
+The implementation executor must never create, edit, replace or self-certify the certificate.
+Any semantic prompt/spec change invalidates the certificate.
+
+## 1. Objective / Role / Mission
+
+You are the repository implementation engineer for the first protected Control Center command layer.
+
+Turn the merged read-only/auto-refresh Control Center into a **bounded lifecycle-governance console** without creating a second command database, without bypassing canonical StrategyLifecycle, and without exposing paper, execution, Gate C, LIVE-ORCH, account, order or capital authority.
+
+When complete, an explicitly authenticated local operator can perform exactly five canonical lifecycle governance mutations:
+
+```text
+STRATEGY_PAUSE
+STRATEGY_RESUME
+STRATEGY_QUARANTINE
+POLICY_ACTIVATE
+POLICY_REVOKE
+```
+
+The canonical StrategyLifecycle record is the durable receipt/audit evidence. The HTTP response is only a sanitized projection of that canonical result.
+
+## 2. Required End State
+
+```text
+browser operator intent
+→ ephemeral local operator authentication
+→ POST /api/commands/execute
+→ exact current lifecycle head + domain preconditions
+→ conditional canonical lifecycle append
+→ durable content-addressed lifecycle receipt/hash chain
+→ sanitized HTTP command receipt
+→ explicit HTTP query-family invalidation/reread
+```
+
+Permanent separations:
+
+```text
+browser state != canonical authority
+command bearer token != trading credential
+PortfolioAuthorityPolicy != Gate-C/live permit
+strategy resume != order permission
+policy activation != live activation
+command receipt != second source of lifecycle truth
+SSE delivery != command correctness
+```
+
+## 3. Start Gate
+
+Before any mutation:
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git status --short --branch
+git merge-base --is-ancestor f344979f8f620519175defe627a5829b569b665d HEAD
+git branch --list claude/s10-cc-cmd-01-protected-operator-commands
+git branch -r --list origin/claude/s10-cc-cmd-01-protected-operator-commands
+gh pr list --state open --json number,title,headRefName,baseRefName
+```
+
+Require:
+- `HEAD == origin/main == a78809ddb62cf143ac85ee297e87f961aa9b61f9`;
+- PR #227 merged and `f344979f8f620519175defe627a5829b569b665d` is an ancestor;
+- clean working tree;
+- no existing CMD-01 branch/PR;
+- no repo truth claiming CMD-01 complete.
+
+Otherwise:
+
+`STOP S10_CC_CMD_01_BASE_DRIFT`
+
+Before branch creation, repeat bounded full-changed-set guard discovery for every source/path this package will touch. If a mechanically required 21st path exists:
+
+`STOP S10_CC_CMD_01_SCOPE_AMENDMENT_REQUIRED:<path>:<reason>`
+
+## 4. Mandatory Reading
+
+Read before implementation:
+
+1. `AGENTS.md`
+2. `AI_CODING_AGENT_START_HERE.md`
+3. `CLAUDE_START_HERE.md`
+4. `CODEX_START_HERE.md`
+5. `docs/project_status.md`
+6. `docs/repo_truth_index.md`
+7. `docs/ai/codex/WP_DRAFTING_STANDARD.md`
+8. `docs/ai/codex/WP_SPEC_STANDARD.md`
+9. `docs/ai/codex/VALIDATION_MATRIX.md`
+10. `docs/ai/codex/PROTECTED_PATHS.md`
+11. `docs/control_center_streaming_contract.md`
+12. `docs/control_center_ops_read_model_contract.md`
+13. `docs/control_center_strategy_hermes_research_contract.md`
+14. `docs/strategy_lifecycle_portfolio_authority_contract.md`
+15. `src/strategy_lifecycle/models.py`
+16. `src/strategy_lifecycle/policy.py`
+17. `src/strategy_lifecycle/store.py`
+18. `src/operator_cockpit.py`
+19. `src/operator_cockpit_ops.py`
+20. `src/operator_cockpit_frontend/src/api.ts`
+21. `src/operator_cockpit_frontend/src/app.tsx`
+22. all seven in-scope test files that contain historical cockpit/architecture guards.
+
+Read paper/gateway/Hermes mutation code only as boundary verification. Do not modify it.
+
+## 5. Authority / Non-Authority
+
+Authorized:
+- exact 20 paths only;
+- local Control Center operator authentication credential, in-memory only;
+- four command HTTP routes;
+- exactly five StrategyLifecycle commands;
+- one narrow conditional-preview/conditional-append store primitive preserving the old append API;
+- StrategyLifecycle canonical writes through existing record builders;
+- local frontend command controls and deterministic tests; existing Storybook remains compatibility-only and receives no CMD-01 source edit;
+- docs/status/package evidence.
+
+Not authorized:
+- trading/API/wallet/private-key credential use;
+- environment/file/argv command secret loading;
+- external/product network;
+- authenticated Polymarket account reads;
+- Hermes/provider invocation or reassessment;
+- paper engine mutation;
+- execution gateway mutation;
+- Gate C / LIVE-ORCH permit, arm, halt, admission, reconcile or mutation;
+- order create/cancel/sign/submit;
+- portfolio policy creation/editing;
+- strategy risk-allocation creation/editing;
+- `PAPER_ONLY` or `ACTIVE_BUDGET_CAP` browser mutation;
+- incident/alert acknowledgement;
+- scheduler/daemon/background worker/custom retry loop;
+- command queue/database;
+- dependency/lock/workflow change;
+- deployment/Tailscale/firewall/TLS/systemd/monitoring;
+- merge.
+
+## 6. Exact Changed-File Scope — 20
+
+1. `docs/control_center_command_contract.md`
+2. `docs/project_status.md`
+3. `docs/repo_truth_index.md`
+4. `docs/status_entries/S10-CC-CMD-01.md`
+5. `docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt`
+6. `docs/wp_specs/S10-CC-CMD-01/wp_spec.json`
+7. `docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json`
+8. `src/operator_cockpit.py`
+9. `src/operator_cockpit_commands.py`
+10. `src/strategy_lifecycle/store.py`
+11. `tests/strategy_lifecycle/test_strategy_lifecycle.py`
+12. `tests/test_operator_cockpit_commands.py`
+13. `tests/test_operator_cockpit.py`
+14. `tests/test_operator_cockpit_research.py`
+15. `tests/test_operator_cockpit_ops.py`
+16. `tests/test_operator_cockpit_stream.py`
+17. `tests/test_architecture_boundaries.py`
+18. `src/operator_cockpit_ops.py`
+19. `src/operator_cockpit_frontend/src/api.ts`
+20. `src/operator_cockpit_frontend/src/app.tsx`
+
+No 21st path.
+
+The independent certificate path is reserved inside final scope but is reviewer-owned, not implementation-executor-owned.
+
+## 7. Known Historical Compatibility Edits
+
+The following changes are required and must stay narrow:
+
+- `tests/test_operator_cockpit.py`: exact `/api` route set grows 27 → 31 by the four command routes only.
+- `tests/test_operator_cockpit_research.py`: Research/Hermes/Alpha components remain mutation-free; remove only the global assumption that the entire cockpit contains no POST/Pause controls.
+- `src/operator_cockpit_ops.py`: extend the existing read-only `/api/ops/portfolio` projection with `policies`, containing every verified canonical `PortfolioAuthorityPolicy` in append order; preserve `active_policy`, capacity, reservations and all non-authority flags. No mutation logic lives here.
+- `tests/test_operator_cockpit_ops.py`: permit only the approved portfolio-policy command UI in the OPS surface; cover the new canonical `policies` catalogue; continue to forbid Arm/Halt/Cancel/Trade/Reconcile and all execution/live controls.
+- `tests/test_operator_cockpit_stream.py`: STREAM remains GET/EventSource only; narrow only its global no-POST assumption so command POSTs elsewhere do not fail the stream contract.
+- `tests/test_architecture_boundaries.py`: add exact `src/operator_cockpit_commands.py` allowlist entry with PROTECTED/Risk-4 lifecycle-command wording; no wildcard.
+
+Do not weaken unrelated historical guards.
+
+## 8. Canonical Conditional Append Contract
+
+Do not change the public behavior of `append_strategy_lifecycle_record(...)`.
+
+Add a narrow preview + conditional-append surface in `src/strategy_lifecycle/store.py`.
+
+### 8.1 Preview
+
+Input:
+- existing lifecycle store path;
+- exact candidate `LifecycleRecord`;
+- exact expected current store head.
+
+Result states are closed:
+
+```text
+PREVIEW_READY
+IDEMPOTENT_REPLAY
+STALE_HEAD
+REJECTED
+```
+
+Rules:
+1. fully validate path/record/store;
+2. if exact record ID already exists with byte-identical canonical payload → `IDEMPOTENT_REPLAY` before head comparison;
+3. same record ID with different payload → reject identity conflict;
+4. otherwise loaded head must equal expected head;
+5. apply candidate to copied replay state;
+6. on `PREVIEW_READY`, return the verified pre-append snapshot/head plus candidate snapshot information without write; the command layer may inspect these snapshots only after duplicate/stale resolution.
+
+### 8.2 Conditional append
+
+Within `BEGIN IMMEDIATE`:
+
+1. fully verify current store;
+2. exact byte-identical existing record → `IDEMPOTENT_REPLAY` before stale-head check;
+3. otherwise require current head == expected head;
+4. apply candidate to copied state;
+5. enforce existing record/store limits;
+6. append one row and hash-chain entry;
+7. reload/verify;
+8. commit;
+9. return committed record id + resulting head.
+
+A stale expected head performs **zero write**.
+
+The exact retry rule is the reason duplicate detection precedes expected-head rejection.
+
+No migration/schema change.
+
+## 9. Command Module
+
+Create `src/operator_cockpit_commands.py`.
+
+It owns only:
+- command/auth constants;
+- safe request normalization;
+- command digest/reference derivation;
+- in-memory operator auth/session state;
+- five command handlers;
+- candidate preview/postcondition checks;
+- sanitized command receipt/error mappings.
+
+It does not own canonical lifecycle state.
+
+Allowed canonical imports:
+- StrategyLifecycle public record builders/models/policy evaluator;
+- `load_strategy_lifecycle_store`;
+- the new conditional preview/append helpers.
+
+Forbidden imports:
+- paper trading;
+- execution gateway / Gate C / LIVE-ORCH;
+- Hermes runtime;
+- data-layer product clients;
+- network/socket/http libraries;
+- sqlite direct access;
+- subprocess;
+- filesystem writes;
+- environment credential loading.
+
+## 10. Operator Authentication
+
+Commands are default-off.
+
+Append one non-secret/default-safe field to `CockpitConfig`:
+
+```text
+command_auth: CommandAuth | None = None
+```
+
+The field must be appended after existing fields so prior positional calls remain compatible and its repr must not expose secret/token material.
+
+CLI:
+
+```text
+--enable-commands
+--operator-id <id>
+```
+
+When `--enable-commands` is present:
+- require TTY;
+- require `--operator-id` matching `^op-[a-z0-9][a-z0-9_-]{0,30}$`;
+- additionally reject any operator id that would make the resulting lifecycle `command_ref` fail the existing bounded non-secret opaque-reference validation;
+- call `getpass.getpass` for the command secret;
+- never read command secret from argv/env/file;
+- secret length 32..256 and printable;
+- store only SHA-256 digest;
+- compare with `hmac.compare_digest`;
+- raw secret variable is not retained outside bootstrap construction.
+
+Frozen session contract:
+
+```text
+SESSION_TTL_SECONDS = 900
+MAX_ACTIVE_SESSIONS = 1
+SESSION_TOKEN_BYTES = 32
+```
+
+Successful login invalidates prior session.
+
+Bearer token:
+- generated with stdlib `secrets`;
+- raw token returned once to the browser;
+- server stores only token digest;
+- frontend stores raw token only in React memory;
+- no cookie/localStorage/sessionStorage/IndexedDB;
+- process restart invalidates sessions;
+- revoke invalidates current token.
+
+No session refresh endpoint.
+
+## 11. CORS / CSRF Posture
+
+Existing loopback origins remain the only CORS origins.
+
+Change methods/headers only to:
+
+```text
+allow_methods = ["GET", "POST"]
+allow_headers = ["Content-Type", "Authorization"]
+```
+
+No wildcard origins.
+
+No cookies, credentialed CORS or ambient browser auth.
+
+Because every mutation requires an explicit non-cookie bearer token, CMD-01 introduces no cookie-CSRF surface. Do not add a CSRF token/cookie subsystem.
+
+Production private ingress remains S10-CC-PROD-01.
+
+## 12. Exact API Surface
+
+Add exactly:
+
+```text
+GET  /api/commands/status
+POST /api/commands/session
+POST /api/commands/session/revoke
+POST /api/commands/execute
+```
+
+Final `/api` route count: exactly **31**.
+
+No other method/path.
+
+### 12.1 Status
+
+No query.
+
+Returns only:
+
+```text
+read_only: false
+commands_enabled: bool
+auth_mode: "EPHEMERAL_BEARER_SESSION"
+session_ttl_seconds: 900
+active_session: bool
+supported_commands: exact five-kind list
+no_product_network: true
+no_account_access: true
+no_order_authority: true
+no_gate_c_authority: true
+no_live_authority: true
+```
+
+No operator secret/token.
+
+### 12.2 Session login
+
+Exact JSON object:
+
+```text
+{"secret":"..."}
+```
+
+No extra/missing fields.
+
+Disabled → `COMMANDS_DISABLED`.
+Invalid secret → `AUTH_FAILED`.
+
+Implement a bounded failed-login lock for the current process:
+
+```text
+MAX_FAILED_LOGINS = 5
+```
+
+After five failures → `AUTH_LOCKED` until process restart. No sleep/backoff loop.
+
+Success returns:
+
+```text
+operator_id
+session_token
+expires_at_ms
+```
+
+Never log/echo input secret.
+
+### 12.3 Session revoke
+
+Requires current bearer token.
+Revokes it and returns a safe success result.
+
+### 12.4 Execute
+
+Requires valid bearer token and exact JSON command shape.
+
+No automatic server-side retry.
+
+## 13. Command Identity / Time
+
+Frontend command request supplies safe integer `issued_at_ms = Date.now()`.
+
+Backend:
+- rejects bool/non-int/negative;
+- requires time to fall inside the authenticated session validity window;
+- permits at most 5 seconds positive clock skew;
+- converts exactly to `created_time_ns = issued_at_ms * 1_000_000` with overflow check.
+
+Canonical normalized command request + authenticated `operator_id` derives:
+
+```text
+command_digest = sha256(canonical compact JSON)
+command_ref = cccmd:<operator_id>:sha256:<64hex>
+```
+
+No caller-provided idempotency key.
+
+The exact same request reconstructs the exact same lifecycle record without consulting post-commit mutable state. Any state-derived value needed to build a canonical record is therefore carried explicitly in the normalized request.
+
+## 14. Execute Request Shapes
+
+Common exact fields:
+
+```text
+command_kind
+expected_lifecycle_store_head_entry_hash
+issued_at_ms
+confirmation_phrase
+```
+
+Closed kinds:
+
+```text
+STRATEGY_PAUSE
+STRATEGY_RESUME
+STRATEGY_QUARANTINE
+POLICY_ACTIVATE
+POLICY_REVOKE
+```
+
+Confirmations:
+
+```text
+STRATEGY_PAUSE      CONFIRM-PAUSE
+STRATEGY_RESUME     CONFIRM-RESUME
+STRATEGY_QUARANTINE CONFIRM-QUARANTINE
+POLICY_ACTIVATE     CONFIRM-ACTIVATE-POLICY
+POLICY_REVOKE       CONFIRM-REVOKE-POLICY
+```
+
+Target fields:
+- PAUSE: `strategy_version_id`
+- RESUME: `strategy_version_id`, `restriction_key`
+- QUARANTINE: `strategy_version_id`, `previous_health_state`
+- ACTIVATE: `policy_id`, `previous_active_policy_id` (string or explicit null)
+- REVOKE: `policy_id`
+
+Unknown/extra/missing keys fail closed. `previous_health_state` must be one existing health-state token accepted by the existing health receipt builder, including `NEW`; `previous_active_policy_id` must be null or a valid existing policy identity. These request fields are stale-state/idempotency bindings, not browser authority.
+
+### 14.1 Command execution order — retry before mutable preconditions
+
+For all five commands, after auth + exact request normalization:
+
+```text
+derive command_ref/digest
+→ build the exact canonical lifecycle candidate using request fields + fixed command semantics only
+→ call conditional preview
+   → IDEMPOTENT_REPLAY: return success immediately; do NOT re-run current-state preconditions
+   → STALE_HEAD: return STALE_STATE
+   → REJECTED: return sanitized canonical failure
+   → PREVIEW_READY: continue
+→ evaluate only command-specific additional pre/postconditions against the preview before/candidate snapshots
+→ conditional append with the same record + same expected head
+```
+
+This ordering is mandatory. A lost-response retry must reach duplicate detection before any check such as “already paused”, “already quarantined”, “already active” or “restriction no longer present”. New mutations still fail closed on stale head and domain preconditions.
+
+## 15. STRATEGY_PAUSE
+
+Build the exact `StrategyRestrictionReceipt` before mutable-state preconditions:
+
+```text
+action = APPLY
+restriction_kind = PAUSE_NEW_EXPOSURE
+restriction_key = cc.pause.<first24(command_digest)>
+max_active_budget_usd = None
+decision_ref = command_ref
+evidence_refs = ()
+created_time_ns = derived command time
+```
+
+Run duplicate-first preview. For a new `PREVIEW_READY` mutation, require from the preview pre-append snapshot:
+- target version exists;
+- health != RETIRED;
+- no active `PAUSE_NEW_EXPOSURE` restriction already exists.
+
+Then conditional append the exact same record.
+
+## 16. STRATEGY_RESUME
+
+Build the exact CLEAR receipt before mutable-state preconditions using request/fixed fields only:
+
+```text
+strategy_version_id = requested strategy
+restriction_key = requested restriction_key
+action = CLEAR
+restriction_kind = PAUSE_NEW_EXPOSURE
+max_active_budget_usd = None
+decision_ref = command_ref
+evidence_refs = ()
+created_time_ns = derived command time
+```
+
+Run duplicate-first preview. For a new `PREVIEW_READY` mutation, require from the preview pre-append snapshot:
+- target version exists;
+- health not QUARANTINED/RETIRED;
+- exact requested active restriction exists;
+- its restriction kind is exactly `PAUSE_NEW_EXPOSURE` and cap is null.
+
+Use the preview candidate snapshot for the capacity check below.
+
+Then run existing `evaluate_portfolio_capacity(candidate_snapshot, created_time_ns)` exactly once.
+
+Do **not** require the entire portfolio result status to be globally valid merely because an unrelated strategy has its own health/restriction/cap problem. Derive:
+
+```text
+strategy-local reason universe = union(all strategy_result.reason_codes)
+global aggregate reasons = capacity.reason_codes - strategy-local reason universe
+```
+
+Resume is allowed only when:
+- `global aggregate reasons` is empty; and
+- if the target has a currently active positive real-risk allocation, the target strategy result exists and is `PORTFOLIO_CAPACITY_VALID`.
+
+Therefore another paused/quarantined/retired/capped strategy cannot deadlock this target's safe resume, while global pool/capital/active-strategy overflows still block. This deliberately mirrors the existing lifecycle allocation append posture of rejecting global aggregate violations plus the target strategy's own invalidity rather than unrelated strategy-local blockers.
+
+Only then conditional append.
+
+Never clear `PAPER_ONLY` or `ACTIVE_BUDGET_CAP`.
+
+## 17. STRATEGY_QUARANTINE
+
+Build the existing `StrategyHealthReceipt` before mutable-state preconditions using the request-bound previous state:
+
+```text
+previous_health_state = requested previous_health_state
+new_health_state = QUARANTINED
+decision_ref = command_ref
+evidence_refs = ()
+created_time_ns = command time
+```
+
+Run duplicate-first preview. For a new `PREVIEW_READY` mutation, require from the preview pre-append snapshot:
+- target exists;
+- current health exactly equals requested `previous_health_state`;
+- requested/current health is neither QUARANTINED nor RETIRED.
+
+Then conditional append the exact same record.
+
+No Gate C/gateway/order side effect.
+
+## 18. POLICY_ACTIVATE
+
+Build the existing ACTIVATE `PortfolioPolicyReceipt` before mutable-state preconditions:
+
+```text
+policy_id = requested policy
+previous_active_policy_id = requested previous_active_policy_id
+human_authorization_ref = command_ref
+created_time_ns = command time
+```
+
+Run duplicate-first preview. For a new `PREVIEW_READY` mutation, require from the preview pre-append snapshot:
+- target policy exists;
+- current `active_policy_id` exactly equals requested `previous_active_policy_id`;
+- target is not already active;
+- command time >= policy.effective_from_ns;
+- command time < expires_at_ns if expiration exists.
+
+Use the preview candidate snapshot and run existing `evaluate_portfolio_capacity(candidate_snapshot, created_time_ns)` exactly once.
+
+For policy activation, derive top-level aggregate reasons exactly as for resume. Activation rejects when:
+- any global aggregate reason exists; or
+- any strategy-local reason exists **other than** `HEALTH_BLOCKS_ACTIVE_RISK` or `RESTRICTION_BLOCKS_ACTIVE_RISK`.
+
+Thus safety-reducing states (paused/quarantined/retired/PAPER_ONLY) do not deadlock policy activation, but allocation-policy mismatch, invalid allocation, per-strategy limit excess or active-budget-cap excess still block. Activating a different policy never migrates existing allocations: active allocations still bound to another policy cause `ALLOCATION_POLICY_MISMATCH` and require a separately authorized allocation-governance workflow.
+
+No policy creation/edit.
+No allocation migration/edit.
+No Gate-C/live grant.
+
+## 19. POLICY_REVOKE
+
+Build the exact REVOKE receipt before mutable-state preconditions:
+
+```text
+policy_id = requested policy
+previous_active_policy_id = requested policy
+human_authorization_ref = command_ref
+created_time_ns = command time
+```
+
+Run duplicate-first preview. For a new `PREVIEW_READY` mutation, require requested policy exactly equals the pre-append snapshot `active_policy_id`. Then conditional append the exact same record.
+
+## 20. Idempotent Retry Semantics
+
+For every command:
+
+```text
+same exact authenticated operator + exact request
+→ same command_ref
+→ same lifecycle record ID
+```
+
+If the first call committed but the HTTP response was lost, retrying the exact request causes the conditional store helper to detect the identical record **before** stale-head comparison and return `IDEMPOTENT_REPLAY` without writing.
+
+A request whose expected head is stale and whose exact canonical record does not already exist returns `STALE_STATE` with zero write.
+
+Frontend mutation retry is false.
+
+A UI `Retry same request` action, if offered after an ambiguous transport error, must reuse the exact same request object/time while the same bearer session is still valid. It must not silently mint a new timestamp or command.
+
+## 21. Sanitized Command Receipt
+
+Success only:
+
+```text
+schema_version: "1.0.0"
+status: COMMITTED | IDEMPOTENT_REPLAY
+command_ref
+command_kind
+operator_id
+canonical_record_kind
+canonical_record_id
+lifecycle_store_head_entry_hash
+issued_at_ms
+no_product_network: true
+no_account_access: true
+no_order_authority: true
+no_gate_c_authority: true
+no_live_authority: true
+```
+
+No path, raw body, secret, bearer token, SQL, exception, credential or private account data.
+
+The lifecycle record is the durable audit event; do not create a command DB.
+
+## 22. Closed Failures
+
+Command-facing codes:
+
+```text
+COMMANDS_DISABLED
+AUTH_REQUIRED
+AUTH_FAILED
+AUTH_LOCKED
+SESSION_EXPIRED
+INVALID_COMMAND
+INVALID_CONFIRMATION
+STALE_STATE
+COMMAND_PRECONDITION_FAILED
+SOURCE_UNAVAILABLE
+INTERNAL_ERROR
+```
+
+A sanitized `canonical_error_code` may be included only from the existing closed StrategyLifecycle vocabulary.
+
+No raw exception text.
+
+## 23. Frontend
+
+Do not change `styles.css`; reuse existing Button/StatusPill/Panel/state primitives and classes.
+
+Global shell must render command posture:
+
+```text
+Commands: Disabled
+Commands: Locked
+Commands: Unlocked · <operator-id>
+```
+
+Enabled/locked state provides a secret input and Unlock action.
+
+Raw bootstrap secret exists only in local component state until login completes, then is cleared.
+
+Raw session token exists only in React memory at the shell/controller level.
+
+No TanStack cache/localStorage/sessionStorage/cookie/URL token storage.
+
+`api.ts` adds strict DTOs and four same-origin command calls.
+
+Mutation requests use `retry = false`.
+
+### Canonical command snapshot source
+
+Every command confirmation must bind `expected_lifecycle_store_head_entry_hash` from a freshly read `GET /api/ops/portfolio` response. SSE state and the Strategy Detail response are never used as the command head. The OPS response is the single Control Center command-head source for this WP.
+
+### Strategy detail controls
+
+Expose only when commands are enabled/unlocked:
+- Pause new exposure
+- Resume (only with exact visible active pause restriction)
+- Quarantine
+
+### OPS policy controls
+
+Extend the existing OPS read model with `policies`, the full verified append-ordered policy catalogue. Expose:
+- Activate one existing policy selected only from `policies`;
+- Revoke the current `active_policy`.
+
+Do not accept a free-form policy id in the UI. No policy editor. No allocation editor/migration.
+
+Every action shows a confirmation surface containing target identity + current canonical state and requires the exact confirmation phrase before POST.
+
+On committed/idempotent success:
+- clear pending mutation state;
+- invalidate `familyKey("strategies")` and/or `familyKey("ops")` as applicable;
+- do not wait for SSE to make the command correct.
+
+On stale state:
+- show a safe message;
+- reread affected HTTP family;
+- require a new operator review/confirmation.
+
+No Arm/Halt/Trade/Cancel/Reconcile/Run-Hermes control.
+
+## 24. Storybook Compatibility — No New Story Scope
+
+`src/operator_cockpit_frontend/src/foundation.stories.tsx` is intentionally **not** changed in CMD-01. Existing Storybook/MSW remains a compatibility gate only.
+
+If a story does not provide `/api/commands/status`, the existing closed MSW catch-all / safe frontend error handling must leave commands unavailable/locked and render no mutation affordance. No story may emit a real secret, bearer token or POST to a real backend.
+
+Required result: the unchanged Storybook suite/build remains green. CMD-01 does not add visual-reference states; this avoids spending a 21st path on non-essential UI fixtures.
+
+## 25. Follow-Up Prevention / Reviewer Trap Tests
+
+The new focused test file must attack at least:
+
+1. command default-off and no env/argv/file secret path;
+2. non-TTY enable fails closed;
+3. secret length/type and raw-secret no-echo sentinel;
+4. hmac digest comparison and one-session max;
+5. five failed logins lock auth until process restart;
+6. token expiry/revoke/unknown token;
+7. no cookie/persistent browser storage;
+8. CORS exact origins/methods/headers;
+9. exact 31-route set and four command routes;
+10. strict request key closure / command vocabulary / confirmation phrases;
+11. exact command digest/ref determinism;
+12. conditional preview no write;
+13. stale expected head no write;
+14. exact lost-response retry for all five commands returns idempotent with no second row, including QUARANTINE and POLICY_ACTIVATE after their first commit;
+15. legacy append API remains unchanged/idempotent;
+16. pause cannot stack another active PAUSE_NEW_EXPOSURE;
+17. resume cannot clear PAPER_ONLY/ACTIVE_BUDGET_CAP;
+18. resume rejects quarantined/retired target;
+19. resume blocks on target invalidity or true aggregate overflow but ignores unrelated strategy-local health/restriction/cap blockers;
+20. quarantine cannot re-quarantine or revive RETIRED;
+21. activate only existing/effective/unexpired policy;
+22. activate permits only safety-reducing health/restriction local blockers and rejects aggregate, policy-mismatch, allocation-invalid, per-strategy-limit and budget-cap reasons;
+23. revoke only exact active policy;
+24. no policy creation/allocation editing;
+25. no paper/gateway/Hermes/Gate-C/LIVE-ORCH imports/calls;
+26. zero external product network;
+27. receipt recursive secret/path/raw-error scan;
+28. frontend only central command surface owns POST/mutation calls;
+29. frontend token held only in memory;
+30. mutation retry false and exact-request retry reuse;
+31. stale success paths explicitly reread canonical HTTP families;
+32. STREAM remains independent and GET/EventSource only;
+33. Research/Hermes/Alpha views stay mutation-free;
+34. no styles/dependency/workflow changes;
+35. unchanged Storybook remains green and any missing command-status mock leaves commands unavailable/locked with no real secret/token/mutation backend.
+
+## 26. Required Focused Test Nodes
+
+Create `tests/test_operator_cockpit_commands.py` with bounded named tests covering the matrix above, including at minimum:
+
+```text
+test_c01_commands_default_off_and_tty_secret_bootstrap_is_closed
+test_c02_auth_session_token_ttl_single_session_revoke_and_lockout
+test_c03_cors_and_exact_31_route_surface
+test_c04_command_request_parser_and_confirmation_matrix_fail_closed
+test_c05_command_identity_is_deterministic_and_secret_free
+test_c06_conditional_preview_is_no_write_and_stale_head_is_no_write
+test_c07_exact_retry_wins_before_stale_head_and_appends_once
+test_c08_strategy_pause_uses_canonical_pause_restriction
+test_c09_strategy_resume_only_clears_exact_pause_and_uses_target_plus_aggregate_capacity
+test_c10_strategy_quarantine_is_canonical_and_authority_reducing
+test_c11_policy_activate_requires_existing_policy_and_structurally_safe_capacity
+test_c12_policy_revoke_requires_exact_active_policy
+test_c13_receipts_and_errors_never_echo_secret_token_path_or_raw_exception
+test_c14_frontend_command_token_is_memory_only_and_mutations_never_auto_retry
+test_c15_frontend_controls_are_exact_and_no_execution_live_or_hermes_actions_exist
+test_c16_storybook_command_states_are_synthetic_and_network_closed
+```
+
+Also extend lifecycle store tests for preview/conditional append atomic/idempotent semantics.
+
+## 27. Security / Secret Testing
+
+Use only obvious synthetic command secrets in tests.
+
+Run all available repo security tooling honestly. At minimum:
+- generated-artifact guard;
+- gitleaks if available;
+- Semgrep/static security checks if available;
+- frontend `npm audit --audit-level=high`;
+- dependency files must remain unchanged.
+
+Add a unique synthetic secret sentinel in focused tests and recursively scan:
+- response JSON;
+- exception strings;
+- PR/package docs if generated in test fixtures;
+- frontend rendered safe error path where practical.
+
+No security tool failure may be converted to Ready YES.
+
+## 28. Evidence Plan / PROTECTED Validation Sequence
+
+Local-first.
+
+While editing:
+- focused CMD tests;
+- lifecycle-store tests;
+- directly affected cockpit/research/OPS/STREAM/architecture tests;
+- frontend typecheck/build plus unchanged-Storybook compatibility tests.
+
+Stable candidate:
+1. commit stable candidate;
+2. readiness `--check-diff` with the independent certificate;
+3. exact 20/20 scope helper;
+4. focused/adjacent protected command tests;
+5. frontend `npm ci`, typecheck, build, unchanged Storybook build/smoke, npm audit;
+6. security/generated-artifact guards;
+7. explicit forbidden-family diff proof: no paper/execution/Hermes/data/deployment/dependency/workflow changes;
+8. one authoritative local full pytest suite;
+9. independent read-only exact-head implementation review in a separate reviewer context with PASS;
+10. transition PR Ready once;
+11. one final exact-head hosted matrix;
+12. final PR body evidence update;
+13. re-fetch posted PR body and run canonical PR evidence consistency guard;
+14. Side17 final review;
+15. Karl merge only.
+
+Any source/workflow change after hosted PASS invalidates hosted evidence.
+
+## 29. Independent Final Review Focus
+
+The independent final reviewer must explicitly check:
+- no self-authored certificate;
+- default-off commands;
+- no command secret persistence/echo;
+- bearer session lifetime/revoke/lockout;
+- conditional append retry-vs-stale ordering;
+- no second command DB;
+- every command maps to an existing canonical lifecycle record;
+- resume target+aggregate capacity check and policy-activate structural/aggregate capacity classification;
+- no paper/execution/Hermes/Gate-C/LIVE-ORCH/account/order path;
+- frontend cannot auto-retry mutation;
+- stale state requires reread/reconfirmation;
+- exact scope/route/guard corrections;
+- no live/capital authority promotion.
+
+## 30. Negative Test Matrix
+
+N01 base drift → STOP.
+N02 21st path required → STOP.
+N03 missing/invalid independent certificate → STOP.
+N04 dependency/lock/workflow change → STOP.
+N05 command secret accepted from argv/env/file/query → STOP.
+N06 command enabled by default → FAIL.
+N07 cookie/localStorage/sessionStorage auth → FAIL.
+N08 wildcard CORS / credentialed ambient browser auth → FAIL.
+N09 unknown command/field/confirmation accepted → FAIL.
+N10 stale head performs a write → FAIL.
+N11 exact committed retry rejected solely because head advanced → FAIL.
+N12 exact retry appends second row → FAIL.
+N13 command DB/queue introduced → STOP.
+N14 pause mutates anything except PAUSE_NEW_EXPOSURE lifecycle restriction → FAIL.
+N15 resume clears any non-pause restriction → FAIL.
+N16 resume bypasses target/global aggregate capacity, or policy activate ignores structural/aggregate invalidity → FAIL.
+N17 policy creation/edit or allocation edit exposed → STOP.
+N18 raw secret/token/path/exception appears outward → STOP.
+N19 paper mutation imported/called → STOP.
+N20 execution gateway/Gate C/LIVE-ORCH imported/called → STOP.
+N21 Hermes/provider/network call → STOP.
+N22 account/private endpoint/order/cancel/signing path → STOP.
+N23 browser mutation auto-retry → FAIL.
+N24 command correctness depends on SSE → FAIL.
+N25 historical Research/OPS/STREAM guards broadly weakened → FAIL.
+N26 final exact-head full suite/reviewer/hosted/evidence guard missing → Ready NO.
+
+## 31. Hard Stops
+
+`STOP S10_CC_CMD_01_BASE_DRIFT`
+`STOP S10_CC_CMD_01_SCOPE_AMENDMENT_REQUIRED:<path>:<reason>`
+`STOP S10_CC_CMD_01_CERTIFICATE_REQUIRED`
+`STOP S10_CC_CMD_01_AUTH_BOUNDARY_MISMATCH`
+`STOP S10_CC_CMD_01_CANONICAL_OWNER_MISSING:<command>`
+`STOP S10_CC_CMD_01_PAPER_OR_EXECUTION_AUTHORITY_REQUIRED`
+`STOP S10_CC_CMD_01_HERMES_OR_NETWORK_AUTHORITY_REQUIRED`
+`STOP S10_CC_CMD_01_DEPENDENCY_OR_WORKFLOW_CHANGE_REQUIRED`
+`STOP S10_CC_CMD_01_LIVE_OR_CAPITAL_AUTHORITY_REQUIRED`
+`STOP S10_CC_CMD_01_VALIDATION_NOT_REPRODUCIBLE`
+
+Ordinary in-scope defects stay in the same implementation run.
+
+## 32. Docs / Repo Truth
+
+Create `docs/control_center_command_contract.md` containing the exact auth/session/API/command/idempotency/stale-state/receipt/non-authority contracts.
+
+Status/repo-truth must record:
+- predecessor STREAM-01 merged;
+- CMD-01 current target while open;
+- exact five commands only;
+- commands default-off;
+- ephemeral operator auth only;
+- no product network/account/order/Gate-C/live authority;
+- deferred command classes explicitly named;
+- capital/orders USD 0 / 0;
+- merge not authorized.
+
+Do not claim PROD/private deployment complete.
+
+## 33. Successor Boundary
+
+After CMD-01 merges, the planned major Control Center successor remains:
+
+`S10-CC-PROD-01 — Private Production Control Center`
+
+Before PROD implementation, Side17 must explicitly decide whether deferred command classes need a narrow `S10-CC-CMD-02` extension or remain CLI/backend-only:
+- paper pause/resume/kill;
+- gateway/runtime disable;
+- incident acknowledgement;
+- Hermes reassessment.
+
+CMD-01 does not authorize or silently require CMD-02.
+
+No command package may add free-form order entry around strategy/portfolio/risk/Gate C/execution-gateway authority.
+
+## 34. Report Back
+
+Success token:
+
+`READY_FOR_SIDE17_CC_CMD_01_REVIEW`
+
+Return:
+- frozen base/predecessor;
+- branch/PR/final head;
+- independent certificate identity/hash binding;
+- exact 20/20 scope;
+- PROTECTED/Risk-4 readiness;
+- exact 31-route surface;
+- default-off auth proof;
+- synthetic secret no-echo proof;
+- conditional append stale/idempotent proof;
+- five command proofs;
+- frontend memory-only token/no-auto-retry proof;
+- zero paper/execution/Hermes/product-network/account/order/live actions;
+- full local suite result;
+- independent final review result;
+- exact-head hosted run and all jobs;
+- posted PR body evidence guard PASS;
+- `Ready for review: YES`;
+- `Merge authorized: NO`.
+
+On hard stop, return the exact stop token and evidence. Stop before merge.
+
+## 35. Normative Rule Matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scope|changed_files|final|REQUIRE|exact_twenty_paths|scope.exact_paths|R002
+NR002|auth|commands|startup|REQUIRE|default_off_tty_bootstrap|auth.default_off|R003
+NR003|auth|secret|all|FORBID|argv_env_file_cookie_persistence_echo|auth.secret_boundary|R004
+NR004|auth|session|authenticated|REQUIRE|one_ephemeral_bearer_15min|auth.session|R005
+NR005|store|preview|new_command|REQUIRE|expected_head_no_write_preview|store.preview|R006
+NR006|store|append|retry_or_new|REQUIRE|duplicate_before_stale_then_atomic_append|store.conditional_append|R007
+NR007|command|identity|request|REQUIRE|server_derived_operator_bound_digest|command.identity|R008
+NR008|command|pause|valid_request|REQUIRE|canonical_pause_restriction|command.pause|R009
+NR009|command|resume|valid_request|REQUIRE|exact_pause_clear_plus_target_and_global_aggregate_capacity|command.resume|R010
+NR010|command|quarantine|valid_request|REQUIRE|canonical_health_quarantine|command.quarantine|R011
+NR011|command|policy_activate|valid_request|REQUIRE|existing_policy_plus_structural_and_global_aggregate_capacity_with_safety_reducing_local_blocks_allowed|command.policy_activate|R012
+NR012|command|policy_revoke|valid_request|REQUIRE|exact_active_policy_revoke|command.policy_revoke|R013
+NR013|receipt|success|outward|REQUIRE|canonical_id_head_and_non_authority_only|receipt.safe|R014
+NR014|api|command_routes|final|REQUIRE|four_routes_total31|api.routes|R015
+NR015|frontend|auth_state|all|REQUIRE|memory_only_no_cookie_storage|frontend.auth|R016
+NR016|frontend|mutation|execute|REQUIRE|retry_false_confirm_stale_reread|frontend.mutation|R017
+NR017|architecture|canonical_owner|all|FORBID|second_command_db_or_non_lifecycle_mutation|architecture.owner_boundary|R018
+NR018|architecture|forbidden_runtime|all|FORBID|paper_execution_hermes_network_live|architecture.non_authority|R019
+NR019|compatibility|historical_guards|final|REQUIRE|narrow_only|compatibility.guards|R020
+NR020|validation|protected|stable_exact_head|REQUIRE|certificate_full_suite_reviewer_hosted_posted_guard|validation.protected|R021
+END_NORMATIVE_RULE_MATRIX_V1

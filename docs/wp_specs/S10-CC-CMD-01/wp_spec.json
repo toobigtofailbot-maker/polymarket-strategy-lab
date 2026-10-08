@@ -1,0 +1,935 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CC-CMD-01",
+    "title": "Protected Operator Commands",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_CONTROL_CENTER_LIFECYCLE_GOVERNANCE_COMMANDS",
+    "package_size_class": "L",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 227,
+      "head_sha": "f344979f8f620519175defe627a5829b569b665d",
+      "merge_sha": "a78809ddb62cf143ac85ee297e87f961aa9b61f9"
+    },
+    "suggested_branch": "claude/s10-cc-cmd-01-protected-operator-commands",
+    "objective": "Add the first default-off authenticated Control Center mutation boundary for exactly five canonical StrategyLifecycle governance commands using durable lifecycle records as receipts/audit, conditional expected-head append for stale-state plus lost-response idempotency, ephemeral in-memory operator bearer sessions and explicit HTTP rereads, while adding no paper, execution-gateway, Hermes/provider, product-network, account, Gate-C, LIVE-ORCH, order, capital or deployment authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/control_center_command_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-CMD-01.md",
+      "docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-CMD-01/wp_spec.json",
+      "docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_commands.py",
+      "src/strategy_lifecycle/store.py",
+      "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+      "tests/test_operator_cockpit_commands.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_architecture_boundaries.py",
+      "src/operator_cockpit_ops.py",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/app.tsx"
+    ],
+    "allowed_changed_files": [
+      "docs/control_center_command_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-CMD-01.md",
+      "docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-CMD-01/wp_spec.json",
+      "docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json",
+      "src/operator_cockpit.py",
+      "src/operator_cockpit_commands.py",
+      "src/strategy_lifecycle/store.py",
+      "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+      "tests/test_operator_cockpit_commands.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_architecture_boundaries.py",
+      "src/operator_cockpit_ops.py",
+      "src/operator_cockpit_frontend/src/api.ts",
+      "src/operator_cockpit_frontend/src/app.tsx"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "tools/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/data_layer/",
+      "src/paper_trading/",
+      "src/execution_gateway/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/research_runtime/",
+      "src/monitoring/",
+      "src/risk_engine/",
+      "src/strategy_modules/",
+      "src/operator_cockpit_frontend/.storybook/",
+      "src/operator_cockpit_frontend/public/"
+    ],
+    "max_changed_files": 20,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "src/operator_cockpit_ops.py",
+      "tests/test_operator_cockpit.py",
+      "tests/test_operator_cockpit_research.py",
+      "tests/test_operator_cockpit_ops.py",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "rollback_surface": "Revert CMD-01. Four command routes, ephemeral command auth, five lifecycle command controls, conditional lifecycle append helper and command contract disappear. Existing lifecycle records remain valid historical canonical evidence; no paper/gateway/order/live state migration exists.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false,
+    "canonical_evidence_policy": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "CMD-01 changes the cockpit from read-only presentation to a default-off authenticated lifecycle-governance command boundary while preserving all existing GET/stream/read-model contracts.",
+    "items": [
+      {
+        "surface": "Cockpit command bootstrap",
+        "before": "no command auth or browser mutation",
+        "after": "default-off --enable-commands + --operator-id with TTY getpass secret and one ephemeral bearer session",
+        "change_authorized": true,
+        "compatibility_requirement": "no argv/env/file secret; no cookie/storage; process restart invalidates session",
+        "authority": "LOCAL_CONTROL_CENTER_OPERATOR_AUTH_ONLY"
+      },
+      {
+        "surface": "GET /api/commands/status",
+        "before": "absent",
+        "after": "safe non-secret command capability/status",
+        "change_authorized": true,
+        "compatibility_requirement": "GET only; no query; no token/operator secret",
+        "authority": "READ_ONLY_COMMAND_STATUS"
+      },
+      {
+        "surface": "POST /api/commands/session",
+        "before": "absent",
+        "after": "local operator-secret login returns ephemeral bearer session",
+        "change_authorized": true,
+        "compatibility_requirement": "loopback CORS; no cookie/persistence; raw secret never echoed",
+        "authority": "LOCAL_OPERATOR_AUTHENTICATION"
+      },
+      {
+        "surface": "POST /api/commands/session/revoke",
+        "before": "absent",
+        "after": "revokes active ephemeral bearer",
+        "change_authorized": true,
+        "compatibility_requirement": "bearer required; no canonical domain mutation",
+        "authority": "LOCAL_OPERATOR_AUTHENTICATION"
+      },
+      {
+        "surface": "POST /api/commands/execute",
+        "before": "absent",
+        "after": "dispatches exactly five lifecycle governance commands",
+        "change_authorized": true,
+        "compatibility_requirement": "no paper/gateway/Gate-C/LIVE-ORCH/Hermes/account/order path; exact 31 API routes",
+        "authority": "CANONICAL_STRATEGY_LIFECYCLE_GOVERNANCE"
+      },
+      {
+        "surface": "StrategyLifecycle conditional append",
+        "before": "public append is exact-record idempotent but has no expected-head compare",
+        "after": "new preview + conditional append preserves duplicate-before-stale retry semantics and atomically rejects stale new mutation",
+        "change_authorized": true,
+        "compatibility_requirement": "existing append API behavior unchanged; no schema/migration",
+        "authority": "CANONICAL_LIFECYCLE_STORE_SAFETY_PRIMITIVE"
+      },
+      {
+        "surface": "src.operator_cockpit_ops portfolio projection",
+        "before": "read-only OPS response exposes only active_policy plus capacity and strategy reservations",
+        "after": "read-only OPS response additionally exposes policies as the complete verified append-ordered PortfolioAuthorityPolicy catalogue",
+        "change_authorized": true,
+        "compatibility_requirement": "active_policy capacity reservations lifecycle head and non-authority semantics remain unchanged; no mutation logic enters the projection",
+        "authority": "READ_ONLY_CANONICAL_POLICY_CATALOGUE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "PROTECTED command package requires machine-binding of auth, stale/idempotent write semantics, exact command set, non-authority and evidence closure.",
+    "items": [
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the 20 declared paths change; src/operator_cockpit_ops.py replaces non-essential Storybook source; certificate path is reviewer-owned and no 21st path is permitted",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auth.default_off",
+        "source": "CONSTANT",
+        "type": "auth_rule",
+        "required_rule": "commands are disabled unless --enable-commands is explicitly supplied with a TTY and operator id matching ^op-[a-z0-9][a-z0-9_-]{0,30}$ and the resulting command_ref remains valid under existing non-secret opaque-ref rules",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auth.secret_boundary",
+        "source": "CONSTANT",
+        "type": "auth_rule",
+        "required_rule": "operator command secret is 32..256 printable chars accepted only by TTY getpass at startup and login body, retained server-side only as digest, never argv/env/file/query/cookie/storage/log/receipt",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auth.session",
+        "source": "CONSTANT",
+        "type": "auth_rule",
+        "required_rule": "one maximum ephemeral bearer session, 900 second TTL, 32 random token bytes, prior session invalidated on new login, five failed logins lock until restart, revoke and process restart invalidate session",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "store.preview",
+        "source": "CONSTANT",
+        "type": "store_rule",
+        "required_rule": "preview fully verifies store/record, resolves exact duplicate before stale head, writes zero bytes, and on PREVIEW_READY returns pre-append snapshot/head plus candidate snapshot for post-duplicate command checks",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "store.conditional_append",
+        "source": "CONSTANT",
+        "type": "store_rule",
+        "required_rule": "transactional conditional append recognizes byte-identical duplicate before stale-head check; otherwise requires exact expected head and writes one verified hash-chain row or zero rows",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "command.identity",
+        "source": "CONSTANT",
+        "type": "identity_rule",
+        "required_rule": "command_ref derives deterministically from authenticated operator plus exact normalized request; QUARANTINE carries previous_health_state and POLICY_ACTIVATE carries previous_active_policy_id so replay never consults post-commit mutable state; duplicate replay is resolved before current-state preconditions",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "command.pause",
+        "source": "CONSTANT",
+        "type": "command_rule",
+        "required_rule": "exact pause receipt is built before mutable preconditions; duplicate replay wins first; a new mutation requires target exists, not RETIRED, and no active PAUSE_NEW_EXPOSURE restriction",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "command.resume",
+        "source": "CONSTANT",
+        "type": "command_rule",
+        "required_rule": "clear only the exact requested PAUSE_NEW_EXPOSURE restriction; after candidate preview block true top-level aggregate reasons and the target strategy own invalidity, but do not deadlock on unrelated strategy-local blockers",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "command.quarantine",
+        "source": "CONSTANT",
+        "type": "command_rule",
+        "required_rule": "request binds previous_health_state (including NEW where current); exact health receipt is built before mutable preconditions, duplicate replay wins first, and a new mutation requires current health to equal the request and not already be QUARANTINED/RETIRED",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "command.policy_activate",
+        "source": "CONSTANT",
+        "type": "command_rule",
+        "required_rule": "activate only an existing effective unexpired policy with request-bound previous_active_policy_id; reject aggregate/structural allocation invalidity while allowing only safety-reducing HEALTH_BLOCKS_ACTIVE_RISK or RESTRICTION_BLOCKS_ACTIVE_RISK local reasons; never migrate allocations",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "command.policy_revoke",
+        "source": "CONSTANT",
+        "type": "command_rule",
+        "required_rule": "exact revoke receipt is built from requested policy before mutable preconditions; duplicate replay wins first; a new mutation requires that policy to be the exact active policy",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R013",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "receipt.safe",
+        "source": "CONSTANT",
+        "type": "output_contract",
+        "required_rule": "success receipt contains only schema/status/command/operator/canonical record/head/time/non-authority fields and never secret/token/path/raw request/raw exception/account/order data",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R014",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "api.routes",
+        "source": "CONSTANT",
+        "type": "route_set",
+        "required_rule": "add exactly GET /api/commands/status and POST /api/commands/session, /api/commands/session/revoke, /api/commands/execute; final api count exactly 31",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R015",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.auth",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "raw command secret is cleared after login; raw bearer token stays only in React memory and never TanStack/localStorage/sessionStorage/cookie/URL",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R016",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.mutation",
+        "source": "CONSTANT",
+        "type": "frontend_contract",
+        "required_rule": "mutation retry false; every confirmation binds a fresh /api/ops/portfolio lifecycle head; policy activation selects only from the verified OPS policies catalogue; stale forces HTTP reread and new confirmation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R017",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "architecture.owner_boundary",
+        "source": "CONSTANT",
+        "type": "boundary",
+        "required_rule": "no command database/queue and no mutation owner other than existing StrategyLifecycle records plus the narrow conditional-store primitive",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R018",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "architecture.non_authority",
+        "source": "CONSTANT",
+        "type": "boundary",
+        "required_rule": "no paper/gateway/Gate-C/LIVE-ORCH/Hermes/provider/product-network/account/order/capital/deployment mutation or authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R019",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "compatibility.guards",
+        "source": "CONSTANT",
+        "type": "compatibility_rule",
+        "required_rule": "historical cockpit Research/OPS/STREAM/architecture guards are narrowed only for the central command surface and exact 31-route set; unrelated protections remain",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R020",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.protected",
+        "source": "CONSTANT",
+        "type": "validation_rule",
+        "required_rule": "independent pre-implementation certificate, readiness check-diff, exact scope, full suite, security/frontend gates, independent exact-head implementation review, final hosted matrix and re-fetched posted evidence guard all pass",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R021",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "closed command/auth/receipt identifiers and bounded validation evidence only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Command-reference and lifecycle-record identities are implemented and independently recomputed by focused executable tests; this package spec does not duplicate the product command canonicalization as a worked identity-derivation example.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical PROTECTED authorization chain keeps independent DRAFTABILITY_PASS distinct from the later non-authority IMPLEMENTATION_READY package-gate result, explicit Karl/Side17 authorization, and local implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "a genuinely separate independent reviewer binds the exact prompt and spec hashes, records PASS for all twelve protected lenses, confirms unresolved decisions are empty, passes implementability simulation, and creates the independent certificate",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "the exact certified package first passes canonical wp_readiness_gate.py and reports IMPLEMENTATION_READY, then Karl/Side17 explicitly authorizes implementation of those exact certified bytes; IMPLEMENTATION_READY alone never grants authority and is not an authority state",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "exact 20 paths only and all protected stable-candidate validation plus independent exact-head review pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema fixed precedence unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Bounded examples prove exact scope and reject live/execution/paper/network widening.",
+    "items": [
+      {
+        "example_id": "valid_exact_twenty_path_protected_command_package",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "docs/control_center_command_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-CMD-01.md",
+            "docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-CMD-01/wp_spec.json",
+            "docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json",
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_commands.py",
+            "src/strategy_lifecycle/store.py",
+            "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+            "tests/test_operator_cockpit_commands.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_ops.py"
+          ],
+          "authority_strategy": true,
+          "authority_credentials": true,
+          "authority_execution": false,
+          "authority_live": false
+        }
+      },
+      {
+        "example_id": "invalid_execution_gateway_widening",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SCOPE_POLICY_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "docs/control_center_command_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-CMD-01.md",
+            "docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-CMD-01/wp_spec.json",
+            "docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json",
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_commands.py",
+            "src/strategy_lifecycle/store.py",
+            "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+            "tests/test_operator_cockpit_commands.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_ops.py",
+            "src/execution_gateway/gateway.py"
+          ]
+        }
+      },
+      {
+        "example_id": "invalid_live_authority",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "AUTHORITY_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "docs/control_center_command_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-CMD-01.md",
+            "docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-CMD-01/wp_spec.json",
+            "docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json",
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_commands.py",
+            "src/strategy_lifecycle/store.py",
+            "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+            "tests/test_operator_cockpit_commands.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_ops.py"
+          ],
+          "authority_live": true
+        }
+      },
+      {
+        "example_id": "invalid_network_authority",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "AUTHORITY_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "changed_files": [
+            "docs/control_center_command_contract.md",
+            "docs/project_status.md",
+            "docs/repo_truth_index.md",
+            "docs/status_entries/S10-CC-CMD-01.md",
+            "docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt",
+            "docs/wp_specs/S10-CC-CMD-01/wp_spec.json",
+            "docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json",
+            "src/operator_cockpit.py",
+            "src/operator_cockpit_commands.py",
+            "src/strategy_lifecycle/store.py",
+            "tests/strategy_lifecycle/test_strategy_lifecycle.py",
+            "tests/test_operator_cockpit_commands.py",
+            "tests/test_operator_cockpit.py",
+            "tests/test_operator_cockpit_research.py",
+            "tests/test_operator_cockpit_ops.py",
+            "tests/test_operator_cockpit_stream.py",
+            "tests/test_architecture_boundaries.py",
+            "src/operator_cockpit_frontend/src/api.ts",
+            "src/operator_cockpit_frontend/src/app.tsx",
+            "src/operator_cockpit_ops.py"
+          ],
+          "authority_network": true
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R021 bind predecessor/base, exact PROTECTED scope, auth, conditional lifecycle writes, five commands, frontend, non-authority and final exact-head evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "frozen base/predecessor gate",
+        "command": "git rev-parse HEAD && git merge-base --is-ancestor f344979f8f620519175defe627a5829b569b665d HEAD",
+        "expected_result": "HEAD equals a78809ddb62cf143ac85ee297e87f961aa9b61f9, predecessor is ancestor, tree clean and no CMD-01 collision"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "validation",
+        "test": "certified PROTECTED readiness and exact 20-path diff",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-CMD-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-CMD-01/wp_spec.json --certificate docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json --repo-root . --check-diff --base a78809ddb62cf143ac85ee297e87f961aa9b61f9 --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY / PROTECTED / Risk 4 with exact 20 paths"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_c01_commands_default_off_and_tty_secret_bootstrap_is_closed",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "commands default off; only explicit TTY bootstrap enables"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "auth secret boundary and no-echo tests",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "secret never accepted/persisted/echoed outside exact bootstrap/login contract"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_c02_auth_session_token_ttl_single_session_revoke_and_lockout",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "900s one-session bearer, revoke/expiry/lockout are closed"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_c06_conditional_preview_is_no_write_and_stale_head_is_no_write",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "preview writes zero and stale expected head writes zero"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_c07_exact_retry_wins_before_stale_head_and_appends_once",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py tests/strategy_lifecycle/test_strategy_lifecycle.py",
+        "expected_result": "lost-response exact retry for each of the five commands is idempotent before stale/precondition rejection and row count increases once"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_c05_command_identity_is_deterministic_and_secret_free",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "command ref deterministic from normalized request+operator; quarantine/activate request-bound previous-state fields make post-commit replay byte-identical; no secret/token"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_c08_strategy_pause_uses_canonical_pause_restriction",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "pause appends exactly canonical PAUSE_NEW_EXPOSURE restriction"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_c09_strategy_resume_only_clears_exact_pause_and_uses_target_plus_aggregate_capacity",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "resume clears only exact pause; target invalidity or true aggregate overflow blocks, unrelated strategy-local blockers do not"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_c10_strategy_quarantine_is_canonical_and_authority_reducing",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "quarantine appends exact health receipt and no external side effect"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_c11_policy_activate_requires_existing_policy_and_structurally_safe_capacity",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "activation uses request-bound previous active policy, permits only safety-reducing health/restriction local blockers, rejects aggregate/structural allocation invalidity and never migrates allocations"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_c12_policy_revoke_requires_exact_active_policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "revoke only exact active policy"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_c13_receipts_and_errors_never_echo_secret_token_path_or_raw_exception",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "recursive outward surfaces contain only bounded safe receipt/error fields"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_c03_cors_and_exact_31_route_surface",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py tests/test_operator_cockpit.py",
+        "expected_result": "CORS remains exact loopback GET/POST Content-Type/Authorization and route set exactly 31"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_c14_frontend_command_token_is_memory_only_and_mutations_never_auto_retry",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py",
+        "expected_result": "frontend auth is memory-only with no ambient/persistent credential"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_c15_frontend_controls_are_exact_and_no_execution_live_or_hermes_actions_exist",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py tests/test_operator_cockpit_research.py tests/test_operator_cockpit_ops.py tests/test_operator_cockpit_stream.py",
+        "expected_result": "only five command affordances; command head comes from fresh OPS HTTP read; policy choices come from verified policies catalogue; stale reread/no-auto-retry; no economic/runtime/Hermes action"
+      },
+      {
+        "requirement_id": "R018",
+        "source": "pytest",
+        "test": "command owner boundary tests",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_commands.py tests/test_architecture_boundaries.py",
+        "expected_result": "no second DB/queue and command module imports only lifecycle governance owners"
+      },
+      {
+        "requirement_id": "R019",
+        "source": "validation",
+        "test": "forbidden protected families unchanged",
+        "command": "git diff --exit-code a78809ddb62cf143ac85ee297e87f961aa9b61f9...HEAD -- src/paper_trading src/execution_gateway src/exploratory_gate_c src/research_runtime src/data_layer .github pyproject.toml requirements.txt src/operator_cockpit_frontend/package.json src/operator_cockpit_frontend/package-lock.json",
+        "expected_result": "zero forbidden family/dependency/workflow delta"
+      },
+      {
+        "requirement_id": "R020",
+        "source": "pytest",
+        "test": "historical compatibility guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py tests/test_operator_cockpit_research.py tests/test_operator_cockpit_ops.py tests/test_operator_cockpit_stream.py tests/test_architecture_boundaries.py",
+        "expected_result": "OPS projection adds only verified policy catalogue; historical guards narrowed only for central command surface and exact 31 routes; unchanged Storybook remains compatible"
+      },
+      {
+        "requirement_id": "R021",
+        "source": "validation",
+        "test": "protected stable-candidate and exact-head evidence",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "authoritative local full suite passes; separate exact-head independent review PASS; final hosted matrix green; posted PR evidence guard exits 0"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CC-PROD-01",
+    "next_title": "Private Production Control Center",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-PROD-01",
+    "forbidden_in_this_wp": [
+      "paper browser mutation controls",
+      "execution gateway disable/reconcile/authority controls",
+      "incident acknowledgement without canonical incident owner",
+      "Hermes reassessment/provider invocation",
+      "policy creation/editing or strategy risk-allocation editing",
+      "Gate C/LIVE-ORCH permit/arm/admission/halt/reconcile",
+      "authenticated Polymarket account/private endpoint access",
+      "order signing/create/cancel/submit",
+      "external product network",
+      "scheduler/daemon/background worker",
+      "Tailscale/private production ingress/deployment/monitoring",
+      "dependency/lock/workflow change",
+      "merge"
+    ]
+  }
+}
