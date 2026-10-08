@@ -490,6 +490,16 @@ def build_summary(
                 if e.get("status") in ("R", "C") and "old_path" in e
             ]
         ))
+        # Copy origins are provenance, not additional changed paths. Retain all
+        # origins in policy_paths for safety/authority; only rename origins also
+        # participate in allowed scope. Independently changed copy origins are
+        # already present in all_paths and therefore remain scope-checked.
+        allowed_scope_paths = sorted(set(
+            all_paths + [
+                e["old_path"] for e in entries
+                if e.get("status") == "R" and "old_path" in e
+            ]
+        ))
         total = len(all_paths)
     else:
         normalized_untracked = []
@@ -506,12 +516,13 @@ def build_summary(
                 by_status["other"].append(p)
         policy_paths = all_paths
         total = len(all_paths)
+        allowed_scope_paths = all_paths
 
     # Scope classification
     out_of_scope = []
     scope_declared = bool(allowed_files or allowed_prefixes)
     if scope_declared:
-        for p in policy_paths:
+        for p in allowed_scope_paths:
             in_scope = is_in_scope(p, allowed_files, allowed_prefixes)
             if in_scope is False:
                 out_of_scope.append(p)

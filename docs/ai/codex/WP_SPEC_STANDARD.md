@@ -192,6 +192,29 @@ path that the exact-scope helper necessarily classifies as protected or
 generated is a `SCOPE_POLICY_INVALID` failure before authority checks.
 Unknown top-level path families are authority contradictions.
 
+### Copy-origin allowed-scope successor policy (S10-GOV-COPY-01)
+
+S10-GOV-COPY-01 supersedes historical WP159 section 14 only for the
+`allowed_changed_files` / `out_of_scope_files` classification of `C` copy-origin
+provenance in spec mode. An unchanged copy origin is not an additional changed
+file and need not be in the allowed set. The copy destination, every independently
+changed source, and untracked paths still meet all exact-scope rules.
+
+The helper uses `allowed_scope_paths` (actual changed/untracked destinations plus
+rename origins) only for allowed-file classification. It retains `policy_paths`
+(those destinations plus all rename/copy origins) for forbidden prefixes,
+built-in protected paths, generated artifacts, dependency/lock hazards and
+path-level authority. A benign out-of-allowed copy origin alone no longer fails;
+an unsafe or unauthorized origin still fails under the retained checks. Both
+rename endpoints remain subject to every policy, including allowed scope.
+
+The exact `-z --find-renames=50% --find-copies=50% --find-copies-harder` Git
+arguments, parser/provenance (`old_path`, `status_detail`), unique destination
+count, required presence, whitespace checks, strict exit behavior, public
+signatures, output fields and legacy schema remain unchanged. No WP-specific
+whitelist or detection override is permitted. The historical WP159 artifacts
+remain unchanged; all their unaffected invariants continue to apply.
+
 ## Applicability sections and nested item schemas
 
 `api_matrix`, `semantic_fields`, `identity_derivations`, `state_transitions`,
