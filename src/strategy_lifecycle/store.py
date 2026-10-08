@@ -7,6 +7,13 @@ content IDs, the entry hash chain, and all cross-record transitions by replay. T
 current lifecycle state is never stored; it is derived by verified replay only.
 Appends are single-record and transactional: a rejected append leaves the database
 unchanged. Results expose closed codes only and never raw exception text.
+
+S10-CC-CMD-01 adds a narrow expected-head surface beside the unchanged public append:
+``preview_strategy_lifecycle_record`` (verified, read-only, zero writes) and
+``conditional_append_strategy_lifecycle_record`` (one ``BEGIN IMMEDIATE`` transaction).
+Both resolve an exact byte-identical existing record as ``IDEMPOTENT_REPLAY`` before any
+expected-head comparison, so a lost-response retry of a committed record is recognized even
+after the head has advanced; a stale expected head for a new record writes nothing.
 """
 
 from __future__ import annotations
@@ -47,6 +54,9 @@ STORE_STATUSES = (
     "STORE_LOADED_VERIFIED",
     "STORE_REJECTED",
 )
+# S10-CC-CMD-01 closed expected-head result states.
+CONDITIONAL_PREVIEW_STATUSES = ("PREVIEW_READY", "IDEMPOTENT_REPLAY", "STALE_HEAD", "REJECTED")
+CONDITIONAL_APPEND_STATUSES = ("COMMITTED", "IDEMPOTENT_REPLAY", "STALE_HEAD", "REJECTED")
 
 _KIND_SQL = ", ".join(f"'{kind}'" for kind in RECORD_KINDS)
 _CREATE_META = (
@@ -458,6 +468,213 @@ def append_strategy_lifecycle_record(
         return _rejected("INTERNAL_VALIDATION_FAILED")
     except Exception:
         return _rejected("INTERNAL_VALIDATION_FAILED")
+    finally:
+        if connection is not None:
+            if connection.in_transaction:
+                try:
+                    connection.execute("ROLLBACK")
+                except sqlite3.Error:
+                    pass
+            connection.close()
+
+
+# ---------------------------------------------------------------------------
+# S10-CC-CMD-01: expected-head preview and conditional append.
+# ---------------------------------------------------------------------------
+
+_HEAD_HEX_LENGTH = 64
+_HEX_DIGITS = frozenset("0123456789abcdef")
+
+
+@dataclass(frozen=True)
+class StrategyLifecycleConditionalResult:
+    """Closed expected-head result.
+
+    ``store_head_entry_hash`` is the verified pre-append head for ``PREVIEW_READY``, the
+    resulting head for ``COMMITTED`` and the current head for ``IDEMPOTENT_REPLAY``; it is
+    ``None`` for ``STALE_HEAD`` and ``REJECTED``. Snapshots are present only on
+    ``PREVIEW_READY``: the verified pre-append state and the candidate state with the record
+    applied (never written).
+    """
+
+    status: str
+    error_codes: tuple[str, ...]
+    record_id: str | None
+    store_head_entry_hash: str | None
+    before_snapshot: StrategyLifecycleSnapshot | None = None
+    candidate_snapshot: StrategyLifecycleSnapshot | None = None
+
+
+def _conditional(
+    status: str, record_id: str | None = None, head: str | None = None
+) -> StrategyLifecycleConditionalResult:
+    return StrategyLifecycleConditionalResult(status, (), record_id, head)
+
+
+def _conditional_rejected(code: str) -> StrategyLifecycleConditionalResult:
+    return StrategyLifecycleConditionalResult(
+        "REJECTED", (StrategyLifecycleError(code).code,), None, None
+    )
+
+
+def _expected_head(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise _fail("FIELD_TYPE_INVALID")
+    if len(value) != _HEAD_HEX_LENGTH or not set(value) <= _HEX_DIGITS:
+        raise _fail("FIELD_VALUE_INVALID")
+    return value
+
+
+@dataclass(frozen=True)
+class _Encoded:
+    kind: str
+    record_id: str
+    payload_json: str
+    payload_sha: str
+    payload_size: int
+
+
+def _encode(record: LifecycleRecord) -> _Encoded:
+    kind = record_kind_of(record)
+    mapping = record.to_mapping()
+    if record_from_mapping(kind, mapping) != record:
+        raise _fail("IDENTITY_CONFLICT")
+    payload_bytes = canonical_json_bytes(mapping)
+    if len(payload_bytes) > MAX_RECORD_PAYLOAD_BYTES:
+        raise _fail("LIMIT_EXCEEDED")
+    return _Encoded(
+        kind, record.record_id, payload_bytes.decode("utf-8"), sha256_hex(payload_bytes),
+        len(payload_bytes),
+    )
+
+
+def _resolve(
+    loaded: _Loaded, record: LifecycleRecord, encoded: _Encoded, expected: str | None
+) -> tuple[str, _LifecycleState | None, str | None]:
+    """Shared ordering: exact duplicate first, then expected head, then candidate replay."""
+
+    existing = loaded.payloads.get(encoded.record_id)
+    if existing is not None:
+        if existing != encoded.payload_json:
+            raise _fail("IDENTITY_CONFLICT")
+        return "IDEMPOTENT_REPLAY", None, None
+    if loaded.head != expected:
+        return "STALE_HEAD", None, None
+    if (
+        loaded.rows + 1 > MAX_STORE_RECORDS
+        or loaded.payload_bytes + encoded.payload_size > MAX_AGGREGATE_PAYLOAD_BYTES
+    ):
+        raise _fail("LIMIT_EXCEEDED")
+    candidate = loaded.state.copy()
+    candidate.apply(record)
+    new_head = entry_hash(
+        loaded.rows, encoded.kind, encoded.record_id, encoded.payload_sha, loaded.head
+    )
+    return "READY", candidate, new_head
+
+
+def preview_strategy_lifecycle_record(
+    path: object, record: LifecycleRecord, expected_head_entry_hash: object
+) -> StrategyLifecycleConditionalResult:
+    """Verify the store read-only and classify one candidate record; never writes."""
+
+    try:
+        target = _validated_path(path, must_exist=True)
+        expected = _expected_head(expected_head_entry_hash)
+        encoded = _encode(record)
+    except StrategyLifecycleError as failure:
+        return _conditional_rejected(failure.code)
+    except Exception:
+        return _conditional_rejected("INTERNAL_VALIDATION_FAILED")
+    connection = None
+    try:
+        connection = _connect(target, "ro")
+        loaded = _load(connection)
+        outcome, candidate, new_head = _resolve(loaded, record, encoded, expected)
+        if outcome == "IDEMPOTENT_REPLAY":
+            return _conditional("IDEMPOTENT_REPLAY", encoded.record_id, loaded.head)
+        if outcome == "STALE_HEAD":
+            return _conditional("STALE_HEAD")
+        return StrategyLifecycleConditionalResult(
+            "PREVIEW_READY",
+            (),
+            encoded.record_id,
+            loaded.head,
+            loaded.snapshot(),
+            candidate.snapshot(  # type: ignore[union-attr]
+                store_head_entry_hash=new_head,
+                total_rows=loaded.rows + 1,
+                total_payload_bytes=loaded.payload_bytes + encoded.payload_size,
+            ),
+        )
+    except StrategyLifecycleError as failure:
+        return _conditional_rejected(failure.code)
+    except sqlite3.Error:
+        return _conditional_rejected("INTEGRITY_TAMPER")
+    except Exception:
+        return _conditional_rejected("INTERNAL_VALIDATION_FAILED")
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def conditional_append_strategy_lifecycle_record(
+    path: object, record: LifecycleRecord, expected_head_entry_hash: object
+) -> StrategyLifecycleConditionalResult:
+    """Append exactly one record only if the verified head equals the expected head.
+
+    Inside one ``BEGIN IMMEDIATE`` transaction: full verification, exact duplicate ->
+    ``IDEMPOTENT_REPLAY`` (zero writes) before the head comparison, stale head ->
+    ``STALE_HEAD`` (zero writes), otherwise candidate replay, limits, one hash-chained row,
+    reload/verify and commit.
+    """
+
+    try:
+        target = _validated_path(path, must_exist=True)
+        expected = _expected_head(expected_head_entry_hash)
+        encoded = _encode(record)
+    except StrategyLifecycleError as failure:
+        return _conditional_rejected(failure.code)
+    except Exception:
+        return _conditional_rejected("INTERNAL_VALIDATION_FAILED")
+    connection = None
+    try:
+        connection = _connect(target, "rw")
+        connection.execute("BEGIN IMMEDIATE")
+        try:
+            loaded = _load(connection)
+        except StrategyLifecycleError as failure:
+            code = failure.code if failure.code == "SCHEMA_CONFLICT" else "INTEGRITY_TAMPER"
+            raise _fail(code) from None
+        outcome, _candidate, new_head = _resolve(loaded, record, encoded, expected)
+        if outcome == "IDEMPOTENT_REPLAY":
+            connection.execute("ROLLBACK")
+            return _conditional("IDEMPOTENT_REPLAY", encoded.record_id, loaded.head)
+        if outcome == "STALE_HEAD":
+            connection.execute("ROLLBACK")
+            return _conditional("STALE_HEAD")
+        connection.execute(
+            "INSERT INTO lifecycle_records (sequence_number, record_kind, record_id,"
+            " payload_json, payload_sha256, previous_entry_hash, entry_hash)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                loaded.rows, encoded.kind, encoded.record_id, encoded.payload_json,
+                encoded.payload_sha, loaded.head, new_head,
+            ),
+        )
+        verified = _load(connection)
+        if verified.head != new_head or verified.rows != loaded.rows + 1:
+            raise _fail("INTERNAL_VALIDATION_FAILED")
+        connection.execute("COMMIT")
+        return _conditional("COMMITTED", encoded.record_id, new_head)
+    except StrategyLifecycleError as failure:
+        return _conditional_rejected(failure.code)
+    except sqlite3.Error:
+        return _conditional_rejected("INTERNAL_VALIDATION_FAILED")
+    except Exception:
+        return _conditional_rejected("INTERNAL_VALIDATION_FAILED")
     finally:
         if connection is not None:
             if connection.in_transaction:

@@ -13,6 +13,10 @@ exposure, orders, fills or PnL, and nothing projected here implies Gate-C eligib
 host or network currentness, execution readiness or live authority. Paper and gateway
 state are composed by the frontend from their existing read-only APIs; they are never
 read or merged here.
+
+S10-CC-CMD-01 adds ``policies``: every verified ``PortfolioAuthorityPolicy`` in append order,
+the only source of the Control Center policy-activation choices. It is a read-only catalogue;
+no command or mutation logic lives in this module.
 """
 
 from __future__ import annotations
@@ -182,6 +186,8 @@ def _project(path: Path, evaluated_at_ns: int) -> dict[str, Any]:
         "evaluated_at_ns": evaluated_at_ns,
         "lifecycle_store_head_entry_hash": snapshot.store_head_entry_hash,
         "active_policy": active_policy,
+        # S10-CC-CMD-01: the complete verified policy catalogue in append order, read only.
+        "policies": [_policy(policy) for policy in snapshot.policies],
         "capacity": _capacity(capacity),
         "strategy_reservations": reservations,
         "non_authority": dict(NON_AUTHORITY),

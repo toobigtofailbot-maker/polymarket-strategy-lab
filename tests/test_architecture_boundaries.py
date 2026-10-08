@@ -184,6 +184,13 @@ APPROVED_SRC_SCOPES = (
     # or network resource, persists nothing and has no background task, command, credential,
     # paper, execution or live authority. It is not a src/operator_cockpit* wildcard approval.
     "src/operator_cockpit_stream.py",
+    # S10-CC-CMD-01 (PROTECTED, risk 4) approves exactly the default-off Control Center
+    # lifecycle-governance command module: in-memory operator auth plus five canonical
+    # StrategyLifecycle commands appended only through the conditional expected-head store
+    # primitive. It has no command database, product network, account, credential, paper,
+    # execution, Gate-C, LIVE-ORCH, order or live authority. It is not a
+    # src/operator_cockpit* wildcard approval.
+    "src/operator_cockpit_commands.py",
     "src/operator_cockpit_frontend",
     # S10-STRAT-LIFE-01 approves exactly the stdlib-only src/strategy_lifecycle family:
     # local/offline strategy lifecycle and global portfolio-policy state only. It has no
@@ -293,6 +300,10 @@ def test_no_executable_files_exist_under_src_except_approved_scope():
     Control Center refresh/resync SSE transport only (transport metadata only; no canonical
     store read, persistence, background task, network, command, paper, execution or live
     authority).
+    S10-CC-CMD-01 (PROTECTED, risk 4) permits src/operator_cockpit_commands.py for the default-off
+    Control Center lifecycle-governance commands only (in-memory operator auth; five canonical
+    StrategyLifecycle records through the conditional expected-head append; no command
+    database, network, account, paper, execution, Gate-C, LIVE-ORCH, order or live authority).
     All other src/ subdirectories must remain README-only.
     """
     src = ROOT / "src"

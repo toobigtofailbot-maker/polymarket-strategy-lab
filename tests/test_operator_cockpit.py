@@ -395,7 +395,13 @@ def test_exact_routes_limits_errors_and_no_mutation_routes(
         "/api/ops/portfolio": {"GET"},
         "/api/stream/status": {"GET"},
         "/api/stream/events": {"GET"},
+        # S10-CC-CMD-01: exactly four default-off command routes (31 /api routes).
+        "/api/commands/status": {"GET"},
+        "/api/commands/session": {"POST"},
+        "/api/commands/session/revoke": {"POST"},
+        "/api/commands/execute": {"POST"},
     }
+    assert len(domain) == 31
     assert _get(app, "/api/market-truth/recent")[1]["limit"] == 50
     for accepted in ("1", "100"):
         status, body = _get(app, f"/api/experiments?limit={accepted}")

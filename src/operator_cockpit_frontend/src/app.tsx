@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useIsFetching, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { Navigate, NavLink, Route, Routes, useLocation } from "react-router";
 import {
@@ -10,13 +10,20 @@ import {
   alphaMemoryQuery,
   alphaTriageDetailQuery,
   auditRecentQuery,
+  COMMAND_REREAD_FAMILIES,
+  CommandApiError,
+  commandStatusQuery,
+  CONFIRMATION_PHRASES,
+  executeCommand,
   experimentDetailQuery,
   experimentsQuery,
   familyKey,
   healthQuery,
   hermesAssessmentDetailQuery,
   hermesAssessmentsQuery,
+  loginCommandSession,
   marketRecentQuery,
+  newCommandRequest,
   opsGatewayAuditQuery,
   opsGatewayStatusQuery,
   opsPaperRiskQuery,
@@ -28,16 +35,24 @@ import {
   paperPositionsQuery,
   paperRiskQuery,
   paperSummaryQuery,
+  parseOpsPolicies,
   parseStreamEvent,
+  revokeCommandSession,
   STREAM_EVENT_NAMES,
   strategiesQuery,
   strategyDetailQuery,
   streamEventUrl,
   streamStatusQuery,
+  toCommandError,
   toSafeErrorCode,
   type AlphaResolutionStatus,
   type AlphaSourceReference,
   type CapacityStatus,
+  type CommandErrorCode,
+  type CommandReceipt,
+  type CommandRequest,
+  type CommandSession,
+  type CommandTarget,
   type ContextStatus,
   type DiscoveryLaneName,
   type GatewayAuditItem,
@@ -55,6 +70,7 @@ import {
   type PaperSummary,
   type QueryFamily,
   type ResearchResultState,
+  type StrategyDetail,
   type StreamBaseline,
   type StreamEventName,
 } from "./api";
@@ -659,6 +675,7 @@ function StrategyDetailPanel({ strategyVersionId, onClose }: { strategyVersionId
                 </ul>
               )}
             </section>
+            <StrategyCommands item={item} />
             <section className="evidence-section">
               <h3>Strategy definition</h3>
               {Object.entries(item.strategy_definition).map(([key, value]) => (
@@ -1676,6 +1693,7 @@ function PortfolioAuthorityPanel({ portfolio }: { portfolio: UseQueryResult<OpsP
               <h3>Active portfolio policy</h3>
               <ActivePolicy policy={data.active_policy} />
             </section>
+            <PolicyCommands portfolio={data} />
           </div>
         )}
       </QueryState>
@@ -1937,6 +1955,455 @@ function RefreshControl({ family }: { family: QueryFamily }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// S10-CC-CMD-01 protected command surface. Default-off. One shell-level controller owns the
+// in-memory bearer session and is the only caller of the command transport. Every action binds
+// the expected lifecycle head from a fresh /api/ops/portfolio read, shows the target and current
+// canonical state, requires the exact confirmation phrase, never retries on its own and re-reads
+// the affected HTTP families after every outcome. Commands change canonical StrategyLifecycle
+// governance state only: no order, account, Gate-C, execution or live authority.
+// ---------------------------------------------------------------------------
+
+type CommandPostureState = "Disabled" | "Locked" | "Unlocked";
+type CommandOutcome =
+  | { kind: "success"; receipt: CommandReceipt }
+  | { kind: "error"; error: CommandApiError; epoch: number | null };
+type CommandController = {
+  posture: CommandPostureState;
+  operatorId: string | null;
+  sessionEpoch: number | null;
+  unlock: (secret: string) => Promise<CommandApiError | null>;
+  lock: () => Promise<void>;
+  readCommandHead: () => Promise<OpsPortfolio>;
+  run: (request: Readonly<CommandRequest>) => Promise<CommandOutcome>;
+};
+
+const COMMANDS_UNAVAILABLE: CommandController = {
+  posture: "Disabled",
+  operatorId: null,
+  sessionEpoch: null,
+  unlock: async () => new CommandApiError("COMMANDS_DISABLED"),
+  lock: async () => undefined,
+  readCommandHead: async () => Promise.reject(new CommandApiError("COMMANDS_DISABLED")),
+  run: async () => ({ kind: "error", error: new CommandApiError("COMMANDS_DISABLED"), epoch: null }),
+};
+const CommandContext = createContext<CommandController>(COMMANDS_UNAVAILABLE);
+const useCommandController = () => useContext(CommandContext);
+
+const SESSION_ENDING_CODES: readonly CommandErrorCode[] = ["AUTH_REQUIRED", "SESSION_EXPIRED", "COMMANDS_DISABLED"];
+
+function CommandSessionProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
+  const status = useQuery(commandStatusQuery);
+  // The raw bearer token exists only here, in React memory; a reload or restart forgets it.
+  const [session, setSession] = useState<{ value: CommandSession; epoch: number } | null>(null);
+  const epochs = useRef(0);
+  const available = status.data?.commands_enabled === true;
+
+  const controller = useMemo<CommandController>(() => {
+    if (!available) return COMMANDS_UNAVAILABLE;
+    const refreshStatus = () => void queryClient.invalidateQueries({ queryKey: commandStatusQuery.queryKey });
+    // Explicit HTTP re-read of the affected families; command correctness never waits for the stream.
+    const reread = () => {
+      for (const family of COMMAND_REREAD_FAMILIES) void queryClient.invalidateQueries({ queryKey: familyKey(family) });
+    };
+    return {
+      posture: session === null ? "Locked" : "Unlocked",
+      operatorId: session?.value.operatorId ?? null,
+      sessionEpoch: session?.epoch ?? null,
+      unlock: async (secret) => {
+        try {
+          const value = await loginCommandSession(secret);
+          epochs.current += 1;
+          setSession({ value, epoch: epochs.current });
+          return null;
+        } catch (error) {
+          return toCommandError(error);
+        } finally {
+          refreshStatus();
+        }
+      },
+      lock: async () => {
+        const current = session;
+        setSession(null);
+        if (current !== null) {
+          try {
+            await revokeCommandSession(current.value.token);
+          } catch {
+            // The token is already forgotten locally; the server session also ends at its TTL.
+          }
+        }
+        refreshStatus();
+      },
+      readCommandHead: () => queryClient.fetchQuery({ ...opsPortfolioQuery, staleTime: 0 }),
+      run: async (request) => {
+        const current = session;
+        if (current === null) return { kind: "error", error: new CommandApiError("AUTH_REQUIRED"), epoch: null };
+        try {
+          const receipt = await executeCommand(current.value.token, request);
+          return { kind: "success", receipt };
+        } catch (error) {
+          const failure = toCommandError(error);
+          if (SESSION_ENDING_CODES.includes(failure.code)) {
+            setSession(null);
+            refreshStatus();
+          }
+          return { kind: "error", error: failure, epoch: current.epoch };
+        } finally {
+          reread();
+        }
+      },
+    };
+  }, [available, session, queryClient]);
+
+  return <CommandContext.Provider value={controller}>{children}</CommandContext.Provider>;
+}
+
+const COMMAND_ERROR_TEXT: Partial<Record<CommandErrorCode, string>> = {
+  COMMANDS_DISABLED: "Commands are disabled for this cockpit process.",
+  AUTH_REQUIRED: "The command session is no longer valid. Unlock again.",
+  AUTH_FAILED: "Unlock failed.",
+  AUTH_LOCKED: "Commands are locked after repeated failed unlocks until the cockpit restarts.",
+  SESSION_EXPIRED: "The command session expired. Unlock again.",
+  INVALID_COMMAND: "The command request was rejected as invalid.",
+  INVALID_CONFIRMATION: "The confirmation phrase did not match.",
+  STALE_STATE: "Canonical state changed since this review. The affected views were re-read; review again.",
+  COMMAND_PRECONDITION_FAILED: "The canonical state no longer allows this command.",
+  SOURCE_UNAVAILABLE: "The lifecycle source is unavailable.",
+  NETWORK_UNAVAILABLE: "No response was received. The command may or may not have been recorded.",
+  INTERNAL_ERROR: "The outcome is unknown. The command may or may not have been recorded.",
+  MALFORMED_RESPONSE: "The response could not be verified. The command may or may not have been recorded.",
+};
+
+function CommandErrorNotice({ error }: { error: CommandApiError }) {
+  return (
+    <p className="inline-alert" role="alert">
+      {COMMAND_ERROR_TEXT[error.code] ?? "Command failed."} Safe code: <code>{error.code}</code>
+      {error.canonicalErrorCode !== null && (
+        <>
+          {" "}
+          · canonical <code>{error.canonicalErrorCode}</code>
+        </>
+      )}
+    </p>
+  );
+}
+
+function UnlockCommands() {
+  const controller = useCommandController();
+  // The raw command secret lives only in this local state until the login attempt completes.
+  const [secret, setSecret] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [failure, setFailure] = useState<CommandApiError | null>(null);
+  const unlock = () => {
+    setBusy(true);
+    void controller.unlock(secret).then((result) => {
+      setSecret("");
+      setBusy(false);
+      setFailure(result);
+    });
+  };
+  return (
+    <div className="detail-stack">
+      <label>
+        Command secret{" "}
+        <input
+          type="password"
+          autoComplete="off"
+          spellCheck={false}
+          value={secret}
+          disabled={busy}
+          onChange={(event) => setSecret(event.target.value)}
+        />
+      </label>
+      <Button variant="primary" onClick={unlock} busy={busy} disabled={busy || secret.length === 0}>
+        Unlock
+      </Button>
+      {failure !== null && <CommandErrorNotice error={failure} />}
+    </div>
+  );
+}
+
+function CommandPosture() {
+  const controller = useCommandController();
+  const unlocked = controller.posture === "Unlocked";
+  return (
+    <>
+      <strong>{unlocked ? "LIFECYCLE COMMANDS UNLOCKED" : "READ ONLY CONTROL CENTER"}</strong>
+      <span role="status">
+        <StatusPill tone={unlocked ? "warning" : "neutral"}>
+          {unlocked ? <>Commands: Unlocked · {controller.operatorId}</> : controller.posture === "Locked" ? "Commands: Locked" : "Commands: Disabled"}
+        </StatusPill>
+      </span>
+      {controller.posture === "Locked" && <UnlockCommands />}
+      {unlocked && (
+        <Button variant="secondary" onClick={() => void controller.lock()}>
+          Lock commands
+        </Button>
+      )}
+    </>
+  );
+}
+
+type CommandReview = { target: CommandTarget; state: [string, ReactNode][] };
+type ActionStage =
+  | { kind: "idle" }
+  | { kind: "reviewing" }
+  | { kind: "confirm"; review: CommandReview; head: string | null; typed: string }
+  | { kind: "submitting" }
+  | { kind: "done"; receipt: CommandReceipt }
+  | { kind: "failed"; error: CommandApiError | null; note: string | null; request: Readonly<CommandRequest> | null; epoch: number | null };
+
+function CommandAction({ label, makeReview }: { label: string; makeReview: (fresh: OpsPortfolio) => CommandReview | null }) {
+  const controller = useCommandController();
+  const [stage, setStage] = useState<ActionStage>({ kind: "idle" });
+  const review = () => {
+    setStage({ kind: "reviewing" });
+    // The command head always comes from a fresh OPS read, never from the stream or a detail view.
+    void controller.readCommandHead().then(
+      (fresh) => {
+        const reviewed = makeReview(fresh);
+        setStage(
+          reviewed === null
+            ? { kind: "failed", error: null, note: "The target no longer matches the fresh canonical state.", request: null, epoch: null }
+            : { kind: "confirm", review: reviewed, head: fresh.lifecycle_store_head_entry_hash, typed: "" },
+        );
+      },
+      (error: unknown) =>
+        setStage({
+          kind: "failed",
+          error: null,
+          note: `Canonical state unavailable. Safe code: ${toSafeErrorCode(error)}`,
+          request: null,
+          epoch: null,
+        }),
+    );
+  };
+  const submit = (request: Readonly<CommandRequest>) => {
+    setStage({ kind: "submitting" });
+    void controller.run(request).then((outcome) =>
+      setStage(
+        outcome.kind === "success"
+          ? { kind: "done", receipt: outcome.receipt }
+          : { kind: "failed", error: outcome.error, note: null, request, epoch: outcome.epoch },
+      ),
+    );
+  };
+
+  if (stage.kind === "idle") return <Button onClick={review}>{label}</Button>;
+  if (stage.kind === "reviewing") return <p className="muted">Reading current canonical state…</p>;
+  if (stage.kind === "submitting") return <p className="muted">Submitting command…</p>;
+  if (stage.kind === "done") {
+    return (
+      <div className="notice" role="status">
+        <strong>{stage.receipt.status === "COMMITTED" ? "Committed." : "Already recorded (idempotent replay)."}</strong>{" "}
+        Canonical record <Token>{stage.receipt.canonical_record_id}</Token>
+        <div className="panel-actions">
+          <Button onClick={() => setStage({ kind: "idle" })}>Done</Button>
+        </div>
+      </div>
+    );
+  }
+  if (stage.kind === "failed") {
+    const { request, error, epoch } = stage;
+    // Only an exact same-request retry on the same session is offered after an ambiguous outcome.
+    const retry =
+      request !== null &&
+      error !== null &&
+      error.ambiguous &&
+      epoch !== null &&
+      epoch === controller.sessionEpoch &&
+      controller.posture === "Unlocked";
+    return (
+      <div className="detail-stack">
+        {error !== null ? <CommandErrorNotice error={error} /> : <p className="inline-alert" role="alert">{stage.note}</p>}
+        <div className="panel-actions">
+          {retry && request !== null && (
+            <Button variant="primary" onClick={() => submit(request)}>
+              Retry same request
+            </Button>
+          )}
+          <Button onClick={() => setStage({ kind: "idle" })}>{error?.code === "STALE_STATE" ? "Review again" : "Dismiss"}</Button>
+        </div>
+      </div>
+    );
+  }
+  const phrase = CONFIRMATION_PHRASES[stage.review.target.command_kind];
+  return (
+    <div className="notice" role="group" aria-label={`Confirm ${label}`}>
+      <strong>Confirm: {label}</strong>
+      <DetailList
+        items={[
+          ["Command", <Token>{stage.review.target.command_kind}</Token>],
+          ...stage.review.state,
+          ["Expected lifecycle head (fresh OPS read)", <Token>{stage.head ?? "Empty store"}</Token>],
+        ]}
+      />
+      <p>
+        Type <code>{phrase}</code> to submit this command.
+      </p>
+      <label>
+        Confirmation phrase{" "}
+        <input
+          autoComplete="off"
+          spellCheck={false}
+          value={stage.typed}
+          onChange={(event) => setStage({ ...stage, typed: event.target.value })}
+        />
+      </label>
+      <div className="panel-actions">
+        <Button
+          variant="primary"
+          disabled={stage.typed !== phrase}
+          onClick={() => submit(newCommandRequest(stage.review.target, stage.head))}
+        >
+          Submit command
+        </Button>
+        <Button onClick={() => setStage({ kind: "idle" })}>Close review</Button>
+      </div>
+    </div>
+  );
+}
+
+const PAUSE_KIND = "PAUSE_NEW_EXPOSURE";
+
+/** Strategy detail controls: pause, resume of an exact visible pause, and quarantine. */
+function StrategyCommands({ item }: { item: StrategyDetail }) {
+  const controller = useCommandController();
+  if (controller.posture !== "Unlocked") return null;
+  const versionId = item.strategy_version_id;
+  const health = item.current_state.health_state;
+  const pauses = item.current_state.active_restrictions.filter(
+    (restriction) => restriction.restriction_kind === PAUSE_KIND && restriction.max_active_budget_usd === null,
+  );
+  const state: [string, ReactNode][] = [
+    ["Strategy version", <Token>{versionId}</Token>],
+    ["Label", item.strategy_label],
+    ["Current health", health ?? "Unknown"],
+    [
+      "Active restrictions",
+      item.current_state.active_restrictions.map((restriction) => restriction.restriction_kind + " " + restriction.restriction_key).join(", ") ||
+        "None",
+    ],
+  ];
+  const blocked = health === "QUARANTINED" || health === "RETIRED";
+  return (
+    <section className="evidence-section" aria-label="Lifecycle governance commands">
+      <h3>Lifecycle governance commands</h3>
+      <p className="muted">
+        These change canonical StrategyLifecycle state only. Resuming removes one exact pause; it is not order, Gate-C,
+        execution or live permission.
+      </p>
+      <div className="detail-stack">
+        {health !== null && health !== "RETIRED" && pauses.length === 0 && (
+          <CommandAction
+            label="Pause new exposure"
+            makeReview={() => ({ target: { command_kind: "STRATEGY_PAUSE", strategy_version_id: versionId }, state })}
+          />
+        )}
+        {!blocked &&
+          pauses.map((restriction) => (
+            <CommandAction
+              key={restriction.restriction_receipt_id}
+              label={`Resume · clear pause ${restriction.restriction_key}`}
+              makeReview={() => ({
+                target: {
+                  command_kind: "STRATEGY_RESUME",
+                  strategy_version_id: versionId,
+                  restriction_key: restriction.restriction_key,
+                },
+                state,
+              })}
+            />
+          ))}
+        {health !== null && !blocked && (
+          <CommandAction
+            label="Quarantine"
+            makeReview={() => ({
+              target: { command_kind: "STRATEGY_QUARANTINE", strategy_version_id: versionId, previous_health_state: health },
+              state,
+            })}
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
+/** OPS policy controls: activate one existing catalogue policy, or revoke the active policy. */
+function PolicyCommands({ portfolio }: { portfolio: OpsPortfolio }) {
+  const controller = useCommandController();
+  const [selected, setSelected] = useState("");
+  if (controller.posture !== "Unlocked") return null;
+  const policies = parseOpsPolicies(portfolio);
+  const active = portfolio.active_policy;
+  const choices = (policies ?? []).filter((policy) => policy.policy_id !== active?.policy_id);
+  const policyState = (policy: OpsActivePolicy, fresh: OpsPortfolio): [string, ReactNode][] => [
+    ["Policy", policy.policy_label],
+    ["Policy ID", <Token>{policy.policy_id}</Token>],
+    ["Effective from (ns)", <span className="mono">{policy.effective_from_ns}</span>],
+    ["Expires at (ns)", <span className="mono">{policy.expires_at_ns ?? "No expiry"}</span>],
+    ["Current active policy", <Token>{fresh.active_policy?.policy_id ?? "None active"}</Token>],
+    ["Current canonical capacity", fresh.capacity.status],
+  ];
+  return (
+    <section className="evidence-section" aria-label="Portfolio policy commands">
+      <h3>Portfolio policy commands</h3>
+      <p className="muted">
+        Activation selects one existing verified policy from the catalogue. It never edits a policy, migrates allocations or
+        grants Gate-C, execution or live authority.
+      </p>
+      {policies === null ? (
+        <p className="muted">Policy catalogue unavailable; activation is not offered.</p>
+      ) : choices.length === 0 ? (
+        <p className="muted">No other verified policy in the catalogue.</p>
+      ) : (
+        <label>
+          Policy to activate{" "}
+          <select value={selected} onChange={(event) => setSelected(event.target.value)}>
+            <option value="">Select a verified policy…</option>
+            {choices.map((policy) => (
+              <option key={policy.policy_id} value={policy.policy_id}>
+                {policy.policy_label} · {policy.policy_id}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <div className="detail-stack">
+        {selected !== "" && choices.some((policy) => policy.policy_id === selected) && (
+          <CommandAction
+            key={selected}
+            label="Activate selected policy"
+            makeReview={(fresh) => {
+              const target = (parseOpsPolicies(fresh) ?? []).find((policy) => policy.policy_id === selected);
+              const previous = fresh.active_policy?.policy_id ?? null;
+              if (target === undefined || previous === selected) return null;
+              return {
+                target: { command_kind: "POLICY_ACTIVATE", policy_id: selected, previous_active_policy_id: previous },
+                state: policyState(target, fresh),
+              };
+            }}
+          />
+        )}
+        {active !== null && (
+          <CommandAction
+            key={active.policy_id}
+            label="Revoke active policy"
+            makeReview={(fresh) => {
+              if (fresh.active_policy === null || fresh.active_policy.policy_id !== active.policy_id) return null;
+              return {
+                target: { command_kind: "POLICY_REVOKE", policy_id: fresh.active_policy.policy_id },
+                state: policyState(fresh.active_policy, fresh),
+              };
+            }}
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
 // S10-CC-STREAM-01: the single centralized auto-refresh transport. It owns the only browser stream,
 // opens it only when the backend reports streaming enabled, and only ever invalidates the active
 // family so the existing HTTP snapshots are re-read. It never writes query data, never retries on
@@ -2028,45 +2495,47 @@ export function ControlCenter() {
   const { pathname } = useLocation();
   const active = VIEWS.find((view) => view.path === pathname) ?? VIEWS[0];
   return (
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="brand">Control Center</div>
-        <nav aria-label="Control Center views">
-          {VIEWS.map((view) => (
-            <NavItem key={view.path} to={view.path}>
-              {view.label}
-            </NavItem>
-          ))}
-        </nav>
-        <div className="posture" aria-label="Authority posture">
-          <strong>READ ONLY CONTROL CENTER</strong>
-          <span>Simulated paper only</span>
-          <span>Hermes: soft judgments only</span>
-          <span>Alpha: research records only</span>
-          <span>Ops: reservations + recorded state only</span>
-          <span>No execution or live authority</span>
-        </div>
-      </aside>
-      <main className="main">
-        <header className="page-header">
-          <div>
-            <div className="eyebrow">Validated cockpit evidence · WP171 / WP173</div>
-            <h1>{active.label}</h1>
+    <CommandSessionProvider>
+      <div className="shell">
+        <aside className="sidebar">
+          <div className="brand">Control Center</div>
+          <nav aria-label="Control Center views">
+            {VIEWS.map((view) => (
+              <NavItem key={view.path} to={view.path}>
+                {view.label}
+              </NavItem>
+            ))}
+          </nav>
+          <div className="posture" aria-label="Authority posture">
+            <CommandPosture />
+            <span>Simulated paper only</span>
+            <span>Hermes: soft judgments only</span>
+            <span>Alpha: research records only</span>
+            <span>Ops: reservations + recorded state only</span>
+            <span>No execution or live authority</span>
           </div>
-          <div className="page-actions">
-            <StreamRefreshController family={active.family} />
-            <RefreshControl family={active.family} />
-          </div>
-        </header>
-        <p className="stream-notice">{STREAM_NOTICE}</p>
-        <Routes>
-          <Route path="/" element={<Navigate to="/overview" replace />} />
-          {VIEWS.map((view) => (
-            <Route key={view.path} path={view.path} element={view.element} />
-          ))}
-          <Route path="*" element={<Navigate to="/overview" replace />} />
-        </Routes>
-      </main>
-    </div>
+        </aside>
+        <main className="main">
+          <header className="page-header">
+            <div>
+              <div className="eyebrow">Validated cockpit evidence · WP171 / WP173</div>
+              <h1>{active.label}</h1>
+            </div>
+            <div className="page-actions">
+              <StreamRefreshController family={active.family} />
+              <RefreshControl family={active.family} />
+            </div>
+          </header>
+          <p className="stream-notice">{STREAM_NOTICE}</p>
+          <Routes>
+            <Route path="/" element={<Navigate to="/overview" replace />} />
+            {VIEWS.map((view) => (
+              <Route key={view.path} path={view.path} element={view.element} />
+            ))}
+            <Route path="*" element={<Navigate to="/overview" replace />} />
+          </Routes>
+        </main>
+      </div>
+    </CommandSessionProvider>
   );
 }

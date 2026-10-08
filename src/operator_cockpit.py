@@ -1,4 +1,9 @@
-"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02/S10-CC-OPS-01/S10-CC-STREAM-01 local read-only cockpit."""
+"""WP171/WP173/WP175/S10-CC-RESEARCH-01/02/S10-CC-OPS-01/S10-CC-STREAM-01 local cockpit.
+
+Read only by default. S10-CC-CMD-01 adds a default-off, locally authenticated command
+boundary for exactly five canonical StrategyLifecycle governance commands; it has no paper,
+execution, Gate-C, LIVE-ORCH, account, order, product-network or live authority.
+"""
 
 from __future__ import annotations
 
@@ -39,6 +44,7 @@ from src.paper_trading.models import (
 from src.paper_trading.store import JournalEvent, PaperStore
 from src.execution_gateway.store import GatewayStoreError, read_gateway_projection
 from src.execution_gateway.gateway import GatewayError, read_gate_b_evidence
+from src import operator_cockpit_commands as commands
 from src import operator_cockpit_ops as ops
 from src import operator_cockpit_research as research
 from src import operator_cockpit_stream as stream
@@ -127,10 +133,16 @@ class CockpitConfig:
     alpha_discovery_registry_path: Path | None = None
     # S10-CC-STREAM-01: default-off kill switch for the request-scoped refresh-signal stream.
     streaming_enabled: bool = False
+    # S10-CC-CMD-01: default-off in-memory operator command auth (digest-only; safe repr).
+    command_auth: commands.CommandAuth | None = None
 
     def __post_init__(self) -> None:
         if type(self.streaming_enabled) is not bool:
             raise TypeError("streaming_enabled must be bool")
+        if self.command_auth is not None and not isinstance(
+            self.command_auth, commands.CommandAuth
+        ):
+            raise TypeError("command_auth must be CommandAuth or None")
         for value in (
             self.market_truth_path,
             self.experiment_registry_path,
@@ -856,8 +868,8 @@ def create_app(config: CockpitConfig) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
-        allow_methods=["GET"],
-        allow_headers=["Content-Type"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "Authorization"],
     )
 
     @app.exception_handler(CockpitError)
@@ -877,6 +889,12 @@ def create_app(config: CockpitConfig) -> FastAPI:
         _request: Request, exc: ops.OpsProjectionError
     ) -> JSONResponse:
         return _error_response(exc.code)
+
+    @app.exception_handler(commands.CommandError)
+    async def command_error_handler(
+        _request: Request, exc: commands.CommandError
+    ) -> JSONResponse:
+        return JSONResponse(status_code=exc.http_status, content=exc.body())
 
     @app.exception_handler(Exception)
     async def internal_error_handler(
@@ -1130,11 +1148,68 @@ def create_app(config: CockpitConfig) -> FastAPI:
             headers={"Content-Type": "text/event-stream", "Cache-Control": "no-cache"},
         )
 
+    # S10-CC-CMD-01: default-off protected lifecycle-governance commands. The bearer token is
+    # an explicit Authorization header (no cookie, no ambient browser auth); the canonical
+    # StrategyLifecycle record is the durable receipt. No server-side retry of any step.
+    @app.get("/api/commands/status")
+    async def commands_status(request: Request) -> dict[str, Any]:
+        if list(request.query_params.multi_items()):
+            raise commands.CommandError("INVALID_COMMAND")
+        return commands.command_status(config.command_auth)
+
+    @app.post("/api/commands/session")
+    async def commands_session(request: Request) -> dict[str, Any]:
+        auth = commands.require_enabled(config.command_auth)
+        raw = await _command_body(request, json_body=True)
+        return commands.login(auth, raw)
+
+    @app.post("/api/commands/session/revoke")
+    async def commands_session_revoke(request: Request) -> dict[str, Any]:
+        auth = commands.require_enabled(config.command_auth)
+        authorization = request.headers.getlist("authorization")
+        auth.authenticate(authorization)
+        await _command_body(request, json_body=False)
+        return auth.revoke(authorization)
+
+    @app.post("/api/commands/execute")
+    async def commands_execute(request: Request) -> dict[str, Any]:
+        auth = commands.require_enabled(config.command_auth)
+        session = auth.authenticate(request.headers.getlist("authorization"))
+        raw = await _command_body(request, json_body=True)
+        return commands.execute_command(auth, session, config.strategy_lifecycle_path, raw)
+
     return app
 
 
+async def _command_body(request: Request, *, json_body: bool) -> bytes:
+    """Bounded command body: no query, exact JSON media type (or an empty revoke body)."""
+    if list(request.query_params.multi_items()):
+        raise commands.CommandError("INVALID_COMMAND")
+    if json_body:
+        media = request.headers.getlist("content-type")
+        if len(media) != 1 or media[0].split(";", 1)[0].strip().lower() != "application/json":
+            raise commands.CommandError("INVALID_COMMAND")
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > commands.MAX_COMMAND_BODY_BYTES:
+            raise commands.CommandError("INVALID_COMMAND")
+    if not json_body and body:
+        raise commands.CommandError("INVALID_COMMAND")
+    return bytes(body)
+
+
+class _CockpitArgumentParser(argparse.ArgumentParser):
+    """S10-CC-CMD-01: never echo unrecognized argv values (a mistyped command secret stays private)."""
+
+    def error(self, message: str):  # type: ignore[override]
+        if message.startswith("unrecognized arguments"):
+            message = "unrecognized arguments"
+        super().error(message)
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
+    parser = _CockpitArgumentParser(
         description="Run the local WP171 read-only cockpit"
     )
     parser.add_argument("--market-truth-store", required=True, type=Path)
@@ -1147,9 +1222,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--alpha-discovery-registry", type=Path)
     parser.add_argument("--port", default=8000, type=int)
     parser.add_argument("--enable-streaming", action="store_true", default=False)
+    parser.add_argument("--enable-commands", action="store_true", default=False)
+    parser.add_argument("--operator-id")
     args = parser.parse_args(argv)
     if args.port < 1 or args.port > 65_535:
         parser.error("--port must be between 1 and 65535")
+    command_auth = None
+    if args.enable_commands:
+        # The command secret is read once from the TTY via getpass; never argv/file/config.
+        try:
+            command_auth = commands.bootstrap_command_auth(args.operator_id)
+        except commands.CommandBootstrapError as failure:
+            parser.error(f"--enable-commands bootstrap failed: {failure.code}")
+    elif args.operator_id is not None:
+        parser.error("--operator-id requires --enable-commands")
     import uvicorn
 
     uvicorn.run(
@@ -1164,6 +1250,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.alpha_factory_registry,
                 args.alpha_discovery_registry,
                 streaming_enabled=args.enable_streaming,
+                command_auth=command_auth,
             )
         ),
         host="127.0.0.1",

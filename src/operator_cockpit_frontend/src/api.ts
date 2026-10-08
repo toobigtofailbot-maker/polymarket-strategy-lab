@@ -1018,3 +1018,284 @@ export function createQueryClient(): QueryClient {
     },
   });
 }
+
+// S10-CC-CMD-01 protected commands. Default-off lifecycle-governance commands for exactly five
+// canonical StrategyLifecycle records. The command secret is sent once to the local login route
+// and never kept; the bearer token lives only in React memory at the shell controller and is sent
+// as an explicit Authorization header (credentials are always omitted). Command requests are never
+// retried automatically, never cached and never derived from the stream. None of this is account,
+// order, Gate-C, execution or live authority.
+export const COMMAND_KINDS = [
+  "STRATEGY_PAUSE",
+  "STRATEGY_RESUME",
+  "STRATEGY_QUARANTINE",
+  "POLICY_ACTIVATE",
+  "POLICY_REVOKE",
+] as const;
+export type CommandKind = (typeof COMMAND_KINDS)[number];
+export const CONFIRMATION_PHRASES: Record<CommandKind, string> = {
+  STRATEGY_PAUSE: "CONFIRM-PAUSE",
+  STRATEGY_RESUME: "CONFIRM-RESUME",
+  STRATEGY_QUARANTINE: "CONFIRM-QUARANTINE",
+  POLICY_ACTIVATE: "CONFIRM-ACTIVATE-POLICY",
+  POLICY_REVOKE: "CONFIRM-REVOKE-POLICY",
+};
+// Mutation requests use retry = false: one request per explicit operator action, nothing more.
+export const COMMAND_MUTATION_RETRY = false;
+
+export type CommandStatus = {
+  read_only: false;
+  commands_enabled: boolean;
+  auth_mode: "EPHEMERAL_BEARER_SESSION";
+  session_ttl_seconds: 900;
+  active_session: boolean;
+  supported_commands: CommandKind[];
+  no_product_network: true;
+  no_account_access: true;
+  no_order_authority: true;
+  no_gate_c_authority: true;
+  no_live_authority: true;
+};
+// Raw bearer token: React memory only (never query data, browser storage or a URL).
+export type CommandSession = { operatorId: string; token: string; expiresAtMs: number };
+export type CommandTarget =
+  | { command_kind: "STRATEGY_PAUSE"; strategy_version_id: string }
+  | { command_kind: "STRATEGY_RESUME"; strategy_version_id: string; restriction_key: string }
+  | { command_kind: "STRATEGY_QUARANTINE"; strategy_version_id: string; previous_health_state: string }
+  | { command_kind: "POLICY_ACTIVATE"; policy_id: string; previous_active_policy_id: string | null }
+  | { command_kind: "POLICY_REVOKE"; policy_id: string };
+export type CommandRequest = CommandTarget & {
+  expected_lifecycle_store_head_entry_hash: string | null;
+  issued_at_ms: number;
+  confirmation_phrase: string;
+};
+export type CommandReceipt = {
+  schema_version: "1.0.0";
+  status: "COMMITTED" | "IDEMPOTENT_REPLAY";
+  command_ref: string;
+  command_kind: CommandKind;
+  operator_id: string;
+  canonical_record_kind: string;
+  canonical_record_id: string;
+  lifecycle_store_head_entry_hash: string | null;
+  issued_at_ms: number;
+  no_product_network: true;
+  no_account_access: true;
+  no_order_authority: true;
+  no_gate_c_authority: true;
+  no_live_authority: true;
+};
+
+const COMMAND_ERROR_CODES = [
+  "COMMANDS_DISABLED",
+  "AUTH_REQUIRED",
+  "AUTH_FAILED",
+  "AUTH_LOCKED",
+  "SESSION_EXPIRED",
+  "INVALID_COMMAND",
+  "INVALID_CONFIRMATION",
+  "STALE_STATE",
+  "COMMAND_PRECONDITION_FAILED",
+  "SOURCE_UNAVAILABLE",
+  "INTERNAL_ERROR",
+] as const;
+const CANONICAL_ERROR_CODES = [
+  "FIELD_TYPE_INVALID",
+  "FIELD_VALUE_INVALID",
+  "SCHEMA_CONFLICT",
+  "INTEGRITY_TAMPER",
+  "IDENTITY_CONFLICT",
+  "REFERENCE_INVALID",
+  "LINEAGE_INVALID",
+  "ADAPTATION_INVALID",
+  "POLICY_INVALID",
+  "POLICY_TRANSITION_INVALID",
+  "HEALTH_TRANSITION_INVALID",
+  "ALLOCATION_INVALID",
+  "RESTRICTION_TRANSITION_INVALID",
+  "CAPACITY_INVALID",
+  "LIMIT_EXCEEDED",
+  "INTERNAL_VALIDATION_FAILED",
+] as const;
+export type CommandErrorCode = (typeof COMMAND_ERROR_CODES)[number] | "NETWORK_UNAVAILABLE" | "MALFORMED_RESPONSE";
+// Outcomes where the request may or may not have committed; only an exact same-request retry is safe.
+const AMBIGUOUS_COMMAND_CODES: readonly CommandErrorCode[] = ["NETWORK_UNAVAILABLE", "INTERNAL_ERROR", "MALFORMED_RESPONSE"];
+
+export class CommandApiError extends Error {
+  readonly code: CommandErrorCode;
+  readonly canonicalErrorCode: string | null;
+  constructor(code: CommandErrorCode, canonicalErrorCode: string | null = null) {
+    super(code);
+    this.name = "CommandApiError";
+    this.code = code;
+    this.canonicalErrorCode = canonicalErrorCode;
+  }
+  get ambiguous(): boolean {
+    return AMBIGUOUS_COMMAND_CODES.includes(this.code);
+  }
+}
+
+export function toCommandError(error: unknown): CommandApiError {
+  return error instanceof CommandApiError ? error : new CommandApiError("INTERNAL_ERROR");
+}
+
+function commandErrorFromBody(body: unknown): CommandApiError {
+  const error = isRecord(body) && isRecord(body.error) ? body.error : null;
+  const code = COMMAND_ERROR_CODES.find((candidate) => candidate === error?.code) ?? "INTERNAL_ERROR";
+  const canonical = CANONICAL_ERROR_CODES.find((candidate) => candidate === error?.canonical_error_code) ?? null;
+  return new CommandApiError(code, code === "COMMAND_PRECONDITION_FAILED" ? canonical : null);
+}
+
+const COMMAND_STATUS_KEYS = [
+  "active_session",
+  "auth_mode",
+  "commands_enabled",
+  "no_account_access",
+  "no_gate_c_authority",
+  "no_live_authority",
+  "no_order_authority",
+  "no_product_network",
+  "read_only",
+  "session_ttl_seconds",
+  "supported_commands",
+];
+
+/** Strict status validation; anything else is MALFORMED_RESPONSE and leaves commands unavailable. */
+export function parseCommandStatus(body: unknown): CommandStatus {
+  if (
+    !isRecord(body) ||
+    !hasExactKeys(body, COMMAND_STATUS_KEYS) ||
+    body.read_only !== false ||
+    typeof body.commands_enabled !== "boolean" ||
+    body.auth_mode !== "EPHEMERAL_BEARER_SESSION" ||
+    body.session_ttl_seconds !== 900 ||
+    typeof body.active_session !== "boolean" ||
+    !Array.isArray(body.supported_commands) ||
+    body.supported_commands.join(",") !== COMMAND_KINDS.join(",") ||
+    body.no_product_network !== true ||
+    body.no_account_access !== true ||
+    body.no_order_authority !== true ||
+    body.no_gate_c_authority !== true ||
+    body.no_live_authority !== true
+  ) {
+    throw new SafeApiError("MALFORMED_RESPONSE");
+  }
+  return body as CommandStatus;
+}
+
+// Global command capability (not a page family): manual Refresh never touches it.
+export const commandStatusQuery = queryOptions({
+  queryKey: ["cc", "commands", "status"] as const,
+  queryFn: async ({ signal }) => parseCommandStatus(await getJson<unknown>("/commands/status", signal)),
+});
+
+/** OPS policy catalogue, validated at runtime; a missing or malformed catalogue offers no choice. */
+export function parseOpsPolicies(portfolio: OpsPortfolio): OpsActivePolicy[] | null {
+  const policies: unknown = (portfolio as { policies?: unknown }).policies;
+  if (!Array.isArray(policies)) return null;
+  const valid = policies.every(
+    (policy) =>
+      isRecord(policy) &&
+      typeof policy.policy_id === "string" &&
+      /^portfolioauthoritypolicy:sha256:[0-9a-f]{64}$/.test(policy.policy_id) &&
+      typeof policy.policy_label === "string" &&
+      typeof policy.effective_from_ns === "number" &&
+      (policy.expires_at_ns === null || typeof policy.expires_at_ns === "number"),
+  );
+  return valid ? (policies as OpsActivePolicy[]) : null;
+}
+
+/** The one place a command request is minted: issued_at_ms is fixed here and reused on retry. */
+export function newCommandRequest(target: CommandTarget, expectedHead: string | null): Readonly<CommandRequest> {
+  return Object.freeze({
+    ...target,
+    expected_lifecycle_store_head_entry_hash: expectedHead,
+    issued_at_ms: Date.now(),
+    confirmation_phrase: CONFIRMATION_PHRASES[target.command_kind],
+  });
+}
+
+// The only command transport: one same-origin request, explicit bearer header, no cache, no retry.
+async function postCommand(path: string, payload: unknown | null, token: string | null): Promise<unknown> {
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (payload !== null) headers["Content-Type"] = "application/json";
+  if (token !== null) headers.Authorization = "Bearer " + token;
+  let response: Response;
+  try {
+    response = await fetch(API_BASE + path, {
+      method: "POST",
+      headers,
+      body: payload === null ? undefined : JSON.stringify(payload),
+      credentials: "omit",
+      cache: "no-store",
+    });
+  } catch {
+    throw new CommandApiError("NETWORK_UNAVAILABLE");
+  }
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new CommandApiError(response.ok ? "MALFORMED_RESPONSE" : "INTERNAL_ERROR");
+  }
+  if (!response.ok) throw commandErrorFromBody(body);
+  if (!isRecord(body)) throw new CommandApiError("MALFORMED_RESPONSE");
+  return body;
+}
+
+export async function loginCommandSession(secret: string): Promise<CommandSession> {
+  const body = (await postCommand("/commands/session", { secret }, null)) as Record<string, unknown>;
+  if (
+    !hasExactKeys(body, ["expires_at_ms", "operator_id", "session_token"]) ||
+    typeof body.operator_id !== "string" ||
+    typeof body.session_token !== "string" ||
+    !/^[A-Za-z0-9_-]{43}$/.test(body.session_token) ||
+    typeof body.expires_at_ms !== "number" ||
+    !Number.isSafeInteger(body.expires_at_ms)
+  ) {
+    throw new CommandApiError("MALFORMED_RESPONSE");
+  }
+  return { operatorId: body.operator_id, token: body.session_token, expiresAtMs: body.expires_at_ms };
+}
+
+export async function revokeCommandSession(token: string): Promise<void> {
+  await postCommand("/commands/session/revoke", null, token);
+}
+
+const COMMAND_RECEIPT_KEYS = [
+  "canonical_record_id",
+  "canonical_record_kind",
+  "command_kind",
+  "command_ref",
+  "issued_at_ms",
+  "lifecycle_store_head_entry_hash",
+  "no_account_access",
+  "no_gate_c_authority",
+  "no_live_authority",
+  "no_order_authority",
+  "no_product_network",
+  "operator_id",
+  "schema_version",
+  "status",
+];
+
+export async function executeCommand(token: string, request: Readonly<CommandRequest>): Promise<CommandReceipt> {
+  const body = (await postCommand("/commands/execute", request, token)) as Record<string, unknown>;
+  if (
+    !hasExactKeys(body, COMMAND_RECEIPT_KEYS) ||
+    body.schema_version !== "1.0.0" ||
+    (body.status !== "COMMITTED" && body.status !== "IDEMPOTENT_REPLAY") ||
+    body.command_kind !== request.command_kind ||
+    body.issued_at_ms !== request.issued_at_ms ||
+    typeof body.command_ref !== "string" ||
+    typeof body.canonical_record_id !== "string" ||
+    body.no_order_authority !== true ||
+    body.no_live_authority !== true
+  ) {
+    throw new CommandApiError("MALFORMED_RESPONSE");
+  }
+  return body as CommandReceipt;
+}
+
+// HTTP families re-read after any command outcome; correctness never waits for the stream.
+export const COMMAND_REREAD_FAMILIES: readonly QueryFamily[] = ["strategies", "ops"];
