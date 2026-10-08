@@ -1452,6 +1452,13 @@ def test_c15_frontend_controls_are_exact_and_no_execution_live_or_hermes_actions
     assert 'export const COMMAND_REREAD_FAMILIES: readonly QueryFamily[] = ["strategies", "ops"];' in api_source
     provider = _function(app_source, "CommandSessionProvider")
     assert "invalidateQueries({ queryKey: familyKey(family) })" in provider and "} finally {\n          reread();" in provider
+    # The last sanitized receipt stays visible after the re-read (session-scoped, no token).
+    assert provider.count("setLastReceipt(receipt);") == 1
+    assert "lastReceipt: session === null ? null : lastReceipt," in provider
+    assert app_source.count("<LastCommandReceipt />") == 2
+    receipt_view = _function(app_source, "LastCommandReceipt")
+    assert ".token" not in receipt_view and "session_token" not in receipt_view and "Bearer" not in receipt_view
+    assert "canonical_record_id" in receipt_view
     # Global shell posture strings.
     for posture in ('"Commands: Locked"', '"Commands: Disabled"', "<>Commands: Unlocked · {controller.operatorId}</>"):
         assert posture in section, posture

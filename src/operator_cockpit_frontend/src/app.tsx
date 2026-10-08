@@ -1972,6 +1972,7 @@ type CommandController = {
   posture: CommandPostureState;
   operatorId: string | null;
   sessionEpoch: number | null;
+  lastReceipt: CommandReceipt | null;
   unlock: (secret: string) => Promise<CommandApiError | null>;
   lock: () => Promise<void>;
   readCommandHead: () => Promise<OpsPortfolio>;
@@ -1982,6 +1983,7 @@ const COMMANDS_UNAVAILABLE: CommandController = {
   posture: "Disabled",
   operatorId: null,
   sessionEpoch: null,
+  lastReceipt: null,
   unlock: async () => new CommandApiError("COMMANDS_DISABLED"),
   lock: async () => undefined,
   readCommandHead: async () => Promise.reject(new CommandApiError("COMMANDS_DISABLED")),
@@ -1997,6 +1999,8 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
   const status = useQuery(commandStatusQuery);
   // The raw bearer token exists only here, in React memory; a reload or restart forgets it.
   const [session, setSession] = useState<{ value: CommandSession; epoch: number } | null>(null);
+  // The last sanitized receipt of this session, kept so the outcome stays visible after the re-read.
+  const [lastReceipt, setLastReceipt] = useState<CommandReceipt | null>(null);
   const epochs = useRef(0);
   const available = status.data?.commands_enabled === true;
 
@@ -2011,6 +2015,7 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
       posture: session === null ? "Locked" : "Unlocked",
       operatorId: session?.value.operatorId ?? null,
       sessionEpoch: session?.epoch ?? null,
+      lastReceipt: session === null ? null : lastReceipt,
       unlock: async (secret) => {
         try {
           const value = await loginCommandSession(secret);
@@ -2041,6 +2046,7 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
         if (current === null) return { kind: "error", error: new CommandApiError("AUTH_REQUIRED"), epoch: null };
         try {
           const receipt = await executeCommand(current.value.token, request);
+          setLastReceipt(receipt);
           return { kind: "success", receipt };
         } catch (error) {
           const failure = toCommandError(error);
@@ -2054,7 +2060,7 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
         }
       },
     };
-  }, [available, session, queryClient]);
+  }, [available, session, lastReceipt, queryClient]);
 
   return <CommandContext.Provider value={controller}>{children}</CommandContext.Provider>;
 }
@@ -2068,7 +2074,7 @@ const COMMAND_ERROR_TEXT: Partial<Record<CommandErrorCode, string>> = {
   INVALID_COMMAND: "The command request was rejected as invalid.",
   INVALID_CONFIRMATION: "The confirmation phrase did not match.",
   STALE_STATE: "Canonical state changed since this review. The affected views were re-read; review again.",
-  COMMAND_PRECONDITION_FAILED: "The canonical state no longer allows this command.",
+  COMMAND_PRECONDITION_FAILED: "The current canonical state does not allow this command.",
   SOURCE_UNAVAILABLE: "The lifecycle source is unavailable.",
   NETWORK_UNAVAILABLE: "No response was received. The command may or may not have been recorded.",
   INTERNAL_ERROR: "The outcome is unknown. The command may or may not have been recorded.",
@@ -2142,6 +2148,18 @@ function CommandPosture() {
         </Button>
       )}
     </>
+  );
+}
+
+function LastCommandReceipt() {
+  const { lastReceipt } = useCommandController();
+  if (lastReceipt === null) return null;
+  return (
+    <p className="muted" role="status">
+      Last command this session: {lastReceipt.command_kind} ·{" "}
+      {lastReceipt.status === "COMMITTED" ? "Committed" : "Already recorded (idempotent replay)"} · canonical record{" "}
+      <Token>{lastReceipt.canonical_record_id}</Token>
+    </p>
   );
 }
 
@@ -2294,6 +2312,7 @@ function StrategyCommands({ item }: { item: StrategyDetail }) {
         These change canonical StrategyLifecycle state only. Resuming removes one exact pause; it is not order, Gate-C,
         execution or live permission.
       </p>
+      <LastCommandReceipt />
       <div className="detail-stack">
         {health !== null && health !== "RETIRED" && pauses.length === 0 && (
           <CommandAction
@@ -2353,6 +2372,7 @@ function PolicyCommands({ portfolio }: { portfolio: OpsPortfolio }) {
         Activation selects one existing verified policy from the catalogue. It never edits a policy, migrates allocations or
         grants Gate-C, execution or live authority.
       </p>
+      <LastCommandReceipt />
       {policies === null ? (
         <p className="muted">Policy catalogue unavailable; activation is not offered.</p>
       ) : choices.length === 0 ? (

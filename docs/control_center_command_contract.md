@@ -297,6 +297,8 @@ text.
   - **Revoke active policy**.
 - Every outcome re-reads `familyKey("strategies")` and `familyKey("ops")` over HTTP. Correctness never
   waits for SSE.
+- The last sanitized receipt of the current session (kind, status, canonical record id) stays visible
+  in the command sections after the re-read. It is cleared when the session ends.
 - Stale state shows a safe message and requires a new review and confirmation.
 - After an ambiguous transport outcome (`NETWORK_UNAVAILABLE`, `INTERNAL_ERROR`,
   `MALFORMED_RESPONSE`), only **Retry same request** is offered. It re-sends the exact same frozen
