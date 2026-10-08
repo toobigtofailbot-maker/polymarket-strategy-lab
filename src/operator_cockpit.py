@@ -1174,8 +1174,12 @@ def create_app(config: CockpitConfig) -> FastAPI:
     @app.post("/api/commands/execute")
     async def commands_execute(request: Request) -> dict[str, Any]:
         auth = commands.require_enabled(config.command_auth)
-        session = auth.authenticate(request.headers.getlist("authorization"))
+        authorization = request.headers.getlist("authorization")
+        auth.authenticate(authorization)
         raw = await _command_body(request, json_body=True)
+        # Re-authenticate after the body await: a revoke, new login or lock that landed while
+        # the body was read must win. Nothing below awaits, so the session cannot change again.
+        session = auth.authenticate(authorization)
         return commands.execute_command(auth, session, config.strategy_lifecycle_path, raw)
 
     return app
@@ -1200,12 +1204,12 @@ async def _command_body(request: Request, *, json_body: bool) -> bytes:
 
 
 class _CockpitArgumentParser(argparse.ArgumentParser):
-    """S10-CC-CMD-01: never echo unrecognized argv values (a mistyped command secret stays private)."""
+    """S10-CC-CMD-01: never echo argv values in CLI errors (a mistyped command secret stays private)."""
 
     def error(self, message: str):  # type: ignore[override]
-        if message.startswith("unrecognized arguments"):
-            message = "unrecognized arguments"
-        super().error(message)
+        if message.startswith(("unrecognized arguments", "ambiguous option")):
+            message = message.split(":", 1)[0]
+        super().error(re.sub(r"'[^']*'", "'<value withheld>'", message))
 
 
 def main(argv: list[str] | None = None) -> int:

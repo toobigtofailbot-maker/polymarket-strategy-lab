@@ -2020,6 +2020,7 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
         try {
           const value = await loginCommandSession(secret);
           epochs.current += 1;
+          setLastReceipt(null);
           setSession({ value, epoch: epochs.current });
           return null;
         } catch (error) {
@@ -2031,6 +2032,7 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
       lock: async () => {
         const current = session;
         setSession(null);
+        setLastReceipt(null);
         if (current !== null) {
           try {
             await revokeCommandSession(current.value.token);
@@ -2172,30 +2174,34 @@ type ActionStage =
   | { kind: "done"; receipt: CommandReceipt }
   | { kind: "failed"; error: CommandApiError | null; note: string | null; request: Readonly<CommandRequest> | null; epoch: number | null };
 
-function CommandAction({ label, makeReview }: { label: string; makeReview: (fresh: OpsPortfolio) => CommandReview | null }) {
+type MakeReview = (fresh: OpsPortfolio) => CommandReview | null | Promise<CommandReview | null>;
+
+function CommandAction({ label, makeReview }: { label: string; makeReview: MakeReview }) {
   const controller = useCommandController();
   const [stage, setStage] = useState<ActionStage>({ kind: "idle" });
   const review = () => {
     setStage({ kind: "reviewing" });
     // The command head always comes from a fresh OPS read, never from the stream or a detail view.
-    void controller.readCommandHead().then(
-      (fresh) => {
-        const reviewed = makeReview(fresh);
-        setStage(
-          reviewed === null
-            ? { kind: "failed", error: null, note: "The target no longer matches the fresh canonical state.", request: null, epoch: null }
-            : { kind: "confirm", review: reviewed, head: fresh.lifecycle_store_head_entry_hash, typed: "" },
-        );
-      },
-      (error: unknown) =>
-        setStage({
-          kind: "failed",
-          error: null,
-          note: `Canonical state unavailable. Safe code: ${toSafeErrorCode(error)}`,
-          request: null,
-          epoch: null,
-        }),
-    );
+    // A target review may also re-read its own detail; both reads happen before confirmation.
+    void controller
+      .readCommandHead()
+      .then(async (fresh) => ({ fresh, reviewed: await makeReview(fresh) }))
+      .then(
+        ({ fresh, reviewed }) =>
+          setStage(
+            reviewed === null
+              ? { kind: "failed", error: null, note: "The target no longer matches the fresh canonical state.", request: null, epoch: null }
+              : { kind: "confirm", review: reviewed, head: fresh.lifecycle_store_head_entry_hash, typed: "" },
+          ),
+        (error: unknown) =>
+          setStage({
+            kind: "failed",
+            error: null,
+            note: `Canonical state unavailable. Safe code: ${toSafeErrorCode(error)}`,
+            request: null,
+            epoch: null,
+          }),
+      );
   };
   const submit = (request: Readonly<CommandRequest>) => {
     setStage({ kind: "submitting" });
@@ -2285,26 +2291,43 @@ function CommandAction({ label, makeReview }: { label: string; makeReview: (fres
 
 const PAUSE_KIND = "PAUSE_NEW_EXPOSURE";
 
+const activePauses = (detail: StrategyDetail) =>
+  detail.current_state.active_restrictions.filter(
+    (restriction) => restriction.restriction_kind === PAUSE_KIND && restriction.max_active_budget_usd === null,
+  );
+const isBlockedHealth = (health: string | null) => health === "QUARANTINED" || health === "RETIRED";
+
+function strategyState(detail: StrategyDetail): [string, ReactNode][] {
+  return [
+    ["Strategy version", <Token>{detail.strategy_version_id}</Token>],
+    ["Label", detail.strategy_label],
+    ["Current health", detail.current_state.health_state ?? "Unknown"],
+    [
+      "Active restrictions",
+      detail.current_state.active_restrictions
+        .map((restriction) => restriction.restriction_kind + " " + restriction.restriction_key)
+        .join(", ") || "None",
+    ],
+  ];
+}
+
 /** Strategy detail controls: pause, resume of an exact visible pause, and quarantine. */
 function StrategyCommands({ item }: { item: StrategyDetail }) {
   const controller = useCommandController();
+  const queryClient = useQueryClient();
   if (controller.posture !== "Unlocked") return null;
   const versionId = item.strategy_version_id;
   const health = item.current_state.health_state;
-  const pauses = item.current_state.active_restrictions.filter(
-    (restriction) => restriction.restriction_kind === PAUSE_KIND && restriction.max_active_budget_usd === null,
-  );
-  const state: [string, ReactNode][] = [
-    ["Strategy version", <Token>{versionId}</Token>],
-    ["Label", item.strategy_label],
-    ["Current health", health ?? "Unknown"],
-    [
-      "Active restrictions",
-      item.current_state.active_restrictions.map((restriction) => restriction.restriction_kind + " " + restriction.restriction_key).join(", ") ||
-        "None",
-    ],
-  ];
-  const blocked = health === "QUARANTINED" || health === "RETIRED";
+  const pauses = activePauses(item);
+  // The review re-reads the strategy detail too, so the confirmed target fields and the displayed
+  // current state are fresh; the expected head still comes only from the fresh OPS read.
+  const review =
+    (build: (detail: StrategyDetail) => CommandTarget | null) =>
+    async (): Promise<CommandReview | null> => {
+      const detail = await queryClient.fetchQuery({ ...strategyDetailQuery(versionId), staleTime: 0 });
+      const target = build(detail);
+      return target === null ? null : { target, state: strategyState(detail) };
+    };
   return (
     <section className="evidence-section" aria-label="Lifecycle governance commands">
       <h3>Lifecycle governance commands</h3>
@@ -2317,30 +2340,40 @@ function StrategyCommands({ item }: { item: StrategyDetail }) {
         {health !== null && health !== "RETIRED" && pauses.length === 0 && (
           <CommandAction
             label="Pause new exposure"
-            makeReview={() => ({ target: { command_kind: "STRATEGY_PAUSE", strategy_version_id: versionId }, state })}
+            makeReview={review((detail) =>
+              detail.current_state.health_state !== null &&
+              detail.current_state.health_state !== "RETIRED" &&
+              activePauses(detail).length === 0
+                ? { command_kind: "STRATEGY_PAUSE", strategy_version_id: versionId }
+                : null,
+            )}
           />
         )}
-        {!blocked &&
+        {!isBlockedHealth(health) &&
           pauses.map((restriction) => (
             <CommandAction
               key={restriction.restriction_receipt_id}
               label={`Resume · clear pause ${restriction.restriction_key}`}
-              makeReview={() => ({
-                target: {
-                  command_kind: "STRATEGY_RESUME",
-                  strategy_version_id: versionId,
-                  restriction_key: restriction.restriction_key,
-                },
-                state,
-              })}
+              makeReview={review((detail) =>
+                !isBlockedHealth(detail.current_state.health_state) &&
+                activePauses(detail).some((current) => current.restriction_key === restriction.restriction_key)
+                  ? {
+                      command_kind: "STRATEGY_RESUME",
+                      strategy_version_id: versionId,
+                      restriction_key: restriction.restriction_key,
+                    }
+                  : null,
+              )}
             />
           ))}
-        {health !== null && !blocked && (
+        {health !== null && !isBlockedHealth(health) && (
           <CommandAction
             label="Quarantine"
-            makeReview={() => ({
-              target: { command_kind: "STRATEGY_QUARANTINE", strategy_version_id: versionId, previous_health_state: health },
-              state,
+            makeReview={review((detail) => {
+              const current = detail.current_state.health_state;
+              return current !== null && !isBlockedHealth(current)
+                ? { command_kind: "STRATEGY_QUARANTINE", strategy_version_id: versionId, previous_health_state: current }
+                : null;
             })}
           />
         )}

@@ -54,7 +54,8 @@
     `POST /api/commands/session/revoke`, `POST /api/commands/execute` (31 `/api` routes in total);
   - bounded JSON command bodies;
   - the `--enable-commands` / `--operator-id` CLI;
-  - argparse never echoes unrecognized argv values.
+  - CLI errors never echo an argv value;
+  - the execute route re-authenticates after the body read, so a concurrent revoke, login or lock wins.
 - `src/operator_cockpit_ops.py`: the read-only `/api/ops/portfolio` projection adds `policies` (every
   verified policy in append order). `active_policy`, capacity, reservations and the non-authority flags
   are unchanged. No mutation logic lives there.

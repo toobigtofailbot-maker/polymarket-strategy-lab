@@ -1288,8 +1288,15 @@ export async function executeCommand(token: string, request: Readonly<CommandReq
     body.command_kind !== request.command_kind ||
     body.issued_at_ms !== request.issued_at_ms ||
     typeof body.command_ref !== "string" ||
+    typeof body.operator_id !== "string" ||
+    !body.command_ref.startsWith("cccmd:" + body.operator_id + ":sha256:") ||
+    typeof body.canonical_record_kind !== "string" ||
     typeof body.canonical_record_id !== "string" ||
+    (body.lifecycle_store_head_entry_hash !== null && typeof body.lifecycle_store_head_entry_hash !== "string") ||
+    body.no_product_network !== true ||
+    body.no_account_access !== true ||
     body.no_order_authority !== true ||
+    body.no_gate_c_authority !== true ||
     body.no_live_authority !== true
   ) {
     throw new CommandApiError("MALFORMED_RESPONSE");

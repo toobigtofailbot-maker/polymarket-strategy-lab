@@ -380,6 +380,15 @@ globalThis.fetch = async (url, init) => {
   if (mode === "unknown") return json({ error: { code: "SOMETHING_ELSE", detail: "C:/synthetic/path" } }, 409);
   if (mode === "malformed") return new Response("not json", { status: 200 });
   const request = JSON.parse(init.body);
+  const flag = mode === "receipt_authority" ? false : true;
+  const ref = mode === "receipt_operator" ? "cccmd:op-other:sha256:" + "c".repeat(64) : "cccmd:op-karl:sha256:" + "c".repeat(64);
+  if (mode === "receipt_operator" || mode === "receipt_authority") return json({
+    schema_version: "1.0.0", status: "COMMITTED", command_ref: ref,
+    command_kind: request.command_kind, operator_id: "op-karl", canonical_record_kind: "STRATEGY_RESTRICTION_RECEIPT",
+    canonical_record_id: "strategyrestriction:sha256:" + "d".repeat(64), lifecycle_store_head_entry_hash: "e".repeat(64),
+    issued_at_ms: request.issued_at_ms, no_product_network: true, no_account_access: true, no_order_authority: true,
+    no_gate_c_authority: flag, no_live_authority: true,
+  });
   return json({
     schema_version: "1.0.0", status: "COMMITTED", command_ref: "cccmd:op-karl:sha256:" + "c".repeat(64),
     command_kind: request.command_kind, operator_id: "op-karl", canonical_record_kind: "STRATEGY_RESTRICTION_RECEIPT",
@@ -408,6 +417,8 @@ mode = "stale"; await attempt("stale", () => api.executeCommand("t".repeat(43), 
 mode = "precondition"; await attempt("precondition", () => api.executeCommand("t".repeat(43), request));
 mode = "unknown"; await attempt("unknown", () => api.executeCommand("t".repeat(43), request));
 mode = "malformed"; await attempt("malformed", () => api.executeCommand("t".repeat(43), request));
+mode = "receipt_operator"; await attempt("receipt_operator", () => api.executeCommand("t".repeat(43), request));
+mode = "receipt_authority"; await attempt("receipt_authority", () => api.executeCommand("t".repeat(43), request));
 mode = "login"; await attempt("login", () => api.loginCommandSession("synthetic-input"));
 mode = "receipt"; await attempt("revoke", () => api.revokeCommandSession("t".repeat(43)));
 const status = {
@@ -540,6 +551,12 @@ def test_c01_commands_default_off_and_tty_secret_bootstrap_is_closed(
     ):
         with pytest.raises(SystemExit):
             cockpit.main(base + rejected)
+    # argparse errors never echo an argv value (review N2): bad int, explicit-argument and ambiguous forms.
+    for echoed in (["--port", SENTINEL], ["--enable-commands=" + SENTINEL], ["--enable=" + SENTINEL],
+                   ["--operator-id", OPERATOR, SENTINEL]):
+        with pytest.raises(SystemExit):
+            cockpit.main(base + echoed)
+        assert SENTINEL not in capsys.readouterr().err, echoed
     assert cockpit.main(base + ["--enable-commands", "--operator-id", OPERATOR]) == 0
     assert prompts == ["Control Center command secret: "]
     assert [kw for _app, kw in launched] == [{"host": "127.0.0.1", "port": 8000}] * 2
@@ -645,6 +662,37 @@ def test_c02_auth_session_token_ttl_single_session_revoke_and_lockout(lab, clock
     assert c.status()[1]["active_session"] is False
     restarted = _cockpit(lab, _auth())  # a new process bootstrap starts unlocked
     assert restarted.login()[0] == 200
+
+    # Review F1: a revoke or replacement login that lands while the body is being read wins.
+    racing_auth = _auth()
+    racing = _cockpit(lab, racing_auth)
+    racing_token = racing.token()
+    real_body = cockpit._command_body
+
+    async def revoke_during_read(request, *, json_body):
+        body = await real_body(request, json_body=json_body)
+        racing_auth.revoke([f"Bearer {racing_token}"])
+        return body
+
+    rows = lab.rows()
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(cockpit, "_command_body", revoke_during_read)
+        _fails(racing.execute(racing_token, _pause(lab, version=lab.b)), "AUTH_REQUIRED")
+    assert lab.rows() == rows
+    replaced = racing.token()
+
+    async def relogin_during_read(request, *, json_body):
+        body = await real_body(request, json_body=json_body)
+        racing_auth.login(SENTINEL)
+        return body
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(cockpit, "_command_body", relogin_during_read)
+        _fails(racing.execute(replaced, _pause(lab, version=lab.b)), "AUTH_REQUIRED")
+    assert lab.rows() == rows
+    route = _source(COCKPIT)
+    route = route[route.index('@app.post("/api/commands/execute")'):route.index("return app")]
+    assert route.index("await _command_body(") < route.rindex("auth.authenticate(authorization)")
     # Surrogate-containing secrets never raise; they simply fail.
     assert commands._digest("\ud800") is None
     fresh = _auth()
@@ -1406,6 +1454,9 @@ def test_c14_frontend_command_token_is_memory_only_and_mutations_never_auto_retr
         assert node_behavior["precondition"]["canonical"] == "HEALTH_TRANSITION_INVALID"
         assert node_behavior["unknown"]["code"] == "INTERNAL_ERROR" and node_behavior["unknown"]["calls"] == 1
         assert node_behavior["malformed"]["code"] == "MALFORMED_RESPONSE"
+        # Review N3: a receipt with a foreign command_ref or a false authority flag is rejected.
+        assert node_behavior["receipt_operator"]["code"] == "MALFORMED_RESPONSE"
+        assert node_behavior["receipt_authority"]["code"] == "MALFORMED_RESPONSE"
         login = node_behavior["login"]
         assert login["calls"] == 1 and "Authorization" not in login["call"]["headers"]
         assert login["ok"] == {"operatorId": "op-karl", "token": "a" * 43, "expiresAtMs": 5}
@@ -1444,7 +1495,12 @@ def test_c15_frontend_controls_are_exact_and_no_execution_live_or_hermes_actions
     assert section.count("<input") == 2  # the bootstrap secret and the confirmation phrase only
     # Resume is offered only for an exact visible PAUSE_NEW_EXPOSURE restriction.
     strategy = _function(app_source, "StrategyCommands")
-    assert "restriction.restriction_kind === PAUSE_KIND && restriction.max_active_budget_usd === null" in strategy
+    assert "restriction.restriction_kind === PAUSE_KIND && restriction.max_active_budget_usd === null" in section
+    assert strategy.count("activePauses(item)") == 1 and strategy.count("activePauses(detail)") == 2
+    # Review F2: target fields and displayed state come from a fresh strategy-detail read at review time.
+    assert "queryClient.fetchQuery({ ...strategyDetailQuery(versionId), staleTime: 0 })" in strategy
+    assert "previous_health_state: current }" in strategy and "state: strategyState(detail)" in strategy
+    assert "previous_health_state: health" not in strategy
     assert 'const PAUSE_KIND = "PAUSE_NEW_EXPOSURE";' in section
     # Controls render only when unlocked; outcomes always re-read strategies and ops over HTTP.
     assert strategy.count('if (controller.posture !== "Unlocked") return null;') == 1
@@ -1454,6 +1510,7 @@ def test_c15_frontend_controls_are_exact_and_no_execution_live_or_hermes_actions
     assert "invalidateQueries({ queryKey: familyKey(family) })" in provider and "} finally {\n          reread();" in provider
     # The last sanitized receipt stays visible after the re-read (session-scoped, no token).
     assert provider.count("setLastReceipt(receipt);") == 1
+    assert provider.count("setLastReceipt(null);") == 2  # review N1: reset on unlock and lock
     assert "lastReceipt: session === null ? null : lastReceipt," in provider
     assert app_source.count("<LastCommandReceipt />") == 2
     receipt_view = _function(app_source, "LastCommandReceipt")

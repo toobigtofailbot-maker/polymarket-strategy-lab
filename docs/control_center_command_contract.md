@@ -55,8 +55,8 @@ canonical result.
   - `--operator-id` without `--enable-commands` is rejected.
   - Bootstrap failures print only a closed code: `OPERATOR_ID_INVALID`, `TTY_REQUIRED` or
     `SECRET_INVALID`.
-  - The cockpit CLI also never echoes unrecognized argv values, so a mistyped secret is not printed
-    back.
+  - Cockpit CLI errors never echo an argv value (unrecognized, ambiguous and invalid-value
+    messages are redacted), so a mistyped secret is not printed back.
 - Frozen session contract: `SESSION_TTL_SECONDS = 900`, `MAX_ACTIVE_SESSIONS = 1`,
   `SESSION_TOKEN_BYTES = 32`, `MAX_FAILED_LOGINS = 5`.
   - The bearer token comes from stdlib `secrets.token_urlsafe(32)`: 43 URL-safe characters.
@@ -107,7 +107,9 @@ Precedence:
 3. body transport;
 4. request shape (`INVALID_COMMAND`) and then `INVALID_CONFIRMATION`.
 
-There is no automatic server-side retry of any step.
+There is no automatic server-side retry of any step. The execute route authenticates the bearer
+again after the body is read, so a revoke, replacement login or lock that lands during the read
+always wins; nothing after that check awaits.
 
 ## 5. Command identity and time
 
@@ -282,7 +284,9 @@ text.
   - one same-origin `postCommand` transport (`credentials: "omit"`, `cache: "no-store"`, no retry):
     `COMMAND_MUTATION_RETRY = false`.
 - Each action reads `GET /api/ops/portfolio` fresh (`fetchQuery`, `staleTime: 0`) and binds its
-  expected head from that response. SSE state and the Strategy Detail response are never the command
+  expected head from that response. Strategy actions also re-read their strategy detail at review time,
+  so the confirmed target fields (`previous_health_state`, the exact pause key) and the displayed
+  current state are fresh. SSE state and the Strategy Detail response are never the command
   head.
 - The confirmation surface shows the target identity and current canonical state. The exact phrase
   must be typed before submit.
