@@ -1,0 +1,564 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CI-OPT-02",
+    "title": "Risk-Based Local-First CI Optimization",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WORKFLOW_GOVERNANCE_CI_RISK_OPTIMIZATION",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 228,
+      "head_sha": "3e365771ce23a6be0f95b0d8c14faad95202e4c3",
+      "merge_sha": "e3e8673024c6921e794df8bf0aa4fcea3825dab1"
+    },
+    "suggested_branch": "codex/s10-ci-opt-02-risk-based-local-first",
+    "objective": "Implement base-trusted, default-off risk-based selective final hosted CI with Tier1 Ubuntu smoke, Tier2 Ubuntu full plus relevant audit/frontend, and Tier3 full legacy nine-job matrix, while preserving protected-boundary escalation, exact-head final gate, local authoritative full testing, and Karl-only activation/merge.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      ".github/workflows/ci.yml",
+      "tools/ci/risk_tier.py",
+      "tests/tools/ci/test_risk_tier.py",
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/wp_specs/S10-CI-OPT-02/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-OPT-02/wp_spec.json",
+      "docs/status_entries/S10-CI-OPT-02.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "allowed_changed_files": [
+      ".github/workflows/ci.yml",
+      "tools/ci/risk_tier.py",
+      "tests/tools/ci/test_risk_tier.py",
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/wp_specs/S10-CI-OPT-02/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-OPT-02/wp_spec.json",
+      "docs/status_entries/S10-CI-OPT-02.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "forbidden_prefixes": [
+      "src/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "tools/deployment/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 13,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_codex_workflow_docs.py",
+      "tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
+      "docs/ai/codex/VALIDATION_MATRIX.md",
+      "docs/ai/codex/WP_DRAFTING_STANDARD.md",
+      "docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Revert S10-CI-OPT-02 workflow/classifier/docs/tests to restore the nine-job local-first S10-CI-OPT-01 workflow. With CI_RISK_ROUTING_ENABLED absent/false the implemented workflow itself already runs the original nine legs. No product state, credentials, execution or capital changed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": true,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only CI job selection, classifier local CLI and stable final-status surface change; product APIs are untouched",
+    "items": [
+      {
+        "surface": "CI workflow plan",
+        "before": "one non-draft fixed five-job topology expands to nine runners",
+        "after": "base-owned non-draft classifier selects Tier1/2/3, dynamic nonempty compatibility matrix, conditional audits/NDFD/frontend and stable ci-final-gate; default OFF retains legacy nine",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve four Python full cross-platform targets, two native NDFD targets, both Python audit jobs and frontend for Tier3; no new workflow trigger or additional workflow",
+        "authority": "GOVERNANCE_WORKFLOW_ONLY"
+      },
+      {
+        "surface": "local classifier API",
+        "before": "no tools/ci/risk_tier.py",
+        "after": "stdlib bounded offline base-trusted classification from actual Git diff provenance and verified WP authority, fixed tier/plan output; no head-owned downgrade",
+        "change_authorized": true,
+        "compatibility_requirement": "No product API or shell execution from untrusted paths; invalid data rejects or conservative high tier without PASS",
+        "authority": "LOCAL_OFFLINE_GOVERNANCE_ONLY"
+      },
+      {
+        "surface": "ci-final-gate required check",
+        "before": "final job evidence distributed across nine current hosted jobs",
+        "after": "one unique non-matrix final check rejects missing required jobs and mismatched plan/head; actual expanded legs still independently inspected",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not represent GitHub branch protection as enabled or a skipped job as passed; enforce only after Karl explicitly configures required status",
+        "authority": "EVIDENCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The ten bounded governance decisions below are the complete scope, with no separate policy registry",
+    "items": [
+      {
+        "path": "ci.routing",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "default-off equals Tier 3 unless the exact Karl-owned variable is true and activation protection is independently verified; the initial CI-OPT-02 head runs all nine legacy legs",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "false/unset/malformed and first-bootstrap tests require four compat/two NDFD/two audits/frontend; never claim activation",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.classifier",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "derive minimum hosted tier using base-owned classifier, complete changed-path provenance and authority impact, never PR-controlled labels as trust",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "negative modified renamed deleted symlink truncated and missing-spec tests fail closed",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.tier_one",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "positively self-contained docs metadata and benign isolated stdlib utilities only; one Ubuntu py3.12 smoke job plus final gate",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "known safe docs are Tier 1; protected docs/validator changes cannot be Tier 1",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.tier_two",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "default substantive noncritical public wallet, Alpha, Hermes research, research scheduler, ordinary app/backend/frontend and noncritical deployment; RUNTIME risk3 not an automatic escalation",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Tier 2 ubuntu py3.12 full plus base audit; frontend only on relevant changes and no default NDFD/windows",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.tier_three",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "specific privileged auth/credentials/signing/orders/live/execution/hard-risk/capital/economic reconciliation/CI-security enforcement/native dependency or proven OS compatibility impact",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "critical paths and CI-OPT-02 own head require exact four compat/two NDFD/two audits/frontend",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.plan",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "canonical bounded output binds actual base/head and nonempty exact matrix, boolean audit/ndfd/frontend flags and reason codes",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "bad refs invalid JSON missing outputs mismatched matrix or zero matrix produce non-ready result",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.final_gate",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "one unique ci-final-gate evaluates actual needs outcomes including skipped/nonapplicable and exact source head; a required skip/failure/cancel is never PASS",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "negative matrix on failures/cancels/skips/needs unknown/head mismatch always fails",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.security",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "retain strict DuckDB, Nautilus/SDK pins, both Python audit commands, exact single historical fsspec CVE exception, NDFD binary no-skip and frontend npm audit when relevant",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "tier3 guards prove no silent reduction; no second ignore or masking",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.evidence",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "local one authoritative full suite on stable head, real exact-head hosted required checks and manual expanded-job inspection; disclose skips and measure actual runner-minutes",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "first five postactivation eligible PRs compared with eight-run historical 36.3 min average",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.non_authority",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "no src runtime, dependencies, product network, credentials, orders, host activation, actual CI activation or repo settings edits",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact 13 paths, original nine-leg bootstrap and Karl-only merge/activation",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "bounded non-secret CI plan/status evidence",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new committed domain identity or canonical data record introduced",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "FAST deterministic readiness is separate from Karl implementation and merge authority",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "exact frozen prompt/spec deterministic readiness and base/predecessor facts pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl separately authorizes implementation of this exact 13-file frozen package after readiness",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "only the 13 files are changed and complete local-first/final hosted evidence is collected",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve the canonical fixed schema-1.0.0 failure category order",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Behavior is validated through real Git-fixture and workflow mutation tests in the two scoped test surfaces",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001–R014 map each mandatory deliverable and failure family to bounded real validation; no extra CI machinery",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "repo truth, frozen base and governance mirror",
+        "command": "git rev-parse origin/main && gh pr view 228 --json state,mergedAt,headRefOid,mergeCommit && python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-OPT-02/wp_prompt.txt --spec docs/wp_specs/S10-CI-OPT-02/wp_spec.json --repo-root .",
+        "expected_result": "PR228 head 3e365771ce23a6be0f95b0d8c14faad95202e4c3 merged at e3e8673024c6921e794df8bf0aa4fcea3825dab1; exact current main and authoritative readiness IMPLEMENTATION_READY / FAST before any changes"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_risk_tier_safe_docs_and_isolated_stdlib",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/ci/test_risk_tier.py",
+        "expected_result": "approved benign metadata and proven isolated deterministic non-economic helper select one Ubuntu smoke and no unrelated hosted jobs"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_risk_tier_runtime_research_stays_tier_two",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/ci/test_risk_tier.py",
+        "expected_result": "public wallet/Hermes/Alpha campaigns/research scheduling ordinary backend frontend and noncritical deployment select Tier 2 absent protected impact regardless of Risk3/RUNTIME"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_risk_tier_protected_boundaries_force_tier_three",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/ci/test_risk_tier.py",
+        "expected_result": "actual authentication credentials hard risk execution capital live critical deployment CI workflow classifier governance-security edits and ABI/pins require Tier3"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_risk_tier_base_trust_and_first_bootstrap",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/ci/test_risk_tier.py",
+        "expected_result": "classifier comes from base not PR; this new classifier first bootstrap produces full nine legacy legs and prevents self-downgrade"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_risk_tier_bad_diff_and_metadata_fail_closed",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/ci/test_risk_tier.py",
+        "expected_result": "deletion rename source/destination symlink unknown critical path missing/lying spec truncated Git diff or malformed refs cannot obtain cheap tier"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_ci_tier_plan_and_final_gate_fail_closed",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py tests/tools/ci/test_risk_tier.py",
+        "expected_result": "canonical nonempty matrix final gate blocked on any required skip failure cancellation invalid outcome or head mismatch"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_ci_opt_02_workflow_policy_and_bootstrap",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "draft suppression no push-main no pull_request_target, original nine jobs on bootstrap and exact Tier1 Tier2 Tier3 matrix semantics enforced"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_ndfd_strict_workflow_still_conditional_on_tier_three",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_ndfd_grib_decoder_dependency_contract_docs.py",
+        "expected_result": "Tier3 maintains both strict NDFD OS jobs binary-only ecCodes selfcheck no required skip plus NDFD audit"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_ci_sec_01_python_audit_exception_is_exact",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "S10-CI-SEC-01 exact one fsspec exception remains unchanged in exactly two audit jobs with no other ignores"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "validation",
+        "test": "postimplementation strict scope and available security",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-OPT-02/wp_prompt.txt --spec docs/wp_specs/S10-CI-OPT-02/wp_spec.json --repo-root . --check-diff --base e3e8673024c6921e794df8bf0aa4fcea3825dab1 --head HEAD",
+        "expected_result": "frozen prompt/spec match authority, exact all 13 changed paths, artifact guard and relevant security/yaml checks pass with honest availability"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "authoritative local final full repository suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one passing full suite at unchanged stable source head with actual counts and environment; no invented skipped-as-PASS claims"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "hosted_ci",
+        "test": "first exact-head Tier3 nine legacy jobs plus two controls",
+        "command": "gh pr checks --watch",
+        "expected_result": "one final non-draft CI-OPT-02 head shows four full compatibility, two NDFD, two audit and one frontend job successful plus classifier and unique ci-final-gate PASS"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pr_evidence",
+        "test": "strict posted-body evidence and independent review",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body posted-pr-body.md --expected-head $candidateHead --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "re-fetched live PR body passes guard, actual matrix leg counts and runner-minutes disclosed, Side18 review and Karl merge remain distinct"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CC-PROD-01",
+    "next_title": "Separately governed Control Center production deployment and monitoring after completed CI optimization",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-PROD-01",
+    "forbidden_in_this_wp": [
+      "Control Center production activation or ingress",
+      "any private credential or privileged session",
+      "risk-based routing activation or GitHub branch-settings change",
+      "new workflow dashboard scheduled CI or extra policy registry",
+      "product source, Python/npm dependency or lock changes",
+      "Hermes provider or product API calls",
+      "paper execution real signing orders cancels or capital",
+      "Gate C live trading or deployment",
+      "merge"
+    ]
+  }
+}

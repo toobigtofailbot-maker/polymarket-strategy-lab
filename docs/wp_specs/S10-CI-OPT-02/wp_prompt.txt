@@ -1,0 +1,133 @@
+# S10-CI-OPT-02 — Risk-Based Local-First CI Optimization
+
+## 0. Identity and authorization
+WP ID: S10-CI-OPT-02
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Title: Risk-Based Local-First CI Optimization
+Package class: WORKFLOW_GOVERNANCE_CI_RISK_OPTIMIZATION
+Package size class: L / 13 exact paths / Risk level: 2
+Governance track expected: FAST
+Base branch: main
+Frozen main/base: e3e8673024c6921e794df8bf0aa4fcea3825dab1
+Required predecessor: PR #228 / S10-CC-CMD-01; head 3e365771ce23a6be0f95b0d8c14faad95202e4c3; merged e3e8673024c6921e794df8bf0aa4fcea3825dab1
+Earlier governance predecessor: PR #229 merged at 101c7f44604553cf2f8d2166725b266435ab4047
+Suggested branch: codex/s10-ci-opt-02-risk-based-local-first
+Draft owner: Side18. Final independent reviewer: Side18. Merge and activation owner: Karl.
+Status: FROZEN FOR SEPARATE KARL IMPLEMENTATION AUTHORIZATION; NOT AUTHORIZED BY THIS ARTIFACT.
+Capital/orders USD 0 / 0. Product/runtime/credential/dependency changes: NONE.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: true
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 1. Objective and mandatory safety outcome
+Reduce GitHub-hosted runner minutes without hiding missing verification. The eight successful recent PR matrices averaged 36.3 raw runner-minutes, chiefly the four repeated Python full-compatibility legs. Prefer Tier 2 over Tier 3 when the *actual diff* affects only non-economic/noncritical runtime/research and the selected hosted + authoritative local coverage suffices. Governance Risk 3, RUNTIME, public-wallet research, Hermes research, research scheduler and noncritical deployment are NOT Tier 3 merely by name. Actual sensitive boundary, dependency ABI or unique-host compatibility impact requires Tier 3. Tier 1 is positively proven narrow benign work, not an inferred default. Unknown, incomplete or contradictory trust evidence fails closed; never downgrade based on labels, changed head spec, PR text or user-provided tier.
+
+This WP itself must run exactly the NINE EXISTING legacy hosted legs (four Python full compat, two strict NDFD, two audits, frontend) PLUS its new classify and ci-final-gate jobs, after one local stable-head full-suite PASS. The default stays OFF. A changed exact head invalidates all prior final evidence.
+
+## 2. Hard merge gate / startup / local workflow
+Before *any implementation*, verify authenticated live GitHub PR #228 is MERGED at {BASE}, head {PRE_HEAD}; main and origin/main exactly {BASE}; predecessor ancestry and PR #229 history; clean dedicated checkout/worktree; no conflicting CI WP branch/PR and no newer main commit. Do not reset another checkout, force push or rewrite existing branches. If main advanced, STOP for Side18 refreeze (do not edit package SHA). Verify branch protection truthfully; GitHub historically reports main unprotected, not a verified required status. No repo-settings changes in this WP.
+Read first AGENTS.md, AI_CODING_AGENT_START_HERE.md/CODEX_START_HERE.md if present, docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md, docs/ai/codex/VALIDATION_MATRIX.md, WP_DRAFTING_STANDARD.md, WP_EXECUTION_STATE_MACHINE.md, WP_SPEC_STANDARD.md, S10-CI-OPT-01/SEC-01 status and the current five-job ci.yml. Search full-changed-set guard tests and the two test files listed below; no whole-repo architecture research. Keep one DRAFT PR while coding; do not use hosted CI as iteration loop.
+
+Pre-implementation mandatory exact command (run before implementing, report stdout/exit; technical readiness does NOT authorize implementation):
+`python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/{WP}/wp_prompt.txt --spec docs/wp_specs/{WP}/wp_spec.json --repo-root .`
+Must return IMPLEMENTATION_READY / FAST / exit 0; package guard must accept schema. If these artifacts are outside the checkout, place only these two under their **approved** paths for preimplementation checking in the dedicated WP worktree; treat as uncommitted package delivery, not an authorized implementation edit. If Karl has not separately authorized implementation, STOP after this check and return its result.
+
+## 3. Authority / non-authority and exact scope
+Allowed: one CI workflow; one stdlib local classifier; the two named focused test files; the three canonical guidance documents; frozen WP prompt/spec; stable status and project indexes. Ordinary Git/GitHub CI metadata/supply-chain audit traffic only, no product-network authority. No dependencies, new reusable workflow, policy registry, cost dashboard, deployment, src/, secrets, credential/privileged action, runtime activation, scheduler, Hermes provider, paper, execution, orders, risk budget, live or capital. No new CVE ignore. Use existing CI_RISK_ROUTING_ENABLED var as Karl-only *activation switch*; NEVER create/enable it, mutate branch settings, activate a service or merge.
+
+Exact required=allowed 13 paths (no fourteenth path):
+1. `.github/workflows/ci.yml`
+2. `tools/ci/risk_tier.py`
+3. `tests/tools/ci/test_risk_tier.py`
+4. `tests/test_codex_workflow_docs.py`
+5. `tests/test_ndfd_grib_decoder_dependency_contract_docs.py`
+6. `docs/ai/codex/VALIDATION_MATRIX.md`
+7. `docs/ai/codex/WP_DRAFTING_STANDARD.md`
+8. `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`
+9. `docs/wp_specs/S10-CI-OPT-02/wp_prompt.txt`
+10. `docs/wp_specs/S10-CI-OPT-02/wp_spec.json`
+11. `docs/status_entries/S10-CI-OPT-02.md`
+12. `docs/project_status.md`
+13. `docs/repo_truth_index.md`
+
+`max_changed_files=13`; all must appear in final diff. Current scope uses size L budget 20, but no spare paths are implicitly authorized. `docs/deferred_items_log.md` is NOT in scope. Discover bounded whole-diff test guardians up front and repair only tests already allowed. If another path is truly necessary STOP and request targeted scope amendment.
+
+## 4. Implementation contract — minimum complete
+(A) Preserve pull_request events opened/synchronize/reopened/ready_for_review, draft suppression, same-PR cancellation and no push-main rerun, no pull_request_target/write token/secrets. Keep existing job IDs/names where possible, existing audit logic and NDFD strict logic intact. New small Ubuntu classify job computes actual full Git change provenance including renames/copies/deletes, rejects missing/truncated/unsafe diff. When routing is active, execute classifier code fetched from **verified base commit**, not changed head; validate risk flags/authority against real diff and compute bounded plan bound to base/head. HEAD changes to `.github/workflows/ci.yml`, tools/ci/risk_tier.py, required security validators, dependencies/native pins always Tier 3. Never let changed workflow policy self-report cheap plan. When routing is absent/false/malformed: force Tier 3, and for CI-OPT-02 bootstrap force fixed all-nine legacy legs regardless of absent base classifier. Once routing is enabled on a future base, missing base classifier is FAIL, not cheap fallback. A head-modified workflow cannot itself be treated as independently trusted: full Tier3 validation and Side18 source review remain required.
+
+(B) Tier 1: one Ubuntu-24.04/Python3.12 small **smoke** compatibility leg validating mandatory lightweight guards; no native/full pytest, audits, Windows, NDFD or frontend. Admit ordinary benign docs/status/index and demonstrably isolated stdlib non-economic helper only if truly self-contained and fully tested locally. Ordinary status/index metadata neither downgrades nor escalates a protected code diff.
+
+(C) Tier 2: one Ubuntu-24.04/Python3.12 **full** compatibility/suite job preserving all existing strict DuckDB/native/SDK/focused assertions, base Python dependency audit, and frontend only on actual relevant frontend changes (locked npm ci/typecheck/build/Storybook/npm audit). No automatic Windows, NDFD or general frontend for unrelated work. Typical Tier 2: wallet public-data-only research, Hermes research orchestration, Alpha campaigns/budgets/isolated research scheduling, ordinary backend/app/read-only Control Center, non-sensitive monitoring/deployment. A specific real native/OS-only obligation is a reason to escalate, not broad risk labels. Local Windows/WSL2/Docker tests supply feasible complementary platform evidence.
+
+(D) Tier 3: four strict/full compatibility OS/Python legs (Ubuntu/Windows × py3.12/py3.14); both dedicated strict NDFD Ubuntu/Windows legs; both Python dependency audits with exactly the existing single `CVE-2026-104851` ignore in each; frontend job with npm audit. Trigger for changed protected auth/credentials/signing/orders/cancel/execution, hard risk/capital/economic reconciliation, safety-critical lifecycle controls, live ingress/service privilege, CI security/enforcement/classifier/final gate, deps/locks/native/ABI and concrete unverified cross-platform requirements. The historical `S10-CI-SEC-01` fsspec exception remains, without broad waiver, `|| true`, `continue-on-error` or dependency surgery.
+
+(E) Canonical classify plan: tier, bounded reason codes, exact base/head, nonempty compatibility matrix of explicit OS/Python/smoke flags, run_dependency_audit, run_ndfd, run_frontend; cross-check plan against routing state and actual changed paths. Exact `ci-final-gate`: unique non-matrix job runs on non-draft even after dependency failures and explicitly inspects needs classifier/result/expected outcomes; every required job must succeed, nonrequired skipped, never label skipped as PASS. Missing/malformed/failed/cancelled/unknown result, head mismatch, empty matrix or internal plan inconsistency => not ready. GitHub matrix result aggregation does not prove each expanded leg; Codex and Side18 must verify actual nine bootstrap job rows/versions from hosted run. The required status check on main is NOT asserted enforced until Karl separately proves it. Do not add independent GitHub REST polling or a second workflow.
+
+## 5. Acceptance and negative-test matrix
+Implement only necessary focused tests in `tests/tools/ci/test_risk_tier.py` and allowed existing test files:
+- L1 benign docs and isolated self-contained stdlib chooses Tier1; protective validators or security policy disguised under docs/tests do not.
+- M1 public-wallet, Hermes research, Alpha campaigns and research schedulers, ordinary backend/frontend, noncritical deployment choose Tier2 even Risk3/RUNTIME if boundaries untouched.
+- H1 real privileged auth, credential, execution, signing/cancel, hard-risk/capital/economic, critical live controls, CI/security enforcement or native/pin change require Tier3.
+- H2 malicious/missing/contradictory WP spec, full changed provenance/rename/deletion/symlink, untrusted head/base, truncated diff and unknown sensitive path fail closed.
+- H3 self-modified workflow/classifier cannot downgrade; initial base-absent bootstrap keeps all nine legacy jobs.
+- J1 canonical exact tier cardinality, audits/NDFD/strict DuckDB/SDK/npm preserved where required; default-off first run exactly legacy nine plus two control jobs.
+- J2 missing/failed/cancelled/skipped *required* job, wrong output/head/flags, no final gate or extra CVE ignore fail; no silent PASS.
+- J3 draft/ready triggers, non-draft exact head, concurrency and no push-to-main repeat; updated CI-OPT-01/CI-SEC-01/NDFD regression assertions stay consistent.
+These are behavioral families, not an instruction to generate hundreds of redundant tests. Prefer compact fixtures and focused negations.
+
+## 6. Evidence plan and validation order
+R001–R014 of the frozen machine spec are the authoritative requirement mapping. Sequence: preimplementation readiness; pure classifier/test mutation matrix and existing CI/NDFD policy guards; YAML syntax/actionlint if available; relevant gitleaks/Semgrep/audit/artifact and strict scope checks with honest tool availability; one authoritative local full suite only on stable candidate with exact head/counts; full Tier3 initial bootstrap **nine legacy legs plus two control jobs** on the exact non-draft PR head; inspect actual hosted expanded job list and resolved audit logs; PR-body update/re-fetch and strict guard --require-guard-result; Side18 independent exact-head final review; Karl-only merge. Do not reduce the current fixed nine jobs for this WP to save a few minutes. No premature `Ready for review: YES` and no reuse of older-head CI.
+
+Postimplementation commands include:
+FAST is certificate-free: the repository readiness command below validates the specification; do not call the certificate-required standalone `wp_spec_guard.py` CLI.
+`python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-OPT-02/wp_prompt.txt --spec docs/wp_specs/S10-CI-OPT-02/wp_spec.json --repo-root . --check-diff --base e3e8673024c6921e794df8bf0aa4fcea3825dab1 --head HEAD`
+`python tools/git/diff_scope_summary.py --base e3e8673024c6921e794df8bf0aa4fcea3825dab1 --head HEAD --wp-spec docs/wp_specs/S10-CI-OPT-02/wp_spec.json --require-exact-scope`
+`python tools/security/run_available_security_checks.py`
+`python tools/git/preflight_generated_artifact_guard.py`
+`python -m pytest -q -p no:cacheprovider tests/tools/ci/test_risk_tier.py tests/test_codex_workflow_docs.py tests/test_ndfd_grib_decoder_dependency_contract_docs.py`
+`python -m pytest -q -p no:cacheprovider`
+Use a real YAML parse/actionlint to catch expression/matrix syntax if present; never fake one. Final `gh pr checks --watch` evidence must identify all eleven rows and outcomes, not just a green check summary. Post body must be authenticated re-fetched and strict evidence guard actually run. If any mandatory gate remains unverified: STOP / Ready NO.
+
+## 7. Hard stops
+- Unknown current main/base, PR228 not merged as specified, dirty worktree, missing initial readiness, unexpected path or changes beyond the exact 13.
+- A clearly eligible Tier2 package escalated solely because it is RUNTIME/Risk3; or a critical authority change downgraded by metadata, altered CI head, invalid provenance/spec or selective omissions.
+- Base-owned classifier unavailable after rollout, first-bootstrap skipping a legacy leg, CI change creating untrusted required gate or ignored failure, branch setting represented as protected without evidence.
+- Any lost exact-head evidence, failed real mandatory test/security/audit/CI leg, false claims about unavailable checks, or need for new CVE waiver.
+- Any product runtime, host/service, credential, scheduler/provider, economic/live/trading or repository activation task beyond this non-authoritative governance WP.
+STOP and report exact residual defect + smallest corrective action; no automatic scope enlargement, retries-as-PASS, or silent waivers.
+
+## 8. Successor boundary and report-back
+After Karl merges this WP, separately verify `ci-final-gate` as a required trusted status under real main protection/ruleset and obtain Karl's distinct explicit permission to set CI_RISK_ROUTING_ENABLED=true. Until then optimization stays OFF. First five qualifying PRs report actual summed raw job runner-minutes, tier and executed jobs against baseline 36.3 raw minutes (distinguish billed time); no dashboard, scheduled workflow or report system. Separately governed S10-CC-PROD-01 is the next feature lane, not authorized here.
+Report back: branch/PR/current SHA/base, exact 13 paths, frozen prompt/spec SHA256, readiness, Tier1/Tier2/Tier3 positive/negative cases, actual default-off plan, locally passed suite/environment/counts, security/audit and bootstrap nine old legs + classify/final gate, current required-check protection truth, posted PR body guard and mode, Ready YES/NO; Merge authorized NO — Karl alone. For final review, Side18 will give a concise layperson verdict, not a long review document.
+
+## 9. Normative rule matrix
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|ci|routing|final|REQUIRE|preserve_policy|ci.routing|R001
+NR002|ci|classifier|final|REQUIRE|preserve_policy|ci.classifier|R002
+NR003|ci|tier_one|final|REQUIRE|preserve_policy|ci.tier_one|R003
+NR004|ci|tier_two|final|REQUIRE|preserve_policy|ci.tier_two|R004
+NR005|ci|tier_three|final|REQUIRE|preserve_policy|ci.tier_three|R005
+NR006|ci|plan|final|REQUIRE|preserve_policy|ci.plan|R006
+NR007|ci|final_gate|final|REQUIRE|preserve_policy|ci.final_gate|R007
+NR008|ci|security|final|REQUIRE|preserve_policy|ci.security|R008
+NR009|ci|evidence|final|REQUIRE|preserve_policy|ci.evidence|R009
+NR010|ci|non_authority|final|REQUIRE|preserve_policy|ci.non_authority|R010
+END_NORMATIVE_RULE_MATRIX_V1
