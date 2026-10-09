@@ -133,7 +133,7 @@ Contract: `docs/control_center_ops_read_model_contract.md`; package: `docs/wp_sp
 stable record: `docs/status_entries/S10-CC-OPS-01.md`. Merged via PR #226 (head
 `90d30129ce0f3282395b6f319ce25c622191d39b`, merge `7bba7f0d6657364b9358d1a4a96807f024db0533`).
 
-## S10-CC-STREAM-01 Control Center Streaming / Freshness / Gap / Resync Layer (current Control Center implementation target, open branch)
+## S10-CC-STREAM-01 Control Center Streaming / Freshness / Gap / Resync Layer (merged historical predecessor)
 
 RUNTIME, risk 3, exact 17-path L scope, deterministic readiness, no certificate. Frozen base
 `7bba7f0d6657364b9358d1a4a96807f024db0533` (PR #226 / S10-CC-OPS-01 merged: YES, head
@@ -160,7 +160,30 @@ incident state or execution/live authority. No canonical source change or mutati
 read, product network, dependency/workflow change, command, deployment, execution or live authority;
 live DISABLED; capital/orders USD 0 / 0. Contract: `docs/control_center_streaming_contract.md`; package:
 `docs/wp_specs/S10-CC-STREAM-01/`; stable record: `docs/status_entries/S10-CC-STREAM-01.md`. Successors
-S10-CC-CMD-01 and S10-CC-PROD-01 are separately gated; merge NOT AUTHORIZED (Karl only).
+S10-CC-CMD-01 and S10-CC-PROD-01 are separately gated. STREAM-01 merged via PR #227
+(head `f344979f8f620519175defe627a5829b569b665d`, merge
+`a78809ddb62cf143ac85ee297e87f961aa9b61f9`); no successor merge is authorized.
+
+## S10-GOV-COPY-01 Unchanged Copy-Origin Exact-Scope Policy (current governance target, open branch)
+
+FAST / Risk 1 / M, exact nine paths, frozen base `a78809ddb62cf143ac85ee297e87f961aa9b61f9`.
+PR #227 / S10-CC-STREAM-01 is merged (head `f344979f8f620519175defe627a5829b569b665d`).
+Side18 adopted the exact frozen prompt/spec; Karl authorized bounded Codex execution after deterministic readiness.
+`tools/git/diff_scope_summary.py` excludes unchanged `C` origin provenance only from allowed-file
+scope. All copy-origin safety/authority and rename-origin policies remain; independently changed
+sources and destinations, unique count, required presence, Git detection/parser and output contracts
+remain unchanged. The successor rule in `docs/ai/codex/WP_SPEC_STANDARD.md` supersedes only that
+historical WP159 classification; historical WP159 artifacts are untouched. User guide:
+`docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`; regressions:
+`tests/tools/git/test_diff_scope_summary.py`; package: `docs/wp_specs/S10-GOV-COPY-01/`;
+stable record: `docs/status_entries/S10-GOV-COPY-01.md`.
+PR #228 / CMD-01 remains separately blocked at `807449e65f6dd1ccacd286e4091c8a3db21b20ef`;
+this WP neither changes its source/metadata nor authorizes its baseline migration or recertification.
+After governance merge, Side18 must prepare that separately authorized PROTECTED continuation;
+old-head CI is not new-head evidence. No runtime, dependencies, CI, helper/product network,
+credentials, scheduler, paper, execution, trading or live authority; capital/orders USD 0 / 0.
+Side18 independently reviews; Karl alone merges. Current evidence/readiness belongs in the PR body.
+
 
 ## S10-CI-SEC-01 Dependency-Security CI Closure (current bounded security closure, open branch)
 
