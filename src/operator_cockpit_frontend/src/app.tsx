@@ -2017,11 +2017,13 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
       sessionEpoch: session?.epoch ?? null,
       lastReceipt: session === null ? null : lastReceipt,
       unlock: async (secret) => {
+        const epoch = ++epochs.current;
+        setSession(null);
+        setLastReceipt(null);
         try {
           const value = await loginCommandSession(secret);
-          epochs.current += 1;
-          setLastReceipt(null);
-          setSession({ value, epoch: epochs.current });
+          if (epochs.current !== epoch) return new CommandApiError("AUTH_REQUIRED");
+          setSession({ value, epoch });
           return null;
         } catch (error) {
           return toCommandError(error);
@@ -2031,6 +2033,7 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
       },
       lock: async () => {
         const current = session;
+        epochs.current += 1;
         setSession(null);
         setLastReceipt(null);
         if (current !== null) {
@@ -2048,11 +2051,16 @@ function CommandSessionProvider({ children }: { children: ReactNode }) {
         if (current === null) return { kind: "error", error: new CommandApiError("AUTH_REQUIRED"), epoch: null };
         try {
           const receipt = await executeCommand(current.value.token, request);
+          if (epochs.current !== current.epoch) {
+            return { kind: "error", error: new CommandApiError("AUTH_REQUIRED"), epoch: current.epoch };
+          }
+          if (receipt.operator_id !== current.value.operatorId) throw new CommandApiError("MALFORMED_RESPONSE");
           setLastReceipt(receipt);
           return { kind: "success", receipt };
         } catch (error) {
           const failure = toCommandError(error);
-          if (SESSION_ENDING_CODES.includes(failure.code)) {
+          if (epochs.current === current.epoch && SESSION_ENDING_CODES.includes(failure.code)) {
+            epochs.current += 1;
             setSession(null);
             refreshStatus();
           }

@@ -1207,9 +1207,16 @@ class _CockpitArgumentParser(argparse.ArgumentParser):
     """S10-CC-CMD-01: never echo argv values in CLI errors (a mistyped command secret stays private)."""
 
     def error(self, message: str):  # type: ignore[override]
-        if message.startswith(("unrecognized arguments", "ambiguous option")):
-            message = message.split(":", 1)[0]
-        super().error(re.sub(r"'[^']*'", "'<value withheld>'", message))
+        # argparse diagnostics can contain arbitrary repr-quoted argv (including both quote styles).
+        # A closed message avoids echoing mistyped credentials under every parser failure.
+        safe_messages = {
+            "--port must be between 1 and 65535",
+            "--operator-id requires --enable-commands",
+            "--enable-commands bootstrap failed: OPERATOR_ID_INVALID",
+            "--enable-commands bootstrap failed: TTY_REQUIRED",
+            "--enable-commands bootstrap failed: SECRET_INVALID",
+        }
+        super().error(message if message in safe_messages else "INVALID_COCKPIT_ARGUMENTS")
 
 
 def main(argv: list[str] | None = None) -> int:

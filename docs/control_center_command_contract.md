@@ -56,7 +56,8 @@ canonical result.
   - Bootstrap failures print only a closed code: `OPERATOR_ID_INVALID`, `TTY_REQUIRED` or
     `SECRET_INVALID`.
   - Cockpit CLI errors never echo an argv value (unrecognized, ambiguous and invalid-value
-    messages are redacted), so a mistyped secret is not printed back.
+    messages use a closed diagnostic; only exact safe bootstrap/port diagnostics are retained),
+    so a mistyped secret is not printed back under either Python repr quote style.
 - Frozen session contract: `SESSION_TTL_SECONDS = 900`, `MAX_ACTIVE_SESSIONS = 1`,
   `SESSION_TOKEN_BYTES = 32`, `MAX_FAILED_LOGINS = 5`.
   - The bearer token comes from stdlib `secrets.token_urlsafe(32)`: 43 URL-safe characters.
@@ -303,6 +304,11 @@ text.
   waits for SSE.
 - The last sanitized receipt of the current session (kind, status, canonical record id) stays visible
   in the command sections after the re-read. It is cleared when the session ends.
+  Unlock/lock advance a memory-only epoch. Late login or command responses from a previous epoch
+  cannot unlock, overwrite the receipt or invalidate a newer session. A success receipt must match
+  the authenticated session operator, exact command kind/time, command-specific canonical kind/id,
+  complete content-addressed reference and non-null 64-hex committed store head; malformed receipts
+  remain ambiguous outcomes and never become displayed success.
 - Stale state shows a safe message and requires a new review and confirmation.
 - After an ambiguous transport outcome (`NETWORK_UNAVAILABLE`, `INTERNAL_ERROR`,
   `MALFORMED_RESPONSE`), only **Retry same request** is offered. It re-sends the exact same frozen
@@ -319,7 +325,7 @@ Hermes/provider invocation, product network, authenticated account read, order c
 submit, capital, scheduler/daemon/worker, dependency/lock/workflow change, deployment or merge.
 Capital/orders: USD 0 / 0.
 
-The following command classes are explicitly deferred. Before S10-CC-PROD-01 implementation, Side17
+The following command classes are explicitly deferred. Before S10-CC-PROD-01 implementation, Side18
 must decide whether they need a narrow S10-CC-CMD-02 extension or stay CLI/backend-only. CMD-01 neither
 authorizes nor silently requires CMD-02:
 - paper pause/resume/kill;

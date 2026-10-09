@@ -389,13 +389,24 @@ globalThis.fetch = async (url, init) => {
     issued_at_ms: request.issued_at_ms, no_product_network: true, no_account_access: true, no_order_authority: true,
     no_gate_c_authority: flag, no_live_authority: true,
   });
-  return json({
+  const receipt = {
     schema_version: "1.0.0", status: "COMMITTED", command_ref: "cccmd:op-karl:sha256:" + "c".repeat(64),
     command_kind: request.command_kind, operator_id: "op-karl", canonical_record_kind: "STRATEGY_RESTRICTION_RECEIPT",
     canonical_record_id: "strategyrestriction:sha256:" + "d".repeat(64), lifecycle_store_head_entry_hash: "e".repeat(64),
     issued_at_ms: request.issued_at_ms, no_product_network: true, no_account_access: true, no_order_authority: true,
     no_gate_c_authority: true, no_live_authority: true,
-  });
+  };
+  const invalid = {
+    receipt_ref: { command_ref: "cccmd:op-karl:sha256:arbitrary" },
+    receipt_kind: { canonical_record_kind: "STRATEGY_HEALTH_RECEIPT" },
+    receipt_id: { canonical_record_id: "strategyhealth:sha256:" + "d".repeat(64) },
+    receipt_id_digest: { canonical_record_id: "strategyrestriction:sha256:unsafe" },
+    receipt_head: { lifecycle_store_head_entry_hash: "not-a-head" },
+    receipt_head_newline: { lifecycle_store_head_entry_hash: "e".repeat(64) + "\n" },
+    receipt_null_head: { lifecycle_store_head_entry_hash: null },
+    receipt_invalid_operator: { operator_id: "op-A", command_ref: "cccmd:op-A:sha256:" + "c".repeat(64) },
+  };
+  return json({ ...receipt, ...(invalid[mode] ?? {}) });
 };
 Date.now = () => 1234;
 const request = api.newCommandRequest(
@@ -419,6 +430,10 @@ mode = "unknown"; await attempt("unknown", () => api.executeCommand("t".repeat(4
 mode = "malformed"; await attempt("malformed", () => api.executeCommand("t".repeat(43), request));
 mode = "receipt_operator"; await attempt("receipt_operator", () => api.executeCommand("t".repeat(43), request));
 mode = "receipt_authority"; await attempt("receipt_authority", () => api.executeCommand("t".repeat(43), request));
+for (const name of ["receipt_ref", "receipt_kind", "receipt_id", "receipt_id_digest", "receipt_head", "receipt_head_newline",
+                    "receipt_null_head", "receipt_invalid_operator"]) {
+  mode = name; await attempt(name, () => api.executeCommand("t".repeat(43), request));
+}
 mode = "login"; await attempt("login", () => api.loginCommandSession("synthetic-input"));
 mode = "receipt"; await attempt("revoke", () => api.revokeCommandSession("t".repeat(43)));
 const status = {
@@ -581,6 +596,18 @@ def test_c01_commands_default_off_and_tty_secret_bootstrap_is_closed(
     assert _module_code().count("getpass.getpass") == 1
     assert 'parser.add_argument("--enable-commands", action="store_true", default=False)' in _source(COCKPIT)
     assert 'parser.add_argument("--operator-id")' in _source(COCKPIT)
+
+
+@pytest.mark.parametrize("value", ["SYNTHETIC'ARGV", 'SYNTHETIC"ARGV', 'SYNTHETIC\'"ARGV', "SYNTHETIC\nARGV"])
+def test_cli_invalid_value_never_echoes_either_repr_quote_style(value, capsys) -> None:
+    parser = cockpit._CockpitArgumentParser()
+    parser.add_argument("--port", type=int)
+    with pytest.raises(SystemExit) as caught:
+        parser.parse_args(["--port", value])
+    assert caught.value.code == 2
+    output = capsys.readouterr().err
+    assert "INVALID_COCKPIT_ARGUMENTS" in output
+    assert "SYNTHETIC" not in output and "ARGV" not in output
 
 
 def test_c02_auth_session_token_ttl_single_session_revoke_and_lockout(lab, clock) -> None:
@@ -1389,6 +1416,80 @@ def _api_command_section() -> str:
     return api_source[api_source.index("// S10-CC-CMD-01 protected commands."):]
 
 
+def test_frontend_pending_response_cannot_cross_session_epoch(tmp_path) -> None:
+    """Run the actual provider with deterministic hooks and deferred transport promises."""
+    node = shutil.which("node")
+    if node is None or not (FRONTEND_ROOT / "node_modules" / "@tanstack" / "react-query").is_dir():
+        pytest.skip("locked frontend Node environment unavailable")
+    provider = _function(_source(FRONTEND / "app.tsx"), "CommandSessionProvider") + "\n}\n"
+    provider = provider.replace(
+        "return <CommandContext.Provider value={controller}>{children}</CommandContext.Provider>;",
+        "return controller;",
+    )
+    source = tmp_path / "provider.tsx"
+    source.write_text(provider, encoding="utf-8")
+    harness = tmp_path / "provider.mjs"
+    harness.write_text(r'''
+import fs from "node:fs";
+import { stripTypeScriptTypes } from "node:module";
+const compiled = stripTypeScriptTypes(fs.readFileSync(process.argv[2], "utf8"));
+const factory = new Function("env", "with (env) { " + compiled + "; return CommandSessionProvider; }");
+const deferred = () => { let resolve, reject; const promise = new Promise((a,b) => { resolve=a; reject=b; });
+                        return { promise, resolve, reject }; };
+const out = {};
+for (const scenario of ["late_success", "late_error", "foreign_operator", "late_unlock"]) {
+  const slots = [], epoch = { current: 0 }; let cursor=0, pending=deferred(), login=deferred();
+  class CommandApiError extends Error { constructor(code) { super(code); this.code=code; } }
+  const env = {
+    useQueryClient: () => ({ invalidateQueries: () => undefined }),
+    useQuery: () => ({ data: { commands_enabled: true } }),
+    useState: (initial) => { const i=cursor++; if (!(i in slots)) slots[i]=initial;
+                            return [slots[i], (value) => { slots[i]=value; }]; },
+    useRef: () => epoch, useMemo: (fn) => fn(),
+    commandStatusQuery: { queryKey: [] }, COMMAND_REREAD_FAMILIES: ["strategies","ops"],
+    familyKey: (family) => [family], SESSION_ENDING_CODES: ["AUTH_REQUIRED","SESSION_EXPIRED","COMMANDS_DISABLED"],
+    loginCommandSession: async () => scenario === "late_unlock" ? login.promise :
+       ({ operatorId: "op-karl", token: "synthetic", expiresAtMs: 900 }),
+    revokeCommandSession: async () => undefined,
+    executeCommand: async () => pending.promise,
+    CommandApiError, toCommandError: (error) => error,
+  };
+  const Provider=factory(env); const render=() => { cursor=0; return Provider({ children: null }); };
+  let controller=render();
+  if (scenario === "late_unlock") {
+    const unlock=controller.unlock("synthetic");
+    await render().lock();
+    login.resolve({ operatorId:"op-karl", token:"synthetic", expiresAtMs:900 });
+    await unlock;
+    out[scenario] = { posture: render().posture, receipt: render().lastReceipt };
+    continue;
+  }
+  await controller.unlock("synthetic"); controller=render();
+  const command=controller.run({});
+  if (scenario !== "foreign_operator") {
+    await controller.lock(); await render().unlock("synthetic");
+  }
+  if (scenario === "late_error") pending.reject(new CommandApiError("AUTH_REQUIRED"));
+  else pending.resolve({ operator_id: scenario === "foreign_operator" ? "op-other" : "op-karl" });
+  const result=await command;
+  out[scenario] = { posture:render().posture, receipt:render().lastReceipt, code:result.error?.code };
+}
+console.log(JSON.stringify(out));
+''', encoding="utf-8")
+    completed = subprocess.run(
+        [node, str(harness), str(source)],
+        capture_output=True, text=True, timeout=60, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    for scenario in ("late_success", "late_error", "foreign_operator"):
+        assert result[scenario]["posture"] == "Unlocked"
+        assert result[scenario]["receipt"] is None
+    assert result["late_success"]["code"] == "AUTH_REQUIRED"
+    assert result["foreign_operator"]["code"] == "MALFORMED_RESPONSE"
+    assert result["late_unlock"]["posture"] == "Locked" and result["late_unlock"]["receipt"] is None
+
+
 def _app_command_section() -> str:
     app_source = _source(FRONTEND / "app.tsx")
     start = app_source.index("// S10-CC-CMD-01 protected command surface.")
@@ -1457,6 +1558,9 @@ def test_c14_frontend_command_token_is_memory_only_and_mutations_never_auto_retr
         # Review N3: a receipt with a foreign command_ref or a false authority flag is rejected.
         assert node_behavior["receipt_operator"]["code"] == "MALFORMED_RESPONSE"
         assert node_behavior["receipt_authority"]["code"] == "MALFORMED_RESPONSE"
+        for name in ("receipt_ref", "receipt_kind", "receipt_id", "receipt_id_digest", "receipt_head", "receipt_head_newline",
+                     "receipt_null_head", "receipt_invalid_operator"):
+            assert node_behavior[name]["code"] == "MALFORMED_RESPONSE", name
         login = node_behavior["login"]
         assert login["calls"] == 1 and "Authorization" not in login["call"]["headers"]
         assert login["ok"] == {"operatorId": "op-karl", "token": "a" * 43, "expiresAtMs": 5}

@@ -160,3 +160,12 @@ all three certified artifacts retain their published exact bytes. This continuat
 claims no new certificate. Mechanical carry-forward gates use the new baseline;
 separate exact-head implementation review, final local and hosted validation and
 actual posted-body verification remain mandatory. Their live results belong in PR #228.
+
+Independent continuation review identified and bounded repairs corrected quoted-argv no-echo,
+late asynchronous responses crossing session epochs and malformed/foreign success receipts.
+Behavioral negative regressions exercise actual parser, TypeScript transport and session controller.
+These enforce the existing certified contract; no frozen package or command authority changed.
+Whole-file Semgrep findings on four unchanged constant SQL interpolations were independently
+classified as false positives (eight rule hits). Raw nonzero scan evidence is retained externally;
+the differential changed-surface scan and final security results belong in the PR body. No security
+suppression or dependency exception was added.

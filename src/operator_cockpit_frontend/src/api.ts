@@ -1281,6 +1281,14 @@ const COMMAND_RECEIPT_KEYS = [
 
 export async function executeCommand(token: string, request: Readonly<CommandRequest>): Promise<CommandReceipt> {
   const body = (await postCommand("/commands/execute", request, token)) as Record<string, unknown>;
+  const canonical = request.command_kind === "STRATEGY_QUARANTINE"
+    ? { kind: "STRATEGY_HEALTH_RECEIPT", id: /^strategyhealth:sha256:[0-9a-f]{64}$/ }
+    : request.command_kind === "POLICY_ACTIVATE" || request.command_kind === "POLICY_REVOKE"
+      ? { kind: "PORTFOLIO_POLICY_RECEIPT", id: /^portfoliopolicyreceipt:sha256:[0-9a-f]{64}$/ }
+      : { kind: "STRATEGY_RESTRICTION_RECEIPT", id: /^strategyrestriction:sha256:[0-9a-f]{64}$/ };
+  const commandRef = typeof body.command_ref === "string"
+    ? /^cccmd:(op-[a-z0-9][a-z0-9_-]{0,30}):sha256:[0-9a-f]{64}$/.exec(body.command_ref)
+    : null;
   if (
     !hasExactKeys(body, COMMAND_RECEIPT_KEYS) ||
     body.schema_version !== "1.0.0" ||
@@ -1289,10 +1297,13 @@ export async function executeCommand(token: string, request: Readonly<CommandReq
     body.issued_at_ms !== request.issued_at_ms ||
     typeof body.command_ref !== "string" ||
     typeof body.operator_id !== "string" ||
-    !body.command_ref.startsWith("cccmd:" + body.operator_id + ":sha256:") ||
-    typeof body.canonical_record_kind !== "string" ||
+    !/^op-[a-z0-9][a-z0-9_-]{0,30}$/.test(body.operator_id) ||
+    commandRef === null || commandRef[0] !== body.command_ref || commandRef[1] !== body.operator_id ||
+    body.canonical_record_kind !== canonical.kind ||
     typeof body.canonical_record_id !== "string" ||
-    (body.lifecycle_store_head_entry_hash !== null && typeof body.lifecycle_store_head_entry_hash !== "string") ||
+    canonical.id.exec(body.canonical_record_id)?.[0] !== body.canonical_record_id ||
+    typeof body.lifecycle_store_head_entry_hash !== "string" ||
+    body.lifecycle_store_head_entry_hash.length !== 64 || !/^[0-9a-f]{64}$/.test(body.lifecycle_store_head_entry_hash) ||
     body.no_product_network !== true ||
     body.no_account_access !== true ||
     body.no_order_authority !== true ||
