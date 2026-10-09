@@ -165,3 +165,33 @@ Key decisions:
 - CLI flags only; no config file in WP30.
 - Built-in protected patterns plus explicit `--forbidden-prefix`; no runtime doc parsing.
 - Explicit `--base`/`--head` with defaults `main`/`HEAD`.
+
+## 11. Spec-mode exact scope and copy origins (S10-GOV-COPY-01)
+
+`--wp-spec docs/wp_specs/<WP>/wp_spec.json` activates schema 2.0 exact-scope
+reporting. `--require-exact-scope` requires that mode and exits 1 when exact scope
+fails; required Git-operation or invalid-spec/usage failures exit 2. Exit 0 is
+an actual scope PASS only when `exact_scope_pass` is true. Sections 4–5 describe
+legacy advisory behavior; their default exit-0 rule does not waive strict scope.
+Manual scope/package/output flags cannot be combined with spec mode.
+
+The spec-mode Git command remains `diff --name-status -z --find-renames=50%
+--find-copies=50% --find-copies-harder <base>...<head>`. Parsed entries retain
+`old_path` and `status_detail` copy provenance; the existing output field set
+is unchanged, and copied destinations remain grouped under status `C`.
+
+S10-GOV-COPY-01 supersedes historical WP159 section 14 only for allowed-file
+classification of copy-origin provenance. `allowed_scope_paths` includes actual
+changed/untracked destinations and rename origins. An unchanged benign `C`
+origin outside the allowed set does not add an out-of-scope file. An independently
+changed source remains an actual changed path and must be allowed; a copy
+destination must always be allowed. Rename source and destination policy is
+unchanged. Origin provenance adds neither changed count nor required presence.
+
+`policy_paths` still includes all rename/copy origins for forbidden prefixes,
+built-in protected paths, generated artifacts, dependency/lock hazards and
+path-level authority. The new distinction never excuses an unsafe or unauthorized
+source or destination. Unique count, required-file presence, untracked scanning,
+whitespace and Git-failure checks, deterministic sorting, helper signatures,
+output fields and legacy schema are unchanged. No WP-specific exemptions or
+Git copy-detection reconfiguration are permitted.

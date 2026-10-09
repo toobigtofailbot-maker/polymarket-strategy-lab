@@ -1,0 +1,240 @@
+# S10-GOV-COPY-01 â€” Unchanged Copy-Origin Exact-Scope Policy
+
+## 0. Package Identity
+WP ID: S10-GOV-COPY-01
+Title: Unchanged Copy-Origin Exact-Scope Policy
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base: a78809ddb62cf143ac85ee297e87f961aa9b61f9
+Suggested branch: codex/s10-gov-copy-01-copy-origin-scope
+Package class: LOCAL_OFFLINE_STDLIB_GOVERNANCE_HELPER_HARDENING
+Validation class: local-offline-stdlib-governance-helper-hardening
+Package size class: M
+Exact changed-file scope: 9 (no tenth path needed by bounded discovery)
+Risk level: 1
+Governance track expected: FAST
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+Runtime / product / credential / dependency / trading impact: NONE
+Network authority: false (workflow git/GitHub synchronization/publication allowed)
+Capital at risk: USD 0; orders: 0
+Drafting owner: Side18 unless Karl explicitly transfers preparation/finalization to Codex.
+Independent final PR reviewer: Side18; merge owner: Karl only.
+Status: LOCAL_DRAFT; deterministic readiness is not human authorization.
+Recommended Claude/Codex Mode: normal bounded reasoning for local helper correction;
+STOP on scope, authority, base or required evidence incompatibility.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 1
+workflow_governance: true
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 1. Objective and decision provenance
+Historical WP159 section 14 requires both R/C origins under every policy and pins copy detection.
+The existing behavior is intentional historical policy, not a preauthorized bug.
+Karl's 2026-10-08 direction authorizes preparation/execution of this bounded separate proposal,
+subject to finalized passing FAST readiness and the explicit drafting-owner condition.
+This WP supersedes WP159 only for allowed_changed_files / out_of_scope_files classification of
+C-origin provenance. Historical WP159 prompt/spec/tests remain untouched. No generic waiver.
+Do not modify blocked PR228 at head 807449e65f6dd1ccacd286e4091c8a3db21b20ef.
+
+## 2. Hard Merge Gate and startup
+Required predecessor: PR227 / S10-CC-STREAM-01 merged, head
+f344979f8f620519175defe627a5829b569b665d; merge a78809ddb62cf143ac85ee297e87f961aa9b61f9.
+Before branch creation verify clean main equals live origin/main, predecessor ancestry/files,
+no GOV-COPY branch/PR collision, and no newer conflicting merge. Fetch read-only metadata;
+do not reset or switch someone else's worktree. Equivalent safe dedicated-worktree commands:
+`git fetch origin --prune`
+`git rev-parse main origin/main`
+`git merge-base --is-ancestor f344979f8f620519175defe627a5829b569b665d origin/main`
+`git status --short`
+`gh pr list --state open --limit 100`
+`gh pr view 227 --json state,headRefOid,mergeCommit`
+A draft detached checkout is allowed for package preparation; no implementation branch before
+passing preimplementation readiness and the human authorization condition.
+
+## 3. Authority / Non-Authority Posture
+Implementation authority: one existing stdlib local helper and its tests after finalized gate.
+Report/export authority: local artifacts and one governance PR, no new runtime behavior.
+Canonical evidence authority: document the narrow successor rule and this package only.
+Paper / execution / live / credential / runtime-scheduler / dependency-change authority: NONE.
+Network authority: no helper/product network; ordinary git/GitHub governance network only.
+Reference docs/ai/codex/PROTECTED_PATHS.md Centralized Boundary Group Reference:
+credentials/secrets, authenticated clients, wallet/account behavior, order placement/cancel,
+execution gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment,
+dependency/lock changes, external code copying and generated artifacts are not crossed.
+No src, CI, dependencies, host/account/provider action; no CMD-01 implementation or promotion.
+
+## 4. Exact changed-file scope
+1. `tools/git/diff_scope_summary.py`
+2. `tests/tools/git/test_diff_scope_summary.py`
+3. `docs/ai/codex/WP_SPEC_STANDARD.md`
+4. `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`
+5. `docs/wp_specs/S10-GOV-COPY-01/wp_prompt.txt`
+6. `docs/wp_specs/S10-GOV-COPY-01/wp_spec.json`
+7. `docs/status_entries/S10-GOV-COPY-01.md`
+8. `docs/project_status.md`
+9. `docs/repo_truth_index.md`
+Both required/allowed arrays are exactly these nine; max_changed_files=9.
+Do not add tests/test_project_status_docs.py for convenience. More scope requires a decision.
+No independent FAST preimplementation certificate; never fabricate one.
+
+## 5. Context Budget and discovery
+Read first: AGENTS, AI_CODING_AGENT_START_HERE, CODEX_START_HERE, project status, repo truth,
+deferred log, docs/ai/codex/README and WP_EXECUTION_STATE_MACHINE.
+Read for this WP: exact nine targets; WP159 section14; WP_SPEC_STANDARD; WP_DRAFTING_STANDARD;
+VALIDATION_MATRIX; NEGATIVE_TEST_MATRIX_POLICY; PR evidence/posted verification guidance.
+Read only if blocked: existing caller/schema/whole-changed-set test guards and local security
+availability guidance. Do not read/touch protected runtime, secrets or unrelated implementation.
+Search terms: diff_scope_summary, policy_paths, old_path, C100/C075, R100, changed-file equality.
+Bounded discovery found only tests/tools/git/test_diff_scope_summary.py's origin behavior;
+existing tests/test_project_status_docs.py and tests/test_codex_workflow_docs.py guard historical
+artifacts/standard fields but need no edits when existing truth is preserved. Keep the nine set.
+The exact final full suite remains the backstop; discovery is not proof of every dependency.
+
+## 6. Complete behavior lock
+Keep exact Git argv: diff --name-status -z --find-renames=50% --find-copies=50%
+--find-copies-harder <base>...<head>. No Git configuration changes or WP-specific hardcoding.
+Keep policy_paths = actual destinations/untracked + all R/C origins for explicit forbidden,
+built-in protected, generated, dependency/lock, path authority and other existing safety logic.
+Add allowed_scope_paths = actual destinations/untracked + R origins ONLY for allowed-file
+out_of_scope_files. An independently changed C origin is an actual destination entry and stays
+fully checked. Copy destinations are always checked. Rename origin policy is unchanged.
+Keep unique destination count, missing-required presence, NUL parsing, deterministic sorting,
+public helper signatures, output keys/schema, all strict exits and fail-closed errors unchanged.
+Preserve parsed C old_path/status_detail provenance; do not add output fields to expose it.
+The human helper guide must accurately distinguish legacy advisory exits from strict spec mode.
+WP_SPEC_STANDARD must identify this successor rule and the exact WP159 supersession boundary.
+
+## 7. Compatibility / Impossibility Check
+| Behavior | Mechanism / files | Allowed? | Compatible / action |
+|---|---|---|---|
+| Narrow allowed copy-origin policy | helper build_summary / tests | YES | split only allowed classification |
+| Strong copy/rename safety | existing policy_paths | YES | preserve every other classifier |
+| Historical provenance | parsed old_path / status_detail | YES | no new output schema |
+| Current standard | WP_SPEC_STANDARD and helper guide | YES | document successor, retain history |
+| Full changed-set guards | existing adjacent tests | read-only | no mandatory extra path discovered |
+| CMD-01 migration | separate PROTECTED package | NO | after merge, Side18 recertifies separately |
+
+## 8. Negative-test matrix and focused nodes
+Positive C100/C075 benign unchanged out-of-allowed-set doc source -> exact_scope_pass true,
+one destination counted; no missing required; parsed provenance retained.
+N01 C source forbidden secrets prefix -> FAIL retained forbidden classifier.
+N02 C source built-in protected -> FAIL, even when destination is allowed.
+N03 C source generated/dependency/unauthorized family -> FAIL retained source checks.
+N04 C destination out-of-allowed/forbidden/protected/generated/unauthorized -> FAIL.
+N05 R source disallowed or forbidden -> FAIL unchanged rename policy.
+N06 C origin independently modified out of scope -> FAIL as actual changed path.
+N07 unexpected untracked, missing required, excess unique count -> FAIL exit1.
+N08 whitespace -> FAIL exit1; required Git failure -> usage/error exit2.
+N09 legacy schema/snapshot, signatures, fixed argv and NUL parser -> unchanged assertions.
+N10 malformed flags/spec -> fail closed; no false PASS/footer interpretation.
+Add planned test nodes in the existing allowed test file:
+test_copy_origin_benign_out_of_scope_passes
+test_copy_origin_safety_checks_remain_enforced
+test_copy_destination_and_rename_origin_scope_fail_closed
+test_independently_changed_copy_origin_remains_in_scope_checks
+test_copy_origin_real_git_fixture
+Use deterministic fake Git plus disposable local real Git fixture, no product network.
+
+## 9. Evidence Plan / Requirement-to-Evidence Traceability
+The machine spec maps every requirement to its exact command; named new pytest nodes are
+planned only inside the already-allowed test file and must exist after implementation.
+| Requirement | Evidence | Expected result |
+|---|---|---|
+| R001 | test_copy_origin_benign_out_of_scope_passes | C100/C075 benign unchanged origin passes; one destination count and required presence; parsed provenance unchanged |
+| R002 | test_copy_origin_safety_checks_remain_enforced | forbidden protected generated dependency and unauthorized copy origins still fail exact scope |
+| R003 | test_copy_destination_and_rename_origin_scope_fail_closed | invalid copy destinations and disallowed rename origins remain failures |
+| R004 | test_independently_changed_copy_origin_remains_in_scope_checks | independently modified copy origin participates in allowed scope and unique changed count |
+| R005 | test_copy_origin_real_git_fixture | real disposable Git C100 result retains origin and passes corrected allowed scope without changing Git detection flags |
+| R006 | helper compatibility and WP-spec integration suite | existing legacy schema signatures NUL parser fixed Git argv strict exits count required presence whitespace Git failures pass |
+| R007 | deterministic FAST readiness and exact scope | IMPLEMENTATION_READY FAST deterministic and exact nine-path equality; separate mandatory scope command also exits 0 |
+| R008 | affected workflow/status docs guards | workflow guidance status and repo-truth guard assertions remain intact |
+| R009 | artifact and available security checks | available checks execute with truthful results; unavailable checks explicitly reported and any material blockage stops for scope decision |
+| R010 | authoritative stable local full suite | one local full repository suite passes on stable candidate with raw head environment exit and counts retained |
+| R011 | exact final hosted matrix | one final complete nine-job matrix succeeds on exact final non-draft source head; changed head invalidates old CI |
+| R012 | strict guard on re-fetched posted PR body | actual re-fetched body passes exit 0 with full exact-head evidence, no placeholder claims and Karl-only merge authority |
+
+Exact planned command set (candidateHead is captured from git rev-parse HEAD; posted-pr-body.md
+is a scratch file outside tracked paths; final invocation must use resolved paths/SHA):
+```text
+python -m pytest -q -p no:cacheprovider tests/tools/git/test_diff_scope_summary.py tests/tools/wp/test_wp_spec_guard.py
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-GOV-COPY-01/wp_prompt.txt --spec docs/wp_specs/S10-GOV-COPY-01/wp_spec.json --repo-root . --check-diff --base a78809ddb62cf143ac85ee297e87f961aa9b61f9 --head HEAD
+python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py tests/test_project_status_docs.py
+python tools/security/run_available_security_checks.py
+python -m pytest -q -p no:cacheprovider
+gh pr checks --watch
+python tools/git/pr_evidence_consistency_guard.py --pr-body posted-pr-body.md --expected-head $candidateHead --require-standard-network-wording --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result
+python tools/git/diff_scope_summary.py --base a78809ddb62cf143ac85ee297e87f961aa9b61f9 --head HEAD --wp-spec docs/wp_specs/S10-GOV-COPY-01/wp_spec.json --require-exact-scope
+git diff --check
+python tools/git/preflight_generated_artifact_guard.py
+```
+While editing run focused helper/WP-spec tests, then affected docs guards. On committed stable
+candidate run readiness --check-diff, exact scope, forbidden-family diff proof, artifact/security
+checks and one authoritative local full suite with raw head/environment/exit/counts retained.
+Create one DRAFT PR; after local PASS, transition Ready once for the full nine-job exact-head
+hosted matrix. No path filters/workflow edits or repeat broad suites solely to repeat evidence.
+A source change invalidates prior head-bound tests/CI; unchanged-head infrastructure rerun only
+affected jobs where supported. Refetch actual posted body and run the strict guard, staging its
+result self-reference honestly. Include full canonical evidence-mode fields and full guard output;
+Ready NO until actual gates pass. Side18 review precedes Karl merge.
+
+## 10. Hard Stops
+STOP if live main differs from frozen base â€” reassess predecessor/authority before a branch.
+STOP if drafting owner condition or passing finalized readiness is absent â€” no implementation.
+STOP if tenth path, new authority, deps/lock/CI/src change is needed â€” scope decision before edits.
+STOP if source safety or R-origin scope cannot remain intact â€” package intent incompatible.
+STOP if raw invalid-output no-echo/recursive output checks cannot be verified â€” evidence incomplete.
+STOP if required check cannot run or fails â€” never convert unavailable/warning/failure into PASS.
+STOP if material security blockage/deferral requires deferred log outside nine paths â€” scoped
+amendment decision instead of silently adding a file or omitting the issue.
+STOP if posted evidence cannot be re-fetched or guard fails â€” Ready NO.
+STOP if final source changed after validation â€” refresh invalidated exact-head evidence.
+
+## 11. Docs / status / evidence
+Commit a stable non-self-referential docs/status_entries/S10-GOV-COPY-01.md, exact paths, truthful
+validation/security availability, negative matrix and zero runtime/economic authority. PR body
+holds current head, exact full commands/results, traceability, posted evidence mode and Ready.
+Reconcile STREAM-01 as merged using exact predecessor facts; register governance correction
+without claiming CMD-01 is merged/ready. No deferred item invented or postponed without logging.
+Follow-up classification: new explicit governance-policy decision; no review-follow-up yet.
+
+## 12. Successor Boundary
+After this separate governance PR merges, main advances. Side18 must separately prepare
+CMD-01 baseline synchronization and independent PROTECTED recertification retaining exactly
+its original twenty paths relative to new main. History-preserving integration where feasible;
+new prompt/spec bytes need new independent certificate. None of that is implemented here.
+New CMD head invalidates old local/reviewer/hosted evidence; no reuse of 807449e CI for new head.
+No CMD-02/PROD/deployment/capital/live action. Karl alone merges either PR.
+
+## 13. Report Back
+Return governance branch/PR/final head/base, exact nine paths, readiness, focused/negative/real-Git
+proof, security/artifact results, authoritative local suite counts, all hosted job conclusions,
+strict posted-body guard actual invocation/output/exit, Ready YES/NO and Merge authorized NO.
+Report blockers truthfully. Final Side18 independent exact-head PR review is mandatory.
+
+## 14. Normative Rule Matrix
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|copy|allowed_scope|final|REQUIRE|preserve_narrow_policy|copy.allowed_scope|R001
+NR002|copy|safety|final|REQUIRE|preserve_narrow_policy|copy.safety|R002
+NR003|rename|allowed_scope|final|REQUIRE|preserve_narrow_policy|rename.allowed_scope|R003
+NR004|scope|actual_changes|final|REQUIRE|preserve_narrow_policy|scope.actual_changes|R004
+NR005|helper|compatibility|final|REQUIRE|preserve_narrow_policy|helper.compatibility|R005
+NR006|helper|failure|final|REQUIRE|preserve_narrow_policy|helper.failure|R006
+NR007|governance|non_authority|final|REQUIRE|preserve_narrow_policy|governance.non_authority|R006
+END_NORMATIVE_RULE_MATRIX_V1

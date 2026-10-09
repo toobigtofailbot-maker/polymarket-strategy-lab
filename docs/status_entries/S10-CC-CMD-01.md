@@ -15,13 +15,13 @@
   bytes and the exact 20-path scope, under Karl's delegated project authority. It is not merge, risk,
   capital, deployment or trading authority.
 - Branch: claude/s10-cc-cmd-01-protected-operator-commands
-- Frozen base: a78809ddb62cf143ac85ee297e87f961aa9b61f9
+- Historical certified base: a78809ddb62cf143ac85ee297e87f961aa9b61f9
 - Predecessor: PR #227 / S10-CC-STREAM-01 (head f344979f8f620519175defe627a5829b569b665d), merged at
   the base
 - PR and current live head: see GitHub metadata and the PR body
 - Merge commit: not merged
 - Ready for review: NO until all final evidence passes (live value in the PR body)
-- Merge authorized: NO (Karl only; review owner Side17)
+- Merge authorized: NO (Karl only; review owner Side18)
 - Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED; live fields belong in the PR body
 
 ## Capability (default-off protected lifecycle-governance commands)
@@ -123,7 +123,7 @@
 
 ## Deferred Command Classes
 
-Side17 must decide, before S10-CC-PROD-01 implementation, whether these need a narrow S10-CC-CMD-02 or
+Side18 must decide, before S10-CC-PROD-01 implementation, whether these need a narrow S10-CC-CMD-02 or
 stay CLI/backend-only:
 - paper pause/resume/kill;
 - gateway/runtime disable;
@@ -134,7 +134,7 @@ CMD-01 neither authorizes nor silently requires CMD-02.
 
 ## Successor Boundary
 
-After Side17 review and Karl merge, the next separately gated package is S10-CC-PROD-01 (Private
+After Side18 review and Karl merge, the next separately gated package is S10-CC-PROD-01 (Private
 Production Control Center). CMD-01 does not claim PROD/private deployment is complete.
 
 ## Validation
@@ -149,3 +149,14 @@ Validation results are recorded in the PR body:
 - one authoritative local full suite;
 - the independent exact-head implementation review;
 - the final exact-head hosted matrix.
+
+## Post-GOV-COPY continuation
+
+PR #229 merged by Karl at 101c7f44604553cf2f8d2166725b266435ab4047
+(feature head 1715c53abdabd9dc205be138151e1bd6c22e8b85). Side18/Karl authorized
+a same-branch non-destructive merge of main with semantic union of status/index conflicts.
+The original independent certificate remains a historical PR #227 predecessor binding;
+all three certified artifacts retain their published exact bytes. This continuation
+claims no new certificate. Mechanical carry-forward gates use the new baseline;
+separate exact-head implementation review, final local and hosted validation and
+actual posted-body verification remain mandatory. Their live results belong in PR #228.

@@ -897,6 +897,178 @@ def test_spec_mode_exact_failure_exits_one(monkeypatch, capsys):
     assert json.loads(capsys.readouterr().out)["exact_scope_pass"] is False
 
 
+# S10-GOV-COPY-01: copy-origin allowed-scope policy, retaining origin safety.
+def _copy_summary(source="docs/history/certificate.json", destination="docs/current/certificate.json", **overrides):
+    options = dict(
+        allowed_files=[destination],
+        required_changed_files=(destination,),
+        max_changed_files=1,
+        entries=[{"status": "C", "status_detail": "C100", "old_path": source, "path": destination}],
+        authority={"docs": True},
+    )
+    options.update(overrides)
+    return _spec_summary(**options)
+
+
+@pytest.mark.parametrize("detail", ["C100", "C075"])
+def test_copy_origin_benign_out_of_scope_passes(detail):
+    raw = f"{detail}\0docs/history/certificate.json\0docs/current/certificate.json\0"
+    entries = dss.parse_name_status(raw)
+    summary = _copy_summary(entries=entries)
+    assert entries[0]["old_path"] == "docs/history/certificate.json"
+    assert entries[0]["status_detail"] == detail
+    assert summary["out_of_scope_files"] == []
+    assert summary["missing_required_files"] == []
+    assert summary["total_changed_files"] == summary["counts"]["copied"] == 1
+    assert summary["changed_files_by_status"] == {"C": ["docs/current/certificate.json"]}
+    assert summary["warning_count"] == 0
+    assert summary["exact_scope_pass"] is True
+    assert set(summary) == set(_spec_summary())
+
+
+@pytest.mark.parametrize(
+    "source,field,warning",
+    [
+        ("secrets/origin.md", "protected_path_hits_explicit", None),
+        ("docs/.env", "protected_path_hits_builtin", None),
+        ("local_data/origin.md", "generated_artifact_hits", None),
+        ("docs/package.json", "dependency_lock_changes", "authority"),
+        ("tools/origin.py", None, "authority"),
+        ("docs/wp_specs/HISTORY/wp_prompt.txt", None, "authority"),
+    ],
+)
+def test_copy_origin_safety_checks_remain_enforced(source, field, warning):
+    summary = _copy_summary(source=source, forbidden_prefixes=["secrets/"])
+    assert summary["out_of_scope_files"] == []
+    assert summary["total_changed_files"] == 1
+    if field:
+        assert source in summary[field]
+    if warning:
+        assert any(warning in item for item in summary["warnings"])
+    assert summary["exact_scope_pass"] is False
+
+
+@pytest.mark.parametrize(
+    "status,source,destination,allowed,field",
+    [
+        ("C", "docs/history.md", "docs/extra.md", "docs/current.md", "out_of_scope_files"),
+        ("C", "docs/history.md", "secrets/current.md", "secrets/current.md", "protected_path_hits_explicit"),
+        ("C", "docs/history.md", "docs/.env", "docs/.env", "protected_path_hits_builtin"),
+        ("C", "docs/history.md", "local_data/current.md", "local_data/current.md", "generated_artifact_hits"),
+        ("C", "docs/history.md", "tools/current.py", "tools/current.py", "warnings"),
+        ("R", "docs/history.md", "docs/current.md", "docs/current.md", "out_of_scope_files"),
+        ("R", "secrets/history.md", "docs/current.md", "docs/current.md", "protected_path_hits_explicit"),
+    ],
+)
+def test_copy_destination_and_rename_origin_scope_fail_closed(status, source, destination, allowed, field):
+    summary = _copy_summary(
+        source=source, destination=destination, allowed_files=[allowed],
+        forbidden_prefixes=["secrets/"],
+        entries=[{"status": status, "status_detail": status + "100", "old_path": source, "path": destination}],
+    )
+    checked = source if status == "R" else destination
+    if field == "warnings":
+        assert any("authority" in warning and checked in warning for warning in summary[field])
+    else:
+        assert checked in summary[field]
+    assert summary["total_changed_files"] == 1
+    assert summary["exact_scope_pass"] is False
+
+
+@pytest.mark.parametrize("source_status", ["M", "D", "A"])
+def test_independently_changed_copy_origin_remains_in_scope_checks(source_status):
+    source, destination = "docs/history.md", "docs/current.md"
+    entries = [
+        {"status": "C", "status_detail": "C100", "old_path": source, "path": destination},
+        {"status": source_status, "path": source},
+    ]
+    summary = _copy_summary(source, destination, entries=entries, max_changed_files=2)
+    assert summary["out_of_scope_files"] == [source]
+    assert summary["total_changed_files"] == 2
+    assert summary["exact_scope_pass"] is False
+
+
+@pytest.mark.parametrize(
+    "overrides",
+    [
+        {"untracked_files": ("docs/extra.md",)},
+        {"required_changed_files": ("docs/history/certificate.json",)},
+        {"max_changed_files": 0},
+        {"diff_check_errors": ["docs/current/certificate.json:1: trailing whitespace"]},
+        {"git_operations_succeeded": False},
+    ],
+)
+def test_copy_provenance_never_bypasses_other_exact_scope_gates(overrides):
+    assert _copy_summary(**overrides)["exact_scope_pass"] is False
+
+
+@pytest.mark.parametrize("invalid_destination", [False, True])
+def test_copy_scope_cli_strict_exit(monkeypatch, capsys, invalid_destination):
+    destination = "docs/current.md"
+    scope = {
+        "schema_version": "1.0.0", "package_class": "GOVERNANCE",
+        "required_changed_files": (destination,), "allowed_changed_files": (destination,),
+        "forbidden_prefixes": (), "max_changed_files": 1,
+        "exact_scope_required": True, "authority": {"docs": True},
+    }
+    entries = [{"status": "C", "status_detail": "C100", "old_path": "docs/history.md",
+                "path": "docs/extra.md" if invalid_destination else destination}]
+    monkeypatch.setattr(dss, "_read_wp_spec_scope", lambda path: (scope, ()))
+    monkeypatch.setattr(dss, "_get_name_status_spec", lambda base, head: (entries, None))
+    monkeypatch.setattr(dss, "get_diff_stat", lambda base, head: ("", None))
+    monkeypatch.setattr(dss, "get_diff_check", lambda base, head: ([], None))
+    monkeypatch.setattr(dss, "_get_untracked_spec", lambda: ([], None))
+    assert dss.main(["--wp-spec", "spec.json", "--require-exact-scope", "--format", "json"]) == int(invalid_destination)
+    assert json.loads(capsys.readouterr().out)["exact_scope_pass"] is (not invalid_destination)
+
+
+def test_copy_origin_real_git_fixture(tmp_path, monkeypatch):
+    def git(*args):
+        return subprocess.run(["git", *args], cwd=tmp_path, capture_output=True,
+                              text=True, encoding="utf-8", check=True).stdout
+
+    git("init", "--initial-branch=main")
+    git("config", "user.name", "Synthetic fixture")
+    git("config", "user.email", "fixture@example.invalid")
+    git("config", "core.autocrlf", "false")
+    source, destination = "docs/history/certificate.json", "docs/current/certificate.json"
+    old = tmp_path / source
+    old.parent.mkdir(parents=True)
+    old.write_text('{"synthetic": true, "purpose": "copy provenance fixture"}\n', encoding="utf-8")
+    git("add", ".")
+    git("commit", "-m", "Synthetic origin")
+    base = git("rev-parse", "HEAD").strip()
+    new = tmp_path / destination
+    new.parent.mkdir(parents=True)
+    new.write_bytes(old.read_bytes())
+    git("add", ".")
+    git("commit", "-m", "Synthetic copy")
+
+    def run_git(args, cwd=None):
+        result = subprocess.run(["git", *args], cwd=tmp_path, capture_output=True, text=True, encoding="utf-8")
+        return result.stdout, result.stderr, result.returncode
+
+    monkeypatch.setattr(dss, "_run_git", run_git)
+    entries, error = dss._get_name_status_spec(base, "HEAD")
+    assert error is None
+    assert entries == [{"status": "C", "status_detail": "C100", "old_path": source, "path": destination}]
+    assert git("diff", "--name-only", "--no-renames", base + "...HEAD").splitlines() == [destination]
+    summary = _copy_summary(source, destination, entries=entries)
+    assert summary["exact_scope_pass"] is True
+    assert summary["out_of_scope_files"] == summary["missing_required_files"] == []
+    assert summary["total_changed_files"] == 1
+
+
+def test_copy_origin_policy_docs_preserve_safety_and_historical_provenance():
+    standard = (REPO_ROOT / "docs/ai/codex/WP_SPEC_STANDARD.md").read_text(encoding="utf-8")
+    guide = (REPO_ROOT / "docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md").read_text(encoding="utf-8")
+    for document in (standard, guide):
+        normalized = " ".join(document.split())
+        for phrase in ("S10-GOV-COPY-01", "WP159", "allowed_scope_paths", "policy_paths",
+                       "--find-copies-harder", "independently changed", "rename", "authority"):
+            assert phrase in normalized
+
+
 @pytest.mark.parametrize(
     "path",
     [
