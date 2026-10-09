@@ -478,3 +478,53 @@ Rules:
 - `docs/ai/codex/WP_EXECUTION_REPORT.md` — final report format with evidence mode block
 - `docs/ai/codex/VALIDATION_MATRIX.md` — package-class validation requirements
 - `tools/git/posted_pr_evidence_verifier.py` — public unauthenticated posted verifier helper
+
+
+## Risk-Based Local-First CI (S10-CI-OPT-02)
+
+This successor governs CI selection only. It preserves local-first development,
+draft suppression, same-PR cancellation and fresh exact-head evidence. No push-main
+rerun, product network, runtime activation, credentials, orders or capital authority
+is introduced. The historical S10-CI-OPT-01 fixed matrix above is the default-off
+and Tier 3 baseline; selective routing below supersedes its fixed-for-every-PR rule
+only after Karl separately verifies required trusted ci-final-gate protection and
+explicitly enables CI_RISK_ROUTING_ENABLED. This WP never enables the switch or
+changes repository settings. main was observed unprotected, not enforced.
+
+The classifier executes from the verified base commit with complete Git change
+provenance, including rename/copy origins and deletions. Missing, unsafe, truncated
+or contradictory provenance/specification rejects planning. Head-owned labels,
+changed specs, user tier requests and broad governance labels cannot grant a downgrade.
+Unknown impact selects Tier 3. A changed CI workflow, classifier, security validator,
+dependency/lock/native ABI, protected credential/auth/signing/orders/execution,
+hard risk/capital/economic reconciliation or critical live lifecycle requires Tier 3.
+
+| Tier | Required hosted coverage |
+|---|---|
+| 1 | Positively proven benign docs/metadata or isolated pure stdlib helper: one Ubuntu 24.04/Python 3.12 smoke leg with lightweight governance guards; no native/full suite, audits, Windows, NDFD or frontend |
+| 2 | Substantive noncritical public-wallet, Hermes research, Alpha campaigns/budgets/research scheduling, ordinary backend/frontend and noncritical deployment: one Ubuntu/Python 3.12 full compatibility suite plus base audit; frontend only for relevant changes |
+| 3 | Four full Ubuntu/Windows x Python 3.12/3.14 compatibility legs, both strict NDFD legs, both Python audits and frontend: nine legacy runner legs |
+
+Prefer Tier 2 when the actual diff is eligible and authoritative local evidence
+plus selected hosted checks suffice. RUNTIME/Risk 3 and a research scheduler are
+not automatic Tier 3. Specific unverified native/OS compatibility is an escalation
+reason. Complementary feasible Windows/WSL2/Docker local evidence remains required
+where relevant; all WPs retain one authoritative stable-head local full-suite PASS.
+
+Default absent/false/malformed routing retains all nine legacy legs; initial
+CI-OPT-02 bootstrap must run these plus classify and ci-final-gate (eleven rows).
+An activated future base without a classifier fails. Canonical plans bind exact
+base/head, reason codes, a nonempty OS/Python/smoke matrix and audit/NDFD/frontend
+booleans. The unique non-matrix final gate runs even after dependency failures,
+recomputes the trusted plan, requires success for every selected job and skipped
+for every nonrequired job. Required skipped/failed/cancelled/missing/unknown results,
+malformed outputs, head mismatch or inconsistent plan never pass. Aggregate matrix
+success is insufficient: inspect actual expanded runner rows and resolved audit
+logs on the exact head. The two Python audits preserve only CVE-2026-104851, and
+strict DuckDB/native/SDK/NDFD checks and locked frontend npm audit stay intact.
+
+Exact-head changes invalidate previous evidence. Final Side18 review and Karl-only
+merge remain separate; neither readiness nor a green CI plan grants activation.
+The first five eligible postactivation PRs disclose actual summed raw runner-minutes,
+tier and executed legs against the eight-run 36.3-minute baseline, distinguishing
+billed minutes. No dashboard, scheduler, policy registry or second workflow is added.

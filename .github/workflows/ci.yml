@@ -12,7 +12,7 @@ name: Analytical Research + Offline Kernel + Market Truth + Experiment OS CI
 # S10-CI-OPT-01 local-first scheduling: hosted CI is final exact-head verification,
 # not the iterative development loop. Every job is skipped while the pull request is a
 # draft; marking it Ready for review (or pushing a new head while non-draft) launches the
-# complete unchanged matrix on that exact head. The duplicate post-merge push-to-main run
+# selected matrix on that exact head (default OFF retains all nine legacy legs). The duplicate post-merge push-to-main run
 # is removed because the final non-draft PR head carries the authoritative evidence.
 on:
   pull_request:
@@ -46,15 +46,75 @@ env:
   WP167_STRICT_DUCKDB: "1"
 
 jobs:
+  classify:
+    name: classify
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04
+    outputs:
+      plan: ${{ steps.plan.outputs.plan }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      run_dependency_audit: ${{ steps.plan.outputs.run_dependency_audit }}
+      run_ndfd: ${{ steps.plan.outputs.run_ndfd }}
+      run_frontend: ${{ steps.plan.outputs.run_frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Base-owned plan (default-off bootstrap)
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ROUTING: ${{ vars.CI_RISK_ROUTING_ENABLED }}
+        run: |
+          # Verify event commits; execute only the base blob when activated.
+          git cat-file -e "$BASE_SHA^{commit}"
+          git cat-file -e "$HEAD_SHA^{commit}"
+          git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+          if [ "$ROUTING" = "true" ]; then
+            test "$(git ls-tree "$BASE_SHA" -- tools/ci/risk_tier.py | cut -d' ' -f1)" = "100644"
+            git show "$BASE_SHA:tools/ci/risk_tier.py" > "$RUNNER_TEMP/base_risk_tier.py"
+            python "$RUNNER_TEMP/base_risk_tier.py" --base "$BASE_SHA" --head "$HEAD_SHA" --routing true > "$RUNNER_TEMP/ci-plan.json"
+          else
+            # First rollout has no base classifier. Fixed legacy nine, never head classification.
+            python - <<'PY'
+          import json, os, re
+          base, head = os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          assert re.fullmatch(r"[0-9a-f]{40}", base) and re.fullmatch(r"[0-9a-f]{40}", head)
+          plan = {"tier": 3, "reason_codes": ["DEFAULT_OFF"], "base": base, "head": head,
+                  "compatibility_matrix": {"include": [{"os": o, "python": p, "smoke": False}
+                     for o in ["ubuntu-24.04", "windows-2022"] for p in ["3.12", "3.14"]]},
+                  "run_dependency_audit": True, "run_ndfd": True, "run_frontend": True}
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "ci-plan.json"), "w") as f:
+              json.dump(plan, f, sort_keys=True, separators=(",", ":"))
+          PY
+          fi
+          python - <<'PY'
+          import json, os
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "ci-plan.json")) as f:
+              plan = json.load(f)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("plan=" + json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n")
+              f.write("matrix=" + json.dumps(plan["compatibility_matrix"], separators=(",", ":")) + "\n")
+              for key in ("run_dependency_audit", "run_ndfd", "run_frontend"):
+                  f.write(key + "=" + json.dumps(plan[key]) + "\n")
+          PY
+
   compatibility:
+    needs: classify
     name: compat (${{ matrix.os }} / py${{ matrix.python }})
     if: github.event.pull_request.draft == false
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2022]
-        python: ["3.12", "3.14"]
+        # Base-trusted explicit OS/Python/smoke include plan; no empty matrix.
+        include: ${{ fromJSON(needs.classify.outputs.matrix).include }}
     steps:
       - name: Normalize line endings before checkout
         # `.gitattributes` marks files `text=auto`, which checks out with the
@@ -68,10 +128,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Fetch base branch for repository scope guards
-        run: git fetch --no-tags origin main:refs/remotes/origin/main
+      - name: Verify fetched base branch for repository scope guards
+        if: matrix.smoke == false
+        run: git show-ref --verify refs/remotes/origin/main
 
       - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v5
@@ -79,27 +142,33 @@ jobs:
           python-version: ${{ matrix.python }}
 
       - name: Install exact dependency pins and test tooling
+        if: matrix.smoke == false
         run: |
           python -m pip install --upgrade pip
           python -m pip install $WP167_DEPS $WP168_DEP $WP174_DEPS $WP171_DEPS "pytest>=8.0"
 
       - name: pip check
+        if: matrix.smoke == false
         run: python -m pip check
 
       - name: Assert exact direct dependency versions and Python floor
+        if: matrix.smoke == false
         run: python -m pytest -q tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py
 
       - name: Assert exact NautilusTrader pin and import offline modules
+        if: matrix.smoke == false
         run: |
           python -c "import importlib.metadata as m; assert m.version('nautilus_trader') == '1.231.0', m.version('nautilus_trader')"
           python -c "import nautilus_trader.model.instruments, nautilus_trader.model.data, nautilus_trader.persistence.catalog.parquet, nautilus_trader.backtest.engine; print('nautilus offline modules import OK')"
 
       - name: Assert exact WP174 SDK pins and public imports
+        if: matrix.smoke == false
         run: |
           python -c "import importlib.metadata as m; assert m.version('polymarket-client') == '0.10.0'; assert m.version('websockets') == '15.0.1'"
           python -c "import polymarket; from polymarket import SecureClient, AsyncSecureClient; print('polymarket SDK imports OK')"
 
       - name: Focused WP168 offline-kernel tests (no Nautilus-required skip permitted)
+        if: matrix.smoke == false
         run: |
           set -o pipefail
           python -m pytest -rs -q \
@@ -112,6 +181,7 @@ jobs:
           fi
 
       - name: Focused WP167 tests (DuckDB strict, no skips permitted)
+        if: matrix.smoke == false
         run: |
           set -o pipefail
           # Write the captured output outside the repository so it does not appear
@@ -126,6 +196,7 @@ jobs:
           fi
 
       - name: Focused WP169 public market-truth tests (no skips permitted)
+        if: matrix.smoke == false
         run: |
           set -o pipefail
           python -c "import importlib.metadata as m; assert m.version('websockets') == '15.0.1', m.version('websockets')"
@@ -136,6 +207,7 @@ jobs:
           fi
 
       - name: Focused WP170 experiment OS and registry tests (no skips permitted)
+        if: matrix.smoke == false
         run: |
           set -o pipefail
           python -m pytest -rs -q \
@@ -154,21 +226,36 @@ jobs:
           fi
 
       - name: Focused WP171 read-only operator cockpit tests
+        if: matrix.smoke == false
         run: python -m pytest -q tests/test_operator_cockpit.py
 
       - name: Generated artifact guard
+        if: matrix.smoke == false
         run: python tools/git/preflight_generated_artifact_guard.py
 
       - name: Full test suite
+        if: matrix.smoke == false
         run: python -m pytest -q
 
+      - name: Mandatory lightweight governance smoke
+        if: matrix.smoke == true
+        run: |
+          python -m pip install "pytest>=8.0"
+          python tools/git/preflight_generated_artifact_guard.py
+          python -m pytest -q -p no:cacheprovider tests/tools/wp tests/tools/git
+
   dependency-audit:
+    needs: classify
     name: dependency-audit (ubuntu-24.04 / py3.12)
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && needs.classify.outputs.run_dependency_audit == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -190,12 +277,13 @@ jobs:
         run: python -m pip_audit --ignore-vuln CVE-2026-104851
 
   ndfd-grib-compat:
+    needs: classify
     # S10-NDFD-GRIB-01 optional NDFD GRIB2 decoder capability proof. Installs the base
     # dependency closure plus the exact `ndfd-grib` extra read from pyproject.toml, with
     # binary wheels only for the ecCodes family (no source build), and decodes the committed
     # official NDFD PoP12 fixture. No NDFD download, no secrets, no product API, no trading.
     name: ndfd-grib-compat (${{ matrix.os }} / py3.12)
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && needs.classify.outputs.run_ndfd == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -211,6 +299,10 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -247,12 +339,17 @@ jobs:
           fi
 
   ndfd-grib-dependency-audit:
+    needs: classify
     name: ndfd-grib-dependency-audit (ubuntu-24.04 / py3.12)
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && needs.classify.outputs.run_ndfd == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -275,12 +372,17 @@ jobs:
         run: python -m pip_audit --ignore-vuln CVE-2026-104851
 
   cockpit-frontend:
+    needs: classify
     name: cockpit-frontend (node 24.18.0)
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && needs.classify.outputs.run_frontend == 'true'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Node.js 24.18.0 LTS
         uses: actions/setup-node@v4
@@ -308,3 +410,71 @@ jobs:
       - name: High-severity dependency audit
         working-directory: src/operator_cockpit_frontend
         run: npm audit --audit-level=high
+
+  ci-final-gate:
+    name: ci-final-gate
+    needs: [classify, compatibility, dependency-audit, ndfd-grib-compat, ndfd-grib-dependency-audit, cockpit-frontend]
+    if: always() && github.event.pull_request.draft == false
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify exact plan and required job results
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          PLAN_JSON: ${{ needs.classify.outputs.plan }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          ROUTING: ${{ vars.CI_RISK_ROUTING_ENABLED }}
+        run: |
+          python - <<'PY'
+          import os, pathlib
+          for name, key in [("needs.json", "NEEDS_JSON"), ("plan.json", "PLAN_JSON")]:
+              pathlib.Path(os.environ["RUNNER_TEMP"], name).write_text(os.environ[key])
+          PY
+          if [ "$ROUTING" = "true" ]; then
+            test "$(git ls-tree "$BASE_SHA" -- tools/ci/risk_tier.py | cut -d' ' -f1)" = "100644"
+            git show "$BASE_SHA:tools/ci/risk_tier.py" > "$RUNNER_TEMP/base_risk_tier.py"
+            python "$RUNNER_TEMP/base_risk_tier.py" --base "$BASE_SHA" --head "$HEAD_SHA" --routing true --needs-file "$RUNNER_TEMP/needs.json" --plan-file "$RUNNER_TEMP/plan.json"
+          else
+            # Fixed first-bootstrap gate: no head-owned classifier is trusted for selection.
+            python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          def unique(items):
+              result = {}
+              for key, value in items:
+                  if key in result:
+                      raise ValueError("CI_PLAN_INVALID")
+                  result[key] = value
+              return result
+          def load(name):
+              raw = Path(os.environ["RUNNER_TEMP"], name).read_text()
+              assert len(raw) <= 4194304
+              return json.loads(raw, object_pairs_hook=unique)
+          def equal(left, right):
+              return json.dumps(left, sort_keys=True, allow_nan=False) == json.dumps(right, sort_keys=True, allow_nan=False)
+          base, head = os.environ["BASE_SHA"], os.environ["HEAD_SHA"]
+          assert re.fullmatch(r"[0-9a-f]{40}", base) and re.fullmatch(r"[0-9a-f]{40}", head)
+          expected = {"tier": 3, "reason_codes": ["DEFAULT_OFF"], "base": base, "head": head,
+                  "compatibility_matrix": {"include": [{"os": o, "python": p, "smoke": False}
+                     for o in ["ubuntu-24.04", "windows-2022"] for p in ["3.12", "3.14"]]},
+                  "run_dependency_audit": True, "run_ndfd": True, "run_frontend": True}
+          needs = load("needs.json")
+          plan = load("plan.json")
+          assert equal(plan, expected)
+          jobs = {"classify", "compatibility", "dependency-audit", "ndfd-grib-compat", "ndfd-grib-dependency-audit", "cockpit-frontend"}
+          assert set(needs) == jobs and all(needs[j]["result"] == "success" for j in jobs)
+          outputs = needs["classify"]["outputs"]
+          assert equal(json.loads(outputs["plan"], object_pairs_hook=unique), expected)
+          assert equal(json.loads(outputs["matrix"], object_pairs_hook=unique), expected["compatibility_matrix"])
+          assert all(outputs[k] == "true" for k in ("run_dependency_audit", "run_ndfd", "run_frontend"))
+          print("CI_FINAL_GATE_PASS: legacy nine required; expanded rows require independent inspection")
+          PY
+          fi

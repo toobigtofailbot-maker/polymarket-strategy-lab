@@ -89,7 +89,7 @@ def test_workflow_declares_dedicated_strict_ndfd_jobs() -> None:
     for forbidden in ("secrets.", "schedule:", "curl ", "wget ", "noaa-ndfd-pds"):
         assert forbidden not in ndfd, forbidden
     # The existing general matrix and dependency audit are preserved.
-    assert 'python: ["3.12", "3.14"]' in workflow
+    assert 'for p in ["3.12", "3.14"]' in workflow
     assert "  dependency-audit:" in workflow and "  compatibility:" in workflow
 
 
@@ -109,3 +109,15 @@ def test_status_fragment_and_spec_are_consistent() -> None:
         "Gate C: NOT AUTHORIZED", "S10-QUAL-DATA-01: NOT IMPLEMENTED by this WP",
     ):
         assert text in flat, text
+
+
+def test_ndfd_strict_workflow_still_conditional_on_tier_three() -> None:
+    workflow = WORKFLOW.read_text(encoding="utf-8")
+    ndfd = workflow[workflow.index("  ndfd-grib-compat:"):workflow.index("  cockpit-frontend:")]
+    assert ndfd.count("needs.classify.outputs.run_ndfd == 'true'") == 2
+    assert "os: [ubuntu-24.04, windows-2022]" in ndfd
+    assert 'NDFD_GRIB_STRICT: "1"' in ndfd
+    assert ndfd.count("--only-binary=eccodes,eccodeslib,eckitlib") == 2
+    assert "python -m eccodes selfcheck" in ndfd
+    assert "[0-9]+ skipped" in ndfd
+    assert "python -m pip_audit --ignore-vuln CVE-2026-104851" in ndfd

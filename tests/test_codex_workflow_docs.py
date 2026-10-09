@@ -1739,15 +1739,28 @@ def test_wp171g_governance_docs_define_tracks_and_validation() -> None:
 
 CI_WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 CI_TOP_LEVEL_JOBS = (
+    "classify",
     "compatibility",
     "dependency-audit",
     "ndfd-grib-compat",
     "ndfd-grib-dependency-audit",
     "cockpit-frontend",
+    "ci-final-gate",
 )
 CI_DRAFT_CONDITION = "if: github.event.pull_request.draft == false"
 CI_EVENT_TYPES_LINE = "    types: [opened, synchronize, reopened, ready_for_review]\n"
 CI_OS_MATRIX = "os: [ubuntu-24.04, windows-2022]"
+
+
+CI_JOB_CONDITIONS = {job: CI_DRAFT_CONDITION for job in CI_TOP_LEVEL_JOBS}
+CI_JOB_CONDITIONS.update({
+    "ci-final-gate": "if: always() && github.event.pull_request.draft == false",
+    **{job: CI_DRAFT_CONDITION + " && needs.classify.outputs." + flag + " == 'true'"
+       for job, flag in (("dependency-audit", "run_dependency_audit"),
+                         ("ndfd-grib-compat", "run_ndfd"),
+                         ("ndfd-grib-dependency-audit", "run_ndfd"),
+                         ("cockpit-frontend", "run_frontend"))},
+})
 
 
 def _ci_trigger_block(text: str) -> str:
@@ -1802,22 +1815,22 @@ def _ci_policy_violations(text: str) -> list[str]:
     for job in CI_TOP_LEVEL_JOBS:
         if job not in jobs:
             violations.append(f"T05 job missing: {job}")
-        elif f"    {CI_DRAFT_CONDITION}" not in jobs[job].splitlines():
+        elif f"    {CI_JOB_CONDITIONS[job]}" not in jobs[job].splitlines():
             violations.append(f"T03 draft suppression missing: {job}")
     for job, body in jobs.items():
         if job not in CI_TOP_LEVEL_JOBS:
             violations.append(f"T05 unexpected job: {job}")
         job_conditions = [line for line in body.splitlines() if line.startswith("    if:")]
-        if job_conditions and job_conditions != [f"    {CI_DRAFT_CONDITION}"]:
+        if job_conditions and job_conditions != [f"    {CI_JOB_CONDITIONS.get(job)}"]:
             violations.append(f"T03 non-equivalent job condition: {job}")
     compat = jobs.get("compatibility", "")
-    if CI_OS_MATRIX not in compat:
+    if text.count('for o in ["ubuntu-24.04", "windows-2022"] for p in ["3.12", "3.14"]') != 2:
         violations.append("T06 compatibility OS matrix changed")
-    if 'python: ["3.12", "3.14"]' not in compat:
+    if 'include: ${{ fromJSON(needs.classify.outputs.matrix).include }}' not in compat:
         violations.append("T07 compatibility Python matrix changed")
     if CI_OS_MATRIX not in jobs.get("ndfd-grib-compat", ""):
         violations.append("T08 NDFD OS matrix changed")
-    if not re.search(r"(?m)^      - name: Full test suite\n        run: python -m pytest -q$", compat):
+    if not re.search(r"(?m)^      - name: Full test suite\n        if: matrix.smoke == false\n        run: python -m pytest -q$", compat):
         violations.append("T09 full-suite step missing")
     if 'WP167_STRICT_DUCKDB: "1"' not in text or "Focused WP167 tests (DuckDB strict, no skips permitted)" not in compat:
         violations.append("T10 strict DuckDB missing")
@@ -1845,7 +1858,7 @@ def test_ci_workflow_final_head_trigger_policy() -> None:
     assert "pull_request_target" not in text
     jobs = _ci_jobs(text)
     for job in CI_TOP_LEVEL_JOBS:
-        assert [line.strip() for line in jobs[job].splitlines() if line.startswith("    if:")] == [CI_DRAFT_CONDITION], job
+        assert [line.strip() for line in jobs[job].splitlines() if line.startswith("    if:")] == [CI_JOB_CONDITIONS[job]], job
     assert "permissions:\n  contents: read\n" in text
     assert "secrets." not in text
 
@@ -1855,11 +1868,12 @@ def test_ci_workflow_preserves_full_final_matrix() -> None:
     text = _read(CI_WORKFLOW)
     jobs = _ci_jobs(text)
     assert tuple(jobs) == CI_TOP_LEVEL_JOBS
-    compat_os = re.search(r"os: \[([^\]]*)\]", jobs["compatibility"]).group(1).split(",")
-    compat_py = re.search(r"python: \[([^\]]*)\]", jobs["compatibility"]).group(1).split(",")
-    ndfd_os = re.search(r"os: \[([^\]]*)\]", jobs["ndfd-grib-compat"]).group(1).split(",")
-    # compat 2x2 + dependency-audit + ndfd-grib-compat x2 + ndfd-grib-dependency-audit + cockpit-frontend
-    assert len(compat_os) * len(compat_py) + 1 + len(ndfd_os) + 1 + 1 == 9
+    # Default-off bootstrap has four explicit compat legs plus two NDFD legs,
+    # two audits and frontend; classify/final gate are separate control jobs.
+    assert text.count('for o in ["ubuntu-24.04", "windows-2022"] for p in ["3.12", "3.14"]') == 2
+    assert "include: ${{ fromJSON(needs.classify.outputs.matrix).include }}" in jobs["compatibility"]
+    assert CI_OS_MATRIX in jobs["ndfd-grib-compat"]
+    assert 4 + 2 + 2 + 1 == 9
     for focused in ("Focused WP168", "Focused WP167", "Focused WP169", "Focused WP170", "Focused WP171",
                     "Generated artifact guard", "pip check",
                     "tests/data_layer/analytical_research/test_dependency_runtime_compatibility.py"):
@@ -1888,12 +1902,12 @@ def test_ci_policy_negative_matrix() -> None:
         "job renamed": text.replace("\n  dependency-audit:\n", "\n  dep-audit:\n"),
         "job deleted": text[: text.index("\n  cockpit-frontend:\n") + 1],
         # N06: OS / Python / suite / strict / audit coverage dropped.
-        "compat windows dropped": text.replace(CI_OS_MATRIX, "os: [ubuntu-24.04]", 1),
-        "compat ubuntu dropped": text.replace(CI_OS_MATRIX, "os: [windows-2022]", 1),
+        "compat windows dropped": text.replace('for o in ["ubuntu-24.04", "windows-2022"]', 'for o in ["ubuntu-24.04"]', 1),
+        "compat ubuntu dropped": text.replace('for o in ["ubuntu-24.04", "windows-2022"]', 'for o in ["windows-2022"]', 1),
         "ndfd windows dropped": text[:last_os] + "os: [ubuntu-24.04]" + text[last_os + len(CI_OS_MATRIX):],
-        "py3.14 dropped": text.replace('python: ["3.12", "3.14"]', 'python: ["3.12"]'),
-        "py3.12 dropped": text.replace('python: ["3.12", "3.14"]', 'python: ["3.14"]'),
-        "full suite removed": text.replace("      - name: Full test suite\n        run: python -m pytest -q\n", ""),
+        "py3.14 dropped": text.replace('for p in ["3.12", "3.14"]', 'for p in ["3.12"]'),
+        "py3.12 dropped": text.replace('for p in ["3.12", "3.14"]', 'for p in ["3.14"]'),
+        "full suite removed": text.replace("      - name: Full test suite\n        if: matrix.smoke == false\n        run: python -m pytest -q\n", ""),
         "strict duckdb removed": text.replace('WP167_STRICT_DUCKDB: "1"', 'WP167_STRICT_DUCKDB: "0"'),
         # S10-CI-SEC-01: the audit step now carries the exact selective CVE-2026-104851 exception.
         "audit removed": text.replace(
@@ -1918,14 +1932,14 @@ def test_ci_governance_docs_require_local_first_final_hosted_once() -> None:
         "Do not use hosted CI as the iterative test loop.",
         "one authoritative local broad/full suite",
         "Create or update one DRAFT PR and keep it draft while source is changing.",
-        "mark it Ready for review once; that transition launches the one full exact-head hosted matrix.",
+        "mark it Ready for review once; that transition launches the one required exact-head hosted plan.",
         "Convert back to draft before iterative repairs where practical",
         "Rerun only the affected cancelled or failed-to-start job where GitHub supports it; "
         "do not rerun already-green jobs.",
         "A cancellation before runner/test execution is infrastructure evidence, not a code PASS or FAIL.",
         "fresh exact-head hosted CI is then mandatory",
         "A hosted PASS on an older head never justifies Ready for review: YES for a changed head.",
-        "no path filter may skip any part of it",
+        "Tier 3 retains every legacy leg",
     ):
         assert phrase in matrix, phrase
     drafting = " ".join(_read(ROOT / "docs" / "ai" / "codex" / "WP_DRAFTING_STANDARD.md").split())
@@ -1933,7 +1947,7 @@ def test_ci_governance_docs_require_local_first_final_hosted_once() -> None:
         "### Hosted CI planning (S10-CI-OPT-01)",
         "Every future WP must plan hosted CI as final exact-head verification, not iterative testing.",
         "the PR kept DRAFT while source is changing",
-        "one full hosted matrix on that exact non-draft head",
+        "one required hosted plan on that exact non-draft head",
         "must not plan hosted CI as its development test loop",
         "any source change after a hosted PASS requires fresh exact-head hosted CI",
         "rerun affected-job-only where supported",
@@ -2132,3 +2146,26 @@ def test_ci_sec_01_status_and_repo_truth_record_removal_trigger() -> None:
     assert src_paths == ["src/operator_cockpit_frontend/package-lock.json"]
     for key in ("network", "credentials", "scheduler", "hermes_runtime", "strategy", "paper", "execution", "live"):
         assert spec["authority"][key] is False, key
+
+
+def test_ci_opt_02_workflow_policy_and_bootstrap() -> None:
+    text = _read(CI_WORKFLOW)
+    assert not _ci_policy_violations(text)
+    jobs = _ci_jobs(text)
+    assert set(jobs) == set(CI_TOP_LEVEL_JOBS)
+    assert 'git show "$BASE_SHA:tools/ci/risk_tier.py"' in jobs["classify"]
+    assert 'python "$RUNNER_TEMP/base_risk_tier.py"' in jobs["classify"]
+    assert "python tools/ci/risk_tier.py" not in text
+    assert "CI_RISK_ROUTING_ENABLED" in text
+    assert "always()" in jobs["ci-final-gate"]
+    assert "all(needs[j][\"result\"] == \"success\" for j in jobs)" in jobs["ci-final-gate"]
+    assert "matrix.smoke == true" in jobs["compatibility"]
+    assert "tests/tools/wp tests/tools/git" in jobs["compatibility"]
+    for key in ("run_dependency_audit", "run_ndfd", "run_frontend"):
+        assert key in jobs["classify"] and key in jobs["ci-final-gate"]
+    spec_path = ROOT / "docs/wp_specs/S10-CI-OPT-02/wp_spec.json"
+    spec = json.loads(_read(spec_path))
+    assert spec["scope"]["required_changed_files"] == spec["scope"]["allowed_changed_files"]
+    assert len(spec["scope"]["required_changed_files"]) == 13
+    assert hashlib.sha256(spec_path.read_bytes()).hexdigest() == "6842c4673c3c47a7d6618210f2ab42cc9340e4b9aad9c8b3e1d98ad7ec824367"
+    assert hashlib.sha256((spec_path.parent / "wp_prompt.txt").read_bytes()).hexdigest() == "1263a6471d5ab1e8c16366452a925dfd5d479c7e87f699e56dda9a955dce5f69"
