@@ -328,8 +328,12 @@ def final_gate(plan: dict, needs: dict, base: str, head: str, routing: str, actu
         if not isinstance(needs[name], dict) or needs[name].get("result") != ("success" if must_run else "skipped"):
             raise InvalidPlan()
     outputs = needs["classify"].get("outputs", {})
-    if (strict_json(outputs.get("plan", "")) != plan or
-        strict_json(outputs.get("matrix", "")) != plan["compatibility_matrix"] or
+    output_plan = strict_json(outputs.get("plan", ""))
+    validate_plan(output_plan, base, head, routing)
+    matrix = strict_json(outputs.get("matrix", ""))
+    if (output_plan != plan or
+        json.dumps(matrix, sort_keys=True, allow_nan=False) !=
+        json.dumps(plan["compatibility_matrix"], sort_keys=True, allow_nan=False) or
         any(outputs.get(k) != str(plan[k]).lower() for k in
             ("run_dependency_audit", "run_ndfd", "run_frontend"))):
         raise InvalidPlan()

@@ -216,6 +216,18 @@ def test_final_gate_rejects_missing_classifier_outputs(key):
         r.final_gate(plan, needs, BASE, HEAD, "false", plan)
 
 
+@pytest.mark.parametrize("key", ["plan", "matrix"])
+def test_final_gate_rejects_integer_alias_for_boolean_output(key):
+    plan = r.canonical_plan(3, BASE, HEAD, "DEFAULT_OFF")
+    needs = needs_for(plan)
+    output = json.loads(needs["classify"]["outputs"][key])
+    matrix = output["compatibility_matrix"] if key == "plan" else output
+    matrix["include"][0]["smoke"] = 0
+    needs["classify"]["outputs"][key] = json.dumps(output)
+    with pytest.raises(r.InvalidPlan):
+        r.final_gate(plan, needs, BASE, HEAD, "false", plan)
+
+
 def test_default_off_cannot_be_downgraded():
     with pytest.raises(r.InvalidPlan):
         r.validate_plan(r.canonical_plan(1, BASE, HEAD, "BENIGN"), BASE, HEAD, "false")
