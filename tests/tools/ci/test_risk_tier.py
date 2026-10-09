@@ -74,6 +74,21 @@ def test_risk_tier_safe_docs_and_isolated_stdlib(repo):
     assert not plan["run_dependency_audit"] and not plan["run_ndfd"] and not plan["run_frontend"]
 
 
+@pytest.mark.parametrize("unsafe", ["eval", "exec", "open", "getattr", "vars"])
+def test_isolated_helper_rejects_dynamic_or_io_aliases(repo, unsafe):
+    helper = "tools/text/number.py"
+    test = "tests/tools/text/test_number.py"
+    plan = change(repo, {helper: f"execute = {unsafe}\ndef calculate(value):\n    return execute(value)\n",
+                         test: "from tools.text.number import calculate\ndef test_calculate():\n    assert calculate('2+2') == 4\n"})
+    assert plan["tier"] == 3 and plan["reason_codes"] == ["UNKNOWN"]
+
+
+def test_isolated_helper_rejects_dynamic_matching_test(repo):
+    plan = change(repo, {"tools/text/spacing.py": "def trim(value):\n    return value.strip()\n",
+                         "tests/tools/text/test_spacing.py": "from tools.text.spacing import trim\nexecute = eval\ndef test_trim():\n    assert trim(execute(\"' x '\")) == 'x'\n"})
+    assert plan["tier"] == 3
+
+
 @pytest.mark.parametrize("path", [
     "src/data_layer/wallet_intelligence/public_ingest.py",
     "src/research_runtime/hermes_controlled_runtime/runner.py",

@@ -54,6 +54,9 @@ PUBLIC_RECONCILIATION = {
     "src/data_layer/wallet_intelligence/reconciliation.py",
     "src/research_runtime/hermes_controlled_runtime/context_reconciliation.py",
 }
+UNSAFE_HELPER_NAMES = {"open", "exec", "eval", "compile", "__import__", "getattr",
+                       "setattr", "globals", "locals", "vars", "breakpoint", "input",
+                       "print", "help", "exit", "quit"}
 RESEARCH = ("src/data_layer/", "src/research_runtime/", "src/operator_cockpit",
             "src/monitoring/", "src/strategy_modules/", "tools/deployment/",
             "tools/hermes/", "tools/qualification/", "tools/research/", "tools/alpha/",
@@ -245,6 +248,8 @@ def benign_helper(repo: pathlib.Path, base: str, head: str, path: str, paths: se
         return False
     helper_module = path.removesuffix(".py").replace("/", ".")
     for node in ast.walk(test_tree):
+        if isinstance(node, ast.Name) and (node.id.startswith("__") or node.id in UNSAFE_HELPER_NAMES):
+            return False
         if isinstance(node, ast.ImportFrom) and (node.level or node.module not in {helper_module, "pytest", "__future__"}):
             return False
         if isinstance(node, ast.Import) and any(a.name not in {helper_module, "pytest"} for a in node.names):
@@ -259,7 +264,7 @@ def benign_helper(repo: pathlib.Path, base: str, head: str, path: str, paths: se
             if isinstance(node, ast.Attribute) and (node.attr.startswith("_") or node.attr in
                 {"write", "read", "write_text", "read_text", "write_bytes", "read_bytes", "unlink", "mkdir", "system", "run"}):
                 return False
-            if isinstance(node, ast.Name) and node.id.startswith("__"):
+            if isinstance(node, ast.Name) and (node.id.startswith("__") or node.id in UNSAFE_HELPER_NAMES):
                 return False
             if isinstance(node, (ast.Import, ast.ImportFrom)):
                 modules = [a.name.split(".")[0] for a in node.names] if isinstance(node, ast.Import) else [node.module]
@@ -267,7 +272,7 @@ def benign_helper(repo: pathlib.Path, base: str, head: str, path: str, paths: se
                     return False
             if isinstance(node, ast.Call):
                 name = node.func.id if isinstance(node.func, ast.Name) else node.func.attr if isinstance(node.func, ast.Attribute) else ""
-                if name in {"open", "exec", "eval", "compile", "__import__", "getattr", "setattr", "globals", "locals", "breakpoint", "input"}:
+                if name in UNSAFE_HELPER_NAMES:
                     return False
     return True
 
