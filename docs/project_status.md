@@ -2028,3 +2028,29 @@ Manual steps for this package: none.
 - AI-agent and Hermes integrations remain advisory-only. WP23 implements a local/offline/read-only context exporter only, WP24 documents safe manual operator use for that exporter, WP25 adds deterministic local/offline/read-only report generation only, and WP26 documents safe manual report-generator operation. Any future runtime selection, provider choice, command approval, network permission, memory policy, or installation requires future human approval and repo-truth work packages.
 
 # S10-CI-OPT-02 current bounded implementation target: Risk-Based Local-First CI Optimization; Package class: WORKFLOW_GOVERNANCE_CI_RISK_OPTIMIZATION; Package size class: L; Governance track: FAST; Risk level: 2; Exact changed-file scope: 13; Frozen base: e3e8673024c6921e794df8bf0aa4fcea3825dab1; Immediate predecessor: PR #228 / S10-CC-CMD-01 merged: YES at the frozen base with head 3e365771ce23a6be0f95b0d8c14faad95202e4c3; PR #229 governance predecessor merged: YES / ancestor; Branch: codex/s10-ci-opt-02-risk-based-local-first; readiness: IMPLEMENTATION_READY / FAST / DETERMINISTIC; implementation authorized by Karl after readiness; base-owned actual-diff Tier 1/2/3 CI selection; prefer eligible Tier 2 without broad Risk3/RUNTIME escalation; default routing: OFF; bootstrap: nine legacy runner legs plus classify and ci-final-gate; protected product/runtime/config/dependency boundaries: UNCHANGED; main required-status protection: NOT VERIFIED (observed unprotected); S10-CC-CMD-01: MERGED (PR #228); S10-CC-PROD-01: separately gated; capital/orders: USD 0 / 0; Merge authorized: NO
+
+
+# S10-CC-PROD-01 current repository implementation target: Private Production Control Center
+
+Current Control Center posture supersedes earlier in-review target descriptions:
+S10-CC-CMD-01 merged via PR #228; immediate predecessor S10-CI-OPT-02 merged via
+PR #230 at frozen main `10320087b9c16672d42fd0eaa50ded7e349b7a3a`, feature head
+`f004c545e0ddd1d483c16d17045b880926d0c59e`. Karl authorized the corrected frozen
+S10-CC-PROD-01 repository implementation after actual deterministic RUNTIME readiness.
+Package class: PRIVATE_READ_ONLY_CONTROL_CENTER_SERVING; L / risk 3 / RUNTIME;
+exact scope: 13 required = allowed files. Capability: opt-in same-process local
+SPA serving and dormant nonroot research-slice systemd template; legacy 31 APIs,
+SSE, TTY-only command bootstrap and default-off commands preserved. Contract:
+`docs/control_center_production_contract.md`; stable evidence:
+`docs/status_entries/S10-CC-PROD-01.md`; validation/review state: see PR body.
+External static assets bind the exact verified source/release SHA. Original base-only
+bootstrap, strict tracked release inventory, SSH-only UFW and backup/recovery unchanged.
+Source implementation does not activate hosts/services/Tailscale, change dependencies,
+locks/workflows/GitHub settings, or add credential/account/order/live authority.
+Private real-host activation remains Karl-only after merge. Capital/orders: USD 0 / 0.
+Side18 independently reviews; Merge authorized: NO.
+
+Scope Amendment 01: Side18 approved exactly two compatibility-only edits in the
+existing stream/command test modules: obsolete CockpitConfig field-order assertions
+now include the appended frontend_dist. Exact scope is 13; architecture, behavior
+and runtime authority remain unchanged.

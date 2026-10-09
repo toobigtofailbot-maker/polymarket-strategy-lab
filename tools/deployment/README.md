@@ -69,3 +69,26 @@ probe disabled and inactive. It never writes the execution-host binding; that is
 explicit step of the separately authorized Phase-B host proof. No upgrade, purchase or
 extra host is ever automatic, and nothing here grants account, order, capital or live
 authority.
+
+## Optional private Control Center (S10-CC-PROD-01)
+
+The production contract is `docs/control_center_production_contract.md`. The only
+new substrate is the dormant `systemd/polymarket-control-center.service` template;
+the base bootstrap, immutable tracked release verifier, SSH-only firewall, slices,
+telemetry, critical probe and backup/recovery are unchanged. Bootstrap neither
+installs nor starts this optional service.
+
+Build the locked Node 24.18.0 frontend from the exact verified release source SHA
+in a separate build workspace; stage/digest-check assets outside the tracked release
+at `/var/lib/polymarket/control_center/assets/<exact-sha>/dist`. Verify the original
+release again. Only a separately authorized host operator installs/checks the pinned
+cockpit extras in the existing `.venv` and restores root ownership and runtime
+non-writability. Supply the three required absolute nonsecret store/dist paths via
+root-owned `/etc/polymarket/deployment/control-center.env`; optional stores are not
+guessed. Validate systemd and enforce localhost-only network/read-only sandboxing
+before any installation or start.
+
+Private Tailscale Serve, narrow grants/ACL, allowed-versus-denied access, GET/API/SSE,
+restart/reboot and rollback are Karl-only post-merge operator gates. Never Funnel,
+public ingress, command enablement or economic authority. See the production
+contract for exact build/config and separately gated activation procedure.

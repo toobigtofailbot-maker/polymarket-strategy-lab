@@ -1,0 +1,109 @@
+# S10-CC-PROD-01 — Private Production Control Center (LEAN-PATH)
+
+## 0. Identity and frozen starting point
+WP ID: S10-CC-PROD-01
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: PRIVATE_READ_ONLY_CONTROL_CENTER_SERVING
+Package size class: L; max exact changed paths: 13
+Risk level: 3
+Governance track expected: RUNTIME
+Base branch: main; frozen main: 10320087b9c16672d42fd0eaa50ded7e349b7a3a
+Required predecessor: PR #230 / S10-CI-OPT-02; feature head f004c545e0ddd1d483c16d17045b880926d0c59e; merged at 10320087b9c16672d42fd0eaa50ded7e349b7a3a.
+Suggested branch: codex/s10-cc-prod-01-private-read-only-serving
+Authority: preparing this WP is Karl-approved; implementing, pushing, deploying or merging is NOT authorized by preparation alone.
+Readiness basis: FAST/RUNTIME deterministic, certificate-free; Karl must separately authorize implementation after readiness PASS.
+Independent final reviewer: Side18. Karl alone decides merge, private host activation, Tailscale access and live/capital authority.
+No capital/orders: USD 0 / 0. No actual host, credentials, trading, provider/model or product API calls in implementation.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## Authority / Non-Authority Posture
+Binding protected-boundary reference: `docs/ai/codex/PROTECTED_PATHS.md` (especially the **Centralized Boundary Group Reference**). The machine-spec mirror above is authoritative; this section narrows and explains it, never grants additional permissions.
+
+- **Scoped repository-only boundary:** `dashboard/deployment` and the *template only* portion of `runtime/daemon` are crossed solely to add opt-in local SPA serving and a committed, disabled, nonroot systemd unit. `source_runtime`, `local_offline_tooling`, `docs`, `tests`, and `canonical_evidence_policy` cover exactly the thirteen specified files. This grants NO host access, service installation/start, private ingress configuration, scheduling loop, or automatic deployment.
+- **Uncrossed boundaries:** `credentials/secrets`; `authenticated clients`; `wallet/account behavior`; `order placement/cancel`; `execution gateway`; `paper engine`; `scheduler/bot loop`; `dependency/lock changes`; `external code copying`; and `generated artifacts`. No private API clients, secrets, wallet access, signing, hard risk/capital, order mutation, Gate C, product-network acquisition, or live trading. The existing default-off command routes and TTY-only command bootstrap remain unchanged.
+- Existing SSH-only inbound firewall and current release/backup/recovery controls remain binding. No Tailscale/Funnel/Serve, VPS change, daemon activation or capital/order authority is conferred. **Only Karl** may separately authorize post-merge private host activation and decide merge; the offline S10-CC-PROD-01 feature tests stay in this WP, not a newly created activation WP.
+
+## 1. Objective, value and reuse
+Deliver an **opt-in, read-only, privately hostable** Control Center using the existing FastAPI `create_app(CockpitConfig)` (31 `/api` routes), React/Vite `/api` same-origin UI/SSE, and `tools/deployment` exact-SHA releases, existing systemd slices, SSH-only UFW, telemetry and backups. Implement only production SPA serving and a **disabled** separate service unit. Tailscale Serve/private HTTPS is an operator action AFTER merge and Karl's separate authorization. No new frontend, backend, database, auth, command class, proxy, research scheduler or deployment stack. S10-CC-CMD-02 is unnecessary: deferred commands remain CLI/backend-only.
+
+## 2. Startup / hard stops
+Read repository AGENTS/AI_CODING_AGENT_START_HERE/CODEX_START_HERE, project status, truth index, drafting/spec/execution/validation standards, these 13 targets, existing Control Center contracts and direct deployment test guards. Check exact live `origin/main == 10320087b9c16672d42fd0eaa50ded7e349b7a3a`, PR #230 merged, clean isolated worktree and no collisions. Any drift/required extra file -> STOP for Side18/Karl; do not reset a shared worktree. Do not begin implementation/branch/PR until Karl separately authorizes the exact readiness-passing ZIP.
+Preimplementation command (certificate-free RUNTIME; run after placing supplied artifacts in isolated checkout):
+`python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-PROD-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-PROD-01/wp_spec.json --repo-root .`
+
+## 3. Exact changed-file scope (required == allowed, 13/13)
+Scope Amendment 01: Side18 explicitly approved adding only the two existing stream/command test files to correct obsolete CockpitConfig field-order assertions for the appended frontend_dist field. All streaming, authentication, default-off and positional-constructor behavior stays unchanged; no new tests/features or authority in those two files.
+1. `src/operator_cockpit.py`
+2. `tests/test_operator_cockpit.py`
+3. `tools/deployment/systemd/polymarket-control-center.service`
+4. `tests/deployment/test_runtime_baseline.py`
+5. `tools/deployment/README.md`
+6. `docs/control_center_production_contract.md`
+7. `docs/project_status.md`
+8. `docs/repo_truth_index.md`
+9. `docs/status_entries/S10-CC-PROD-01.md`
+10. `docs/wp_specs/S10-CC-PROD-01/wp_prompt.txt`
+11. `docs/wp_specs/S10-CC-PROD-01/wp_spec.json`
+12. `tests/test_operator_cockpit_stream.py`
+13. `tests/test_operator_cockpit_commands.py`
+
+No extra paths, generated artifacts, workflow/dependency files or test families. Do NOT edit `tools/deployment/bootstrap_ubuntu_24_04.sh` or `tools/deployment/runtime_baseline.py`. They deliberately enforce base-only install, strict tracked-file release verification, SSH-only firewall, backup and host isolation. Adjust the approved status/index files without disturbing fixed-order historical tests. Extra path required -> STOP for authorization, not an improvised 14th file.
+
+## 4. Implementation contract — smallest complete change
+**FastAPI/SPA (`src/operator_cockpit.py`):** Append `frontend_dist: Path | None = None` after existing config fields, and opt-in CLI `--frontend-dist` without altering other flags/constructor positions. When None, preserve API-only behavior and **all 31 existing `/api` routes**, command TTY bootstrap, SSE, domain loaders, CORS and `127.0.0.1` binding. When set, verify real absolute dist directory + regular `index.html` and `assets/` tree. Fail startup safely on missing/symlinked/unsafe root; serve `/`, `/overview`, `/markets`, `/experiments`, `/strategies`, `/hermes`, `/alpha`, `/ops`, `/paper`, `/audit` and Vite `/assets` by GET/HEAD using built-in FastAPI/Starlette. Only those routes: no wildcard SPA fallback into `/api`, no directory listing, traversal, dotfiles, sourcemaps, missing-asset-as-HTML, source tree, env, `node_modules`, MSW worker or Storybook. HTML/assets no-store, `nosniff` and `Referrer-Policy: no-referrer`. No frontend rebuild at startup, product network, cookie/CSRF, new auth or credential behavior. Default unattended command sessions remain disabled.
+
+**Disabled systemd template (`tools/deployment/systemd/polymarket-control-center.service`):** Dedicated nonroot `polymarket` service under existing `polymarket-research.slice` with `WorkingDirectory=/opt/polymarket/current`, Python from current release `.venv`, CLI required market-truth and experiment-registry paths and `--frontend-dist` sourced from **operator-owned nonsecret** `/etc/polymarket/deployment/control-center.env` (valid absolute paths; optional stores not guessed). `Restart=on-failure`, limited restart, loopback-only port 8000, `NoNewPrivileges`/read-only sandbox and no arbitrary network access. No `--enable-commands`, operator identity, signing, account/order/live flag or shell interpolation. SSE may use existing `--enable-streaming`. Unit is merely committed; existing bootstrap does NOT install, enable or start it. No runtime host mutation.
+
+**Assets and operator procedure (`docs/control_center_production_contract.md`, `tools/deployment/README.md`):** Reuse `build-release/verify-release`; `npm ci`, typecheck and Vite production build from **exact verified source SHA**. Stage and digest-check `dist` OUTSIDE immutable tracked release under `/var/lib/polymarket/control_center/assets/<exact-sha>/dist`; never modify tracked release contents or deploy Vite dev/preview server. Optional already-pinned cockpit Python extras `fastapi==0.141.1`/`uvicorn==0.52.4` are later installed/checked in the existing release virtualenv by a separately authorized host operator; base bootstrap remains base-only. Describe nonsecret path configuration, pin checks, local systemd verification and no default service start.
+
+**Post-merge operator gate (documentation only):** With Karl's separate authorization, verify actual host/release SHA, intact SSH-only UFW, restricted tailnet grant/ACL and HTTPS prerequisites, Tailscale Serve PRIVATE (never Funnel/public) to `http://127.0.0.1:8000`, authorized-vs-denied access, GET/API/SSE, restart/reboot and rollback. Current Tailscale reference: `tailscale serve --bg --https=443 http://127.0.0.1:8000` and `tailscale serve status`; this is NOT run by Codex. Never infer VPN authentication grants command/economic authority. Any host access, deployment, Tailscale setup, credential or network exposure requires Karl's separate real-host authorization.
+
+## 5. Evidence plan — minimum sufficient
+Only add test cases in `tests/test_operator_cockpit.py` and `tests/deployment/test_runtime_baseline.py`; change only the obsolete field-order assertions in the existing stream/command test files: assert optional SPA happy paths with real temporary dist, all established APIs unchanged, safe headers/MIME; reject missing/symlinked/traversal/hidden/source routes and `/api` fallback; confirm default-off commands; check disabled nonroot loopback unit, no auto-bootstrap change, SSH-only UFW. Reuse existing streaming, commands, architecture and release tests; no parallel suites. Run focused/adjacent pytest, locked Node 24.18 `npm ci`/typecheck/build/high audit, `systemd-analyze verify` where available, artifact guard, applicable available security checks, then ONE authoritative stable exact-head local full suite. Distinguish unavailable tests from PASS. Base-owned CI classifier alone selects final hosted tier; Tier 2 preferred where actual diff allows it; no manual downgrades or skipped mandatory gates. Keep PR draft while iterating.
+
+## 6. Negative-test matrix (only distinct material failures)
+N1 Legacy API/command routes change or protected command becomes unattended -> REJECT.
+N2 Source/assets/traversal leak or `/api` masked by SPA -> REJECT.
+N3 Missing, symlinked or wrong-SHA-associated frontend build -> STOP (no host promotion).
+N4 Host requires extra firewall port, public Funnel or broad tailnet access -> STOP, no activation.
+N5 Any host/service/credential activation during implementation -> STOP (no authority).
+N6 Readiness/actual changed-set/full-suite/selected hosted gate fails or main changes -> STOP and report.
+
+## 7. Acceptance / report back
+Before authorization: certificate-free readiness `IMPLEMENTATION_READY / RUNTIME`, not human permission. After Karl separately authorizes implementation: verify exact 13 changed paths with `wp_readiness_gate.py --check-diff --base 10320087b9c16672d42fd0eaa50ded7e349b7a3a --head HEAD` and `diff_scope_summary.py --require-exact-scope`; run focused/adjacent/Node/security/one stable full suite, then final actual selected hosted CI on unchanged non-draft head including `ci-final-gate`. Publish/re-fetch one PR and run strict posted-body evidence guard. A new head invalidates old CI. Report exact branch, SHA, test counts/skip truth, host/systemd availability, security results, CI tier and actual jobs, posted guard, blockers and **no host activation**. Side18 independently reviews; Karl alone merges. GitHub settings/CI activation, host/Tailscale, runtime, credentials, capital/orders/live remain unchanged.
+
+## 8. Successor boundary
+After merge: Karl may separately authorize **existing-host non-economic private Control Center activation** based on proven Tailscale policy and exact host/release; this is operator work, not a new infrastructure software WP by default. `S10-DEPLOY-EXEC-01` Phase-B proof and `S10-LIVE-CANARY-01` remain independently gated. Next software research capability can be S10-ALPHA-03 (not implemented here); no order or trading activation.
+
+## 9. Normative rule matrix
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|cockpit|static_serving|opt_in|REQUIRE|api_stays_unchanged|cockpit.static_serving|R001
+NR002|cockpit|static_safety|opt_in|REQUIRE|static_surface_closed|cockpit.static_safety|R002
+NR003|cockpit|authority|default_off|REQUIRE|default_off_commands|cockpit.authority|R003
+NR004|host|unit|offline_only|REQUIRE|disabled_nonroot_unit|host.unit|R004
+NR005|host|baseline|preserved|REQUIRE|base_bootstrap_unchanged|host.baseline|R005
+NR006|assets|release_binding|before_activation|REQUIRE|external_sha_bound_assets|assets.release_binding|R006
+NR007|ingress|private_access|post_merge|FORBID|no_runtime_activation|ingress.private_access|R007
+NR008|testing|reuse|final_head|REQUIRE|minimum_sufficient_evidence|testing.reuse|R008
+NR009|governance|scope|final_head|REQUIRE|exact_thirteen_paths|governance.scope|R009
+END_NORMATIVE_RULE_MATRIX_V1

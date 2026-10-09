@@ -21,6 +21,43 @@ from tools.deployment import runtime_baseline as baseline
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
+def test_prod01_systemd_unit_is_disabled_nonroot_readonly_loopback() -> None:
+    text = _unit("polymarket-control-center.service")
+    for required in (
+        "User=polymarket", "Group=polymarket", "Slice=polymarket-research.slice",
+        "WorkingDirectory=/opt/polymarket/current", "Restart=on-failure",
+        "StartLimitIntervalSec=60", "StartLimitBurst=3", "RestartSec=5s",
+        "EnvironmentFile=/etc/polymarket/deployment/control-center.env",
+        "--market-truth-store ${PM_CC_MARKET_TRUTH_STORE}",
+        "--experiment-registry ${PM_CC_EXPERIMENT_REGISTRY}",
+        "--frontend-dist ${PM_CC_FRONTEND_DIST}", "--port 8000", "--enable-streaming",
+        "NoNewPrivileges=true", "ProtectSystem=strict", "ProtectHome=true",
+        "IPAddressDeny=any", "IPAddressAllow=localhost", "Environment=PYTHONDONTWRITEBYTECODE=1",
+    ):
+        assert required in text
+    assert next(line for line in text.splitlines() if line.startswith("ExecStart=")) == (
+        "ExecStart=/opt/polymarket/current/.venv/bin/python -m src.operator_cockpit "
+        "--market-truth-store ${PM_CC_MARKET_TRUTH_STORE} --experiment-registry ${PM_CC_EXPERIMENT_REGISTRY} "
+        "--frontend-dist ${PM_CC_FRONTEND_DIST} --port 8000 --enable-streaming"
+    )
+    for forbidden in ("--enable-commands", "--operator-id", "ReadWritePaths=", "ExecStartPre=", "/bin/sh", "/bin/bash"):
+        assert forbidden not in text
+
+
+def test_prod01_base_bootstrap_and_ssh_only_baseline_unchanged() -> None:
+    frozen = "10320087b9c16672d42fd0eaa50ded7e349b7a3a"
+    for relative in ("tools/deployment/bootstrap_ubuntu_24_04.sh", "tools/deployment/runtime_baseline.py"):
+        original = subprocess.run(["git", "show", f"{frozen}:{relative}"], cwd=ROOT,
+                                  capture_output=True, check=True).stdout
+        assert (ROOT / relative).read_bytes().replace(b"\r\n", b"\n") == original
+    assert "polymarket-control-center.service" not in (ROOT / "tools/deployment/bootstrap_ubuntu_24_04.sh").read_text()
+    assert "polymarket-control-center.service" not in _unit("polymarket-research.target")
+    # Reuse the existing effective-firewall verifier, including its negative cases.
+    assert baseline.verify_ufw_ssh_only("Status: active\n22/tcp ALLOW IN Anywhere\n", 22, allow_empty=False)["allow_count"] == 1
+    with pytest.raises(baseline.BaselineError, match="FIREWALL_NOT_SSH_ONLY"):
+        baseline.verify_ufw_ssh_only("Status: active\n22/tcp ALLOW IN Anywhere\n8000/tcp ALLOW IN Anywhere\n", 22, allow_empty=False)
+
+
 def _git(repo: pathlib.Path, *arguments: str) -> str:
     return subprocess.run(
         ["git", *arguments],

@@ -54,6 +54,146 @@ BASE_SHA = "434af62f0891959d145b631a77b472b3e80915d3"
 PREDECESSOR_HEAD = "8e5d83f695d2f2ef38c9f30e3a8e95eb271718da"
 
 
+def _prod_dist(tmp_path: Path) -> Path:
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text('<html><script src="/assets/app-123.js"></script></html>')
+    (dist / "assets/app-123.js").write_text("export const ready = true;")
+    (dist / "assets/app-123.css").write_text("body { color: black; }")
+    return dist
+
+
+def test_prod01_static_spa_known_routes_and_assets(tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+
+    dist = _prod_dist(tmp_path)
+    client = TestClient(cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=dist)))
+    for path, media in [(path, "text/html") for path in cockpit._SPA_PATHS] + [
+        ("/assets/app-123.js", "text/javascript"), ("/assets/app-123.css", "text/css"),
+    ]:
+        get, head = client.get(path), client.head(path)
+        assert get.status_code == head.status_code == 200
+        assert get.headers["content-type"].startswith(media)
+        assert get.content and not head.content
+        assert get.headers["content-length"] == head.headers["content-length"]
+        for response in (get, head):
+            assert response.headers["cache-control"] == "no-store"
+            assert response.headers["x-content-type-options"] == "nosniff"
+            assert response.headers["referrer-policy"] == "no-referrer"
+        assert client.post(path).status_code == 405
+
+
+def test_prod01_rejects_static_tree_escape_and_missing_assets(tmp_path: Path) -> None:
+    from fastapi.testclient import TestClient
+
+    dist = _prod_dist(tmp_path)
+    # Vite copies its development worker into dist; it must never be exposed.
+    (dist / "mockServiceWorker.js").write_text("private development worker")
+    (tmp_path / "private.txt").write_text("do not disclose")
+    client = TestClient(cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=dist)))
+    for path in (
+        "/unknown", "/api/missing", "/assets/missing.js", "/assets/",
+        "/index.html", "/mockServiceWorker.js", "/storybook", "/src/app.tsx",
+        "/assets/app-123.js.map", "/assets/.env", "/assets/%2e%2e/private.txt",
+        "/assets/%2e%2e/index.html", "/assets/%5c..%5cprivate.txt",
+        "/assets/node_modules/package.json", "/assets/node_modules/code.js", "/assets/a%00.js",
+        "/assets/mockServiceWorker.js", "/assets/src/source.js",
+    ):
+        for method in ("GET", "HEAD"):
+            response = client.request(method, path)
+            assert response.status_code == 404, (method, path)
+            assert b"<html>" not in response.content and b"do not disclose" not in response.content
+    # Unsafe startup inputs fail with a closed diagnostic, never the operator path.
+    for path in (Path("relative"), tmp_path / "missing", dist / "index.html"):
+        with pytest.raises(ValueError, match="^FRONTEND_DIST_INVALID$"):
+            cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=path))
+    (dist / "index.html").unlink()
+    with pytest.raises(ValueError, match="^FRONTEND_DIST_INVALID$"):
+        cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=dist))
+
+
+@pytest.mark.parametrize("target", ["root", "ancestor", "index", "assets", "asset", "nested"])
+def test_prod01_rejects_symlinks_at_startup_and_after_start(tmp_path: Path, target: str) -> None:
+    from fastapi.testclient import TestClient
+
+    dist = _prod_dist(tmp_path)
+    client = TestClient(cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=dist)))
+    link = tmp_path / "link"
+    destination = dist
+    config_dist = dist
+    if target == "root":
+        destination = tmp_path / "original"
+        dist.rename(destination)
+        link = dist
+    elif target == "ancestor":
+        destination = tmp_path / "parent"
+        destination.mkdir()
+        dist.rename(destination / "dist")
+        config_dist = link / "dist"
+    elif target in ("index", "assets", "asset"):
+        relative = {"index": "index.html", "assets": "assets", "asset": "assets/app-123.js"}[target]
+        link = dist / relative
+        destination = tmp_path / "original"
+        link.rename(destination)
+    else:
+        link = dist / "assets/nested"
+        destination = tmp_path / "outside"
+        destination.mkdir()
+        (destination / "secret.js").write_text("private")
+    try:
+        link.symlink_to(destination, target_is_directory=destination.is_dir())
+    except OSError:
+        pytest.skip("symlink creation requires platform permission")
+    with pytest.raises(ValueError, match="^FRONTEND_DIST_INVALID$"):
+        cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=config_dist))
+    assert client.get("/").status_code == 404
+    assert client.get("/assets/app-123.js").status_code == 404
+
+
+@pytest.mark.parametrize("unsafe", ["missing-assets", "directory-index", "source-map", "dotfile", "source-dir"])
+def test_prod01_unsafe_build_tree_fails_closed(tmp_path: Path, unsafe: str) -> None:
+    dist = _prod_dist(tmp_path)
+    if unsafe == "missing-assets":
+        (dist / "assets").rename(tmp_path / "removed-assets")
+    elif unsafe == "directory-index":
+        (dist / "index.html").unlink()
+        (dist / "index.html").mkdir()
+    elif unsafe == "source-dir":
+        (dist / "assets/src").mkdir()
+        (dist / "assets/src/source.js").write_text("source")
+    else:
+        (dist / "assets" / ("app.js.map" if unsafe == "source-map" else ".env")).write_text("private")
+    with pytest.raises(ValueError, match="^FRONTEND_DIST_INVALID$"):
+        cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=dist))
+
+
+def test_prod01_default_off_api_and_command_compatibility(tmp_path: Path, monkeypatch) -> None:
+    from fastapi.testclient import TestClient
+    import uvicorn
+
+    dist = _prod_dist(tmp_path)
+    legacy = cockpit.create_app(cockpit.CockpitConfig(None, None))
+    prod = cockpit.create_app(cockpit.CockpitConfig(None, None, frontend_dist=dist))
+    routes = lambda app: {r.path: set(r.methods or ()) for r in app.routes if r.path.startswith("/api/")}
+    assert routes(prod) == routes(legacy) and len(routes(prod)) == 31
+    old, new = TestClient(legacy), TestClient(prod)
+    for path, methods in routes(legacy).items():
+        if path == "/api/stream/events":
+            continue  # Existing bounded SSE suite owns the stream protocol.
+        for method in methods:
+            before, after = old.request(method, path), new.request(method, path)
+            assert (before.status_code, before.json()) == (after.status_code, after.json())
+    assert old.get("/").status_code == 404
+    assert new.get("/api/commands/status").json()["commands_enabled"] is False
+    assert new.post("/api/commands/execute", json={}).status_code == 403
+    calls = []
+    monkeypatch.setattr(uvicorn, "run", lambda app, **kwargs: calls.append((app, kwargs)))
+    assert cockpit.main(["--market-truth-store", "missing-market", "--experiment-registry", "missing-experiments",
+                         "--frontend-dist", str(dist)]) == 0
+    assert calls[0][1] == {"host": "127.0.0.1", "port": 8000}
+    assert TestClient(calls[0][0]).get("/").status_code == 200
+
+
 def _market_store(tmp_path: Path, *, populated: bool = True) -> Path:
     path = tmp_path / "market.sqlite3"
     with MarketTruthStore(path) as store:

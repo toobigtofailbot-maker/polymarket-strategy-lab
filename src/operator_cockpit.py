@@ -20,7 +20,7 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from src.data_layer.analytical_research import (
     LifecycleReceipt,
@@ -135,6 +135,8 @@ class CockpitConfig:
     streaming_enabled: bool = False
     # S10-CC-CMD-01: default-off in-memory operator command auth (digest-only; safe repr).
     command_auth: commands.CommandAuth | None = None
+    # S10-CC-PROD-01: optional trusted external Vite build; legacy API-only by default.
+    frontend_dist: Path | None = None
 
     def __post_init__(self) -> None:
         if type(self.streaming_enabled) is not bool:
@@ -152,6 +154,7 @@ class CockpitConfig:
             self.hermes_strategy_manager_path,
             self.alpha_factory_registry_path,
             self.alpha_discovery_registry_path,
+            self.frontend_dist,
         ):
             if value is not None and not isinstance(value, Path):
                 raise TypeError("cockpit paths must be pathlib.Path or None")
@@ -862,8 +865,78 @@ def _gateway_audit(path: Path | None, limit: int) -> list[dict[str, Any]]:
     return _gateway_projection(path, limit)["audit"]
 
 
+_SPA_PATHS = (
+    "/", "/overview", "/markets", "/experiments", "/strategies",
+    "/hermes", "/alpha", "/ops", "/paper", "/audit",
+)
+_STATIC_MEDIA = {
+    ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml",
+    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+    ".webp": "image/webp", ".gif": "image/gif", ".ico": "image/vnd.microsoft.icon",
+    ".avif": "image/avif", ".woff": "font/woff", ".woff2": "font/woff2",
+    ".ttf": "font/ttf",
+}
+_STATIC_HEADERS = {
+    "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+}
+
+
+def _safe_asset_part(part: str) -> bool:
+    return bool(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", part)) and part.lower() not in {
+        "node_modules", "src", "storybook", "mockserviceworker.js",
+    }
+
+
+def _frontend_root(path: Path) -> Path:
+    """Validate the trusted build without resolving away a symlink before checking it."""
+    try:
+        if not path.is_absolute() or ".." in path.parts:
+            raise ValueError
+        if any(part.is_symlink() for part in (path, *path.parents)):
+            raise ValueError
+        root = path.resolve(strict=True)
+        index, assets = root / "index.html", root / "assets"
+        if not root.is_dir() or index.is_symlink() or not index.is_file():
+            raise ValueError
+        if assets.is_symlink() or not assets.is_dir():
+            raise ValueError
+        for item in assets.rglob("*"):
+            if item.is_symlink() or not (item.is_dir() or item.is_file()):
+                raise ValueError
+            if any(not _safe_asset_part(p)
+                   for p in item.relative_to(assets).parts):
+                raise ValueError
+            if item.is_file() and item.suffix.lower() not in _STATIC_MEDIA:
+                raise ValueError
+        return root
+    except (OSError, ValueError, RuntimeError):
+        raise ValueError("FRONTEND_DIST_INVALID") from None
+
+
+def _frontend_response(root: Path, relative: str) -> FileResponse:
+    """Serve only a regular index or approved asset; never a source or SPA fallback."""
+    try:
+        if relative != "index.html":
+            parts = relative.split("/")
+            if parts[0] != "assets" or any(
+                not _safe_asset_part(p) for p in parts
+            ) or Path(relative).suffix.lower() not in _STATIC_MEDIA:
+                raise ValueError
+        # Recheck root/index/tree safety if an operator replaces the external build.
+        _frontend_root(root)
+        file = root / relative
+        if not file.is_file() or file.is_symlink() or not file.resolve(strict=True).is_relative_to(root):
+            raise ValueError
+        media = "text/html" if relative == "index.html" else _STATIC_MEDIA[file.suffix.lower()]
+        return FileResponse(file, media_type=media, headers=_STATIC_HEADERS)
+    except (OSError, ValueError, RuntimeError):
+        raise CockpitError("NOT_FOUND") from None
+
+
 def create_app(config: CockpitConfig) -> FastAPI:
     """Create the import-safe, manually launched read-only cockpit application."""
+    frontend = _frontend_root(config.frontend_dist) if config.frontend_dist is not None else None
     app = FastAPI(title="WP171 Operator Cockpit", version="1.0.0")
     app.add_middleware(
         CORSMiddleware,
@@ -1182,6 +1255,18 @@ def create_app(config: CockpitConfig) -> FastAPI:
         session = auth.authenticate(authorization)
         return commands.execute_command(auth, session, config.strategy_lifecycle_path, raw)
 
+    if frontend is not None:
+        async def frontend_index() -> FileResponse:
+            return _frontend_response(frontend, "index.html")
+
+        async def frontend_asset(asset_path: str) -> FileResponse:
+            return _frontend_response(frontend, "assets/" + asset_path)
+
+        for path in _SPA_PATHS:
+            app.add_api_route(path, frontend_index, methods=["GET", "HEAD"], include_in_schema=False)
+        app.add_api_route("/assets/{asset_path:path}", frontend_asset,
+                          methods=["GET", "HEAD"], include_in_schema=False)
+
     return app
 
 
@@ -1235,7 +1320,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--enable-streaming", action="store_true", default=False)
     parser.add_argument("--enable-commands", action="store_true", default=False)
     parser.add_argument("--operator-id")
+    parser.add_argument("--frontend-dist", type=Path)
     args = parser.parse_args(argv)
+    if args.frontend_dist is not None:
+        try:
+            _frontend_root(args.frontend_dist)
+        except ValueError:
+            parser.error("FRONTEND_DIST_INVALID")
     if args.port < 1 or args.port > 65_535:
         parser.error("--port must be between 1 and 65535")
     command_auth = None
@@ -1262,6 +1353,7 @@ def main(argv: list[str] | None = None) -> int:
                 args.alpha_discovery_registry,
                 streaming_enabled=args.enable_streaming,
                 command_auth=command_auth,
+                frontend_dist=args.frontend_dist,
             )
         ),
         host="127.0.0.1",
