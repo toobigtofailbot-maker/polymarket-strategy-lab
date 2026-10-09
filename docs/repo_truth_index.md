@@ -2121,3 +2121,29 @@ Any material policy or architecture change must update the relevant repo-truth f
 ## S10-CI-OPT-02 Risk-Based Local-First CI Optimization (current implementation target)
 
 Karl authorized the exact corrected frozen 13-path FAST/Risk 2 package after deterministic readiness. PR #228 / S10-CC-CMD-01 is MERGED at e3e8673024c6921e794df8bf0aa4fcea3825dab1; PR #229 is an earlier merged ancestor. The base-owned classifier prefers eligible Tier 2 research/app/noncritical deployment without automatic Risk3/RUNTIME escalation, requires Tier 3 for actual sensitive impact and keeps routing OFF. Initial bootstrap runs all nine legacy legs plus classify/ci-final-gate. No product source, runtime, config, dependency, credential, trading or activation authority changes. main was observed unprotected; required-status enforcement and routing activation remain Karl-only separately gated post-merge actions. Merge authorized: NO. Exact final validation and posted evidence belong in the PR body; stable record: docs/status_entries/S10-CI-OPT-02.md. S10-CC-PROD-01 is separately gated.
+
+
+## S10-CC-PROD-01 Private Production Control Center (current repository implementation target)
+
+This current entry supersedes older Control Center/CI in-review target descriptions:
+S10-CC-CMD-01 is merged via PR #228; S10-CI-OPT-02 is merged via PR #230 at
+`10320087b9c16672d42fd0eaa50ded7e349b7a3a` (head
+`f004c545e0ddd1d483c16d17045b880926d0c59e`). Karl authorized exact corrected
+S10-CC-PROD-01 implementation after deterministic certificate-free RUNTIME readiness.
+The contract is `docs/control_center_production_contract.md`; source is the existing
+`src/operator_cockpit.py` with opt-in `frontend_dist`/`--frontend-dist`; the dormant
+unit is `tools/deployment/systemd/polymarket-control-center.service`; existing test
+families are `tests/test_operator_cockpit.py` and `tests/deployment/test_runtime_baseline.py`.
+Operator guidance is in `tools/deployment/README.md`; frozen package and stable record
+are `docs/wp_specs/S10-CC-PROD-01/` and `docs/status_entries/S10-CC-PROD-01.md`.
+Exactly thirteen required/allowed paths. Existing 31 APIs/commands/SSE, SHA release,
+base bootstrap, SSH-only UFW, slices and backup/recovery are preserved. Static assets
+are built from the exact verified SHA and staged outside immutable tracked releases.
+No host/service/Tailscale activation, GitHub settings, dependencies/locks/workflows,
+credentials, accounts, trading, orders or capital. Post-merge private host proof is
+Karl-only operator work; S10-ALPHA-03 remains separate. Merge authorized: NO.
+
+Scope Amendment 01: Side18 approved exactly two compatibility-only edits in the
+existing stream/command test modules: obsolete CockpitConfig field-order assertions
+now include the appended frontend_dist. Exact scope is 13; architecture, behavior
+and runtime authority remain unchanged.

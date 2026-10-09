@@ -1,0 +1,35 @@
+[Unit]
+Description=Private read-only Polymarket Control Center
+After=local-fs.target
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=polymarket
+Group=polymarket
+Slice=polymarket-research.slice
+WorkingDirectory=/opt/polymarket/current
+EnvironmentFile=/etc/polymarket/deployment/control-center.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/polymarket/current/.venv/bin/python -m src.operator_cockpit --market-truth-store ${PM_CC_MARKET_TRUTH_STORE} --experiment-registry ${PM_CC_EXPERIMENT_REGISTRY} --frontend-dist ${PM_CC_FRONTEND_DIST} --port 8000 --enable-streaming
+Restart=on-failure
+RestartSec=5s
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=polymarket-research.target

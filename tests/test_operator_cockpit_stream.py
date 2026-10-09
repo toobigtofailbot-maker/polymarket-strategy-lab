@@ -288,7 +288,7 @@ def test_s01_streaming_defaults_off_and_requires_explicit_enable(monkeypatch, tm
     assert names == [
         "market_truth_path", "experiment_registry_path", "paper_store_path", "gateway_store_path",
         "strategy_lifecycle_path", "hermes_strategy_manager_path", "alpha_factory_registry_path",
-        "alpha_discovery_registry_path", "streaming_enabled", "command_auth",
+        "alpha_discovery_registry_path", "streaming_enabled", "command_auth", "frontend_dist",
     ]
     assert cockpit.CockpitConfig(None, None).streaming_enabled is False
     legacy = cockpit.CockpitConfig(None, None, None, None, None, None, None, None)

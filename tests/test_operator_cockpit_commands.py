@@ -487,7 +487,7 @@ def test_c01_commands_default_off_and_tty_secret_bootstrap_is_closed(
 ) -> None:
     # Default-off configuration and routes.
     names = [field.name for field in dataclasses.fields(cockpit.CockpitConfig)]
-    assert names[-2:] == ["streaming_enabled", "command_auth"]
+    assert names[-3:] == ["streaming_enabled", "command_auth", "frontend_dist"]
     assert cockpit.CockpitConfig(None, None).command_auth is None
     legacy = cockpit.CockpitConfig(None, None, None, None, lab.path, None, None, None, False)
     assert legacy.command_auth is None

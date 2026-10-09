@@ -1,0 +1,546 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CC-PROD-01",
+    "title": "Private Production Control Center — Read-Only Serving",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PRIVATE_READ_ONLY_CONTROL_CENTER_SERVING",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 230,
+      "head_sha": "f004c545e0ddd1d483c16d17045b880926d0c59e",
+      "merge_sha": "10320087b9c16672d42fd0eaa50ded7e349b7a3a"
+    },
+    "suggested_branch": "codex/s10-cc-prod-01-private-read-only-serving",
+    "objective": "Ship a default-off, one-process loopback production React/FastAPI Control Center and disabled dedicated nonroot systemd template, reusing existing exact-SHA release and SSH-only host substrate with private tailnet activation separately authorized; no extra commands, auth, product access or capital.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/operator_cockpit.py",
+      "tests/test_operator_cockpit.py",
+      "tools/deployment/systemd/polymarket-control-center.service",
+      "tests/deployment/test_runtime_baseline.py",
+      "tools/deployment/README.md",
+      "docs/control_center_production_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-PROD-01.md",
+      "docs/wp_specs/S10-CC-PROD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-PROD-01/wp_spec.json",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_operator_cockpit_commands.py"
+    ],
+    "allowed_changed_files": [
+      "src/operator_cockpit.py",
+      "tests/test_operator_cockpit.py",
+      "tools/deployment/systemd/polymarket-control-center.service",
+      "tests/deployment/test_runtime_baseline.py",
+      "tools/deployment/README.md",
+      "docs/control_center_production_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CC-PROD-01.md",
+      "docs/wp_specs/S10-CC-PROD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-PROD-01/wp_spec.json",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_operator_cockpit_commands.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/strategy_lifecycle/",
+      "src/risk_engine/",
+      "src/exploratory_gate_c/",
+      "src/execution_feasibility/",
+      "src/research_runtime/",
+      "src/data_layer/",
+      "tools/hermes/",
+      "tools/wp/",
+      "tools/git/",
+      "tools/security/"
+    ],
+    "max_changed_files": 13,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "src/operator_cockpit.py",
+      "tests/test_operator_cockpit.py",
+      "tests/deployment/test_runtime_baseline.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_operator_cockpit_stream.py",
+      "tests/test_operator_cockpit_commands.py"
+    ],
+    "rollback_surface": "Revert S10-CC-PROD-01 to remove optional SPA route serving and its disabled unit template. Existing 31 APIs, local cockpit startup, immutable tracked releases, base bootstrap, SSH-only firewall and canonical stores remain unchanged. No host or tailnet rollout, persistent product/economic state migration, account access, orders or capital.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One additive opt-in static SPA presentation and one dormant systemd unit; established API and command behavior stays identical.",
+    "items": [
+      {
+        "surface": "CockpitConfig / --frontend-dist",
+        "before": "create_app exposes only 31 existing /api paths; frontend runs via local dev proxy",
+        "after": "Only when explicit frontend_dist is valid, backend serves known SPA routes and Vite /assets from a trusted external directory; no default route added",
+        "change_authorized": true,
+        "compatibility_requirement": "All existing constructor positions, CLI flags, loopback binding, thirty-one API routes, error shapes, SSE and TTY-only command bootstrap remain unchanged",
+        "authority": "READ_ONLY_LOCAL_PRESENTATION_ONLY"
+      },
+      {
+        "surface": "systemd polymarket-control-center.service",
+        "before": "no dedicated production cockpit unit",
+        "after": "dormant nonroot unit template in existing research slice, requiring operator-owned nonsecret config; host install/enable remains separate",
+        "change_authorized": true,
+        "compatibility_requirement": "No base bootstrap modification, no automatic enable/start, no public listener, no credential or capital authority",
+        "authority": "REPOSITORY_TEMPLATE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Only nine bounded production serving, non-authority, deployment and validation semantics.",
+    "items": [
+      {
+        "path": "cockpit.static_serving",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "SPA only on explicit validated frontend-dist; preserve 31 /api endpoints and loopback bind",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "legacy app exposes no HTML; opt-in known SPA and static assets GET/HEAD work; API unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.static_safety",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "strict index/assets-only serving rejects symlink, traversal, dotfiles and source disclosure; no HTML fallback under /api or missing asset",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "negative TestClient returns rejection and never serves secrets/source",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cockpit.authority",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "TTY-only commands remain default OFF; no new auth, cookie, account or live authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "31 route set, default disabled status and no unauthorized mutation",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "host.unit",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "unit is optional dormant nonroot/read-only research-slice loopback service, not installed/started by main bootstrap",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "unit template static checks and Linux systemd-analyze when present",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "host.baseline",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "existing SHA release, SSH-only UFW and base-only bootstrap contracts are unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "existing deployment guard suite and diff proof pass",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "assets.release_binding",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "static dist is built from exact verified release SHA and staged outside immutable tracked release, with operator digest evidence",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "contract and tests prove no generated assets under tracked release; mismatch stops host activation",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ingress.private_access",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "no code/host Tailnet/Funnel change in implementation; private Serve and narrow grant checks after Karl authorization",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "no host/network mutation; documented unauthorized access negative check before activation",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "testing.reuse",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "focus integration only on unique static/unit failures and reuse preexisting stream/command/architecture suites",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused tests, local authoritative suite and exact-head selected hosted gate pass",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.scope",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "the only changed files are exactly thirteen paths in spec with no protected or economic edits",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "strict --check-diff and diff-scope summary equality",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "safe local/static response and sanitized offline evidence only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No canonical record identifier or cryptographic identity derivation is introduced. Existing SHA-bound release identity is reused.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME deterministic readiness and implementation authorization stay separate from operator host activation and merge.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "frozen predecessor/current main and deterministic RUNTIME gate pass with exactly thirteen paths",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl separately approves exact frozen package for Codex implementation after actual IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Codex changes only exact thirteen paths and supplies local/hosted same-head evidence without host activation",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed package-guard failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Endpoints, systemd and negative boundary cases are exercised in runtime tests; no new persisted record identity examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Thirteen nonduplicative evidence points bind static serving safety, original deployment contracts, local suite, hosted gate and posted review.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_prod01_static_spa_known_routes_and_assets",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py",
+        "expected_result": "valid opt-in dist serves each known SPA path, index no-store and hashed build JS/CSS with MIME/headers; all 31 API routes unchanged"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_prod01_rejects_static_tree_escape_and_missing_assets",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py",
+        "expected_result": "reject missing/symlinked index or assets, dotfiles, traversal and unknown routes, and never fallback under /api or missing asset"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_prod01_default_off_api_and_command_compatibility",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py tests/test_operator_cockpit_commands.py",
+        "expected_result": "legacy default CockpitConfig API-only remains unchanged, command status disabled, TTY-only protected command posture and loopback bind retained"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_prod01_systemd_unit_is_disabled_nonroot_readonly_loopback",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "new unit template never automatically installed or enabled, requires explicit store/dist inputs and lacks command activation or public bind"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_prod01_base_bootstrap_and_ssh_only_baseline_unchanged",
+        "command": "python -m pytest -q -p no:cacheprovider tests/deployment/test_runtime_baseline.py",
+        "expected_result": "existing base-only package setup, SSH-only UFW, original release verification and critical probe/telemetry protections remain unchanged"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "frontend bundle and release binding checks",
+        "command": "npm --prefix src/operator_cockpit_frontend ci && npm --prefix src/operator_cockpit_frontend run typecheck && npm --prefix src/operator_cockpit_frontend run build",
+        "expected_result": "locked exact frontend build creates only external staged assets; docs require digest, matching release SHA and no tracked-release mutation before host activation"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "validation",
+        "test": "private ingress and authority boundary",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py tests/deployment/test_runtime_baseline.py tests/test_architecture_boundaries.py",
+        "expected_result": "unit and operator contract preserve tailnet-only separately authorized Serve, no Funnel, no new UFW port, no credentials or trading authority"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "reused command and SSE regressions",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_commands.py",
+        "expected_result": "established SSE disconnect and protected command receipt/session behavior remain passing unchanged"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "validation",
+        "test": "exact-head deterministic readiness and changed-set proof",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-PROD-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-PROD-01/wp_spec.json --repo-root . --check-diff --base 10320087b9c16672d42fd0eaa50ded7e349b7a3a --head HEAD",
+        "expected_result": "RUNTIME IMPLEMENTATION_READY and exact thirteen allowed/required changed paths, no added source or deployment family"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "available security and generated artifact guards",
+        "command": "python tools/security/run_available_security_checks.py",
+        "expected_result": "actual applicable checks report honest PASS, missing tools SKIPPED_NOT_AVAILABLE, no security waiver or leaked asset; artifact guard PASS"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "authoritative final full local suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one authoritative exact stable-head full suite passes, with actual skip/failure counts and exit recorded; no reused old head evidence"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "hosted_ci",
+        "test": "exact-head base-classified final hosted CI",
+        "command": "gh pr checks --watch",
+        "expected_result": "new CI-OPT-02 plan runs on exact stable non-draft head, classifier tier is reported truthfully and ci-final-gate PASS; no manually forced cheap tier"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pr_evidence",
+        "test": "posted PR body re-fetch and strict evidence guard",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --pr-body posted-pr-body.md --expected-head HEAD --require-ready-yes --forbid-inline-test-counts --forbid-placeholder-evidence --require-posted-evidence-note --require-guard-result",
+        "expected_result": "posted actual evidence body re-fetched and strict guard exit zero; claim no host activation, no credentials/live, and Karl-only merge authority"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-03",
+    "next_title": "Bounded Alpha research scheduling and campaigns (parallel; separately gated)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-PROD-01",
+    "forbidden_in_this_wp": [
+      "VPS login, install, service enable/start or reboot",
+      "Tailscale login/ACL/grant/Funnel/Serve configuration or tailnet exposure",
+      "private production deployment or capital/live runtime activation",
+      "new browser mutation command classes, cookies or browser credentials",
+      "base bootstrap, immutable release verifier or SSH-only firewall changes",
+      "dependencies, package locks, workflows or GitHub settings changes",
+      "Hermes provider calls, alpha scheduler, paper execution, account reads or orders",
+      "Gate C permit consumption, wallet signing or strategy economic authorization",
+      "merge"
+    ]
+  }
+}
