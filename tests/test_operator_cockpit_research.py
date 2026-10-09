@@ -597,7 +597,7 @@ def test_r12_research_routes_are_get_only(world: World) -> None:
         for route in app.routes
         if route.path.startswith("/api/")
     }
-    assert len(domain) == 27
+    assert len(domain) == 31  # S10-CC-CMD-01 adds exactly the four command routes
     for route in RESEARCH_ROUTES + ALPHA_ROUTES:
         assert domain[route] == {"GET"}
     targets = (
@@ -743,7 +743,16 @@ def test_frontend_research_surface_is_read_only_and_bounded() -> None:
     controller = app_source[app_source.index("function StreamRefreshController("):]
     controller = controller[: controller.index("\n}\n")]
     assert app_source.count("EventSource") == controller.count("EventSource")
-    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", combined)
+    # S10-CC-CMD-01: the one POST is the central command transport in api.ts; app.tsx has none.
+    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", app_source)
+    assert re.findall(r"\b(POST|PUT|PATCH|DELETE)\b", api_source) == ["POST"]
+    # Research/Hermes/Alpha views stay mutation-free: the only command reference in the research
+    # vertical is the single Strategy detail governance-control mount.
+    research = app_source[app_source.index("S10-CC-RESEARCH-01 research views"):
+                          app_source.index("S10-CC-OPS-01 operations view")]
+    assert research.count("Command") == research.count("<StrategyCommands item={item} />") == 1
+    hermes = research[research.index("function HermesDetailPanel("):]
+    assert "Command" not in hermes and "command" not in hermes
     for label in (">Run<", ">Reassess<", ">Approve<", ">Apply<", ">Allocate<", ">Pause<",
                   ">Scale<", ">Trade<"):
         assert label not in app_source, label
@@ -1033,7 +1042,12 @@ def test_a03_research_module_alpha_boundary() -> None:
     cockpit_source = (ROOT / "src" / "operator_cockpit.py").read_text(encoding="utf-8")
     for route in RESEARCH_ROUTES + ALPHA_ROUTES:
         assert f'@app.get("{route}")' in cockpit_source
-    assert not re.search(r"@app\.(post|put|patch|delete|websocket|api_route)\(", cockpit_source)
+    # S10-CC-CMD-01: the only non-GET decorators are the three exact command POST routes.
+    assert re.findall(r"@app\.(post|put|patch|delete|websocket|api_route)\(([^)]*)\)", cockpit_source) == [
+        ("post", '"/api/commands/session"'),
+        ("post", '"/api/commands/session/revoke"'),
+        ("post", '"/api/commands/execute"'),
+    ]
     # The cockpit reaches Alpha state only through the research projection module.
     cockpit_imports = {
         node.module or "" for node in ast.walk(ast.parse(cockpit_source)) if isinstance(node, ast.ImportFrom)
@@ -1480,7 +1494,7 @@ def test_a28_store_bytes_unchanged(tmp_path: Path) -> None:
 def test_a29_a30_alpha_routes_get_only_total_24(alpha_world: AlphaWorld) -> None:
     app = alpha_world.app()
     domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
-    assert len(domain) == 27
+    assert len(domain) == 31  # S10-CC-CMD-01 adds exactly the four command routes
     for route in ALPHA_ROUTES:
         assert domain[route] == {"GET"}
     for target in _alpha_targets(alpha_world):
@@ -1584,7 +1598,13 @@ def test_a35_to_a39_frontend_alpha_surface() -> None:
     controller = app_source[app_source.index("function StreamRefreshController("):]
     controller = controller[: controller.index("\n}\n")]
     assert app_source.count("EventSource") == controller.count("EventSource")
-    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", combined)
+    # S10-CC-CMD-01: the one POST is the central command transport in api.ts; app.tsx has none,
+    # and the Alpha workspace references no command surface at all.
+    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", app_source)
+    assert re.findall(r"\b(POST|PUT|PATCH|DELETE)\b", api_source) == ["POST"]
+    alpha = app_source[app_source.index("S10-CC-RESEARCH-02 Alpha workspace"):
+                       app_source.index("S10-CC-OPS-01 operations view")]
+    assert "Command" not in alpha and "command" not in alpha
     for label in (">Run<", ">Approve<", ">Qualify<", ">Promote<", ">Trade<", ">Reopen<", ">Allocate<"):
         assert label not in app_source, label
     # A38: Storybook intercepts every /api/alpha surface.

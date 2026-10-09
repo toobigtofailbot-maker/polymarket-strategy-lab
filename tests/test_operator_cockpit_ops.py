@@ -23,6 +23,7 @@ from src.strategy_lifecycle import (
     RISK_BANDS,
     StrategyLifecycleSnapshot,
     append_strategy_lifecycle_record,
+    build_portfolio_authority_policy,
     build_portfolio_policy_receipt,
     build_strategy_risk_allocation,
     build_strategy_restriction_receipt,
@@ -44,7 +45,7 @@ UNAVAILABLE = (503, {"error": {"code": "SOURCE_UNAVAILABLE"}})
 INVALID = (400, {"error": {"code": "INVALID_INPUT"}})
 TOP_LEVEL_KEYS = {
     "read_only", "evaluated_at_ns", "lifecycle_store_head_entry_hash", "active_policy",
-    "capacity", "strategy_reservations", "non_authority",
+    "policies", "capacity", "strategy_reservations", "non_authority",
 }
 POLICY_KEYS = {
     "policy_id", "predecessor_policy_id", "policy_label", "venue_scope", "account_scope_ref",
@@ -328,6 +329,40 @@ def test_o05_no_active_policy_valid_state(world, fixed_clock, tmp_path) -> None:
     assert empty_body["lifecycle_store_head_entry_hash"] is None
 
 
+def test_o19_policies_catalogue_is_complete_verified_and_append_ordered(world, fixed_clock) -> None:
+    """S10-CC-CMD-01: ``policies`` is every verified policy in append order, read only."""
+    successor = build_portfolio_authority_policy(
+        predecessor_policy_id=world.policy.policy_id, policy_label="Successor envelope",
+        account_scope_ref="account:public-scope-1", effective_from_ns=500, expires_at_ns=9_000,
+        allowed_order_styles=("PASSIVE_MAKER",), created_time_ns=400, **LIMITS,
+    )
+    _append(world, successor)
+    before = _digest(world.lifecycle)
+    body = _portfolio(_app(world))
+    snapshot = _snapshot(world.lifecycle)
+    assert [item["policy_id"] for item in body["policies"]] == [
+        policy.policy_id for policy in snapshot.policies
+    ] == [world.policy.policy_id, successor.policy_id]
+    for item, policy in zip(body["policies"], snapshot.policies):
+        assert set(item) == POLICY_KEYS and item["limits"] == {
+            name: getattr(policy, name) for name in ops.POLICY_LIMIT_FIELDS
+        }
+        assert item["policy_label"] == policy.policy_label
+        assert item["effective_from_ns"] == policy.effective_from_ns
+        assert item["expires_at_ns"] == policy.expires_at_ns
+    # The active policy and capacity semantics are unchanged by the catalogue.
+    assert body["active_policy"] == body["policies"][0]
+    assert body["capacity"]["policy_id"] == world.policy.policy_id
+    assert _digest(world.lifecycle) == before
+    # A revoked policy stays in the catalogue while nothing is active.
+    revoked = _portfolio(_app(_revoked_world(world)))
+    assert revoked["active_policy"] is None
+    assert [item["policy_id"] for item in revoked["policies"]] == [
+        world.policy.policy_id, successor.policy_id,
+    ]
+    assert "policies" in _module_code() and "_policy(policy) for policy in snapshot.policies" in _module_code()
+
+
 def test_o06_to_o08_reservations_and_canonical_reasons(world, fixed_clock) -> None:
     _append(world, _health(world.root, "NEW", "WATCH", t=140))
     _append(world, build_strategy_restriction_receipt(
@@ -450,7 +485,7 @@ def test_o11_store_bytes_unchanged(world, fixed_clock) -> None:
 def test_o12_exact_route_method_query_and_total(world, fixed_clock) -> None:
     app = _app(world)
     domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
-    assert len(domain) == 27
+    assert len(domain) == 31  # S10-CC-CMD-01 adds exactly the four command routes
     assert domain[ROUTE] == {"GET"}
     assert [path for path in domain if path.startswith("/api/ops")] == [ROUTE]
     for method in ("POST", "PUT", "PATCH", "DELETE"):
@@ -488,7 +523,12 @@ def test_o13_module_boundary() -> None:
     assert not calls & {"open", "connect", "run", "Popen", "urlopen", "append", "initialize"}
     cockpit_source = COCKPIT.read_text(encoding="utf-8")
     assert "from src import operator_cockpit_ops as ops" in cockpit_source
-    assert not re.search(r"@app\.(post|put|patch|delete|websocket|api_route)\(", cockpit_source)
+    # S10-CC-CMD-01: the only non-GET decorators are the three exact command POST routes.
+    assert re.findall(r"@app\.(post|put|patch|delete|websocket|api_route)\(([^)]*)\)", cockpit_source) == [
+        ("post", '"/api/commands/session"'),
+        ("post", '"/api/commands/session/revoke"'),
+        ("post", '"/api/commands/execute"'),
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -630,8 +670,15 @@ def test_o17_no_mutation_or_realtime_primitives() -> None:
     controller = app_source[app_source.index("function StreamRefreshController("):]
     controller = controller[: controller.index("\n}\n")]
     assert app_source.count("EventSource") == controller.count("EventSource")
-    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", app_source + api_source)
-    assert api_source.count('method: "GET"') == 1
+    # S10-CC-CMD-01: the one POST is the central command transport in api.ts; app.tsx has none.
+    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", app_source)
+    assert re.findall(r"\b(POST|PUT|PATCH|DELETE)\b", api_source) == ["POST"]
+    assert api_source.count('method: "GET"') == 1 and api_source.count('method: "POST"') == 1
+    # The OPS view only mounts the approved policy-command control; it owns no command logic.
+    section = _ops_frontend_section()
+    assert section.count("Command") == section.count("<PolicyCommands portfolio={data} />") == 1
+    for owned in ("executeCommand", "newCommandRequest", "useCommandController", "fetch("):
+        assert owned not in section, owned
     for label in (">Run<", ">Approve<", ">Apply<", ">Allocate<", ">Pause<", ">Arm<", ">Halt<",
                   ">Cancel<", ">Trade<", ">Reconcile<", ">Revoke<"):
         assert label not in app_source, label

@@ -1397,3 +1397,142 @@ def test_canonical_public_polymarket_event_ref_is_accepted_exactly() -> None:
         "strategyversion:sha256:" + HEX, "researchepisode:sha256:" + HEX, "wallet:0x" + "b" * 40,
     ):
         assert M.opaque_ref(safe) == safe
+
+
+# ---------------------------------------------------------------------------
+# S10-CC-CMD-01: expected-head preview and conditional append.
+# ---------------------------------------------------------------------------
+
+
+def _digest(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_conditional_store_statuses_are_closed_and_legacy_append_is_unchanged(store: Path) -> None:
+    import inspect
+
+    assert S.CONDITIONAL_PREVIEW_STATUSES == ("PREVIEW_READY", "IDEMPOTENT_REPLAY", "STALE_HEAD", "REJECTED")
+    assert S.CONDITIONAL_APPEND_STATUSES == ("COMMITTED", "IDEMPOTENT_REPLAY", "STALE_HEAD", "REJECTED")
+    assert list(inspect.signature(append_strategy_lifecycle_record).parameters) == ["path", "record"]
+    assert S.STORE_STATUSES == (
+        "STORE_INITIALIZED", "STORE_ALREADY_INITIALIZED", "STORE_APPEND_COMMITTED",
+        "STORE_APPEND_IDEMPOTENT", "STORE_LOADED_VERIFIED", "STORE_REJECTED",
+    )
+    # The legacy public append keeps its exact-record idempotency and has no head argument.
+    fam = family()
+    assert append_strategy_lifecycle_record(store, fam).status == "STORE_APPEND_COMMITTED"
+    assert append_strategy_lifecycle_record(store, fam).status == "STORE_APPEND_IDEMPOTENT"
+    assert snap(store).total_rows == 1
+    source = (PACKAGE / "store.py").read_text(encoding="utf-8")
+    legacy = source[source.index("def append_strategy_lifecycle_record("):source.index("# S10-CC-CMD-01:")]
+    assert "expected" not in legacy and "_resolve(" not in legacy and "_encode(" not in legacy
+    # No schema, trigger, application id or migration change.
+    assert S.STORE_SCHEMA_VERSION == 1 and S.STORE_USER_VERSION == 1 and S.STORE_APPLICATION_ID == 0x53544C31
+    assert len(S._EXPECTED_OBJECTS) == 6
+
+
+def test_conditional_preview_is_read_only_and_resolves_duplicate_before_head(store: Path) -> None:
+    fam, root, pol = seeded(store)
+    head = snap(store).store_head_entry_hash
+    record = restriction(root, key="pause.preview")
+    before = _digest(store)
+    preview = S.preview_strategy_lifecycle_record(store, record, head)
+    assert preview.status == "PREVIEW_READY" and preview.record_id == record.record_id
+    assert preview.store_head_entry_hash == head
+    assert preview.before_snapshot.restrictions_of(root.strategy_version_id) == ()
+    assert preview.candidate_snapshot.restrictions_of(root.strategy_version_id) == (record,)
+    assert preview.candidate_snapshot.total_rows == preview.before_snapshot.total_rows + 1
+    assert _digest(store) == before
+    # Stale head: no write, no snapshots.
+    stale = S.preview_strategy_lifecycle_record(store, record, "0" * 64)
+    assert (stale.status, stale.before_snapshot, stale.candidate_snapshot) == ("STALE_HEAD", None, None)
+    assert S.preview_strategy_lifecycle_record(store, record, None).status == "STALE_HEAD"
+    # After commit, the exact record is a replay before any head comparison, even with a stale head.
+    committed = S.conditional_append_strategy_lifecycle_record(store, record, head)
+    assert committed.status == "COMMITTED"
+    assert committed.store_head_entry_hash == preview.candidate_snapshot.store_head_entry_hash
+    ok(store, health(root, "NEW", "WATCH", t=70))
+    for expected in (head, "0" * 64, None):
+        replay = S.preview_strategy_lifecycle_record(store, record, expected)
+        assert replay.status == "IDEMPOTENT_REPLAY" and replay.record_id == record.record_id
+        assert replay.store_head_entry_hash == snap(store).store_head_entry_hash
+        assert replay.before_snapshot is None and replay.candidate_snapshot is None
+    # A candidate the replay rejects is REJECTED with a closed code and no write.
+    after = _digest(store)
+    invalid = restriction(root, key="pause.preview", action="APPLY", t=80)
+    rejected = S.preview_strategy_lifecycle_record(store, invalid, snap(store).store_head_entry_hash)
+    assert rejected.status == "REJECTED" and rejected.error_codes == ("RESTRICTION_TRANSITION_INVALID",)
+    assert _digest(store) == after
+
+
+def test_conditional_append_commits_once_and_rejects_stale_head_without_write(store: Path) -> None:
+    fam, root, pol = seeded(store)
+    head = snap(store).store_head_entry_hash
+    first = restriction(root, key="pause.a")
+    result = S.conditional_append_strategy_lifecycle_record(store, first, head)
+    assert result.status == "COMMITTED" and result.record_id == first.record_id and result.error_codes == ()
+    current = snap(store)
+    assert result.store_head_entry_hash == current.store_head_entry_hash != head
+    assert current.total_rows == 5
+    # Hash chain binds the new row to the exact expected predecessor.
+    last = rows(store)[-1]
+    assert last[5] == head and last[6] == S.entry_hash(4, last[1], last[2], last[4], head)
+    # A different new record with the old head is STALE_HEAD with zero bytes written.
+    before = _digest(store)
+    second = restriction(root, key="pause.b", t=61)
+    stale = S.conditional_append_strategy_lifecycle_record(store, second, head)
+    assert (stale.status, stale.record_id, stale.store_head_entry_hash) == ("STALE_HEAD", None, None)
+    assert _digest(store) == before
+    # Domain rejection inside the transaction also writes nothing.
+    duplicate_key = restriction(root, key="pause.a", t=62)
+    rejected = S.conditional_append_strategy_lifecycle_record(store, duplicate_key, current.store_head_entry_hash)
+    assert rejected.status == "REJECTED" and rejected.error_codes == ("RESTRICTION_TRANSITION_INVALID",)
+    assert _digest(store) == before
+    # The empty store's expected head is null.
+    empty = store.parent / "empty.sqlite3"
+    assert initialize_strategy_lifecycle_store(empty).is_valid
+    assert S.conditional_append_strategy_lifecycle_record(empty, family(), "0" * 64).status == "STALE_HEAD"
+    assert S.conditional_append_strategy_lifecycle_record(empty, family(), None).status == "COMMITTED"
+
+
+def test_conditional_append_exact_retry_is_idempotent_after_head_advance(store: Path) -> None:
+    fam, root, pol = seeded(store)
+    head = snap(store).store_head_entry_hash
+    record = health(root, "NEW", "QUARANTINED", t=70)
+    assert S.conditional_append_strategy_lifecycle_record(store, record, head).status == "COMMITTED"
+    ok(store, restriction(root, key="later.pause", t=80))
+    advanced = snap(store)
+    before = _digest(store)
+    for expected in (head, None, "f" * 64, advanced.store_head_entry_hash):
+        retry = S.conditional_append_strategy_lifecycle_record(store, record, expected)
+        assert retry.status == "IDEMPOTENT_REPLAY" and retry.record_id == record.record_id
+        assert retry.store_head_entry_hash == advanced.store_head_entry_hash
+    assert _digest(store) == before and snap(store).total_rows == advanced.total_rows
+
+
+def test_conditional_append_identity_conflict_and_invalid_inputs_reject(store: Path, tmp_path: Path) -> None:
+    fam, root, pol = seeded(store)
+    head = snap(store).store_head_entry_hash
+    record = restriction(root, key="pause.x")
+    for bad_head, code in (("A" * 64, "FIELD_VALUE_INVALID"), ("a" * 63, "FIELD_VALUE_INVALID"),
+                           (1, "FIELD_TYPE_INVALID"), (b"a" * 64, "FIELD_TYPE_INVALID")):
+        for fn in (S.preview_strategy_lifecycle_record, S.conditional_append_strategy_lifecycle_record):
+            result = fn(store, record, bad_head)
+            assert (result.status, result.error_codes) == ("REJECTED", (code,)), (fn.__name__, bad_head)
+    for fn in (S.preview_strategy_lifecycle_record, S.conditional_append_strategy_lifecycle_record):
+        assert fn(tmp_path / "missing.sqlite3", record, head).error_codes == ("FIELD_VALUE_INVALID",)
+        assert fn(store, object(), head).error_codes == ("FIELD_TYPE_INVALID",)  # type: ignore[arg-type]
+    # Same record ID with a different stored payload is an identity conflict, never a replay.
+    assert S.conditional_append_strategy_lifecycle_record(store, record, head).status == "COMMITTED"
+    loaded = S._Loaded(
+        {record.record_id: "{}"}, P._LifecycleState(), None, 0, 2,
+    )
+    with pytest.raises(StrategyLifecycleError) as caught:
+        S._resolve(loaded, record, S._encode(record), None)
+    assert caught.value.code == "IDENTITY_CONFLICT"
+    # Tampered stores reject in both helpers without detail.
+    tampered = tmp_path / "tampered.sqlite3"
+    tampered.write_bytes(store.read_bytes().replace(b"Global envelope", b"Global envelopX"))
+    for fn in (S.preview_strategy_lifecycle_record, S.conditional_append_strategy_lifecycle_record):
+        result = fn(tampered, restriction(root, key="pause.y"), head)
+        assert result.status == "REJECTED" and result.error_codes == ("INTEGRITY_TAMPER",)

@@ -164,7 +164,44 @@ S10-CC-CMD-01 and S10-CC-PROD-01 are separately gated. STREAM-01 merged via PR #
 (head `f344979f8f620519175defe627a5829b569b665d`, merge
 `a78809ddb62cf143ac85ee297e87f961aa9b61f9`); no successor merge is authorized.
 
-## S10-GOV-COPY-01 Unchanged Copy-Origin Exact-Scope Policy (current governance target, open branch)
+## S10-CC-CMD-01 Protected Operator Commands (current Control Center implementation target, open branch)
+
+PROTECTED, risk 4, exact 20-path L scope, readiness `IMPLEMENTATION_READY` on the independent
+certificate (`docs/wp_specs/S10-CC-CMD-01/draftability_certificate.json`, sha256
+`92e9aeab10eacd31d30b4fd856bb9c2845c606905cb692c7e2fb68322f7d7dca`; reviewer-owned). Historical certified base
+`a78809ddb62cf143ac85ee297e87f961aa9b61f9` (PR #227 / S10-CC-STREAM-01 merged: YES, head
+`f344979f8f620519175defe627a5829b569b665d`). Implementation was explicitly authorized by Side17 for the
+exact certified bytes and scope. Default-off protected lifecycle-governance commands: exactly five
+canonical StrategyLifecycle commands (`STRATEGY_PAUSE`, `STRATEGY_RESUME`, `STRATEGY_QUARANTINE`,
+`POLICY_ACTIVATE`, `POLICY_REVOKE`), each one existing canonical record built through the public builders
+by the new module `src/operator_cockpit_commands.py`; the lifecycle record is the durable receipt and no
+command database exists. Commands are default-off (`CockpitConfig.command_auth` appended, default `None`;
+`--enable-commands --operator-id <id>` on a TTY only) with ephemeral operator auth only: a `getpass`
+command secret kept as a SHA-256 digest, at most one in-memory 900 s bearer session stored as a digest,
+a five-failure process lock, and no cookie, browser storage or argv/environment/file secret. Loopback
+CORS allows exactly `GET`/`POST` and `Content-Type`/`Authorization`. `src/operator_cockpit.py` adds
+`GET /api/commands/status`, `POST /api/commands/session`, `POST /api/commands/session/revoke` and
+`POST /api/commands/execute` (31 `/api` routes in total). `src/strategy_lifecycle/store.py` adds the
+read-only `preview_strategy_lifecycle_record` and the `BEGIN IMMEDIATE`
+`conditional_append_strategy_lifecycle_record`, which resolve an exact lost-response retry as
+`IDEMPOTENT_REPLAY` before the expected-head comparison and write nothing on a stale head (public append
+and schema unchanged). The read-only `/api/ops/portfolio` projection adds the verified `policies`
+catalogue. The frontend keeps the bearer token in React memory only, binds every confirmation to a fresh
+`/api/ops/portfolio` head, requires the exact confirmation phrase, never auto-retries a mutation and
+re-reads the strategies/ops families over HTTP after every outcome; styles and Storybook are unchanged.
+Deferred command classes (Side18 decision before S10-CC-PROD-01; no S10-CC-CMD-02 authorized): paper
+pause/resume/kill, gateway/runtime disable, incident acknowledgement and Hermes reassessment. No product
+network, account, order, Gate-C, LIVE-ORCH, paper, execution, Hermes, dependency/workflow, deployment
+or live authority; PROD/private deployment is not complete; live DISABLED; capital/orders USD 0 / 0.
+Contract: `docs/control_center_command_contract.md`; package: `docs/wp_specs/S10-CC-CMD-01/`; stable
+record: `docs/status_entries/S10-CC-CMD-01.md`. Successor S10-CC-PROD-01 is separately gated; merge NOT
+AUTHORIZED (Karl only).
+
+Continuation baseline: `101c7f44604553cf2f8d2166725b266435ab4047` (PR #229 merged).
+Side18 owns continuation review; the three certified artifacts remain unchanged.
+New-head readiness, independent review and validation belong in PR #228.
+
+## S10-GOV-COPY-01 Unchanged Copy-Origin Exact-Scope Policy (merged governance predecessor: PR #229)
 
 FAST / Risk 1 / M, exact nine paths, frozen base `a78809ddb62cf143ac85ee297e87f961aa9b61f9`.
 PR #227 / S10-CC-STREAM-01 is merged (head `f344979f8f620519175defe627a5829b569b665d`).
@@ -177,10 +214,12 @@ historical WP159 classification; historical WP159 artifacts are untouched. User 
 `docs/ai/codex/DIFF_SCOPE_SUMMARY_HELPER.md`; regressions:
 `tests/tools/git/test_diff_scope_summary.py`; package: `docs/wp_specs/S10-GOV-COPY-01/`;
 stable record: `docs/status_entries/S10-GOV-COPY-01.md`.
-PR #228 / CMD-01 remains separately blocked at `807449e65f6dd1ccacd286e4091c8a3db21b20ef`;
+GOV-COPY left PR #228 / CMD-01 separately blocked at `807449e65f6dd1ccacd286e4091c8a3db21b20ef`;
 this WP neither changes its source/metadata nor authorizes its baseline migration or recertification.
-After governance merge, Side18 must prepare that separately authorized PROTECTED continuation;
-old-head CI is not new-head evidence. No runtime, dependencies, CI, helper/product network,
+PR #229 merged by Karl at `101c7f44604553cf2f8d2166725b266435ab4047`
+(feature head `1715c53abdabd9dc205be138151e1bd6c22e8b85`). Side18/Karl subsequently
+authorized the bounded PROTECTED continuation with unchanged certified artifacts, mechanical
+carry-forward gates and separate final implementation review; old-head CI is not new-head evidence. No runtime, dependencies, CI, helper/product network,
 credentials, scheduler, paper, execution, trading or live authority; capital/orders USD 0 / 0.
 Side18 independently reviews; Karl alone merges. Current evidence/readiness belongs in the PR body.
 

@@ -288,7 +288,7 @@ def test_s01_streaming_defaults_off_and_requires_explicit_enable(monkeypatch, tm
     assert names == [
         "market_truth_path", "experiment_registry_path", "paper_store_path", "gateway_store_path",
         "strategy_lifecycle_path", "hermes_strategy_manager_path", "alpha_factory_registry_path",
-        "alpha_discovery_registry_path", "streaming_enabled",
+        "alpha_discovery_registry_path", "streaming_enabled", "command_auth",
     ]
     assert cockpit.CockpitConfig(None, None).streaming_enabled is False
     legacy = cockpit.CockpitConfig(None, None, None, None, None, None, None, None)
@@ -360,14 +360,19 @@ def test_s03_events_route_family_validation_disabled_and_method_closure() -> Non
     assert cockpit.ERROR_STATUS["STREAM_DISABLED"] == 503
     for app in (_app(False), _app(True)):
         domain = {route.path: set(route.methods or ()) for route in app.routes if route.path.startswith("/api/")}
-        assert len(domain) == 27
+        assert len(domain) == 31  # S10-CC-CMD-01 adds exactly the four command routes
         assert [path for path in domain if path.startswith("/api/stream")] == ["/api/stream/status", "/api/stream/events"]
         assert domain["/api/stream/status"] == domain["/api/stream/events"] == {"GET"}
         for target in ("/api/stream/status", "/api/stream/events?family=market"):
             for method in ("POST", "PUT", "PATCH", "DELETE"):
                 assert _method(app, target, method) == 405, (target, method)
     source = _source(COCKPIT)
-    assert not re.search(r"@app\.(post|put|patch|delete|websocket|api_route)\(", source)
+    # S10-CC-CMD-01: the only non-GET decorators are the three exact command POST routes.
+    assert re.findall(r"@app\.(post|put|patch|delete|websocket|api_route)\(([^)]*)\)", source) == [
+        ("post", '"/api/commands/session"'),
+        ("post", '"/api/commands/session/revoke"'),
+        ("post", '"/api/commands/execute"'),
+    ]
     route = source[source.index('@app.get("/api/stream/events")'):source.index("return app")]
     assert route.index("INVALID_INPUT") < route.index("STREAM_DISABLED") < route.index("StreamingResponse(")
 
@@ -619,7 +624,12 @@ def test_s10_frontend_has_one_central_eventsource_and_no_client_polling_or_webso
         assert banned not in sources["api.ts"] + sources["app.tsx"], banned
     api_source = sources["api.ts"]
     assert api_source.count('method: "GET"') == 1
-    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", api_source + sources["app.tsx"])
+    # S10-CC-CMD-01: the one POST is the central command transport, outside the stream section;
+    # the stream stays GET/EventSource only and never touches the command surface.
+    assert not re.search(r"\b(POST|PUT|PATCH|DELETE)\b", sources["app.tsx"])
+    assert re.findall(r"\b(POST|PUT|PATCH|DELETE)\b", api_source) == ["POST"]
+    assert "POST" not in _api_stream_section() and "Command" not in _api_stream_section()
+    assert "ommand" not in _stream_shell_section() and "ommand" not in _controller()
     for default in ("retry: false,", "refetchOnWindowFocus: false,", "refetchOnReconnect: false,", "staleTime: Infinity,"):
         assert api_source.count(default) == 1, default
     assert "streamEventUrl = (family: QueryFamily) => API_BASE + \"/stream/events?family=\" + encodeURIComponent(family)" in api_source
