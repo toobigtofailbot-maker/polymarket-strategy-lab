@@ -96,6 +96,10 @@ def test_risk_tier_runtime_research_stays_tier_two(repo, path):
     ".github/workflows/ci.yml", "tools/ci/risk_tier.py", "tools/wp/wp_spec_guard.py",
     "pyproject.toml", "src/operator_cockpit_frontend/package-lock.json", "docs/security_policy.md",
     "tests/test_authority_validator.py", "src/data_layer/native_adapter.py",
+    "src/research_runtime/nautilus_offline/replay.py",
+    "tests/research_runtime/nautilus_offline/test_replay.py",
+    "src/data_layer/analytical_research/nws_ndfd_history.py",
+    "tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py",
 ])
 def test_risk_tier_protected_boundaries_force_tier_three(repo, path):
     assert change(repo, {path: "# change\n"})["tier"] == 3
