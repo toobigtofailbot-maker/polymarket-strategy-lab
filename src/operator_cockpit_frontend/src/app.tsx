@@ -66,6 +66,7 @@ import {
   type OpsPolicyLimits,
   type OpsPortfolio,
   type OpsStrategyReservation,
+  type Overview,
   type PaperRisk,
   type PaperSummary,
   type QueryFamily,
@@ -210,6 +211,251 @@ const isEmptyList = <T,>(data: ListResponse<T>) => data.count === 0;
 const yesNo = (value: boolean) => (value ? "Yes" : "No");
 
 // ---------------------------------------------------------------------------
+// S10-CC-UX-01 chart primitives. Read only: each draws counts already present in one existing
+// DTO. No count is summed into another, no time axis is implied and every bar carries its
+// number as text. Selecting a series discloses what it measures, and the same numbers are
+// always available as a plain table.
+// ---------------------------------------------------------------------------
+
+type ChartTone = "reference" | "accepted" | "quarantined" | "gap" | "core" | "exploration" | "audit" | "held";
+type ChartSeries = { key: string; label: string; value: number; tone: ChartTone; relation: string; detail: string };
+
+const share = (value: number, scale: number) => (scale > 0 ? Math.min(100, (value / scale) * 100) : 0);
+
+function SeriesButton({
+  series,
+  width,
+  selected,
+  onSelect,
+}: {
+  series: ChartSeries;
+  width: number | null;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button type="button" className={`series series-${series.tone}`} aria-pressed={selected} onClick={onSelect}>
+      <span className="series-head">
+        <span className="series-label">{series.label}</span>
+        <span className="series-value">{series.value.toLocaleString("en-US")}</span>
+      </span>
+      {width !== null && (
+        <span className="series-track" aria-hidden="true">
+          <span className="series-fill" style={{ width: `${width}%` }} />
+        </span>
+      )}
+      <span className="series-relation">{series.relation}</span>
+    </button>
+  );
+}
+
+function ChartTable({ label, series }: { label: string; series: ChartSeries[] }) {
+  return (
+    <DataTable label={label} headers={["Series", "Count", "What it measures"]}>
+      {series.map((item) => (
+        <tr key={item.key}>
+          <td>{item.label}</td>
+          <td className="num">{item.value.toLocaleString("en-US")}</td>
+          <td>{item.detail}</td>
+        </tr>
+      ))}
+    </DataTable>
+  );
+}
+
+function ChartFrame({
+  title,
+  caption,
+  series,
+  selected,
+  children,
+}: {
+  title: string;
+  caption: ReactNode;
+  series: ChartSeries[];
+  selected: ChartSeries | undefined;
+  children: ReactNode;
+}) {
+  const [asTable, setAsTable] = useState(false);
+  return (
+    <figure className="chart" aria-label={title}>
+      <figcaption className="chart-head">
+        <span className="chart-title">{title}</span>
+        <button type="button" className="chart-toggle" aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
+          {asTable ? "Show chart" : "Show table"}
+        </button>
+      </figcaption>
+      <p className="chart-caption">{caption}</p>
+      {asTable ? <ChartTable label={title} series={series} /> : children}
+      <p className="chart-detail" aria-live="polite">
+        {selected ? (
+          <>
+            <strong>{selected.label}.</strong> {selected.detail}
+          </>
+        ) : (
+          "Select a series to see what it measures."
+        )}
+      </p>
+    </figure>
+  );
+}
+
+/** Market-truth observation counts against their own normalized reference; gaps stand apart. */
+function ObservationChart({ marketTruth }: { marketTruth: Overview["market_truth"] }) {
+  const reference = marketTruth.normalized_count;
+  const subsetOf = (value: number) => `${value.toLocaleString("en-US")} of ${reference.toLocaleString("en-US")} normalized`;
+  const observations: ChartSeries[] = [
+    {
+      key: "normalized",
+      label: "Normalized observations",
+      value: reference,
+      tone: "reference",
+      relation: "Reference count",
+      detail: "Observations normalized by the market-truth source. Accepted and quarantined below are subsets of this count.",
+    },
+    {
+      key: "accepted",
+      label: "Accepted",
+      value: marketTruth.accepted_count,
+      tone: "accepted",
+      relation: subsetOf(marketTruth.accepted_count),
+      detail: "Normalized observations recorded as accepted. A subset of the reference, not an additional category.",
+    },
+    {
+      key: "quarantined",
+      label: "Quarantined",
+      value: marketTruth.quarantined_count,
+      tone: "quarantined",
+      relation: subsetOf(marketTruth.quarantined_count),
+      detail: "Normalized observations recorded as quarantined. A subset of the reference, not an additional category.",
+    },
+  ];
+  const gap: ChartSeries = {
+    key: "gap",
+    label: "Open gap events",
+    value: marketTruth.open_gap_count,
+    tone: "gap",
+    relation: marketTruth.open_gap_count === 0 ? "None recorded as open" : "Separate event count",
+    detail: "Gap events are counted separately. They are events, not observations, and are not part of the normalized reference.",
+  };
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const all = [...observations, gap];
+  return (
+    <ChartFrame
+      title="Market-truth observations"
+      caption="Bars share one scale: the normalized reference. Subsets are not added together."
+      series={all}
+      selected={all.find((item) => item.key === selectedKey)}
+    >
+      <div className="series-group" role="group" aria-label="Observation counts">
+        {observations.map((item) => (
+          <SeriesButton
+            key={item.key}
+            series={item}
+            width={share(item.value, reference)}
+            selected={selectedKey === item.key}
+            onSelect={() => setSelectedKey(item.key)}
+          />
+        ))}
+      </div>
+      <div className="series-group series-group-apart" role="group" aria-label="Gap events (separate count)">
+        <SeriesButton series={gap} width={null} selected={selectedKey === gap.key} onSelect={() => setSelectedKey(gap.key)} />
+      </div>
+    </ChartFrame>
+  );
+}
+
+const QUEUE_LANES: { lane: DiscoveryLaneName; label: string; tone: ChartTone; selected: boolean; detail: string }[] = [
+  { lane: "core", label: "Core priority", tone: "core", selected: true, detail: "Selected into the core research allocation. Not trade priority." },
+  { lane: "exploration", label: "Exploration", tone: "exploration", selected: true, detail: "Selected for coverage-seeking research allocation." },
+  { lane: "audit", label: "Audit", tone: "audit", selected: true, detail: "Selected as the deterministic audit sample of the remaining research pool." },
+  { lane: "deferred", label: "Deferred", tone: "held", selected: false, detail: "Not selected yet: waiting on capture refresh before research." },
+  { lane: "skipped_ineligible", label: "Skipped · ineligible", tone: "held", selected: false, detail: "Not selected: market status is outside the recorded policy." },
+  { lane: "skipped_capacity", label: "Skipped · capacity", tone: "held", selected: false, detail: "Not selected: eligible, but outside the recorded queue capacity." },
+];
+
+/**
+ * Discovery lanes from the latest recorded queue. Selected lanes are drawn against the allocation
+ * limit; deferred and skipped lanes against the recorded observed-market count, never the capacity.
+ */
+function QueueAllocationChart({
+  lanes,
+  capacity,
+  observed,
+  focusedLane,
+  onFocusLane,
+}: {
+  lanes: Record<DiscoveryLaneName, unknown[]>;
+  capacity: number;
+  observed: number;
+  focusedLane: DiscoveryLaneName | null;
+  onFocusLane: (lane: DiscoveryLaneName) => void;
+}) {
+  const selectedTotal = QUEUE_LANES.filter((item) => item.selected).reduce((total, item) => total + lanes[item.lane].length, 0);
+  // The allocation limit scales only the selected lanes; it is never a denominator for skipped or deferred markets.
+  const slotScale = Math.max(capacity, selectedTotal);
+  const heldScale = Math.max(observed, 1);
+  const series = QUEUE_LANES.map((item): ChartSeries => {
+    const value = lanes[item.lane].length;
+    return {
+      key: item.lane,
+      label: item.label,
+      value,
+      tone: item.tone,
+      relation: item.selected ? `Selected · ${value} of ${capacity} allocation slots` : `Not selected · ${value} of ${observed} observed markets`,
+      detail: item.detail,
+    };
+  });
+  const chosen = series.slice(0, 3);
+  const held = series.slice(3);
+  const open = Math.max(0, capacity - selectedTotal);
+  return (
+    <ChartFrame
+      title="Discovery queue allocation"
+      caption={
+        <>
+          {selectedTotal} of {capacity} allocation slots selected{open > 0 ? `, ${open} open` : ""}. Deferred and skipped
+          lanes are shown against the {observed} observed markets; capacity is not their denominator.
+        </>
+      }
+      series={series}
+      selected={series.find((item) => item.key === focusedLane)}
+    >
+      <div className="allocation" aria-hidden="true">
+        {chosen
+          .filter((item) => item.value > 0)
+          .map((item) => (
+            <span key={item.key} className={`allocation-slot series-${item.tone}`} style={{ width: `${share(item.value, slotScale)}%` }} />
+          ))}
+        {open > 0 && <span className="allocation-slot allocation-open" style={{ width: `${share(open, slotScale)}%` }} />}
+      </div>
+      <div className="series-group series-group-columns" role="group" aria-label="Selected lanes">
+        {chosen.map((item) => (
+          <SeriesButton
+            key={item.key}
+            series={item}
+            width={null}
+            selected={focusedLane === item.key}
+            onSelect={() => onFocusLane(item.key as DiscoveryLaneName)}
+          />
+        ))}
+      </div>
+      <div className="series-group series-group-apart" role="group" aria-label="Lanes not selected">
+        {held.map((item) => (
+          <SeriesButton
+            key={item.key}
+            series={item}
+            width={share(item.value, heldScale)}
+            selected={focusedLane === item.key}
+            onSelect={() => onFocusLane(item.key as DiscoveryLaneName)}
+          />
+        ))}
+      </div>
+    </ChartFrame>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Views (semantics carried over unchanged from the WP171/WP173 cockpit)
 // ---------------------------------------------------------------------------
 
@@ -218,20 +464,35 @@ function OverviewView() {
   return (
     <QueryState query={overview} label="overview evidence">
       {(data) => (
-        <>
-          <MetricGrid>
-            <Metric label="Normalized observations" value={data.market_truth.normalized_count} />
-            <Metric label="Accepted observations" value={data.market_truth.accepted_count} />
-            <Metric label="Open gap events" value={data.market_truth.open_gap_count} />
-            <Metric label="Experiments" value={data.experiments.experiment_count} />
-            <Metric label="Lifecycle receipts" value={data.experiments.lifecycle_count} />
-            <Metric label="Evidence receipts" value={data.experiments.evidence_count} />
-          </MetricGrid>
-          <Panel title="Latest market receipt">
-            <p className="mono">{data.market_truth.latest_received_at || "No market timestamp available"}</p>
+        <div className="overview">
+          <section className="overview-receipt" aria-label="Latest market receipt">
+            <div>
+              <span className="receipt-label">Latest market receipt, as recorded</span>
+              <span className="receipt-time mono">{data.market_truth.latest_received_at || "No market timestamp recorded"}</span>
+            </div>
             <StatusPill>Read only</StatusPill>
-          </Panel>
-        </>
+          </section>
+          <div className="overview-grid">
+            <ObservationChart marketTruth={data.market_truth} />
+            <div className="overview-side">
+              <Panel title="Research ledger">
+                <MetricGrid>
+                  <Metric label="Experiments" value={data.experiments.experiment_count} />
+                  <Metric label="Lifecycle receipts" value={data.experiments.lifecycle_count} />
+                  <Metric label="Evidence receipts" value={data.experiments.evidence_count} />
+                </MetricGrid>
+                <p className="muted">Three distinct counts from the experiment registry; none is derived from another.</p>
+              </Panel>
+              <Panel title="Recent activity window">
+                <MetricGrid>
+                  <Metric label="Market-truth records" value={data.recent_activity.market_truth_count} />
+                  <Metric label="Audit records" value={data.recent_activity.audit_count} />
+                </MetricGrid>
+                <p className="muted">Capped, windowed counts of the most recent records. They are not complete historical totals.</p>
+              </Panel>
+            </div>
+          </div>
+        </div>
       )}
     </QueryState>
   );
@@ -1452,6 +1713,13 @@ function TriageDetailPanel({ marketTriageDecisionId, onClose }: { marketTriageDe
 function DiscoveryQueuePane() {
   const queue = useQuery(alphaDiscoveryQueueQuery);
   const [triage, setTriage] = useState<string | null>(null);
+  // Chart selection only moves keyboard focus to the matching lane detail; it never changes the recorded queue.
+  const [focusedLane, setFocusedLane] = useState<DiscoveryLaneName | null>(null);
+  const laneRefs = useRef<Partial<Record<DiscoveryLaneName, HTMLDivElement | null>>>({});
+  const focusLane = (lane: DiscoveryLaneName) => {
+    setFocusedLane(lane);
+    laneRefs.current[lane]?.focus();
+  };
   return (
     <>
       <Notice>
@@ -1464,6 +1732,27 @@ function DiscoveryQueuePane() {
       <QueryState query={queue} label="latest recorded discovery queue">
         {(data) => (
           <>
+            <div className="provenance" aria-label="Queue provenance">
+              <StatusPill tone="warning">Read-only research advisory</StatusPill>
+              <span>
+                Registry sequence <strong>{data.queue_sequence_number}</strong>
+              </span>
+              <span>
+                Alpha memory{" "}
+                <strong>{data.queue.alpha_registry_head_entry_hash === null ? "not bound (NOT_BOUND)" : "bound to recorded head"}</strong>
+              </span>
+              <span>
+                Historical replay{" "}
+                <strong>{data.queue.historical_selection_replay_valid ? "valid" : "not available"}</strong>
+              </span>
+            </div>
+            <QueueAllocationChart
+              lanes={data.lanes}
+              capacity={data.queue.queue_capacity}
+              observed={data.universe.market_count}
+              focusedLane={focusedLane}
+              onFocusLane={focusLane}
+            />
             <MetricGrid>
               <Metric label="Universe as_of" value={<span className="mono">{data.universe.as_of}</span>} />
               <Metric label="Observed markets" value={data.universe.market_count} />
@@ -1505,47 +1794,57 @@ function DiscoveryQueuePane() {
             <div className={triage ? "split" : undefined}>
               <div className="detail-stack">
                 {LANE_SECTIONS.map(([lane, title, description]) => (
-                  <Panel key={lane} title={`${title} · ${data.lanes[lane].length}`}>
-                    <p className="muted">{description}</p>
-                    {data.lanes[lane].length === 0 ? (
-                      <p className="muted">No triage decisions in this lane.</p>
-                    ) : (
-                      <DataTable label={title} headers={["Market", "Research priority", "Readiness / reopen", "Alpha refs"]}>
-                        {data.lanes[lane].map((item) => (
-                          <tr
-                            key={item.market_triage_decision_id}
-                            className={item.market_triage_decision_id === triage ? "selected" : undefined}
-                          >
-                            <td>
-                              <Button variant="link" onClick={() => setTriage(item.market_triage_decision_id)}>
-                                <span className="token">{item.market_id}</span>
-                              </Button>
-                              <br />
-                              <span className="muted">
-                                {item.category ?? "Uncategorized"}
-                                {item.newly_observed_locally ? " · newly observed locally" : ""}
-                              </span>
-                            </td>
-                            <td>
-                              {item.priority_class}
-                              <br />
-                              <span className="muted">{item.reason_codes.join(", ")}</span>
-                            </td>
-                            <td>
-                              {item.readiness}
-                              <br />
-                              <span className="muted">{item.reopen_disposition}</span>
-                            </td>
-                            <td className="num">
-                              {item.matched_candidate_ids.length} candidates
-                              <br />
-                              {item.matched_research_episode_ids.length} episodes
-                            </td>
-                          </tr>
-                        ))}
-                      </DataTable>
-                    )}
-                  </Panel>
+                  <div
+                    key={lane}
+                    ref={(element) => {
+                      laneRefs.current[lane] = element;
+                    }}
+                    className={lane === focusedLane ? "lane-anchor lane-focused" : "lane-anchor"}
+                    tabIndex={-1}
+                    aria-label={`${title} lane detail`}
+                  >
+                    <Panel title={`${title} · ${data.lanes[lane].length}`}>
+                      <p className="muted">{description}</p>
+                      {data.lanes[lane].length === 0 ? (
+                        <p className="muted">No triage decisions in this lane.</p>
+                      ) : (
+                        <DataTable label={title} headers={["Market", "Research priority", "Readiness / reopen", "Alpha refs"]}>
+                          {data.lanes[lane].map((item) => (
+                            <tr
+                              key={item.market_triage_decision_id}
+                              className={item.market_triage_decision_id === triage ? "selected" : undefined}
+                            >
+                              <td>
+                                <Button variant="link" onClick={() => setTriage(item.market_triage_decision_id)}>
+                                  <span className="token">{item.market_id}</span>
+                                </Button>
+                                <br />
+                                <span className="muted">
+                                  {item.category ?? "Uncategorized"}
+                                  {item.newly_observed_locally ? " · newly observed locally" : ""}
+                                </span>
+                              </td>
+                              <td>
+                                {item.priority_class}
+                                <br />
+                                <span className="muted">{item.reason_codes.join(", ")}</span>
+                              </td>
+                              <td>
+                                {item.readiness}
+                                <br />
+                                <span className="muted">{item.reopen_disposition}</span>
+                              </td>
+                              <td className="num">
+                                {item.matched_candidate_ids.length} candidates
+                                <br />
+                                {item.matched_research_episode_ids.length} episodes
+                              </td>
+                            </tr>
+                          ))}
+                        </DataTable>
+                      )}
+                    </Panel>
+                  </div>
                 ))}
               </div>
               {triage && <TriageDetailPanel marketTriageDecisionId={triage} onClose={() => setTriage(null)} />}
@@ -1942,6 +2241,25 @@ export const VIEWS: readonly ViewDefinition[] = [
   { path: "/paper", label: "Paper Operations", family: "paper", element: <PaperView /> },
   { path: "/audit", label: "Audit / Health", family: "audit", element: <AuditView /> },
 ];
+
+// S10-CC-UX-01: the sidebar groups the nine views in their existing order; routes are unchanged.
+const NAV_GROUPS: readonly [string, readonly ViewDefinition[]][] = [
+  ["Evidence", VIEWS.slice(0, 3)],
+  ["Research", VIEWS.slice(3, 6)],
+  ["Operations", VIEWS.slice(6)],
+];
+
+const VIEW_SUMMARIES: Record<string, string> = {
+  "/overview": "Recorded market-truth and research evidence at a glance.",
+  "/markets": "Recent normalized market observations, as recorded.",
+  "/experiments": "Preregistered experiments, lifecycle and evidence receipts.",
+  "/strategies": "StrategyLifecycle state, lineage and governance posture.",
+  "/hermes": "Hermes soft research judgments, kept separate from authority.",
+  "/alpha": "Recorded Alpha Factory research memory and the latest recorded discovery queue.",
+  "/ops": "Portfolio policy, budget reservations and recorded gateway state.",
+  "/paper": "Simulated paper session, orders, fills, positions and risk.",
+  "/audit": "Source health and recent audit records.",
+};
 
 function RefreshControl({ family }: { family: QueryFamily }) {
   const queryClient = useQueryClient();
@@ -2555,16 +2873,28 @@ function StreamRefreshController({ family }: { family: QueryFamily }) {
 export function ControlCenter() {
   const { pathname } = useLocation();
   const active = VIEWS.find((view) => view.path === pathname) ?? VIEWS[0];
+  const group = NAV_GROUPS.find(([, views]) => views.includes(active))?.[0] ?? "Evidence";
   return (
     <CommandSessionProvider>
       <div className="shell">
         <aside className="sidebar">
-          <div className="brand">Control Center</div>
+          <div className="brand">
+            <span className="brand-mark" aria-hidden="true" />
+            <span className="brand-text">
+              <span className="brand-name">Obsidian Research</span>
+              <span className="brand-sub">Control Center</span>
+            </span>
+          </div>
           <nav aria-label="Control Center views">
-            {VIEWS.map((view) => (
-              <NavItem key={view.path} to={view.path}>
-                {view.label}
-              </NavItem>
+            {NAV_GROUPS.map(([name, views]) => (
+              <div key={name} className="nav-group">
+                <span className="nav-group-label">{name}</span>
+                {views.map((view) => (
+                  <NavItem key={view.path} to={view.path}>
+                    {view.label}
+                  </NavItem>
+                ))}
+              </div>
             ))}
           </nav>
           <div className="posture" aria-label="Authority posture">
@@ -2578,9 +2908,10 @@ export function ControlCenter() {
         </aside>
         <main className="main">
           <header className="page-header">
-            <div>
-              <div className="eyebrow">Validated cockpit evidence · WP171 / WP173</div>
+            <div className="page-heading">
+              <div className="eyebrow">{group}</div>
               <h1>{active.label}</h1>
+              <p className="page-summary">{VIEW_SUMMARIES[active.path]}</p>
             </div>
             <div className="page-actions">
               <StreamRefreshController family={active.family} />

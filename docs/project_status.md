@@ -2054,3 +2054,19 @@ Scope Amendment 01: Side18 approved exactly two compatibility-only edits in the
 existing stream/command test modules: obsolete CockpitConfig field-order assertions
 now include the appended frontend_dist. Exact scope is 13; architecture, behavior
 and runtime authority remain unchanged.
+
+
+# S10-CC-UX-01 current repository implementation target: Obsidian Research Interactive Prototype
+
+Current Control Center posture supersedes earlier in-review target descriptions:
+S10-CC-PROD-01 merged via PR #231 at frozen main
+`7d77af8b45e5eafec0855fc30e17b167a5178636` (head `113cb1af46ec3a02d857cbe2800cd38d0f4a523b`).
+Karl authorized the exact REV B1 S10-CC-UX-01 nine-file implementation after deterministic
+certificate-free FAST readiness. Package class: PREMIUM_CONTROL_CENTER_VISUAL_PROTOTYPE;
+M / risk 2 / FAST; branch `claude/s10-cc-ux-01-obsidian-prototype`. Capability: frontend-only
+Obsidian Research shell, Overview and Alpha Discovery Queue with two truthful keyboard-accessible
+charts inside `app.tsx`, and one fixture-only nine-route Storybook demo (36 stories). APIs,
+routes, SSE, default-off commands, dependencies, workflows and deployment are unchanged.
+Stable evidence: `docs/status_entries/S10-CC-UX-01.md`; validation state: see PR body.
+Visual sign-off: AWAITING KARL VISUAL APPROVAL. S10-CC-UX-02 rollout is separately gated.
+Capital/orders: USD 0 / 0. Merge authorized: NO.

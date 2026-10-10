@@ -753,7 +753,7 @@ def test_s14_storybook_uses_shared_disabled_stream_handler_and_opens_no_real_str
     helper = helper[: helper.index("  };\n") + 4]
     assert "msw.use(streamStatusDisabledHandler, ...items.flat());" in helper
     assert stories.count("msw.use(") == 1
-    assert stories.count("meta.story(") == stories.count("beforeEach: mock(") == 35
+    assert stories.count("meta.story(") == stories.count("beforeEach: mock(") == 36
     literal = stories[stories.index("const streamStatusDisabled: StreamStatus = {") + len("const streamStatusDisabled: StreamStatus = "):]
     literal = literal[: literal.index("\n};\n") + 2]
     as_json = re.sub(r"(\w+):", r'"\1":', literal)

@@ -1,0 +1,528 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CC-UX-01",
+    "title": "Premium Control Center — Obsidian Research Interactive Prototype (REV B)",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PREMIUM_CONTROL_CENTER_VISUAL_PROTOTYPE",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 231,
+      "head_sha": "113cb1af46ec3a02d857cbe2800cd38d0f4a523b",
+      "merge_sha": "7d77af8b45e5eafec0855fc30e17b167a5178636"
+    },
+    "suggested_branch": "claude/s10-cc-ux-01-obsidian-prototype",
+    "objective": "Build an exceptional Apple-inspired Obsidian Research frontend prototype: existing nine-route shared shell, redesigned Overview and Alpha Discovery Queue, two truthful accessible in-app charts, one fixture-only Storybook demo and real Playwright+Impeccable visual proof, with no new dependencies or backend authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "tests/test_operator_cockpit_stream.py",
+      "docs/wp_specs/S10-CC-UX-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-UX-01/wp_spec.json",
+      "docs/status_entries/S10-CC-UX-01.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "allowed_changed_files": [
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "tests/test_operator_cockpit_stream.py",
+      "docs/wp_specs/S10-CC-UX-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CC-UX-01/wp_spec.json",
+      "docs/status_entries/S10-CC-UX-01.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/strategy_lifecycle/",
+      "src/risk_engine/",
+      "src/exploratory_gate_c/",
+      "src/execution_feasibility/",
+      "src/research_runtime/",
+      "src/data_layer/",
+      "tools/hermes/",
+      "tools/wp/",
+      "tools/git/",
+      "tools/security/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "src/operator_cockpit_frontend/src/app.tsx",
+      "src/operator_cockpit_frontend/src/styles.css",
+      "src/operator_cockpit_frontend/src/foundation.stories.tsx",
+      "tests/test_operator_cockpit_stream.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Revert the frontend-only Obsidian prototype and existing test story-count correction; historical source contracts, read-only endpoints, protected commands, SSE, backends, policies, capital, hosted CI and VPS remain untouched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Existing typed GET-only frontend API contracts and protected command-status behavior are unchanged; only frontend presentation and offline fixtures change.",
+    "items": [
+      {
+        "surface": "Control Center React shell and read-only /api pages",
+        "before": "nine pages with existing typed API queries, source read states and protected command defaults",
+        "after": "Obsidian shared navigation plus polished Overview and Alpha without changing API requests, route ids or command execution",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve all nine routes, RefreshControl, SSE, default-off commands, source unavailability and same-origin /api",
+        "authority": "FRONTEND_VISUAL_ONLY"
+      },
+      {
+        "surface": "Storybook foundation fixtures and stream guard",
+        "before": "35 isolated one-page stories, fail-closed per-story API mocks and exactly four frontend source files",
+        "after": "36 stories including a nine-route overview-rooted demo, exactly four frontend source files and unchanged C16 command non-mocking",
+        "change_authorized": true,
+        "compatibility_requirement": "Unmocked /api/commands status is expected fail-closed; every actual page GET must be mocked; OPS fallback count unchanged",
+        "authority": "LOCAL_SYNTHETIC_PREVIEW_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Ten bounded source, Storybook, design, validation, authority and visual-approval invariants.",
+    "items": [
+      {
+        "path": "identity.scope",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Exactly nine governed changed paths; freeze the merged PR231 main and keep the four frontend source modules",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Scope guard must confirm exact scope and stable base",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundaries",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Presentation-only; preserve existing protected commands, SSE, API, read-only/simulated/economic authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "C16 and stream, OPS, research and command regression guards pass",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "compatibility.source_guard",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "No new frontend source module or prohibited browser APIs; two charts embedded within app.tsx",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Source guard asserts four files and established network/timer/storage bans",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "compatibility.stories",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Exactly 36 story declarations and matching beforeEach mock helpers; existing OPS fallback remains six",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing story guard updated only numerical count, all other constraints unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storybook.demo_routes",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "One root overview Storybook story with complete page data handlers but no command/status mock",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Actual Playwright nine-route and closed command request demonstrates no unexpected page data error",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "charts.truthfulness",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Overview subsets/separate gaps and capped recent counts; Alpha lanes/queue capacity not overcounted",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Browser/table labels and meaningful details match existing DTOs, no fake economic facts",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "design.visual_quality",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Approved Obsidian Research visuals, usable interactive keyboard charts, real browser captures and Impeccable critique",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Desktop, laptop and mobile screenshots reviewed, no unsupported success claim",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "validation.local_first",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Focused regression and frontend builds during iteration; stable-head full local suite and exact head CI only once",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Commands/exits/reproducibility and exact diff verified",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "evidence.report_back",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Actual browser evidence, same-head CI, PR evidence and limitations honestly reported",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Final report enumerates checks and real artifacts with no approval spoofing",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "approval.rollout",
+        "source": "CONSTANT",
+        "type": "governance_policy",
+        "required_rule": "Karl must explicitly approve visual direction before UX02 or deployment",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No UX02, deployment, merge or live activation in current exact diff",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "sanitized offline evidence and fixture-only visual output",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical persisted record, content address, data model identity or derivation; reuse existing DTOs and fixture records.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical FAST readiness chain and Karl authority separate design prototype from rollout.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Deterministic FAST readiness passes with nine paths and guard-compatible rules",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl separately authorizes this exact REV B scope",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "One stable working prototype and required local checks without protected runtime changes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed schema 1.0.0 failure-precedence categories; no new error algorithm.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new canonical identity examples; visual mock and regression conditions belong to real frontend/browser tests.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Ten nonduplicative requirements; browser and design proof supplement existing automated evidence rather than pretending CLI version checks are visual validation.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "repo_guard",
+        "test": "nine-file scope / frozen base",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CC-UX-01/wp_prompt.txt --spec docs/wp_specs/S10-CC-UX-01/wp_spec.json --repo-root .",
+        "expected_result": "Certificate-free FAST readiness verifies frozen base, exact nine-file scope, matching risk/authority, normative refs; this user instruction grants same-scope implementation after actual gate PASS."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "existing frontend command/stream/read-only boundaries",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_commands.py",
+        "expected_result": "Unchanged source bans and command safety, disabled status preserved and no frontend module expansion"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "four frontend source files and static transport policy",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "Exact four .ts/.tsx source files remain; one EventSource and no timer/extra fetch/browser storage"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "thirty-six stories and existing OPS/cmd guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_ops.py tests/test_operator_cockpit_commands.py",
+        "expected_result": "Story count 36 matches mock count, six existing OPS fallback instances and C16 no command endpoint mock"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "playwright",
+        "test": "nine-route full-app demo browser verification",
+        "command": "playwright-cli --version",
+        "expected_result": "Installed playwright-cli 0.1.22 availability confirmed with actual exit code; real local browser navigation of all nine routes, expected closed command-status vs zero unexpected page-data INTERNAL_ERROR, externally stored screenshots and visual critique are separately evidenced in final report."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "visual_review",
+        "test": "truthful supported Overview/Alpha chart semantics",
+        "command": "npm --prefix src/operator_cockpit_frontend run typecheck",
+        "expected_result": "Two chart components accept existing DTO counts and render accessible correct labels; no fabricated historical/economic data"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "visual_review",
+        "test": "premium visual acceptance and Impeccable critique",
+        "command": "npm --prefix src/operator_cockpit_frontend run build-storybook",
+        "expected_result": "Storybook builds; separate real Playwright desktop/Alpha queue/mobile captures and targeted Impeccable critique demonstrate visual quality, pending Karl acceptance."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "validation",
+        "test": "local first frontend and authoritative broad suite",
+        "command": "npm --prefix src/operator_cockpit_frontend run build",
+        "expected_result": "TS/build/Storybook/affected tests pass during stable local iteration and one final broad suite as policy requires"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pr_evidence",
+        "test": "final head evidence and report back",
+        "command": "python tools/git/pr_evidence_consistency_guard.py --help",
+        "expected_result": "Published PR body and actual strict guard command/exit are included in final report; helper --help is only a non-mutating preflight and never counts as guard PASS."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "governance",
+        "test": "Karl-only UX02 rollout",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py",
+        "expected_result": "No unapproved subsequent page redesign, production rollout, host activation, trade authority or merge"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CC-UX-02",
+    "next_title": "Separate Karl-approved Obsidian Research full-page visual rollout",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CC-UX-02",
+    "forbidden_in_this_wp": [
+      "Full visual redesign of the remaining seven Control Center pages",
+      "Any backend, live API, canonical evidence or authority mutation",
+      "Any command session, authentication, operator action or SSE behavioral change",
+      "New dependencies, lock files, chart frameworks or extra frontend source modules",
+      "Real provider or account network access, product APIs, VPS or tailnet activation",
+      "Fake historical P&L, probability time series, trading performance or live readiness",
+      "Extra governance/test family/CI workflow or other files outside exact nine",
+      "Merge or final visual approval without Karl"
+    ]
+  }
+}

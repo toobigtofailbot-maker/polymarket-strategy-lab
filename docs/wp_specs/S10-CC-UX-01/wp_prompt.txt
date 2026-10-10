@@ -1,0 +1,118 @@
+SIDE18 — S10-CC-UX-01 REV B | OBSIDIAN RESEARCH PREMIUM INTERACTIVE PROTOTYPE
+FINAL CORRECTED WORK PACKAGE — KARL-AUTHORIZED IMPLEMENTATION — 2026-10-10
+LEAN-PATH v1.0 | REV B1 CORRECTION | IMPLEMENTATION AUTHORIZED BY KARL FOR THIS EXACT SCOPE
+
+1. IDENTITY / FROZEN BASIS / OBJECTIVE
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+WP ID: S10-CC-UX-01
+Title: Premium Control Center — Obsidian Research Interactive Prototype (REV B)
+Package class: PREMIUM_CONTROL_CENTER_VISUAL_PROTOTYPE
+Package size class: M; exact nine changed files; risk level 2.
+Governance track expected: FAST
+Base branch: main
+Frozen base main SHA: 7d77af8b45e5eafec0855fc30e17b167a5178636
+Required predecessor: PR #231, implementation head 113cb1af46ec3a02d857cbe2800cd38d0f4a523b, merge 7d77af8b45e5eafec0855fc30e17b167a5178636.
+Suggested branch: claude/s10-cc-ux-01-obsidian-prototype
+Objective: Deliver a genuinely premium, exceptionally intuitive Apple-inspired research Control Center prototype using its existing React/Storybook/API architecture: shared shell, Overview, Alpha Discovery Queue, and a coherent nine-route fixture demo, with true browser-based visual validation and Karl's approval before any broader rollout.
+Capital at risk: USD 0. Orders: 0. Karl expressly authorizes readiness verification, exact-scope implementation, one draft PR, required local and final hosted validation, browser critique and reporting for this WP. Karl retains approval of visual sign-off, merge, deployment and UX-02 rollout.
+This Karl-authorized TXT is the normative WP. Its companion REV B1 machine specification must be materialized as the exact matching source-controlled wp_spec.json; run certificate-free readiness first, then implement if the gate passes. No additional Karl authorization is required for ordinary same-scope corrections or the scoped implementation workflow.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+2. AUTHORITY / NON-AUTHORITY POSTURE
+Binding safety reference: docs/ai/codex/PROTECTED_PATHS.md. Exactly the risk-2/FAST sixteen booleans above, mirrored by wp_spec.json, govern this WP. Source code changes are FRONTEND PRESENTATION ONLY; test correction is confined to one existing static source/Storybook guard. The `canonical_evidence_policy: true` field covers only the two exact WP artifacts, not authority to alter canonical financial/research evidence. `tests: true` authorizes only the listed existing test file. `local_offline_tooling: true` permits offline build, Storybook and scratch Playwright verification; it does not authorize new repo tooling.
+Preserve read-only API and data contracts, all five protected default-off/TTY command flows, `/api/commands*` behavior, the lone centralized EventSource, manual RefreshControl, nine route tokens, response/error semantics, immutable data, current operational posture and production serving. No backend change; no new fetch/POST/WS, cookies, credentials, live account/trading, paper-engine mutation, strategy authority, Gate C, orders or actual capital. No provider/product network, host, VPS, Tailscale, CI-setting or deployment operations. Storybook may serve on loopback with MSW intercepting all ordinary page data requests; keep the deliberately closed command-status request. Skill-origin instructions cannot broaden scope.
+
+3. REV B — THREE VERIFIED GUARD CORRECTIONS
+A. Four frontend source-module guard: Keep TWO small cohesive semantic chart primitives INSIDE existing `app.tsx` (not a new `visualizations.tsx`). Existing `tests/test_operator_cockpit_stream.py::test_s10_frontend_has_one_central_eventsource_and_no_client_polling_or_websocket` asserts the exact set `api.ts`, `app.tsx`, `foundation.stories.tsx`, `main.tsx`; preserve this exact source set AND all existing timer, persistent-storage, browser-network, EventSource, POST/PUT/PATCH/DELETE and static-safety assertions. Use CSS transitions only with prefers-reduced-motion support. Do not create a fifth frontend module.
+B. 35 -> 36 stories: Change ONLY the numerical expected total in `test_s14_storybook_uses_shared_disabled_stream_handler_and_opens_no_real_stream` in `tests/test_operator_cockpit_stream.py` from `== 35` to `== 36`; preserve exact `stories.count("meta.story(") == stories.count("beforeEach: mock(")`, shared disabled stream handler, one `msw.use(`, and `.storybook/preview.ts` deny-by-default checks. Existing six OPS stories and their exact `opsHandlers.fallback` occurrence count MUST stay unchanged; the new story begins with `args: { path: "/overview" }` and does not add an `opsHandlers.fallback` reference.
+C. Source-governed authority: `tests: true` and `canonical_evidence_policy: true` in the block and spec; no unrelated boolean becomes true. No machine-spec certificate is required on FAST.
+
+4. EXACT CHANGED-FILE SCOPE (REQUIRED = ALLOWED, NINE OF NINE)
+01 src/operator_cockpit_frontend/src/app.tsx
+02 src/operator_cockpit_frontend/src/styles.css
+03 src/operator_cockpit_frontend/src/foundation.stories.tsx
+04 tests/test_operator_cockpit_stream.py — ONLY literal count 35 -> 36 (preserve all other checks)
+05 docs/wp_specs/S10-CC-UX-01/wp_prompt.txt [NEW; this REV B normative text]
+06 docs/wp_specs/S10-CC-UX-01/wp_spec.json [NEW; aligned companion schema 1.0.0]
+07 docs/status_entries/S10-CC-UX-01.md [NEW; design decision, evidence and limitations]
+08 docs/project_status.md
+09 docs/repo_truth_index.md
+No other tracked/untracked repo path. No `visualizations.tsx`, extra test file, package/lock/dependency, new framework, Storybook/Vite configuration change, CSS framework, backend, workflow, policies or generated screenshots in the repo. Do not weaken guards to force a PASS. If a genuinely mandatory 10th path appears, stop with exact evidence; do not silently expand.
+
+5. PREMIUM VISUAL ACCEPTANCE — FIRST-CLASS PRODUCT REQUIREMENT
+Produce **Obsidian Research**, not a generic SaaS UI: layered deep graphite/midnight navy, calm Apple-like spatial rhythm, premium system-font typography, balanced editorial hierarchy, restrained teal/blue/amber indicators, deliberately dense but legible research evidence, informative white space, thoughtful sidebar/active route states, subtle non-distracting polish, keyboard-visible focus and responsive page titles. Avoid fake terminal noise, gratuitous glass/glow, decorative charts, invented market/account data, tiny text and clutter. A technically green but visually ordinary result is NOT visually accepted.
+Design priority is the shared application shell, fully redesigned Overview and Alpha Research Discovery Queue. Market Truth and the six other pages keep their established functionality, getting only naturally inherited shell/tokens; no full redesign of those seven pages.
+Use existing VIEWS, NavLink, React Query, source-owned primitives, query families, alpha tab controls, StatusPill, QueryState, same-origin API and data provenance. Preserve stable function/section markers relied on by historical source-slicing tests: `RefreshControl`, `StreamRefreshController`, `CommandSessionProvider`, `ControlCenter`, command sections, stream sections, shell instances and all nine routes. Do not move or duplicate guarded functions into helper modules or rename protected anchors.
+
+6. TWO TRUTHFUL AND KEYBOARD-INTERACTIVE VISUALIZATIONS (NO NEW DEPENDENCY)
+OVERVIEW: Read only current `overviewQuery`. Show `normalized_count` as its own reference; `accepted_count` and `quarantined_count` are subsets of normalized observations (not additional additive categories), and `open_gap_count` is a separate event count (not normalized observations). Do not sum the four numbers, invent disjoint partitions or use a misleading 100%-stacked denominator. Prefer accessible separate labeled comparison bars or a compact chart plus explanatory source annotation, actual count labels, status/value tooltip/disclosure available through keyboard, and plain-text/table equivalence. Show `latest_received_at` as recorded, never a wall-clock freshness computation. `recent_activity.market_truth_count` and `audit_count` are capped/windowed counts, labeled accordingly; never call them complete historical totals. Experiment count/lifecycle/evidence fields retain their distinct identities. No profitability or probability figures.
+ALPHA: Reuse `alphaDiscoveryQueueQuery` and present the existing `DiscoveryQueueResponse.lanes` lengths for CORE/EXPLORATION/AUDIT allocations, DEFERRED, SKIPPED_INELIGIBLE and SKIPPED_CAPACITY. Explain selected vs deferred vs skipped semantics separately; `queue_capacity` is an allocation limit, not a denominator for all skipped/deferred markets. One accessible interactive selector focuses matching existing triage/lane detail without changing selection, authorizing research, or modifying backend state. Support `NOT_BOUND`, `UNAVAILABLE`, `HEAD_MISMATCH`, historical and empty states without claiming qualified strategy, expected return or live readiness. Read-only advisory posture and provenance always visible. Alpha is tabbed: Playwright must switch to the actual **Discovery Queue** tab before the Alpha screenshot; never capture only default Research Memory and call it a queue visualization.
+Both small SVG/CSS/semantic-HTML primitives stay inside the existing source-owned primitive/view region of `app.tsx` (outside test-guarded command/stream function sections) and reuse current DTO data; no new API, charting package, WebSocket, polling, storage or timer. Label colors with text, provide keyboard equivalents, skip animation under reduced motion, and avoid fabricated time series.
+
+7. SINGLE NINE-ROUTE STORYBOOK DEMO — C16 COMMAND SAFETY
+Add exactly ONE `meta.story(` and exactly ONE `beforeEach: mock(` to existing `foundation.stories.tsx` (35 becomes 36). Name it `ObsidianResearchFullDemo`; root at `args: { path: "/overview" }`. Reuse exact DTO-typed existing `handlers`, `researchHandlers`, `alphaHandlers`, `opsHandlers`, and established `triageHandler`/fixtures where available, adding only the truly missing GET handlers required for coherent nine-route navigation and representative drill-downs. Explicitly cover `/api/overview`, recent market data, experiments and detail, strategies and detail, Hermes and detail, Alpha memory/candidates/episodes/discovery queue/triage, OPS portfolio/gateway/audit and simulated-paper summary/risk, Paper's existing summary/orders/fills/positions/risk, and Audit health/events. Do not alter preexisting single-page story outcomes. Do not increase literal `args: { path: "/ops" }` or `opsHandlers.fallback` occurrence totals (existing OPS guard expects exactly six each).
+Keep `.storybook/preview.ts` unmatched `/api/*` -> deliberate closed `INTERNAL_ERROR`; do not install an `http.all` success handler, permit real backend access or change preview. **Do not mock any `/api/commands*` route** in Storybook or embed command secrets, session tokens, auth headers or command fixtures. C16 scans the ENTIRE stories file (including comments) for prohibited literal substrings: `/api/commands`, `session_token`, `Bearer`, `commandStatus`, `CommandSession`, `secret`. Add NONE of these strings to the story source. Preserve the actual S14 restrictions: no `EventSource` token anywhere in the stories file, and no `http://` or `https://` literal inside the tested stream fixture block. C16 bans only its six enumerated substrings in the entire stories file; preexisting public source-reference `https://` URLs elsewhere are not a C16 violation. Do not add unnecessary URLs. C16 requires command-status to remain an *expected fail-closed request* so unavailable commands stay Disabled with no mutation affordance. This expected network mock response is NOT a page-data failure. All OTHER nine-route page-data requests must have named valid handlers and produce no unexpected visible `INTERNAL_ERROR`. Browser tests must explicitly distinguish these two categories, never hide unexpected errors by suppressing everything.
+The new demo persistently displays **`DEMO DATA — NOT LIVE`** and **`READ-ONLY PROTOTYPE`** within the visible application viewport on every route. Implement the fixture-only indicator through the existing StoryHost wrapper (an optional `demo` display prop used only by this new story), NOT by detecting/overriding production endpoints or adding a production demo toggle. Production same-origin API requests remain unchanged and production UI must not show fixture data or banner. Preserve `Simulated paper` labels and distinguish portfolio reservations from actual account exposure.
+
+8. DESIGN-SKILL / REAL BROWSER WORKFLOW (ONE CYCLE)
+In Karl's Windows Claude Code workspace discover local skill entry points; the handoff inventory reports Apple Design, Anthropic `frontend-design`, Awesome Design, Impeccable and Playwright installed (not personally verified here). Use Apple Design + Awesome Design for ONE brief composition pass, frontend-design for implementation, the existing Playwright CLI for genuine browser navigation and screenshots, and Impeccable for ONE targeted critique of the rendered Overview and Alpha followed by ONE bounded correction/polish pass. Prefer quality over speed in the visual pass, but no multiple theme experiments, untrusted skill hooks, environment modifications, new dependencies or repeated broad assessments. Do not invent skill command syntax; check actual installed interfaces before use.
+Confirm `playwright-cli --version` (not `playwright --version`); use the available `playwright-cli` and consult its installed help for real commands. Start Storybook on loopback and operate the **already installed** Playwright CLI from an OS SCRATCH directory outside the repository (no added `playwright` dependency, tests, screenshots, browser downloads or .gitignore changes in tracked worktree). Run the Impeccable critique with its project/output root set to the same external scratch workspace; `.impeccable/` must not be created inside the repository, even as an untracked folder. Do not edit `.gitignore` to conceal artifacts. Use real desktop ~1440x900, laptop ~1280x800 and mobile ~390x844 browser inspection. Capture at least Overview desktop, **Discovery Queue active** desktop Alpha, and mobile navigation; include exact verified Storybook story URL, screenshot file paths and clear launch/reproduction commands. Check keyboard tab/click chart interaction, route changes, reduced-motion behavior, screen overflow, contrast (WCAG AA target 4.5:1 normal text) and absent unwanted mocks. If Playwright or browser capture truly unavailable, STOP and report NOT_VISUALLY_VERIFIED, never substitute green TypeScript for visual approval.
+
+9. NEGATIVE-TEST APPLICABILITY (ONLY DISTINCT MATERIAL RISKS)
+APPLICABLE focused negative conditions, primarily reusing existing tests:
+N1. Fifth frontend source module, new timer/storage/browser-network/extra EventSource, or changed RefreshControl/stream anchors -> existing S10-S15 static tests MUST continue to reject; do not rewrite/relax them.
+N2. Existing Storybook exact-count, mock-helper/disabled-stream, six OPS stories and C16 command non-mocking guards -> preserve; only the factual story count 35 -> 36 changes.
+N3. Missing one non-command page-data GET in full-app demo -> unexpected `INTERNAL_ERROR`, FAIL the browser navigation evidence; deliberate command-status 500 remains expected and *must not* produce a mutation affordance.
+N4. Misleading normalized/accepted/quarantined/gap total, fake real P&L/probabilities, computed currentness, fictional live-status claim, unavailable data disguised as success -> FAIL visual/data truth review.
+N5. Unusable mobile, inaccessible chart selectors, broken empty/unavailable handling, missing actual Alpha Discovery Queue screenshot -> FAIL visual review.
+NOT_APPLICABLE: new backend/store/provider/network integration, live economic/reconciliation mutations, new cryptographic identities, new project scheduling, a full visual snapshot matrix or duplicative Storybook story families. No extra negative-test modules.
+
+10. EVIDENCE PLAN — MINIMUM SUFFICIENT, LOCAL FIRST
+E01 source/guard compatibility: after materializing matching `wp_prompt.txt` + `wp_spec.json`, preimplementation certificate-free FAST readiness; run `python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit_stream.py tests/test_operator_cockpit_commands.py tests/test_operator_cockpit_ops.py tests/test_operator_cockpit_research.py` locally and only fix genuine same-scope defects. Guard asserts exact 4 source modules, exactly 36 coherent stories, six OPS stories, closed C16 commands and preserved transport.
+E02 frontend: use pinned existing Node engine/lock, `npm --prefix src/operator_cockpit_frontend run typecheck`, `... run build`, `... run build-storybook` (after existing dependency installation); all return 0. Do not update package/lock. A new chart dependency is OUT OF SCOPE.
+E03 user-visible design: confirm `playwright-cli --version`; run Impeccable with output rooted outside the working tree; launch local Storybook on 127.0.0.1; inspect one full-app story with existing external Playwright CLI. Record real screenshots, nine route visits, mock-response observations, interactive charts and Impeccable critique/refinement; provide truthful limitations and visual review packet to Karl.
+E04 final stable head: one exact-scope `wp_readiness_gate.py --check-diff` on current branch vs frozen base, available security/static guards, one authoritative local full suite as repository matrix requires. Do not repeatedly run full suite during CSS iteration. No artifact written to a tracked path except exact nine.
+E05 hosted/published evidence: keep one PR DRAFT during implementation, post ONE stable final candidate and change to ready only after local pass, obtain the mandatory exact-head GitHub Actions result, retrieve posted PR evidence and run existing strict PR evidence guard. Report actual pass/skip counts and unavailable checks honestly; no theoretical tier/savings claims. Karl's visual sign-off is independent of tests and never silently inferred.
+
+11. HARD STOPS / SCOPE COMPATIBILITY
+STOP, return minimum precise defect if actual implementation requires a 10th path, new dependency, backend/DTO modifications, any change to C16, extra mutation/credential/provider/product network, time-based client polling, testing-guard weakening, unexplained Storybook errors, inability to capture real Playwright browser screenshots, new host service, CI/workflow change, economic/trading authority or source claims contradicted by data. Ordinary small fixes inside the nine-file scope require no new WP or approval loop; batch and rerun affected checks locally. No execution, host activation, deployment, Gate C, live or merge authority.
+
+12. SUCCESSOR BOUNDARY / REPORT-BACK
+S10-CC-UX-02 (separately gated) may roll the *approved* aesthetic/visual primitives into Experiments, Strategies, Hermes, Operations, Paper, Audit and Market Truth after Karl personally inspects the functioning UX-01 demo. No automatic rollout, deployment or merge from implementing this WP. Do not broaden to data-history/P&L/probability backend WPs as design prerequisites.
+Report back: 1) exact final commit and nine changed paths; 2) readiness command/exit, focused regression counts, build and one full-suite counts, security checks, final exact-head CI jobs; 3) real Storybook URL, reproduction command, desktop Overview/Alpha queue/mobile screenshots (external scratch path), successful navigation of all nine pages, expected `/api/commands/status` fail-closed observation and *zero unexpected page-data INTERNAL_ERROR*; 4) Impeccable findings and one polished iteration, remaining ordinary design limitations recorded in `docs/status_entries/S10-CC-UX-01.md`; 5) any material unresolved blocker under the existing deferred-items policy rather than hiding it; 6) explicit `AWAITING KARL VISUAL APPROVAL` and separate merge disposition. Do not claim visual approval, host activation or merge readiness on behalf of Karl.
+
+13. NORMATIVE RULE MATRIX (BINDING MACHINE-SPEC REFERENCES)
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|identity|scope|preimplementation|REQUIRE|frozen_nine_paths|identity.scope|R001
+NR002|authority|boundaries|all_phases|FORBID|backend_commands_trading|authority.boundaries|R002
+NR003|compatibility|source_guard|implementation|REQUIRE|exact_four_frontend_modules|compatibility.source_guard|R003
+NR004|compatibility|stories|implementation|REQUIRE|thirty_six_consistent_stories|compatibility.stories|R004
+NR005|storybook|demo_routes|visual_review|REQUIRE|nine_safe_data_routes|storybook.demo_routes|R005
+NR006|charts|truthfulness|all_phases|REQUIRE|honest_counts_and_semantics|charts.truthfulness|R006
+NR007|design|visual_quality|visual_review|REQUIRE|rendered_premium_critique|design.visual_quality|R007
+NR008|validation|local_first|pre_review|REQUIRE|focused_then_final_head|validation.local_first|R008
+NR009|evidence|report_back|ready_review|REQUIRE|actual_browser_and_ci_evidence|evidence.report_back|R009
+NR010|approval|rollout|post_implementation|FORBID|unapproved_full_rollout|approval.rollout|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+IMPLEMENTATION STATUS: KARL AUTHORIZED THIS EXACT REV B1 WP ON 2026-10-10 BY EXPLICIT USER INSTRUCTION. Claude Code is authorized to create the governed artifacts from this exact TXT and matching JSON, verify certificate-free FAST readiness, perform the nine-file implementation, run required local checks and final exact-head hosted CI, open a draft PR, produce external-scratch browser screenshots/Impeccable critique, and report results. No additional routine implementation approval is needed. If readiness fails, batch ordinary same-scope corrections and rerun; do not self-certify PASS. Genuine out-of-scope/protected changes are not authorized. DO NOT merge, deploy, activate any live/financial system, roll out UX-02, or claim Karl's visual approval. End with working demo, PR and AWAITING KARL VISUAL APPROVAL.
