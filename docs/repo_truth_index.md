@@ -2147,3 +2147,17 @@ Scope Amendment 01: Side18 approved exactly two compatibility-only edits in the
 existing stream/command test modules: obsolete CockpitConfig field-order assertions
 now include the appended frontend_dist. Exact scope is 13; architecture, behavior
 and runtime authority remain unchanged.
+
+
+## S10-CC-UX-01 Obsidian Research Interactive Prototype (current repository implementation target)
+
+This current entry supersedes older Control Center in-review target descriptions:
+S10-CC-PROD-01 is merged via PR #231 at `7d77af8b45e5eafec0855fc30e17b167a5178636`.
+Karl authorized the exact REV B1 nine-file FAST/Risk 2 package after deterministic readiness.
+Frozen package: `docs/wp_specs/S10-CC-UX-01/`; stable record:
+`docs/status_entries/S10-CC-UX-01.md`. Source is presentation-only in the existing
+`src/operator_cockpit_frontend/src/app.tsx`, `styles.css` and `foundation.stories.tsx`; the
+existing guard `tests/test_operator_cockpit_stream.py` changes only its story count (35 -> 36).
+The four frontend source modules, nine routes, read-only APIs, SSE, C16 closed command status
+and production serving are preserved. No backend, dependency, workflow, host, credential,
+trading or capital change. Visual approval and S10-CC-UX-02 rollout are Karl-only. Merge authorized: NO.

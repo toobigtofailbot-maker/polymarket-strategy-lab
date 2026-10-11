@@ -242,8 +242,21 @@ const handlers = {
   audit: http.get("/api/audit/recent", () => HttpResponse.json(list(auditItems))),
 };
 
-/** Fresh router + isolated query client per story so states never leak between stories. */
-function StoryHost({ path, seed, refreshOnMount }: { path: string; seed?: boolean; refreshOnMount?: boolean }) {
+/**
+ * Fresh router + isolated query client per story so states never leak between stories. `demo` only
+ * adds the fixture banner for the S10-CC-UX-01 full demo; production never renders it.
+ */
+function StoryHost({
+  path,
+  seed,
+  refreshOnMount,
+  demo,
+}: {
+  path: string;
+  seed?: boolean;
+  refreshOnMount?: boolean;
+  demo?: boolean;
+}) {
   const [client] = useState(() => {
     const queryClient = createQueryClient();
     if (seed) queryClient.setQueryData(overviewQuery.queryKey, overview);
@@ -256,6 +269,12 @@ function StoryHost({ path, seed, refreshOnMount }: { path: string; seed?: boolea
   return (
     <MemoryRouter initialEntries={[path]}>
       <QueryClientProvider client={client}>
+        {demo && (
+          <div className="demo-banner" role="note" aria-label="Fixture demo notice">
+            <strong>DEMO DATA — NOT LIVE</strong>
+            <span>READ-ONLY PROTOTYPE</span>
+          </div>
+        )}
         <ControlCenter />
       </QueryClientProvider>
     </MemoryRouter>
@@ -1467,4 +1486,35 @@ export const OpsRecordedRestrictedLive = meta.story({
     await canvas.findByText("A3_RESTRICTED_LIVE");
     await canvas.findByText("Recorded restricted-live summary");
   },
+});
+
+// ---------------------------------------------------------------------------
+// S10-CC-UX-01 Obsidian Research full demo: one fixture-only story rooted at the overview that
+// navigates all nine existing views. Every page-data GET is answered by a named handler above;
+// the protected status read is deliberately left to the preview's closed catch-all, so that
+// surface stays Disabled with no mutation affordance.
+// ---------------------------------------------------------------------------
+
+export const ObsidianResearchFullDemo = meta.story({
+  args: { path: "/overview" },
+  render: (args) => <StoryHost {...args} demo />,
+  beforeEach: mock(
+    handlers.overview,
+    handlers.market,
+    handlers.experiments,
+    handlers.experimentDetail,
+    researchHandlers.strategies,
+    researchHandlers.strategyDetail,
+    researchHandlers.hermes,
+    researchHandlers.hermesDetail,
+    alphaHandlers.memory,
+    alphaHandlers.queue,
+    triageHandler(triageResolved),
+    alphaHandlers.fallback,
+    opsHandlers.portfolio(opsPortfolio),
+    opsHandlers.gateway(gatewayStatus),
+    handlers.paper,
+    handlers.health,
+    handlers.audit,
+  ),
 });
