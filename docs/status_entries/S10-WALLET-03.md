@@ -10,7 +10,7 @@
 - Current live PR head: see GitHub PR metadata and PR body.
 - Merge commit: not merged; merge is not authorized.
 - Evidence mode: `BLOCKED_NOT_READY`.
-- State: `IMPLEMENTED_LOCAL / BLOCKED_COMPATIBILITY / SIDE18_REVIEW_PENDING / CI_PENDING / NOT_MERGE_READY`.
+- State: `IMPLEMENTED_LOCAL / SIDE19_REVIEW_PENDING / CI_PENDING / NOT_MERGE_READY`.
 - Independent acceptance: PENDING; no `LOCAL_ACCEPTED` claim.
 
 ## Authority Posture
@@ -18,6 +18,10 @@
 Karl authorized the exact ten-file local implementation and explicitly approved
 REV3's existing verified WALLET-01 SQLite read-only loading and unchanged WALLET-02
 canonical profile rederivation. Calculation and output remain in memory. The
+signed Side19 continuation adds only the historical WP81 compatibility test as
+path eleven and preserves commit `3bcce95a2f33b2ab1af976a29787a99c3fa38a37` as an
+ancestor/recovery anchor. Native package size class is L because M is capped at
+ten files; exact eleven paths, risk 2 and FAST governance remain controlling. The
 central boundary table in `docs/ai/codex/PROTECTED_PATHS.md` remains controlling.
 
 FAST, Risk 2, package class OFFLINE_PIT_WALLET_COPYABILITY_RESEARCH_FEASIBILITY.
@@ -30,7 +34,7 @@ Hosted Actions minutes: 0; no ready transition, check bypass, merge or deploymen
 
 ## Scope Boundary
 
-Required = allowed = actual final changed set: ten exact paths:
+Required = allowed = actual final changed set: eleven exact paths:
 
 1. `src/data_layer/wallet_intelligence/copyability.py`
 2. `src/data_layer/wallet_intelligence/__init__.py`
@@ -42,6 +46,7 @@ Required = allowed = actual final changed set: ten exact paths:
 8. `docs/status_entries/S10-WALLET-03.md`
 9. `docs/wp_specs/S10-WALLET-03/wp_prompt.txt`
 10. `docs/wp_specs/S10-WALLET-03/wp_spec.json`
+11. `tests/test_wallet_copyability_delay_report_contract_docs.py`
 
 ALPHA-03/04 source, commits and accepted evidence are preserved independently.
 Generated tooling outputs, local environments and evidence archives are external
@@ -62,7 +67,7 @@ contract are documented in `docs/wallet_copyability_research_contract.md`.
 | R005 | Complete field serialization, closed schema, canonical content ID and recalculation; nested fields, floats, false flags and rehashed contradictions reject |
 | R006 | Existing read-only SQLite only; mocked writes/network/subprocess/environment fail, original database/input bytes unchanged, no raw metadata/address output |
 | R007-R010 | Native readiness, exact scope, generated artifact guard, Ruff/compile, available offline security and affected adjacent/full local validation |
-| R011-R012 | Side18 acceptance and authorized exact-head hosted CI remain pending |
+| R011-R012 | Side19 acceptance and authorized exact-head hosted CI remain pending |
 
 The negative matrix is implemented in the focused test file. All fixtures are
 synthetic; there is no real wallet feasibility or follower-fill evidence.
@@ -93,8 +98,8 @@ collection errors and one warning because Windows Application Control blocked
 NautilusTrader's native DLL. This is disclosed environment failure, not PASS or
 waived coverage. The existing local `s10-live-orch-validate:py312` Docker image
 provides Python 3.12.14, NautilusTrader 1.231.0 and DuckDB 1.5.5 with working native
-imports; no image/package installation or OS-policy bypass is used. The final
-authoritative full suite is BLOCKED. An earlier Docker run on the superseded
+imports; no image/package installation or OS-policy bypass is used. The earlier
+authoritative full-suite attempt was BLOCKED. An earlier Docker run on the superseded
 commit was interrupted after 14 failures, 12779 passes, two skips and 125 warnings;
 its complete diagnostic transcript is retained externally. The validation copy's
 Windows checkout line endings and read-only mount explain multiple environment
@@ -110,15 +115,29 @@ historical guards and protected source were not changed. No remaining issue is
 hidden by test modification. Any unavailable optional security tool is disclosed
 in the external evidence and deferred-items log rather than marked PASS.
 
-The final source candidate passes 45 focused and 539 affected-adjacent tests.
-Four provenance-clock regressions first failed and then passed after same-scope
-revision/resolution admission correction. The unchanged historical
-`tests/test_wallet_copyability_delay_report_contract_docs.py` test
-`test_no_wallet_copyability_src_module` passes on published main but rejects the
-required new module. Correcting it requires an eleventh file, contrary to the
-approved exact scope. Implementation is stopped under the governed stop condition;
-S10-WALLET-03-D007 requires an explicit package/scope amendment. No final full-suite
-PASS, complete compatibility, independent acceptance or posted PR is claimed.
+## Authorized Side19 continuation
+
+Karl authorized the exact eleven-file amendment, solely adding the historical
+source guard. The unchanged required WALLET-03 source/API and provenance checks
+are preserved. The guard now requires both the WP81 evaluator and WALLET-03
+module; both missing-module cases and a third matching file or directory reject.
+Six targeted real/synthetic positive and negative cases pass. No wildcard package
+exception, skip, xfail, deletion or unrelated guard change is introduced.
+S10-WALLET-03-D007 is resolved by this authorized compatibility correction.
+
+Bounded discovery covers actual Git-diff guards and filesystem globs/allowlists;
+the old declared-set simulations are historical evidence only. The combined
+wallet/PIT/architecture/status/truth and full historical guard test modules pass.
+The previous four raw revision/resolution clock regressions remain covered.
+
+The final full-suite result and its preflight belong to the exact-head external
+evidence. Validate the offline Linux-native writable disposable checkout's Git
+bytes, base/head, native imports, document hashes, shell syntax and local output
+before the complete suite. The old interrupted Docker/Windows attempts are not
+final validation. Semgrep remains UNAVAILABLE; CodeQL is NOT_EXECUTED. No final
+PASS, independent acceptance or posted evidence is inferred from earlier logs.
+Current review owner: Side19; return exact-final-HEAD evidence to CURRENT SIDE19
+CHAT for independent assessment. Codex does not grant LOCAL_ACCEPTED/MERGE_READY.
 
 ## Residual limits and merge gate
 

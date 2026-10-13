@@ -4,10 +4,10 @@ and wallet intelligence report contract."""
 from __future__ import annotations
 
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -713,27 +713,59 @@ def test_trade_event_doc_still_states_no_network_ingestion() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 19. No src/ changes (check there are no new wallet copyability src files)
+# 19. Exact approved copyability source set (WP81 and S10-WALLET-03)
 # ---------------------------------------------------------------------------
 
 def test_no_wallet_copyability_src_module() -> None:
-    # WP80 is docs/schema/tests-only — no src implementation was added in WP80.
-    # WP81 adds wallet_copyability_delay_evaluation.py, which is the approved
-    # local/offline/read-only evaluator. All other copyability src files remain
-    # forbidden. This test now checks that the only allowed copyability src file
-    # is the WP81 evaluator.
+    # Preserve WP81's fixture evaluator and admit only the approved WALLET-03
+    # research module; missing modules and any third matching path fail closed.
     src_dir = ROOT / "src"
-    if not src_dir.exists():
-        return
     allowed_copyability_src = {
         src_dir / "data_layer" / "wallet_copyability_delay_evaluation.py",
+        src_dir / "data_layer" / "wallet_intelligence" / "copyability.py",
     }
-    for path in src_dir.rglob("*copyability*"):
-        if "__pycache__" in path.parts:
-            continue
-        assert path in allowed_copyability_src, (
-            f"Unexpected copyability src file outside WP81 approved scope: {path}"
-        )
+    found = {
+        path
+        for path in src_dir.rglob("*copyability*")
+        if "__pycache__" not in path.parts
+    }
+    assert found == allowed_copyability_src, (
+        f"Unexpected or missing approved copyability source: {found ^ allowed_copyability_src}"
+    )
+
+
+@pytest.mark.parametrize(
+    "variant",
+    [
+        "approved",
+        "missing_legacy",
+        "missing_wallet03",
+        "extra_file",
+        "extra_directory",
+    ],
+)
+def test_copyability_source_allowlist_boundaries(tmp_path, monkeypatch, variant):
+    src_dir = tmp_path / "src" / "data_layer"
+    src_dir.mkdir(parents=True)
+    legacy = src_dir / "wallet_copyability_delay_evaluation.py"
+    current = src_dir / "wallet_intelligence" / "copyability.py"
+    current.parent.mkdir()
+    legacy.touch()
+    current.touch()
+    if variant == "missing_legacy":
+        legacy.unlink()
+    elif variant == "missing_wallet03":
+        current.unlink()
+    elif variant == "extra_file":
+        (src_dir / "rogue_copyability.py").touch()
+    elif variant == "extra_directory":
+        (src_dir / "rogue_copyability").mkdir()
+    monkeypatch.setitem(globals(), "ROOT", tmp_path)
+    if variant == "approved":
+        test_no_wallet_copyability_src_module()
+    else:
+        with pytest.raises(AssertionError, match="Unexpected or missing approved"):
+            test_no_wallet_copyability_src_module()
 
 
 def test_wallet_report_generator_src_module_is_wp82() -> None:

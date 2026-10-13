@@ -6,7 +6,7 @@
     "title": "PIT Wallet Observability and Delayed-Copy Research Feasibility",
     "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
     "package_class": "OFFLINE_PIT_WALLET_COPYABILITY_RESEARCH_FEASIBILITY",
-    "package_size_class": "M",
+    "package_size_class": "L",
     "risk_level": 2,
     "base_branch": "main",
     "required_predecessor": {
@@ -31,7 +31,8 @@
       "docs/repo_truth_index.md",
       "docs/status_entries/S10-WALLET-03.md",
       "docs/wp_specs/S10-WALLET-03/wp_prompt.txt",
-      "docs/wp_specs/S10-WALLET-03/wp_spec.json"
+      "docs/wp_specs/S10-WALLET-03/wp_spec.json",
+      "tests/test_wallet_copyability_delay_report_contract_docs.py"
     ],
     "allowed_changed_files": [
       "src/data_layer/wallet_intelligence/copyability.py",
@@ -43,7 +44,8 @@
       "docs/repo_truth_index.md",
       "docs/status_entries/S10-WALLET-03.md",
       "docs/wp_specs/S10-WALLET-03/wp_prompt.txt",
-      "docs/wp_specs/S10-WALLET-03/wp_spec.json"
+      "docs/wp_specs/S10-WALLET-03/wp_spec.json",
+      "tests/test_wallet_copyability_delay_report_contract_docs.py"
     ],
     "forbidden_prefixes": [
       ".github/",
@@ -63,14 +65,15 @@
       "tools/security/",
       "tools/wp/"
     ],
-    "max_changed_files": 10,
+    "max_changed_files": 11,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
       "docs/deferred_items_log.md",
       "docs/project_status.md",
-      "docs/repo_truth_index.md"
+      "docs/repo_truth_index.md",
+      "tests/test_wallet_copyability_delay_report_contract_docs.py"
     ],
-    "rollback_surface": "Revert only S10-WALLET-03 ten paths; additive wallet-copyability evaluator, tests, contract/status and governed WP disappear or revert. WALLET-01/02, ALPHA-03/04, PIT sources, Hermes, WP170, execution, risk, hosted CI and all live authority remain unchanged.",
+    "rollback_surface": "Revert only S10-WALLET-03 eleven paths; additive wallet-copyability evaluator, tests, contract/status and governed WP disappear or revert. WALLET-01/02, ALPHA-03/04, PIT sources, Hermes, WP170, execution, risk, hosted CI and all live authority remain unchanged.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -260,7 +263,7 @@
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "Status LOCAL_ACCEPTED only after independent Side18 review; hosted pending",
+        "validation_rule": "Status LOCAL_ACCEPTED only after independent Side19 review; hosted pending",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "ADVISORY_RESEARCH_ONLY",
         "derivation_rule_id": null
@@ -279,19 +282,19 @@
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "Codex verifies current main equals 49744ae52c0a3d0011dea6eb81afbdfddb5c5488, creates clean independent worktree and official certificate-free FAST readiness gate passes with exact ten paths.",
+        "condition": "Published main remains at 49744ae52c0a3d0011dea6eb81afbdfddb5c5488; resume the existing independent worktree preserving 3bcce95a2f33b2ab1af976a29787a99c3fa38a37 as ancestor; certificate-free FAST readiness passes with exact eleven paths.",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
         "from_state": "DRAFTABILITY_PASS",
         "to_state": "AUTHORIZED",
-        "condition": "Karl sends this exact WP as an implementation message to Codex; sending grants bounded local ten-file implementation, not GitHub publication or external runtime.",
+        "condition": "Karl's signed Side19 continuation amendment authorizes exactly the eleven named paths; existing authenticated GitHub repository operations remain permitted, with no hosted Actions, external runtime or trading authority.",
         "failure_category": "AUTHORITY_CONTRADICTION"
       },
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Codex implements exact ten paths and verifies focused/adjacent/scope/offline security plus one stable-head full local suite; independent Side18 review and publication are later stages.",
+        "condition": "Codex implements exact eleven paths and verifies focused/adjacent/scope/offline security plus one stable-head full local suite; independent Side19 review and publication are later stages.",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
@@ -433,21 +436,21 @@
         "source": "command",
         "test": "preimplementation_readiness",
         "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-03/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-03/wp_spec.json --repo-root .",
-        "expected_result": "Certificate-free FAST IMPLEMENTATION_READY, base verified and exact ten file scope"
+        "expected_result": "Certificate-free FAST IMPLEMENTATION_READY, base verified and exact eleven file scope"
       },
       {
         "requirement_id": "R008",
         "source": "command",
         "test": "adjacent_wallet_pit_architecture",
-        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence tests/data_layer/point_in_time_market_research/test_research_provenance.py tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_architecture_boundaries.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py",
-        "expected_result": "Actual adjacent tests pass with no invalid new source family, check status/index compatibility"
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence tests/data_layer/point_in_time_market_research/test_research_provenance.py tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_architecture_boundaries.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py tests/test_wallet_copyability_delay_report_contract_docs.py",
+        "expected_result": "Actual adjacent tests pass with no invalid new source family, check status/index compatibility; historical source allowlist requires both approved modules and rejects missing modules or any third matched file/directory; unrelated historical guards unchanged; bounded Git-diff and filesystem-glob discovery complete."
       },
       {
         "requirement_id": "R009",
         "source": "command",
         "test": "final_scope_and_local_full_suite",
         "command": "python -m pytest -q -p no:cacheprovider",
-        "expected_result": "One complete local stable-HEAD suite, actual warnings/skips, native check-diff and exact scope PASS"
+        "expected_result": "One complete local stable-HEAD suite, actual warnings/skips, native check-diff and exact scope PASS; verify offline Linux-native writable canonical-Git-byte checkout, native imports, pinned hashes, bash syntax and local-data output before one complete suite on the stable final committed HEAD; prior partial output is not final evidence; environment impossibility is LOCAL_FULL_SUITE_BLOCKED."
       },
       {
         "requirement_id": "R010",
@@ -459,9 +462,9 @@
       {
         "requirement_id": "R011",
         "source": "manual",
-        "test": "independent_side18_local_review",
+        "test": "independent_side19_local_review",
         "command": "git diff --name-status 49744ae52c0a3d0011dea6eb81afbdfddb5c5488...HEAD",
-        "expected_result": "Side18 audits actual final HEAD/evidence and validates authority and scope; does not substitute old hosted results"
+        "expected_result": "Side19 audits actual final HEAD/evidence and validates authority and scope; does not substitute old hosted results"
       },
       {
         "requirement_id": "R012",
@@ -488,7 +491,7 @@
       "Dependencies, workflows, environment or hosted CI settings",
       "Touch ALPHA-03/04 unmerged worktrees, evidence or commits",
       "Non-draft PR transition, GitHub Actions hosted job dispatch/re-run, merge without mandatory hosted checks, CI settings/workflow changes, or deployment. Authenticated git push and DRAFT PR are separately permitted.",
-      "An eleventh tracked path without explicit updated Karl authorization"
+      "A twelfth tracked path without explicit updated Karl authorization"
     ]
   }
 }

@@ -2071,7 +2071,7 @@ Stable evidence: `docs/status_entries/S10-CC-UX-01.md`; validation state: see PR
 Visual sign-off: AWAITING KARL VISUAL APPROVAL. S10-CC-UX-02 rollout is separately gated.
 Capital/orders: USD 0 / 0. Merge authorized: NO.
 
-## S10-WALLET-03 local implementation awaiting Side18 acceptance
+## S10-WALLET-03 local implementation awaiting Side19 acceptance
 
 S10-WALLET-03 adds PIT wallet observability and conditional delayed-price cost
 research through `src/data_layer/wallet_intelligence/copyability.py`, with additive
@@ -2079,17 +2079,18 @@ package exports and focused tests at
 `tests/data_layer/wallet_intelligence/test_copyability.py`. The contract is
 `docs/wallet_copyability_research_contract.md`; governed REV3 prompt/spec are in
 `docs/wp_specs/S10-WALLET-03/`; stable evidence is
-`docs/status_entries/S10-WALLET-03.md`. FAST, Risk 2, exact ten-file scope. Karl
+`docs/status_entries/S10-WALLET-03.md`. FAST, Risk 2, exact eleven-file scope. Karl
 approved existing local WALLET-01 verified read-only SQLite loading and unchanged
 WALLET-02 canonical profile rederivation before in-memory calculation. No WALLET-01/02
 source edits, store, persistence, provider acquisition, credentials, execution,
 strategy, qualification, paper/live or capital authority. Real product/provider
 calls and orders: 0. Normal authenticated repository GitHub access is authorized;
-hosted Actions minutes: 0. State: IMPLEMENTED_LOCAL / BLOCKED_COMPATIBILITY / SIDE18_REVIEW_PENDING /
+hosted Actions minutes: 0. State: IMPLEMENTED_LOCAL / SIDE19_REVIEW_PENDING /
 CI_PENDING / NOT_MERGE_READY. No LOCAL_ACCEPTED claim precedes independent review.
 ALPHA-03/04 and their accepted evidence remain separate and preserved. WALLET-04
 incrementality and the wallet-specific gate remain separately gated. Historical
 project records and protected runtime implementation targets are retained.
-Implementation stopped: unchanged WP81 copyability source allowlist rejects the
-required WALLET-03 module; correction needs an eleventh path and explicit scope
-amendment (S10-WALLET-03-D007). No final full-suite PASS or acceptance is claimed.
+Karl authorized the eleventh historical WP81 test path; the exact source-set
+guard now passes both approved and forbidden-path probes (D007 resolved). The
+original ten-file commit remains an ancestor. Final full-suite preflight/results
+are external exact-head evidence; Side19 independently assesses local acceptance.

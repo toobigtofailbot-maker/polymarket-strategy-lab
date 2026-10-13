@@ -2177,10 +2177,11 @@ read-only ledger, not authenticated by its mapping hash alone. Retained quote
 bytes and registered provenance distinguish observed from scenario-only evidence;
 scenario fees/depth requirements do not prove follower fills or profitability.
 No store, provider, credential, strategy, execution, paper or live authority is
-added. Side18 acceptance and hosted CI are pending; no merge-ready or
+added. Side19 acceptance and hosted CI are pending; no merge-ready or
 LOCAL_ACCEPTED claim is made. ALPHA-03/04 are preserved independently, and WALLET-04
 retains ownership of wallet incrementality against non-wallet controls.
-Compatibility is BLOCKED by WP81's unchanged filesystem-wide source allowlist in
-`tests/test_wallet_copyability_delay_report_contract_docs.py`; its correction is
-outside the ten-file scope (S10-WALLET-03-D007). Implementation is stopped pending
-an explicit scope amendment; no final full-suite PASS or published PR is claimed.
+Karl's exact eleven-file amendment authorizes the named historical source guard;
+both approved modules must exist, and missing/third matched paths reject (D007
+resolved). Original commit 3bcce95a2f33b2ab1af976a29787a99c3fa38a37 is preserved as
+an ancestor. Final full-suite environment preflight/result and Side19 assessment
+remain separately evidenced; no hosted checks, acceptance or merge is presumed.

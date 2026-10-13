@@ -177,8 +177,14 @@ execution or qualification authority.
 | R005 integrity | `test_wallet03_stable_record_roundtrip` | rehashed incorrect counts/extrema, extra fields, malformed quote, false flags and raw metadata |
 | R006 authority | `test_wallet03_read_only_no_authority` | write/network/subprocess/environment attempts, database mutations, unsafe output; original database/input unchanged |
 
-Final evidence must include native exact-diff readiness, the exact ten-file scope,
+Final evidence must include native exact-diff readiness, the exact eleven-file scope,
 artifact/static/security checks, adjacent tests and one authoritative full local
-suite on the stable committed candidate. Side18 acceptance and authorized hosted
+suite on the stable committed candidate. Side19 acceptance and authorized hosted
 exact-head CI remain separate gates. Status is not LOCAL_ACCEPTED merely because
 local tests pass, and hosted checks remain pending before review readiness/merge.
+
+The authorized historical WP81 source guard requires exactly its fixture evaluator
+and the WALLET-03 module. Negative probes cover either module missing, a third
+matching file and a third matching directory; unrelated tools/trading/report
+guards are preserved. Full-suite validation uses an offline writable Linux-native
+checkout from canonical Git objects after native/hash/shell/output preflight.
