@@ -1,0 +1,123 @@
+# S10-WALLET-03 — PIT Wallet Observability and Delayed-Copy Research Feasibility
+
+## 0. Identity, local base, authority
+WP ID: S10-WALLET-03
+Executor: CODEX; independent local reviewer: Side18.
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: OFFLINE_PIT_WALLET_COPYABILITY_RESEARCH_FEASIBILITY
+Package size class: M (10 exact paths); risk level: 2; governance track expected: FAST.
+Governance track expected: FAST
+**Frozen published base:** `49744ae52c0a3d0011dea6eb81afbdfddb5c5488` on remote `main`, subject to actual live main recheck before starting.
+Required predecessor: PR #232, head `1a677dee597c508fe43eb7ede28ea7660a33e2d9`, merge `49744ae52c0a3d0011dea6eb81afbdfddb5c5488`.
+Suggested isolated branch: `codex/s10-wallet-03-pit-copyability-feasibility`, dedicated local worktree from exact frozen published base. Do NOT branch from unpublished ALPHA-03/04.
+
+**Karl explicit implementation authority (2026-10-12):** Karl has already sent and authorized S10-WALLET-03 for Codex implementation within its EXACT TEN FILES, contingent on normal startup, interface/scope checks, and native readiness PASS. No repeated implementation-permission question. Karl explicitly authorizes normal authenticated GitHub repository operations, including git/gh authentication through the existing secure credential manager, live remote-main verification, fetch/pull, branch management, Git pushes, and DRAFT pull-request creation/updates when justified. This permission is repository-workflow-only; it does NOT enable product/API/provider networking or trading/production credential access (the 16-field authority mirror below remains unchanged). **ZERO GITHUB-HOSTED ACTIONS MINUTES:** Do not start, dispatch, rerun, or transition a PR to a state that launches hosted jobs. Keep any PR DRAFT. Required exact-head hosted CI remains pending. Do not merge, mark ready for review, bypass required checks/branch protection, or change CI workflows/settings until mandatory hosted checks are authorized and satisfied. No deployment, wallet copying, order, capital, Gate C or live authority.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+### GitHub startup verification (permission update; no scope/authority expansion)
+Codex has already passed the authenticated Remote Main Sync Gate (2026-10-12), verified `main == origin/main == 49744ae52c0a3d0011dea6eb81afbdfddb5c5488` and zero open PRs, and created `codex/s10-wallet-03-pit-copyability-feasibility` in an independent clean worktree from that exact base. Resume that SAME branch/worktree; do not create a second branch or repeat completed startup/probe/guard scans without material evidence. Confirm the existing state is still compatible before implementation. Normal secure Git authentication, fetch/pull/push and DRAFT PR work are permitted under Karl's existing authorization; never expose tokens. If remote main has materially advanced or the worktree is unexpectedly dirty, stop for precise base/authority reconciliation, not a silent rebase. Install this REV3 corrected prompt and spec in the two already authorized governed paths, run native readiness on the revised exact bytes, and continue implementation if it passes. Prior REV2 native readiness and complete-declared-scope historical guard probe passed; keep that evidence.
+
+## 1. Objective — LEAN-PATH minimum real value
+Add exactly ONE deterministic, content-addressed wallet **copyability-feasibility RESEARCH assessment**, with narrowly permitted read-only verification of an existing local WALLET-01 SQLite ledger using existing WALLET-01/02 loaders/builders, followed by in-memory assessment computation. No WALLET-03 storage, write, new database or framework. Use verified WALLET-01/02 public-evidence and PIT profile records. Evaluate *observable delay* and *conditional* transaction-cost feasibility by explicit scenario; do not claim a wallet is profitable, followable, executable, eligible or promotable. If necessary public quote, timestamp or provenance evidence is absent, output `UNKNOWN` or an explicit insufficiency reason, never fabricate data or replace gaps with a historical trade price. WALLET-04 still owns wallet incrementality versus non-wallet controls. This WP does not implement a provider connector, executable strategy or trade follower.
+
+Actual reuse: `src/data_layer/wallet_intelligence/{contracts,ledger,profile,reconciliation}.py`; PIT observability / provenance helpers in `src/data_layer/point_in_time_market_research/research_provenance.py`; historical `src/data_layer/wallet_copyability_delay_evaluation.py` only as a **fixture-era comparator** (never authoritative real evidence, never use its optimistic promotional labels as output). Do not copy its historical five-window evaluator wholesale. Record any missing data capability truthfully.
+
+## 2. Strict context budget
+- **Read first:** `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CODEX_START_HERE.md`, `docs/ai/codex/{WP_DRAFTING_STANDARD,VALIDATION_MATRIX,PROTECTED_PATHS,WP_EXECUTION_STATE_MACHINE}.md`, project status/repo-truth relevant sections.
+- **Read for WP:** WALLET-01 `contracts.py` event/observation and ledger loader; WALLET-02 `profile.py` snapshot/context/cohort validators; existing PIT provenance `evaluate_replay_admissibility`, existing WP81 delay fixture simulator, focused WALLET tests, architecture/scope-guard tests whose logic evaluates full Git changes.
+- **Read only if blocked:** unrelated historical WP78-81 fixture docs, old general Hermes/Alpha tests, wallet ingestion internals not required by the chosen adapter.
+- **Do not read or touch:** product/trading credentials, secret stores, local user-specific wallet account data, trading/OMS/risk/execution code, deployment settings, `.github` workflow/config files, legacy ALPHA-03/04 worktrees and evidence. Normal git/gh authentication via the secure OS credential manager is explicitly permitted; never print or copy access tokens.
+- **Search terms:** `WalletProfileSnapshot`, `ProfileEvidenceDecision`, `WalletEventObservation`, `load_and_verify_wallet_evidence_ledger`, `evaluate_replay_admissibility`, `wallet_canonical_json_bytes`, `ORDER_BOOK`, `WP81`, `diff_scope_summary`.
+
+## 3. Exact scope: REQUIRED = ALLOWED (10 paths)
+1. `src/data_layer/wallet_intelligence/copyability.py`
+2. `src/data_layer/wallet_intelligence/__init__.py`
+3. `tests/data_layer/wallet_intelligence/test_copyability.py`
+4. `docs/wallet_copyability_research_contract.md`
+5. `docs/deferred_items_log.md`
+6. `docs/project_status.md`
+7. `docs/repo_truth_index.md`
+8. `docs/status_entries/S10-WALLET-03.md`
+9. `docs/wp_specs/S10-WALLET-03/wp_prompt.txt`
+10. `docs/wp_specs/S10-WALLET-03/wp_spec.json`
+
+Do not modify old WALLET-01/02 implementation or history. Use one new source file and one new focused test file, not a new service/tool framework. Existing status/index/deferred updates are small additive changes; no re-authoring the roadmap. If full-changed-set discovery proves an eleventh compatibility test edit is required, STOP and return the exact reason and minimal amendment before touching that path. All final changed paths must equal the ten declared paths (not a range/prefix).
+
+## 4. Public API and PIT admission contract
+Create `src/data_layer/wallet_intelligence/copyability.py` with one **bounded, read-only verified-source orchestration builder** and an in-memory deterministic calculation/strict mapping roundtrip for a `WalletCopyabilityResearchAssessment` (frozen dataclass, closed output schema, deterministic SHA-256 ID over complete material content except its own ID). Expose only the minimal named API through package `__init__.py`; no CLI, new SQLite database/store, persistent report, database mutation, network or cached global state. Reading the caller's EXISTING verified WALLET-01 SQLite ledger by the unchanged native read-only loader is explicitly permitted; the assessment calculation after source admission must be in memory. Inputs:
+- One existing `WalletProfileSnapshot` plus an explicit `wallet_ledger_path` to the EXISTING WALLET-01 SQLite ledger, the exact WALLET-02 `WalletDiscoveryCohortSnapshot`, `target_wallet`, `as_of`, `market_contexts` and optional `identity_observability` from which that profile was originally derived. The builder MUST (a) validate supplied typed/cohort/context inputs by existing public WALLET-02 validators; (b) call `load_and_verify_wallet_evidence_ledger(wallet_ledger_path)` and require `is_valid`, nonnull snapshot and exact expected `head_hash`; (c) call the unchanged `build_wallet_profile_snapshot(wallet_ledger_path=..., cohort_snapshot=..., target_wallet=..., as_of=..., market_contexts=..., identity_observability=...)`; (d) compare the entire rederived dataclass and canonical mapping to the supplied profile, not only its hash, total counts, or selected fields; and (e) fail closed on any mismatch, read failure, head drift, identity/cohort/context difference, direct fabricated dataclass or self-rehashed profile. All comparison inputs must bind to the same evidence and cutoff. Existing WALLET-02 profile parser alone checks internal structure; it MUST NOT be treated as proof of backing-source derivation. Do not pass a `WalletLedgerSnapshot` into the path-based builder, monkeypatch its globals, add WALLET-01/02 source edits, reimplement WALLET-02 derivation, or use a caller `verified=true` flag. The WALLET-01 ledger is **read-only, never initialized, updated or rewritten** by WALLET-03.
+- A **bounded explicit, independent** sequence of PIT quote/fee/liquidity observation records, supplied in-memory with their existing verified `ResearchProvenanceManifest` + `ObservabilityEvidence`/DQ/fidelity and exact condition/token identifiers. Reuse an existing repo PIT snapshot/validator where directly compatible; otherwise define the smallest typed *input* witness inside `copyability.py` (NOT a new canonical truth or data-acquisition class). Never use a caller-asserted `verified=true` as provenance proof. Any input that cannot be verified against a real source binding is `SCENARIO_ONLY`, never `OBSERVED`.
+- Fixed caller-declared, nonnegative bounded delay windows in seconds and **explicit** assumptions for taker fee/slippage/depth/transaction-cost components, all strictly decimal text; no floats, unit mixing, negative fees, inferred spreads or invented venue execution mechanics. A price witness must be at or after wallet-action *observation* time plus delay, available by the analysis cutoff, and refer to the exact market/token. `event_time` is NOT observability. Prevent future resolution/late quote/retrospective source contamination and after-outcome leakage.
+
+Admission is based only on canonical selected wallet event/observation with PIT admissibility and identity/reconciliation; exclude unsupported activities, duplicate/superseded fills, ambiguous identities, contradictory source evidence, too-late quote or nonmatching token. Do not count related-account activity twice. Never treat profile directional skill, historical PnL, raw trade frequency, rebates or resolution outcome as a replacement for follower-specific quotes/depth/cost evidence.
+
+Derive **per-delay advisory feasibility**: exact eligible event counts, independently observable quotes, excluded/unknown reason counts, optional best/worst *scenario price difference after explicit costs* (as conditional research estimates only), context-coverage counts, and `OBSERVABLE_CONDITIONAL`, `UNOBSERVABLE`, `INSUFFICIENT_CONTEXT` or `SCENARIO_ONLY`. If fees or order-book depth missing, do not assert executable net improvement or copyability. A positive scenario figure is NEVER called profit, alpha, expected return, wallet skill, or a trade recommendation. No true follower fill, size, market impact, queue position, adverse selection, causality or realized P&L is known here. Worst-case assumptions remain explicit; no silent favorable replacement or auto-selection.
+
+Identity binds wallet profile ID, verified ledger head, observation/provenance IDs, exact policy version, cutoff, delay parameters and explicit cost assumptions, exclusions and calculated results. **Trust is checked at source-bound build time**: a self-rehashed/fabricated WALLET-02 profile must be rejected by exact canonical rederivation against the read-only ledger; a hash-valid standalone `WalletProfileSnapshot` or new WALLET-03 assessment mapping is never independent proof of evidence authenticity. **Mapping roundtrip validation** enforces a closed schema, content ID, internal deterministic invariants and no-echo safety; reject source-independent internally contradictory recalculations (even if rehashed), unknown fields, NaN, noncanonical Decimal, duplicate source rows and mismatched references. Do not claim a standalone parser can detect every self-consistent source-dependent forgery without the original source. Deterministic for reordered semantically identical inputs, byte-for-byte stable roundtrip. Non-authority flags immutable true; output never contains private identity claims, raw free-text metadata, recommendations, wallet-follow actions or sensitive source blobs.
+
+## 5. Negative-test matrix — one-shot tests and strict boundaries
+All focused tests in `tests/data_layer/wallet_intelligence/test_copyability.py`:
+- R001: using real existing WALLET-02 fixture builders over a synthetic verified local WALLET-01 SQLite path, rederive the profile **exactly**; reject wrong/foreign/missing/changed/tampered/unreadable ledger, unexpected head or cutoff/context/cohort/target mismatch, and an otherwise schema-valid self-rehashed fabricated profile with internally consistent derived fields. Require unchanged SQLite bytes before/after. Reuse the existing fixture approach, not a new synthetic persistence implementation.
+- R002: PIT time direction and source provenance; event_time is not captured time, no late/future quote, no post-resolution leakage; missing real provenance remains `SCENARIO_ONLY`/`INSUFFICIENT_CONTEXT`.
+- R003: delay windows, quote selection, strictly Decimal fees/spread/liquidity and no double-counted fills; missing depth/fees fail closed to uncertainty, negative/floats reject.
+- R004: duplicate/reorg/supersession, related addresses and unsupported source instrument never raise eligibility; full accepted-vs-excluded denominator conservation.
+- R005: deterministic record IDs, canonical roundtrip, internally inconsistent derived data rejected even if identity rehashed, closed no-echo errors, advisory-output safety, no context/metadata passthrough and no strategy/qualification/real copy signals. A standalone mapping parser is **not** asserted to authenticate source derivation: R001 source-bound builder owns that proof.
+- R006: bounded **read-only** source verification (existing SQLite WALLET-01 loader and WALLET-02 builder) followed by in-memory calculation; mocked sockets/product APIs/credential and filesystem **writes** must never occur; no new SQLite or WALLET-03 storage; original SQLite and input bytes unchanged. Do not globally forbid filesystem reads or mock all file opens; distinguish explicitly permitted WALLET-01 read-only evidence access from forbidden mutations.
+Run appropriate adjacent wallet/provenance/architecture/status tests; use complete-changed-set guard discovery on published base **before** freeze. No general full suite during iteration. Final stable candidate: native readiness `--check-diff`, exact scope, generated-artifact guard, Ruff/compile/available local security; **one** full local suite on final stable committed HEAD; independent Side18 local assessment. If final candidate changes, rerun impacted checks, but avoid redundant full suites while fixing ordinary same-scope defects. Hosted checks stay PENDING.
+
+## 5a. Evidence plan — normative rule matrix: prompt/spec/evidence alignment
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|copyability|source|on_build|REQUIRE|verified_wallet_profile_ledger|copyability.source|R001
+NR002|copyability|pit|on_observation|REQUIRE|exact_observability_no_leakage|copyability.pit|R002
+NR003|copyability|delay_cost|per_delay|REQUIRE|explicit_decimal_conditional_cost|copyability.delay_cost|R003
+NR004|copyability|denominators|on_aggregation|REQUIRE|no_double_counting|copyability.denominators|R004
+NR005|copyability|schema|on_output|REQUIRE|stable_advisory_identity|copyability.schema|R005
+NR006|copyability|authority|at_all_times|FORBID|provider_execution_capital|copyability.authority|R006
+NR007|copyability|validation|final_head|REQUIRE|native_scope_local_and_hosted_pending|copyability.validation|R009
+END_NORMATIVE_RULE_MATRIX_V1
+
+## 6. Deterministic readiness and minimal validation commands
+**Preimplementation, after clean published-base worktree and governed files placement:**
+`python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-03/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-03/wp_spec.json --repo-root .`
+**Final, after local commit from published base:**
+`python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-03/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-03/wp_spec.json --repo-root . --check-diff --base 49744ae52c0a3d0011dea6eb81afbdfddb5c5488 --head HEAD`
+`python tools/git/diff_scope_summary.py --base 49744ae52c0a3d0011dea6eb81afbdfddb5c5488 --head HEAD --wp-spec docs/wp_specs/S10-WALLET-03/wp_spec.json --require-exact-scope --fail-on-warning`
+`python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py`
+`python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence tests/data_layer/point_in_time_market_research/test_research_provenance.py tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_architecture_boundaries.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py`
+`python tools/git/preflight_generated_artifact_guard.py`
+`python -m pytest -q -p no:cacheprovider` **once**, after final stable code & commit.
+Ruff, compileall of in-scope Python, available gitleaks/semgrep or local repo security utilities, whitespace/stat-only, no mutation after final suite. Report exact commands, exits, skips and warnings; unavailable tools honestly reported. Post-final-review return local `LOCAL_ACCEPTED / CI_PENDING / NOT MERGE-READY` only if Side18 accepts, not merely because Codex tests pass. Later exact-head hosted CI mandatory before ready-for-review/merge when Karl authorizes hosted CI; a DRAFT PR is permitted meanwhile, but never as merge-ready evidence.
+
+## 7. Skills, hard stops and successor boundary
+Select: `$wp-predraft-inspector`, `$hermes-alpha-reuse-check` (only to prevent duplicating generic research), `$wp-one-shot-review`, `$wp-readiness-preflight`, `$wp-minimum-test-plan`, `$verification-before-completion`. `$systematic-debugging` on real defects and `$canonical-evidence-audit` if real provenance issue; do NOT run entire skills library by habit. These skills exist on Codex's own machine and have NOT been run by Side18 here.
+
+**STOP if** published main differs from frozen base — because implementation or diff guards may be stale; ask Side18 to rebase spec, without touching ALPHA-03/04.
+**STOP if** existing verified `load_and_verify_wallet_evidence_ledger` plus exact `build_wallet_profile_snapshot(wallet_ledger_path=...)` cannot reproduce the supplied profile with the same cohort/context/cutoff — because schema/hash parsing cannot substitute for source derivation. Read-only local SQLite access is approved; no WALLET-01/02 helper extraction or interface refactor is approved.
+**STOP if** full changed-set guard discovery requires an eleventh path — because exact path authority cannot be silently broadened.
+**STOP if** a new provider/network/ingestion/queue/execution/risk/strategy/dependency workflow or credential change appears necessary — because it requires separate authority.
+**STOP if** downstream copy economics cannot honestly distinguish PIT observations from fixture assumptions — because no credible research result exists.
+**STOP if** native gate or mandatory local validation fails outside same-scope correction — report the precise blocker, do not bypass tests.
+**STOP if** a GitHub operation would dispatch or consume hosted Actions minutes, switch a PR from DRAFT to ready for review, bypass mandatory checks, or merge before required exact-head hosted CI — because Karl has authorized GitHub repository operations but frozen hosted check execution. Ordinary authenticated fetch/pull, push and DRAFT PR updates are permitted and do NOT constitute runtime/provider network authority. Prefer one push after stable local validation rather than remote iteration.
+
+## 8. Report back
+Preserve exact local commit and a recoverable Git bundle and evidence archive outside worktree after completion. Do not modify ALPHA-03/04 commits or evidence. No automatic promotion into WALLET-04, wallet gate, QUAL, WP170, risk, paper or live.

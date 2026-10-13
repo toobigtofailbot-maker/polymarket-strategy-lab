@@ -1,5 +1,16 @@
 # Deferred Items Log
 
+## S10-WALLET-03 bounded research follow-up
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-WALLET-03-D001 | Pure profile-source admission incompatibility | RESOLVED_BY_KARL_REV3 | Unchanged WALLET-01 loader and WALLET-02 path-based builder canonically rederive the complete supplied profile read-only; no source helper extraction/refactor |
+| S10-WALLET-03-D002 | Real retained follower-specific quote, fee, depth and fill calibration | DEFERRED_SEPARATE_AUTHORIZATION | This WP uses synthetic evidence and explicit cost assumptions only; separately authorized public retained evidence and later empirical calibration are needed; no actual copyability or executable-edge conclusion |
+| S10-WALLET-03-D003 | Independent Side18 acceptance and mandatory exact-head hosted CI | PENDING | Review exact commit/diff/local evidence; hosted Actions require Karl's later authorization; draft PR only, no ready-for-review/merge, no LOCAL_ACCEPTED until independent acceptance |
+| S10-WALLET-03-D004 | Wallet incrementality against non-wallet controls | DEFERRED_TO_WALLET_04 | Separately gated WALLET-04; assessment price differences are conditional research estimates and create no wallet promotion or wallet gate shortcut |
+| S10-WALLET-03-D005 | Installed Semgrep CLI blocked by Windows Application Control | UNAVAILABLE_OS_POLICY | Existing Semgrep version probe raised WinError 4551 when invoking its native executable; no policy bypass or installation performed. Run available offline Gitleaks and source-boundary checks now; a permitted Semgrep environment remains a later validation option, not PASS evidence. |
+
+
 ## Purpose
 
 This log tracks material issues, unavailable tools, unresolved dependency decisions, blocked security checks, and postponed decisions that are intentionally deferred from the current work package. Deferred items remain visible repo truth until they are resolved, superseded, or promoted into a later approved work package.

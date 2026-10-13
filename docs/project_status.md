@@ -2070,3 +2070,23 @@ routes, SSE, default-off commands, dependencies, workflows and deployment are un
 Stable evidence: `docs/status_entries/S10-CC-UX-01.md`; validation state: see PR body.
 Visual sign-off: AWAITING KARL VISUAL APPROVAL. S10-CC-UX-02 rollout is separately gated.
 Capital/orders: USD 0 / 0. Merge authorized: NO.
+
+## S10-WALLET-03 local implementation awaiting Side18 acceptance
+
+S10-WALLET-03 adds PIT wallet observability and conditional delayed-price cost
+research through `src/data_layer/wallet_intelligence/copyability.py`, with additive
+package exports and focused tests at
+`tests/data_layer/wallet_intelligence/test_copyability.py`. The contract is
+`docs/wallet_copyability_research_contract.md`; governed REV3 prompt/spec are in
+`docs/wp_specs/S10-WALLET-03/`; stable evidence is
+`docs/status_entries/S10-WALLET-03.md`. FAST, Risk 2, exact ten-file scope. Karl
+approved existing local WALLET-01 verified read-only SQLite loading and unchanged
+WALLET-02 canonical profile rederivation before in-memory calculation. No WALLET-01/02
+source edits, store, persistence, provider acquisition, credentials, execution,
+strategy, qualification, paper/live or capital authority. Real product/provider
+calls and orders: 0. Normal authenticated repository GitHub access is authorized;
+hosted Actions minutes: 0. State: IMPLEMENTED_LOCAL / SIDE18_REVIEW_PENDING /
+CI_PENDING / NOT_MERGE_READY. No LOCAL_ACCEPTED claim precedes independent review.
+ALPHA-03/04 and their accepted evidence remain separate and preserved. WALLET-04
+incrementality and the wallet-specific gate remain separately gated. Historical
+project records and protected runtime implementation targets are retained.
