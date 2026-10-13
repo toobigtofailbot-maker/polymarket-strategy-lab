@@ -147,7 +147,24 @@ from .profile import (
     wallet_profile_snapshot_to_mapping,
 )
 
+from .copyability import (
+    WalletCopyabilityCostScenario,
+    WalletCopyabilityError,
+    WalletCopyabilityQuoteWitness,
+    WalletCopyabilityResearchAssessment,
+    build_wallet_copyability_research_assessment,
+    wallet_copyability_research_assessment_from_mapping,
+    wallet_copyability_research_assessment_to_mapping,
+)
+
 __all__ = (
+    "WalletCopyabilityCostScenario",
+    "WalletCopyabilityError",
+    "WalletCopyabilityQuoteWitness",
+    "WalletCopyabilityResearchAssessment",
+    "build_wallet_copyability_research_assessment",
+    "wallet_copyability_research_assessment_from_mapping",
+    "wallet_copyability_research_assessment_to_mapping",
     "WALLET_CONTRACTS_LABEL",
     "WALLET_CONTRACTS_POSTURE",
     "IDENTITY_SCHEMA_VERSION",

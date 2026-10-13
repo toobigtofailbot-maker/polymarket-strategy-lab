@@ -1,0 +1,497 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-WALLET-03",
+    "title": "PIT Wallet Observability and Delayed-Copy Research Feasibility",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_PIT_WALLET_COPYABILITY_RESEARCH_FEASIBILITY",
+    "package_size_class": "L",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 232,
+      "head_sha": "1a677dee597c508fe43eb7ede28ea7660a33e2d9",
+      "merge_sha": "49744ae52c0a3d0011dea6eb81afbdfddb5c5488"
+    },
+    "suggested_branch": "codex/s10-wallet-03-pit-copyability-feasibility",
+    "objective": "One deterministic bounded, read-only WALLET-01 SQLite-backed verified-source admission plus in-memory PIT wallet copyability/conditional follower-cost research evaluation using unchanged WALLET-01/02 loaders/builders, explicit delay, cost and evidence uncertainty. No file/database writes, fixture-to-real upgrade, provider calls, runtime actions, trading or capital.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/wallet_intelligence/copyability.py",
+      "src/data_layer/wallet_intelligence/__init__.py",
+      "tests/data_layer/wallet_intelligence/test_copyability.py",
+      "docs/wallet_copyability_research_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-03.md",
+      "docs/wp_specs/S10-WALLET-03/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-03/wp_spec.json",
+      "tests/test_wallet_copyability_delay_report_contract_docs.py"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/wallet_intelligence/copyability.py",
+      "src/data_layer/wallet_intelligence/__init__.py",
+      "tests/data_layer/wallet_intelligence/test_copyability.py",
+      "docs/wallet_copyability_research_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-03.md",
+      "docs/wp_specs/S10-WALLET-03/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-03/wp_spec.json",
+      "tests/test_wallet_copyability_delay_report_contract_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/execution_gateway/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/risk/",
+      "src/research_runtime/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/test_wallet_copyability_delay_report_contract_docs.py"
+    ],
+    "rollback_surface": "Revert only S10-WALLET-03 eleven paths; additive wallet-copyability evaluator, tests, contract/status and governed WP disappear or revert. WALLET-01/02, ALPHA-03/04, PIT sources, Hermes, WP170, execution, risk, hosted CI and all live authority remain unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Additive bounded read-only verification through existing local WALLET-01 SQLite loader and WALLET-02 path-based canonical profile builder; pure in-memory assessment calculation; no database mutation or runtime connector.",
+    "items": [
+      {
+        "surface": "src/data_layer/wallet_intelligence/copyability.py",
+        "before": "WALLET-01 verified public wallet ledger plus WALLET-02 PIT profile snapshot; WP81 fixture-only delayed-copy evaluator without real-evidence claim.",
+        "after": "One bounded source-verified via existing local WALLET-01 SQLite read-only path, content-addressed in-memory advisory PIT delay-and-explicit-cost feasibility assessment with optional verified quote witnesses, honest missing-data states and no copy/promotion.",
+        "change_authorized": true,
+        "compatibility_requirement": "Require verified read-only WALLET-01 ledger loader plus exact WALLET-02 build_wallet_profile_snapshot(wallet_ledger_path, cohort_snapshot, target_wallet, as_of, market_contexts, identity_observability) rederivation and full profile equality; profile mapping validator alone is NOT source-authentication. Do not edit WALLET-01/02 or promote WP81 fixture simulator.",
+        "authority": "OFFLINE_ADVISORY_SOURCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Seven minimum-complete WALLET-03 semantics backed by closed source/delay/uncertainty tests.",
+    "items": [
+      {
+        "path": "copyability.source",
+        "source": "DERIVED",
+        "type": "research_semantics",
+        "required_rule": "Caller supplies original WALLET-01 SQLite ledger path and the same WALLET-02 cohort/context/target/as-of; existing verified read-only ledger loader and path-based canonical WALLET-02 builder MUST rederive and exactly match complete supplied profile before in-memory copyability calculation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject foreign/missing/tampered/changed WALLET-01 SQLite, wrong ledger head, cohort/context/target/cutoff or internally schema-valid fabricated/self-rehashed WALLET-02 profile; original DB unchanged; no WALLET-02 source refactor.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "copyability.pit",
+        "source": "CALLER",
+        "type": "research_semantics",
+        "required_rule": "wallet observation capture is the eligible availability clock, not event_time; every delayed quote and external reference PIT admissible",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Late quote, future knowledge, cross market/token or missing genuine source binding never establishes OBSERVED status",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "copyability.delay_cost",
+        "source": "CALLER",
+        "type": "research_semantics",
+        "required_rule": "bounded fixed delay windows and explicit nonnegative decimal scenario costs, no inferred fills",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject floats, mixed units, unknown fees disguised as zero and lack of depth represented as executable",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "copyability.denominators",
+        "source": "DERIVED",
+        "type": "research_semantics",
+        "required_rule": "one canonical eligible event per reconciliation/related-account group with mutually exclusive exclusion categories",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No duplicate/superseded/reorg flow increases sample count",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "copyability.schema",
+        "source": "DERIVED",
+        "type": "research_semantics",
+        "required_rule": "frozen advisory assessment with deterministic self-verifying hash identity, no source free text",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Stable caller-order-invariant roundtrip; reject internal contradictory recomputations (even if rehashed), wrong ID, extra field; mapping validation alone makes no independent source-authenticity claim (R001 owns source rederivation).",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "copyability.authority",
+        "source": "DERIVED",
+        "type": "research_semantics",
+        "required_rule": "No trading/copyability/profit/strategy conclusion, no provider/network/credentials/new database/persistent report; read existing verified WALLET-01 SQLite only, never write; assessment calculation in memory.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No filesystem/database write, socket, credential, product network or trading instruction; existing SQLite is accessed only via verified read-only loader/builder and its bytes stay unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "copyability.validation",
+        "source": "DERIVED",
+        "type": "research_semantics",
+        "required_rule": "official readiness and exact scope; one stable local full suite; hosted CI after separate authorization",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Status LOCAL_ACCEPTED only after independent Side19 review; hosted pending",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADVISORY_RESEARCH_ONLY",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new durable canonical registry identity: the advisory in-memory research receipt is derived by existing canonical wallet JSON and asserted/tested inside focused suite; no new cross-registry identity authority.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Explicit draft -> authorized -> implemented-local state, publication separate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Published main remains at 49744ae52c0a3d0011dea6eb81afbdfddb5c5488; resume the existing independent worktree preserving 3bcce95a2f33b2ab1af976a29787a99c3fa38a37 as ancestor; certificate-free FAST readiness passes with exact eleven paths.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's signed Side19 continuation amendment authorizes exactly the eleven named paths; existing authenticated GitHub repository operations remain permitted, with no hosted Actions, external runtime or trading authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Codex implements exact eleven paths and verifies focused/adjacent/scope/offline security plus one stable-head full local suite; independent Side19 review and publication are later stages.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Exact repository fixed WP schema failure ordering.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused synthetic tests provide admissible/nonadmissible and identity examples; no new canonical store migration.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Six focused groups, named real adjacent family, native pre/final readiness, one stable local full suite, local reviewer and deferred exact-head hosted CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_wallet03_verified_profile_ledger",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "Reject foreign/missing/tampered/changed WALLET-01 SQLite, wrong ledger head, cohort/context/target/cutoff or internally schema-valid fabricated/self-rehashed WALLET-02 profile; original DB unchanged; no WALLET-02 source refactor."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_wallet03_pit_observability",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "Late quote, future knowledge, cross market/token or missing genuine source binding never establishes OBSERVED status"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_wallet03_explicit_delayed_costs",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "Reject floats, mixed units, unknown fees disguised as zero and lack of depth represented as executable"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_wallet03_reconciliation_denominators",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "No duplicate/superseded/reorg flow increases sample count"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_wallet03_stable_record_roundtrip",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "Stable caller-order-invariant roundtrip; reject internal contradictory recomputations (even if rehashed), wrong ID, extra field; mapping validation alone makes no independent source-authenticity claim (R001 owns source rederivation)."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_wallet03_read_only_no_authority",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "No filesystem/database write, socket, credential, product network or trading instruction; existing SQLite is accessed only via verified read-only loader/builder and its bytes stay unchanged."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "command",
+        "test": "preimplementation_readiness",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-03/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-03/wp_spec.json --repo-root .",
+        "expected_result": "Certificate-free FAST IMPLEMENTATION_READY, base verified and exact eleven file scope"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "command",
+        "test": "adjacent_wallet_pit_architecture",
+        "command": "python -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence tests/data_layer/point_in_time_market_research/test_research_provenance.py tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_architecture_boundaries.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py tests/test_wallet_copyability_delay_report_contract_docs.py",
+        "expected_result": "Actual adjacent tests pass with no invalid new source family, check status/index compatibility; historical source allowlist requires both approved modules and rejects missing modules or any third matched file/directory; unrelated historical guards unchanged; bounded Git-diff and filesystem-glob discovery complete."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "command",
+        "test": "final_scope_and_local_full_suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "One complete local stable-HEAD suite, actual warnings/skips, native check-diff and exact scope PASS; verify offline Linux-native writable canonical-Git-byte checkout, native imports, pinned hashes, bash syntax and local-data output before one complete suite on the stable final committed HEAD; prior partial output is not final evidence; environment impossibility is LOCAL_FULL_SUITE_BLOCKED."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "command",
+        "test": "hygiene_and_security",
+        "command": "python tools/git/preflight_generated_artifact_guard.py",
+        "expected_result": "Artifact guard, available static/security and full changed-set discovery pass with truthful tool availability"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "manual",
+        "test": "independent_side19_local_review",
+        "command": "git diff --name-status 49744ae52c0a3d0011dea6eb81afbdfddb5c5488...HEAD",
+        "expected_result": "Side19 audits actual final HEAD/evidence and validates authority and scope; does not substitute old hosted results"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "hosted",
+        "test": "exact_head_ci_deferred",
+        "command": "NOT_RUN: GitHub-hosted Actions require Karl's separate hosted-check authorization; authenticated repository operations and inert draft publication remain permitted",
+        "expected_result": "Mandatory hosted CI remains PENDING and cannot be bypassed"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-WALLET-04",
+    "next_title": "Incremental wallet-value evidence against non-wallet baseline",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-WALLET-03",
+    "forbidden_in_this_wp": [
+      "Network/provider, private wallet account read, credential use, order or quote acquisition",
+      "Change WALLET-01/02 protected source or provenance semantics",
+      "Use event_time as an observation time or select lookahead quotes",
+      "Treat WP81 fixture simulation as verified real-world copyability",
+      "Output actionable copy orders, sizing, expected PnL or live/trading signals",
+      "Modify WP170/WP172/WP173, risk, OMS, execution or portfolio authority",
+      "Automatic wallet promotion or WALLET-04 incremental assessment",
+      "Dependencies, workflows, environment or hosted CI settings",
+      "Touch ALPHA-03/04 unmerged worktrees, evidence or commits",
+      "Non-draft PR transition, GitHub Actions hosted job dispatch/re-run, merge without mandatory hosted checks, CI settings/workflow changes, or deployment. Authenticated git push and DRAFT PR are separately permitted.",
+      "A twelfth tracked path without explicit updated Karl authorization"
+    ]
+  }
+}

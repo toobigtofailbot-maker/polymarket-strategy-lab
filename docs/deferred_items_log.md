@@ -1,5 +1,19 @@
 # Deferred Items Log
 
+## S10-WALLET-03 bounded research follow-up
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-WALLET-03-D001 | Pure profile-source admission incompatibility | RESOLVED_BY_KARL_REV3 | Unchanged WALLET-01 loader and WALLET-02 path-based builder canonically rederive the complete supplied profile read-only; no source helper extraction/refactor |
+| S10-WALLET-03-D002 | Real retained follower-specific quote, fee, depth and fill calibration | DEFERRED_SEPARATE_AUTHORIZATION | This WP uses synthetic evidence and explicit cost assumptions only; separately authorized public retained evidence and later empirical calibration are needed; no actual copyability or executable-edge conclusion |
+| S10-WALLET-03-D003 | Independent Side19 acceptance and mandatory exact-head hosted CI | PENDING | Review exact commit/diff/local evidence; hosted Actions require Karl's later authorization; draft PR only, no ready-for-review/merge, no LOCAL_ACCEPTED until independent acceptance |
+| S10-WALLET-03-D004 | Wallet incrementality against non-wallet controls | DEFERRED_TO_WALLET_04 | Separately gated WALLET-04; assessment price differences are conditional research estimates and create no wallet promotion or wallet gate shortcut |
+| S10-WALLET-03-D005 | Installed Semgrep CLI blocked by Windows Application Control | UNAVAILABLE_OS_POLICY | Existing Semgrep version probe raised WinError 4551 when invoking its native executable; no policy bypass or installation performed. Run available offline Gitleaks and source-boundary checks now; a permitted Semgrep environment remains a later validation option, not PASS evidence. |
+| S10-WALLET-03-D006 | Windows Python 3.14 Nautilus native import / full-suite collection | WINDOWS_ENVIRONMENT_BLOCKED | Windows Application Control blocked nautilus_pyo3, producing 25 collection errors and 1 warning before tests ran. The existing s10-live-orch-validate:py312 local Docker image imports NautilusTrader 1.231.0 and DuckDB 1.5.5 with networking disabled; exact-head full-suite results are in external evidence. Windows full coverage remains unproven until a permitted environment or separately authorized hosted CI completes; no OS-policy bypass, package install, test skip or dependency change. |
+| S10-WALLET-03-D007 | Historical WP81 filesystem-wide copyability source guard | RESOLVED_BY_KARL_ELEVEN_FILE_AMENDMENT | Original conflict is preserved at ten-file commit 3bcce95a2f33b2ab1af976a29787a99c3fa38a37. Karl authorized the named eleventh test path; corrected exact set requires both historical evaluator and WALLET-03 module, and six real/synthetic guard checks pass including both missing modules and a third file/directory. No unrelated guard, bypass or skip; full-suite/Side19 acceptance remain separately evidenced. |
+| S10-WALLET-03-D008 | Existing full-suite strict hosted-DuckDB and locked frontend Node proof | LOCAL_ENVIRONMENT_SKIPS_REPORTED | Existing strict-DuckDB proof intentionally skips outside hosted CI; local native DuckDB import/execution is verified separately. The locked frontend Node test skips because that environment is unavailable in the existing offline image. Preserve both test gates and report exact skips; mandatory hosted CI remains pending under D003, with no dependency installation, test modification or waiver. |
+
+
 ## Purpose
 
 This log tracks material issues, unavailable tools, unresolved dependency decisions, blocked security checks, and postponed decisions that are intentionally deferred from the current work package. Deferred items remain visible repo truth until they are resolved, superseded, or promoted into a later approved work package.

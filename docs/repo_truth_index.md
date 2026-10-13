@@ -2161,3 +2161,27 @@ existing guard `tests/test_operator_cockpit_stream.py` changes only its story co
 The four frontend source modules, nine routes, read-only APIs, SSE, C16 closed command status
 and production serving are preserved. No backend, dependency, workflow, host, credential,
 trading or capital change. Visual approval and S10-CC-UX-02 rollout are Karl-only. Merge authorized: NO.
+
+## S10-WALLET-03 PIT wallet observability and conditional cost research (local review pending)
+
+`docs/wallet_copyability_research_contract.md` defines the research-only contract;
+`src/data_layer/wallet_intelligence/copyability.py` and additive exports in
+`src/data_layer/wallet_intelligence/__init__.py` implement bounded read-only source
+verification followed by deterministic in-memory calculations.
+`tests/data_layer/wallet_intelligence/test_copyability.py` provides synthetic
+source/PIT/cost/reconciliation/integrity/authority negatives. Governed REV3 files
+are `docs/wp_specs/S10-WALLET-03/wp_prompt.txt` and `wp_spec.json`; stable evidence
+is `docs/status_entries/S10-WALLET-03.md`. Existing WALLET-01/02 sources are
+unchanged. The profile is canonically rederived against an existing verified
+read-only ledger, not authenticated by its mapping hash alone. Retained quote
+bytes and registered provenance distinguish observed from scenario-only evidence;
+scenario fees/depth requirements do not prove follower fills or profitability.
+No store, provider, credential, strategy, execution, paper or live authority is
+added. Side19 acceptance and hosted CI are pending; no merge-ready or
+LOCAL_ACCEPTED claim is made. ALPHA-03/04 are preserved independently, and WALLET-04
+retains ownership of wallet incrementality against non-wallet controls.
+Karl's exact eleven-file amendment authorizes the named historical source guard;
+both approved modules must exist, and missing/third matched paths reject (D007
+resolved). Original commit 3bcce95a2f33b2ab1af976a29787a99c3fa38a37 is preserved as
+an ancestor. Final full-suite environment preflight/result and Side19 assessment
+remain separately evidenced; no hosted checks, acceptance or merge is presumed.
