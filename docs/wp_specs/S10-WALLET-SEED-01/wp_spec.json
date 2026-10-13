@@ -1,0 +1,792 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-WALLET-SEED-01",
+    "title": "Prospective Wallet Comparison Method Protocol and Source Admission Freeze",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_WALLET_COMPARISON_PROTOCOL_DOCS_TESTS",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-wallet-seed-01-prospective-protocol",
+    "required_predecessor": {
+      "pr_number": 233,
+      "head_sha": "5ab6f52408683e90cc0b713c58f565ed1928dce5",
+      "merge_sha": "6a44d14dff4e631a5ba1fe6b94a46e532266512c"
+    },
+    "objective": "Commit one closed method protocol with source-admission, precollection study-seal requirements, a single calendar unit, fixed midpoint versus 10% wallet-direction forecast perturbation and paired Brier semantics. Docs/tests only: no real study activation, acquisition, scoring, source adapter, WP170 registration or trading. Existing audit proved zero eligible real pairs in bounded scope.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wallet_incrementality_prospective_seed_protocol.md",
+      "tests/test_wallet_incrementality_prospective_seed_protocol_docs.py",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-SEED-01.md",
+      "docs/wp_specs/S10-WALLET-SEED-01/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-SEED-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "docs/wallet_incrementality_prospective_seed_protocol.md",
+      "tests/test_wallet_incrementality_prospective_seed_protocol_docs.py",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-SEED-01.md",
+      "docs/wp_specs/S10-WALLET-SEED-01/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-SEED-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "src/",
+      "tools/",
+      ".github/",
+      "local_data/",
+      "agent_runtime/",
+      "agent_memory/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Human-approved revert of these eight docs/tests paths before any study activation; preserve immutable evidence of later studies that used this method. No runtime or store change.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Document method addition only; every runtime interface unchanged.",
+    "items": [
+      {
+        "surface": "wallet_comparison_method_document",
+        "before": "Absent",
+        "after": "One closed canonical METHOD protocol; actual STUDY seal remains absent.",
+        "change_authorized": true,
+        "compatibility_requirement": "No upstream gate, source contract or execution authority changes.",
+        "authority": "METHOD_DOCS_ONLY"
+      },
+      {
+        "surface": "build_wallet_copyability_research_assessment",
+        "before": "Merged source-bound WALLET-03 keyword-only builder.",
+        "after": "Unchanged; original-source proof reference only, with separate one-witness calls for book bid/ask in a later seed.",
+        "change_authorized": false,
+        "compatibility_requirement": "Preserve source rederivation, duplicate raw-reference restrictions, limits and immutable authority flags.",
+        "authority": "READ_ONLY_REFERENCE_ONLY"
+      },
+      {
+        "surface": "wallet_contracts_chain_reconciliation",
+        "before": "Existing CHAIN_NATIVE_STRONG identity and ChainEventEvidence representation; acquisition/decoder not established.",
+        "after": "Unchanged; define exact future admission requirement without implementing a client or decoder.",
+        "change_authorized": false,
+        "compatibility_requirement": "No weak-to-strong identity laundering, finality bypass or new store.",
+        "authority": "READ_ONLY_REFERENCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Immutable method policy and digest defined here; no actual enrolled study/sample schema implementation.",
+    "items": [
+      {
+        "path": "method.target",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method.freeze",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method.forecasts",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method.sources",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method.labels",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method.accounting",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method.authority",
+        "source": "CONSTANT",
+        "type": "closed_method_policy_object",
+        "required_rule": "Exactly the versioned method object in the valid method example; no additional fields.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Documentation tests compare closed policy, normative prose and meaningful synthetic algebra/admission cases.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Method policy only; no addresses, account identifiers, raw source text or empirical claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "method_digest",
+        "source": "DERIVED",
+        "type": "prefixed_sha256",
+        "required_rule": "Exact canonical method envelope digest.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Recompute walletmethod:sha256: over canonical JSON object whose sole key is method.",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "Content ID only; authenticity and activation not implied.",
+        "derivation_rule_id": "method_digest_v1"
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "Method-only digest with non-self-referential canonical preimage; no source-authenticity claim.",
+    "items": [
+      {
+        "rule_id": "method_digest_v1",
+        "target_path": "method_digest",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "method"
+        ],
+        "excluded_paths": [],
+        "prefix": "walletmethod:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Native WP authorization chain; real study activation is outside this package.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native FAST deterministic package readiness and Side19 review; no implementation authority.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl separately authorizes the exact Phase-A docs/tests package.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly eight allowed files implemented and required local evidence collected; study still NOT_ACTIVATED.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged native schema-1.0.0 failure order; study disposition precedence is separate method policy.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Method examples are non-empirical; synthetic forecast/admission examples are specified in prompt tests.",
+    "items": [
+      {
+        "example_id": "METHOD_ONLY_NO_REAL_STUDY",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "method_digest_v1"
+        ],
+        "input": {
+          "method": {
+            "schema_id": "wallet-comparison-method@1.0.0",
+            "study_state": "NOT_ACTIVATED",
+            "target": {
+              "kind": "FINAL_BINARY_TARGET_TOKEN_PAYOUT",
+              "unit_count": 1,
+              "cluster_count": 1,
+              "instrument_class": "STANDARD_BINARY_OUTCOME",
+              "target_end_min_seconds_after_t0": 3600,
+              "target_end_max_seconds_after_t0": 604800,
+              "label_deadline_seconds_after_target_end": 2592000
+            },
+            "freeze": {
+              "minimum_predecision_freeze_seconds": 86400,
+              "discovery_cutoff_rule": "NOT_AFTER_FREEZE",
+              "enrollment": "MANUAL_OPERATIONAL_FEASIBILITY_NO_OUTCOME_RANK_SIGNAL_SCREEN",
+              "membership": "ONE_PREDECLARED_CALENDAR_UNIT_NO_REPLACEMENT",
+              "evaluation_interval": "T0_INCLUSIVE_T0_PLUS_1_MICROSECOND_EXCLUSIVE",
+              "action_lookback_seconds": 3600,
+              "amendment": "NEW_HUMAN_APPROVED_DIGEST_AND_FUTURE_PERIOD",
+              "no_training": true,
+              "study_seal_required_before_collection": true,
+              "study_seal_fields": [
+                "method_digest",
+                "code_sha",
+                "condition_id",
+                "target_token_id",
+                "complement_token_id",
+                "rule_snapshot_digest",
+                "event_id",
+                "leakage_group_id",
+                "source_chain_id",
+                "cohort_reference_id",
+                "profile_source_reference_id",
+                "cluster_membership_digest",
+                "freeze_time",
+                "decision_time",
+                "target_event_end",
+                "label_deadline",
+                "nonwallet_version",
+                "wallet_added_version",
+                "source_route_evidence_refs",
+                "observation_group_missingness_policies",
+                "approved_source_call_byte_elapsed_limits",
+                "human_approval_record"
+              ]
+            },
+            "forecasts": {
+              "nonwallet_version": "NONWALLET_MIDPOINT_V1",
+              "wallet_added_version": "WALLET_BLEND_010_V1",
+              "baseline_rule": "LATEST_ADMISSIBLE_TARGET_BOOK_MIDPOINT",
+              "max_quote_age_seconds": 30,
+              "max_spread": "0.1",
+              "wallet_weight": "0.1",
+              "nonwallet_weight": "0.9",
+              "wallet_rule": "LAST_ADMISSIBLE_CLUSTER_BUY_TARGET_1_COMPLEMENT_0",
+              "no_signal_rule": "P_WALLET_EQUALS_P_NONWALLET_ONLY_WITH_COMPLETE_COVERAGE",
+              "unknown_rule": "NO_FORECAST",
+              "conflict_rule": "SAME_CLOCK_OPPOSING_VOTES_OR_BOOKS_UNKNOWN",
+              "masked_control_rule": "P_MASKED_EQUALS_P_NONWALLET",
+              "decimal_precision": 80,
+              "primary_loss": "BINARY_BRIER",
+              "delta_direction": "L_NONWALLET_MINUS_L_WALLET_ADDED",
+              "costs_enter_score": false,
+              "calibrated": false,
+              "observation_delay_seconds": 0,
+              "baseline_endogeneity_posture": "NO_EXPLICIT_WALLET_FEATURES_NOT_CAUSAL_INDEPENDENCE"
+            },
+            "sources": {
+              "wallet_identity": "CHAIN_NATIVE_STRONG_ONLY",
+              "wallet_finality": "FINALIZED_BY_DECISION",
+              "chain_proof": "RETAINED_LOG_RECEIPT_CANONICAL_BLOCK_FINALITY_AND_AUDITED_FILL_ABI_MAPPING",
+              "api_fallback": false,
+              "book_source_system": "POLYMARKET_CLOB",
+              "book_endpoint": "/book",
+              "book_retrieval_method": "GET",
+              "book_media_type": "application/json",
+              "book_proof": "ORIGINAL_RAW_BYTES_REFERENCE_MANIFEST_LEDGER_AND_UNCHANGED_WALLET03_BUILDER",
+              "two_sides": "TWO_SEPARATE_ONE_WITNESS_CALLS_SAME_ORIGINAL_BOOK_AND_PROFILE",
+              "book_admission": "OBSERVED_BOTH_SIDES",
+              "source_origin": "FUTURE_CAPTURE_ROUTE_ATTESTATION_REQUIRED_HASH_ALONE_INSUFFICIENT",
+              "clock_rule": "NATIVE_ADMISSIBLE_AVAILABILITY_NEVER_EVENT_TIME",
+              "existing_source_route_proved": false,
+              "native_profile_window_required": true
+            },
+            "labels": {
+              "rule": "FINALIZED_CTF_BINARY_PAYOUT_AND_CONSISTENT_VENUE_RESOLVED_STATUS",
+              "instrument_rule": "EXACT_SEALED_CHAIN_CONDITION_TOKEN_RULE_MAPPING",
+              "observation_rule": "STRICTLY_AFTER_TARGET_END_AND_DECISION_BY_DEADLINE",
+              "unknown_finality_rule": "NO_LABEL",
+              "disputed_void_cancelled_rule": "NO_LABEL",
+              "weather_substitution": false
+            },
+            "accounting": {
+              "status_precedence": [
+                "EXCLUDED",
+                "UNKNOWN",
+                "UNMATCHED",
+                "MATCHED",
+                "PENDING",
+                "CENSORED"
+              ],
+              "pending_rule": "PAIRED_FORECASTS_AWAIT_LABEL_BEFORE_DEADLINE",
+              "conservation_terms": [
+                "EXCLUDED",
+                "UNKNOWN",
+                "UNMATCHED",
+                "PENDING",
+                "CENSORED",
+                "MATCHED"
+              ],
+              "denominator": "ENROLLED_UNIT_AND_UNIQUE_FROZEN_MATCHED_LEAKAGE_GROUP",
+              "unknown_group_count": null,
+              "method_only_enrolled_count": "NOT_ESTABLISHED",
+              "duplicate_related_rule": "NO_NEW_UNIT_OR_GROUP",
+              "zero_matched_status": "INSUFFICIENT_EVIDENCE",
+              "zero_matched_numeric_summaries": null,
+              "significance_claim": false
+            },
+            "authority": {
+              "advisory_only": true,
+              "no_execution_authority": true,
+              "no_strategy_authority": true,
+              "no_qualification_authority": true,
+              "real_collection_authorized": false,
+              "provider_model_calls_authorized": false,
+              "gate_c_authorized": false,
+              "capital_at_risk_usd": 0
+            }
+          },
+          "method_digest": "walletmethod:sha256:e08fe248dff75bd1e67503426801a6b6940d42ad4acb2bded89dd1650cba1656"
+        }
+      },
+      {
+        "example_id": "METHOD_DIGEST_TAMPER_SINGLE_FAULT",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "IDENTITY_DERIVATION_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "method": {
+            "schema_id": "wallet-comparison-method@1.0.0",
+            "study_state": "NOT_ACTIVATED",
+            "target": {
+              "kind": "FINAL_BINARY_TARGET_TOKEN_PAYOUT",
+              "unit_count": 1,
+              "cluster_count": 1,
+              "instrument_class": "STANDARD_BINARY_OUTCOME",
+              "target_end_min_seconds_after_t0": 3600,
+              "target_end_max_seconds_after_t0": 604800,
+              "label_deadline_seconds_after_target_end": 2592000
+            },
+            "freeze": {
+              "minimum_predecision_freeze_seconds": 86400,
+              "discovery_cutoff_rule": "NOT_AFTER_FREEZE",
+              "enrollment": "MANUAL_OPERATIONAL_FEASIBILITY_NO_OUTCOME_RANK_SIGNAL_SCREEN",
+              "membership": "ONE_PREDECLARED_CALENDAR_UNIT_NO_REPLACEMENT",
+              "evaluation_interval": "T0_INCLUSIVE_T0_PLUS_1_MICROSECOND_EXCLUSIVE",
+              "action_lookback_seconds": 3600,
+              "amendment": "NEW_HUMAN_APPROVED_DIGEST_AND_FUTURE_PERIOD",
+              "no_training": true,
+              "study_seal_required_before_collection": true,
+              "study_seal_fields": [
+                "method_digest",
+                "code_sha",
+                "condition_id",
+                "target_token_id",
+                "complement_token_id",
+                "rule_snapshot_digest",
+                "event_id",
+                "leakage_group_id",
+                "source_chain_id",
+                "cohort_reference_id",
+                "profile_source_reference_id",
+                "cluster_membership_digest",
+                "freeze_time",
+                "decision_time",
+                "target_event_end",
+                "label_deadline",
+                "nonwallet_version",
+                "wallet_added_version",
+                "source_route_evidence_refs",
+                "observation_group_missingness_policies",
+                "approved_source_call_byte_elapsed_limits",
+                "human_approval_record"
+              ]
+            },
+            "forecasts": {
+              "nonwallet_version": "NONWALLET_MIDPOINT_V1",
+              "wallet_added_version": "WALLET_BLEND_010_V1",
+              "baseline_rule": "LATEST_ADMISSIBLE_TARGET_BOOK_MIDPOINT",
+              "max_quote_age_seconds": 30,
+              "max_spread": "0.1",
+              "wallet_weight": "0.1",
+              "nonwallet_weight": "0.9",
+              "wallet_rule": "LAST_ADMISSIBLE_CLUSTER_BUY_TARGET_1_COMPLEMENT_0",
+              "no_signal_rule": "P_WALLET_EQUALS_P_NONWALLET_ONLY_WITH_COMPLETE_COVERAGE",
+              "unknown_rule": "NO_FORECAST",
+              "conflict_rule": "SAME_CLOCK_OPPOSING_VOTES_OR_BOOKS_UNKNOWN",
+              "masked_control_rule": "P_MASKED_EQUALS_P_NONWALLET",
+              "decimal_precision": 80,
+              "primary_loss": "BINARY_BRIER",
+              "delta_direction": "L_NONWALLET_MINUS_L_WALLET_ADDED",
+              "costs_enter_score": false,
+              "calibrated": false,
+              "observation_delay_seconds": 0,
+              "baseline_endogeneity_posture": "NO_EXPLICIT_WALLET_FEATURES_NOT_CAUSAL_INDEPENDENCE"
+            },
+            "sources": {
+              "wallet_identity": "CHAIN_NATIVE_STRONG_ONLY",
+              "wallet_finality": "FINALIZED_BY_DECISION",
+              "chain_proof": "RETAINED_LOG_RECEIPT_CANONICAL_BLOCK_FINALITY_AND_AUDITED_FILL_ABI_MAPPING",
+              "api_fallback": false,
+              "book_source_system": "POLYMARKET_CLOB",
+              "book_endpoint": "/book",
+              "book_retrieval_method": "GET",
+              "book_media_type": "application/json",
+              "book_proof": "ORIGINAL_RAW_BYTES_REFERENCE_MANIFEST_LEDGER_AND_UNCHANGED_WALLET03_BUILDER",
+              "two_sides": "TWO_SEPARATE_ONE_WITNESS_CALLS_SAME_ORIGINAL_BOOK_AND_PROFILE",
+              "book_admission": "OBSERVED_BOTH_SIDES",
+              "source_origin": "FUTURE_CAPTURE_ROUTE_ATTESTATION_REQUIRED_HASH_ALONE_INSUFFICIENT",
+              "clock_rule": "NATIVE_ADMISSIBLE_AVAILABILITY_NEVER_EVENT_TIME",
+              "existing_source_route_proved": false,
+              "native_profile_window_required": true
+            },
+            "labels": {
+              "rule": "FINALIZED_CTF_BINARY_PAYOUT_AND_CONSISTENT_VENUE_RESOLVED_STATUS",
+              "instrument_rule": "EXACT_SEALED_CHAIN_CONDITION_TOKEN_RULE_MAPPING",
+              "observation_rule": "STRICTLY_AFTER_TARGET_END_AND_DECISION_BY_DEADLINE",
+              "unknown_finality_rule": "NO_LABEL",
+              "disputed_void_cancelled_rule": "NO_LABEL",
+              "weather_substitution": false
+            },
+            "accounting": {
+              "status_precedence": [
+                "EXCLUDED",
+                "UNKNOWN",
+                "UNMATCHED",
+                "MATCHED",
+                "PENDING",
+                "CENSORED"
+              ],
+              "pending_rule": "PAIRED_FORECASTS_AWAIT_LABEL_BEFORE_DEADLINE",
+              "conservation_terms": [
+                "EXCLUDED",
+                "UNKNOWN",
+                "UNMATCHED",
+                "PENDING",
+                "CENSORED",
+                "MATCHED"
+              ],
+              "denominator": "ENROLLED_UNIT_AND_UNIQUE_FROZEN_MATCHED_LEAKAGE_GROUP",
+              "unknown_group_count": null,
+              "method_only_enrolled_count": "NOT_ESTABLISHED",
+              "duplicate_related_rule": "NO_NEW_UNIT_OR_GROUP",
+              "zero_matched_status": "INSUFFICIENT_EVIDENCE",
+              "zero_matched_numeric_summaries": null,
+              "significance_claim": false
+            },
+            "authority": {
+              "advisory_only": true,
+              "no_execution_authority": true,
+              "no_strategy_authority": true,
+              "no_qualification_authority": true,
+              "real_collection_authorized": false,
+              "provider_model_calls_authorized": false,
+              "gate_c_authorized": false,
+              "capital_at_risk_usd": 0
+            }
+          },
+          "method_digest": "walletmethod:sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Planned focused nodes plus future stable-head governance/full suite; no tests executed by the draft.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_seed01_method_block_and_freeze_identity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py::test_seed01_method_block_and_freeze_identity",
+        "expected_result": "Closed method block, exact canonical digest, included mutation sensitivity and NOT_ACTIVATED state assertions hold."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_seed01_source_route_and_cutoff_contract",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py::test_seed01_source_route_and_cutoff_contract",
+        "expected_result": "Normative chain-native finality, original book proofs, weak/source-less/late negatives and source-route limitations remain explicit."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_seed01_forecast_algebra_and_controls",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py::test_seed01_forecast_algebra_and_controls",
+        "expected_result": "Decimal midpoint and fixed blend golden values, masked/no-signal equality and unknown/conflict/contamination cases agree."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_seed01_label_finality_and_horizon_contract",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py::test_seed01_label_finality_and_horizon_contract",
+        "expected_result": "Exact independent finalized label, strict post-target clock and rejection of unmatched or invalid labels remain binding."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_seed01_membership_and_denominator_contract",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py::test_seed01_membership_and_denominator_contract",
+        "expected_result": "Single enrolled unit/group, mutually exclusive statuses, conserved denominator, null unknown groups and no replacement are asserted."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_seed01_scope_truth_and_non_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py::test_seed01_scope_truth_and_non_authority",
+        "expected_result": "Eight exact scope paths, authority mirror, merged predecessor and status/index/deferred references agree without activation claims."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "native_readiness_scope_artifact",
+        "test": "stable_candidate_governance",
+        "command": "python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-SEED-01/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-SEED-01/wp_spec.json --repo-root . --check-diff --base 6a44d14dff4e631a5ba1fe6b94a46e532266512c --head HEAD --format json",
+        "expected_result": "IMPLEMENTATION_READY on exact eight-file committed diff; separate exact-scope/artifact/whitespace/security evidence recorded."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "authoritative full repository suite",
+        "command": "python -B -m pytest -q -p no:cacheprovider --junitxml=/validation/full-suite.xml",
+        "expected_result": "One stable-HEAD offline Linux full suite exits zero with exact counts/warnings/skips and source-byte/currentness evidence; hosted CI remains separate."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-WALLET-SEED-02",
+    "next_title": "Bounded Prospective Public Wallet Source and Forecast Seed",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-WALLET-SEED-02",
+    "forbidden_in_this_wp": [
+      "source/collector/decoder implementation",
+      "real study seal or enrolled cohort",
+      "real public chain/market/provider acquisition",
+      "new client/database/dependency",
+      "real ledger/profile creation or mutation",
+      "real forecast generation or scoring",
+      "WALLET-04 empirical evaluation",
+      "WP170 registration or qualification/gate/promotion",
+      "private accounts/credentials/signing/orders",
+      "paper/execution/live/Gate C/capital",
+      "scheduler/provider/model calls",
+      "ALPHA-03/04 or DATA-03 changes",
+      "hosted Actions or ready transition without Karl approval",
+      "PR publication or merge without separate approval"
+    ]
+  }
+}
