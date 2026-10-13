@@ -2180,3 +2180,7 @@ No store, provider, credential, strategy, execution, paper or live authority is
 added. Side18 acceptance and hosted CI are pending; no merge-ready or
 LOCAL_ACCEPTED claim is made. ALPHA-03/04 are preserved independently, and WALLET-04
 retains ownership of wallet incrementality against non-wallet controls.
+Compatibility is BLOCKED by WP81's unchanged filesystem-wide source allowlist in
+`tests/test_wallet_copyability_delay_report_contract_docs.py`; its correction is
+outside the ten-file scope (S10-WALLET-03-D007). Implementation is stopped pending
+an explicit scope amendment; no final full-suite PASS or published PR is claimed.

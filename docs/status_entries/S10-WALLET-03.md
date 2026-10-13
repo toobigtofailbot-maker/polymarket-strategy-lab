@@ -10,7 +10,7 @@
 - Current live PR head: see GitHub PR metadata and PR body.
 - Merge commit: not merged; merge is not authorized.
 - Evidence mode: `BLOCKED_NOT_READY`.
-- State: `IMPLEMENTED_LOCAL / SIDE18_REVIEW_PENDING / CI_PENDING / NOT_MERGE_READY`.
+- State: `IMPLEMENTED_LOCAL / BLOCKED_COMPATIBILITY / SIDE18_REVIEW_PENDING / CI_PENDING / NOT_MERGE_READY`.
 - Independent acceptance: PENDING; no `LOCAL_ACCEPTED` claim.
 
 ## Authority Posture
@@ -78,6 +78,8 @@ The authenticated Remote Main Sync Gate, predecessor evidence, zero open PRs and
 17 historical declared-set guard simulations were established before REV3 and
 reused under Karl's continuation instruction. Native REV3 readiness passed with
 FAST/DETERMINISTIC, ten scoped paths, seven rules and twelve evidence nodes.
+The earlier discovery missed WP81's filesystem-wide copyability allowlist;
+those declared-set simulations did not establish complete compatibility.
 
 Exact final command transcripts, exit codes, counts, warnings/skips, actual
 ten-file diff and final immutable HEAD are recorded in the external exact-head
@@ -92,8 +94,12 @@ NautilusTrader's native DLL. This is disclosed environment failure, not PASS or
 waived coverage. The existing local `s10-live-orch-validate:py312` Docker image
 provides Python 3.12.14, NautilusTrader 1.231.0 and DuckDB 1.5.5 with working native
 imports; no image/package installation or OS-policy bypass is used. The final
-authoritative full-suite command and result are in the exact-head external
-evidence, with networking disabled and an isolated validation copy. Windows
+authoritative full suite is BLOCKED. An earlier Docker run on the superseded
+commit was interrupted after 14 failures, 12779 passes, two skips and 125 warnings;
+its complete diagnostic transcript is retained externally. The validation copy's
+Windows checkout line endings and read-only mount explain multiple environment
+failures, but not the WP81 source-allowlist conflict reproduced on Windows.
+Networking was disabled and the copy isolated. Windows
 coverage and installed Semgrep remain unavailable locally and are explicitly
 logged as S10-WALLET-03-D005/D006; hosted CI remains mandatory before merge.
 
@@ -103,6 +109,16 @@ status/index sections after retained history and supplied this status fragment;
 historical guards and protected source were not changed. No remaining issue is
 hidden by test modification. Any unavailable optional security tool is disclosed
 in the external evidence and deferred-items log rather than marked PASS.
+
+The final source candidate passes 45 focused and 539 affected-adjacent tests.
+Four provenance-clock regressions first failed and then passed after same-scope
+revision/resolution admission correction. The unchanged historical
+`tests/test_wallet_copyability_delay_report_contract_docs.py` test
+`test_no_wallet_copyability_src_module` passes on published main but rejects the
+required new module. Correcting it requires an eleventh file, contrary to the
+approved exact scope. Implementation is stopped under the governed stop condition;
+S10-WALLET-03-D007 requires an explicit package/scope amendment. No final full-suite
+PASS, complete compatibility, independent acceptance or posted PR is claimed.
 
 ## Residual limits and merge gate
 

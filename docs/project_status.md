@@ -2085,8 +2085,11 @@ WALLET-02 canonical profile rederivation before in-memory calculation. No WALLET
 source edits, store, persistence, provider acquisition, credentials, execution,
 strategy, qualification, paper/live or capital authority. Real product/provider
 calls and orders: 0. Normal authenticated repository GitHub access is authorized;
-hosted Actions minutes: 0. State: IMPLEMENTED_LOCAL / SIDE18_REVIEW_PENDING /
+hosted Actions minutes: 0. State: IMPLEMENTED_LOCAL / BLOCKED_COMPATIBILITY / SIDE18_REVIEW_PENDING /
 CI_PENDING / NOT_MERGE_READY. No LOCAL_ACCEPTED claim precedes independent review.
 ALPHA-03/04 and their accepted evidence remain separate and preserved. WALLET-04
 incrementality and the wallet-specific gate remain separately gated. Historical
 project records and protected runtime implementation targets are retained.
+Implementation stopped: unchanged WP81 copyability source allowlist rejects the
+required WALLET-03 module; correction needs an eleventh path and explicit scope
+amendment (S10-WALLET-03-D007). No final full-suite PASS or acceptance is claimed.
