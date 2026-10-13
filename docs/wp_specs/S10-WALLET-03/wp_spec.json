@@ -470,7 +470,7 @@
         "requirement_id": "R012",
         "source": "hosted",
         "test": "exact_head_ci_deferred",
-        "command": "GitHub Actions disabled until Karl authorizes publication",
+        "command": "NOT_RUN: GitHub-hosted Actions require Karl's separate hosted-check authorization; authenticated repository operations and inert draft publication remain permitted",
         "expected_result": "Mandatory hosted CI remains PENDING and cannot be bypassed"
       }
     ]
