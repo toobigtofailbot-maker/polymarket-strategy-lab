@@ -760,3 +760,35 @@ def test_one_quote_reused_for_distinct_fills_is_one_observable_witness(tmp_path)
     assert len(result.selected_quote_ids) == 2
     assert result.independently_observable_quote_count == 1
     assert result.outcome_reason_counts == (("OBSERVED", 2),)
+
+
+@pytest.mark.parametrize(
+    "field,at",
+    [
+        ("correction_or_revision_time", "2026-01-12T00:00:00Z"),
+        ("correction_or_revision_time", "2026-04-01T00:00:00Z"),
+        ("resolution_time", "2026-01-10T00:00:00Z"),
+        ("resolution_time", "2026-04-01T00:00:00Z"),
+    ],
+)
+def test_raw_provenance_clocks_cannot_be_backdated(tmp_path, field, at):
+    witness, _ = quote()
+    preimage = witness.raw_reference.logical_preimage()
+    preimage.pop("schema_id")
+    preimage.pop("schema_version")
+    preimage["pit"][field] = at
+    preimage["pit"] = build_pit_timestamps(**preimage["pit"])
+    raw = build_raw_evidence_reference(**preimage)
+    manifest = build_research_provenance_manifest(
+        repo_code_identity="synthetic-wallet03",
+        information_cutoff=SEEN,
+        input_evidence_reference_ids=(raw.raw_evidence_reference_id,),
+        input_content_hashes=(raw.content_sha256,),
+        output_identity="synthetic-book",
+        output_hash=raw.content_sha256,
+    )
+    witness = replace(witness, raw_reference=raw, provenance_manifest=manifest)
+    record = build(case(tmp_path, quotes=(witness,)))
+    assert record.quote_evidence[0].source_status == "PIT_NOT_ADMISSIBLE"
+    assert record.delay_results[0].status == "UNOBSERVABLE"
+    assert record.delay_results[0].scenario_differences == ()

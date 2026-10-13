@@ -646,6 +646,16 @@ def _quote(witness, grouped, cutoff):
         and _time(raw.pit.ingestion_time) > _time(cutoff)
     ):
         state = "PIT_NOT_ADMISSIBLE"
+    if raw is not None and (
+        raw.pit.resolution_time is not None
+        or (
+            raw.pit.correction_or_revision_time is not None
+            and (
+                seen is None or _time(raw.pit.correction_or_revision_time) > _time(seen)
+            )
+        )
+    ):
+        state = "PIT_NOT_ADMISSIBLE"
     draft = _QuoteEvidence(
         "",
         key,

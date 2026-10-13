@@ -70,6 +70,8 @@ These are input witnesses, not a new canonical registry or acquisition service.
 - Raw and witness availability clocks agree, all applicable DQ states are OK,
   replay is EXACT/FAITHFUL, and timestamps are admissible. The manifest information
   cutoff cannot exceed quote availability; raw ingestion cannot exceed analysis.
+  Raw revision time cannot exceed the claimed quote availability. A book witness
+  carrying resolution metadata is inadmissible, including future resolution.
 
 Missing/unregistered source binding or a different source adapter is
 `SCENARIO_ONLY`, never observed. A present native source binding that contradicts
