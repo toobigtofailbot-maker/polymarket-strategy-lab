@@ -86,6 +86,17 @@ encode the SHA of the commit containing itself or anticipate a full-suite count.
 Local evidence is `LOCAL_DRAFT_VERIFIED`, not posted review-ready GitHub evidence.
 Full local validation does not authorize hosted CI, acceptance or merge.
 
+The Windows Python 3.14 full-suite attempt stopped before execution with 25
+collection errors and one warning because Windows Application Control blocked
+NautilusTrader's native DLL. This is disclosed environment failure, not PASS or
+waived coverage. The existing local `s10-live-orch-validate:py312` Docker image
+provides Python 3.12.14, NautilusTrader 1.231.0 and DuckDB 1.5.5 with working native
+imports; no image/package installation or OS-policy bypass is used. The final
+authoritative full-suite command and result are in the exact-head external
+evidence, with networking disabled and an isolated validation copy. Windows
+coverage and installed Semgrep remain unavailable locally and are explicitly
+logged as S10-WALLET-03-D005/D006; hosted CI remains mandatory before merge.
+
 Initial affected-adjacent checks found historical heading-position assumptions
 and the missing active status marker. Same-scope corrections moved the additive
 status/index sections after retained history and supplied this status fragment;

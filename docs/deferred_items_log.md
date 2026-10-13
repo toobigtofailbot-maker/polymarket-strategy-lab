@@ -9,6 +9,7 @@
 | S10-WALLET-03-D003 | Independent Side18 acceptance and mandatory exact-head hosted CI | PENDING | Review exact commit/diff/local evidence; hosted Actions require Karl's later authorization; draft PR only, no ready-for-review/merge, no LOCAL_ACCEPTED until independent acceptance |
 | S10-WALLET-03-D004 | Wallet incrementality against non-wallet controls | DEFERRED_TO_WALLET_04 | Separately gated WALLET-04; assessment price differences are conditional research estimates and create no wallet promotion or wallet gate shortcut |
 | S10-WALLET-03-D005 | Installed Semgrep CLI blocked by Windows Application Control | UNAVAILABLE_OS_POLICY | Existing Semgrep version probe raised WinError 4551 when invoking its native executable; no policy bypass or installation performed. Run available offline Gitleaks and source-boundary checks now; a permitted Semgrep environment remains a later validation option, not PASS evidence. |
+| S10-WALLET-03-D006 | Windows Python 3.14 Nautilus native import / full-suite collection | WINDOWS_ENVIRONMENT_BLOCKED | Windows Application Control blocked nautilus_pyo3, producing 25 collection errors and 1 warning before tests ran. The existing s10-live-orch-validate:py312 local Docker image imports NautilusTrader 1.231.0 and DuckDB 1.5.5 with networking disabled; exact-head full-suite results are in external evidence. Windows full coverage remains unproven until a permitted environment or separately authorized hosted CI completes; no OS-policy bypass, package install, test skip or dependency change. |
 
 
 ## Purpose
