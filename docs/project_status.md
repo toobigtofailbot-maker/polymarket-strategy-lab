@@ -1,25 +1,5 @@
 # Project Status
 
-## S10-WALLET-SEED-ACT-01 authorized local implementation
-
-Side19's reconciled V2 is accepted for conditional offline implementation; Karl
-authorized this step on2026-10-14 after exact-byte native draft readiness.
-SEED-02 PR235 is MERGED at1cac654773ea6c1db2e29b53037f2f44528ae33a, accepted head
-ed9b25a125081558f0d6716c9a88c70a1d38ca70; older local-only fragments are historical.
-ACT-01: RUNTIME/Risk3/M, exact9 paths, branch codex/s10-wallet-seed-act-01-readiness;
-contract docs/wallet_seed_source_forecast_contract.md, stable record
-docs/status_entries/S10-WALLET-SEED-ACT-01.md. Default-off eight-call non-study
-readiness, future-window offline preview,300s finalized-age guard, full-code
-checks, immutable original/PIT capture, physical accounting and manual external
-approval/origin review. SourceFrame/SeedResult and all scientific capture remain
-synthetic-only; METHOD and conditional provider-not-attested policy unchanged.
-No provider/model/account calls, real readiness/study/forecasts/labels, credentials,
-orders or capital. ACT-OPS-01 and STUDY-ACT-01 remain separate; protected runtime,
-configs, dependencies, SCIENCE, wallet admission, DATA03 and ALPHA03/04 unchanged.
-S10-WALLET-SEED-ACT-01 validation/security results are exact-head external evidence;
-unavailable tools/platform cases are disclosed, never PASS. Independent Side19
-local acceptance and release evidence pending; no push/PR/hosted CI/merge here.
-
 # S10-LIVE-ORCH-01 current protected implementation target: Restricted Live Orchestration + First-Live Canary Core; Package class: PROTECTED_RESTRICTED_LIVE_ORCHESTRATION; Package size class: XL (explicit XL authorization); Governance track: PROTECTED; Risk level: 4; Exact changed-file scope: 27; Frozen base: 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe; Immediate predecessor: PR #218 / S10-DEPLOY-EXEC-01R3; PR #218 merged: YES; PR #218 head: b1779f5bc6e945eedfa1ba0692a9e1baca779973; PR #218 merge: 3f4d9ed91c0e96b9fc19389ac59e01f079caa3fe; S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: MERGED; S10-GATE-C-EXPLORE-01: MERGED; S10-DEPLOY-EXEC-01: MERGED (PR #214; repairs PR #215, #217, #218); current protected implementation target: S10-LIVE-ORCH-01 (implemented review target); readiness: IMPLEMENTATION_READY (PROTECTED, INDEPENDENT_CERTIFICATE, certificate hash-bound); capability: dormant protected foreground orchestrator src/execution_gateway/live_orch.py (preflight / canary / reconcile) over the existing Gate-B, Gate-C and gateway/store boundaries: exact current ExploratoryGateCPermit revalidation, strict execution-host currentness / NTP PASS, fresh geoblock PASS, exact Deposit Wallet identity, fresh bounded account truth, fresh venue drift contract, durable LIVE_ORCH_ADMISSION before CREATE_STARTED, at most one BUY CREATE, restart-safe multi-episode reconciliation of partial fills, settlement statuses and cancel ambiguity; EXEC-FEAS minimum-order dimension repair; contract: docs/live_orchestration_contract.md; first-live CREATE side: BUY only (SELL -> SIDE_UNSUPPORTED_FIRST_CANARY); capital envelope: USD 100 account / USD 5 order / USD 30 aggregate commitment / USD 70 free collateral, auto scaling: NO; implementation/CI real product network calls: 0; real credentials: 0; authenticated account access: 0; real CREATE/CANCEL: 0; dependency/workflow change: 0; first real canary: S10-LIVE-CANARY-01, separately gated (NOT AUTHORIZED); WP175: historical manual path; ALPHA-03: separate / non-blocking; DATA-03: unchanged and non-blocking; Control Center: separate / non-canonical; live: DISABLED; S10-LIVE-ORCH-01 capital/orders: USD 0 / 0; Merge authorized: NO
 
 # S10-DEPLOY-EXEC-01 merged historical predecessor (PR #214 merged: YES at fe4e2f1557dec5667d32fa1479f0bfc7ead1c940 with head 9871dddf98565b16194209f032cf8279bfbd34f1; repairs PR #215, #217 and #218 merged; formerly the current bounded implementation target): Execution-Host Runtime Substrate & Coexistence Proof; Package class: EXECUTION_HOST_RUNTIME_SUBSTRATE; Package size class: L; Governance track: RUNTIME; Risk level: 3; Exact changed-file scope: 18; Frozen base: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2; Immediate predecessor: PR #213 / S10-GATE-C-EXPLORE-01; PR #213 merged: YES; PR #213 head: 342dfeb24652eccb1b6bdf237039b268115b1fb7; PR #213 merge: 0392c2d2080a656d8ffd69f42abf8ad91d1f90e2; S10-STRAT-LIFE-01: MERGED; S10-HERMES-STRAT-01: MERGED; S10-EXEC-FEAS-01: MERGED; S10-GATE-C-EXPLORE-01: MERGED; current bounded implementation target: S10-DEPLOY-EXEC-01 (implemented review target); readiness: IMPLEMENTATION_READY (RUNTIME); capability: additive extension of the merged S10-DEPLOY-01 tools/deployment/ baseline with a sanitized execution-host binding and currentness contract (pseudonymous pmhost-v1 host id, pmboot-v1 boot id, exact release SHA, release manifest hash, critical-probe unit hash), one non-economic polymarket-execution-critical-probe.service in the existing polymarket-critical.slice (Restart=on-failure, RestartSec=1s, no network, no credentials; installed but disabled/inactive after bootstrap), a closed research-versus-critical coexistence evaluator (C8G_EXECUTION_HOST_SUFFICIENT / UPGRADE_ELIGIBLE:CRITICAL_DEADLINE|CRITICAL_DEGRADATION|MEMORY|CPU|DISK|IO / EXECUTION_HOST_INCONCLUSIVE) and closed terminal Phase-B evidence semantics (EXECUTION_HOST_PROVEN_C8G / EXECUTION_HOST_EVIDENCE_COMPLETE_UPGRADE_ELIGIBLE:<reason> / EXECUTION_HOST_INCONCLUSIVE); contract: docs/execution_host_runtime_contract.md; research baseline contract unchanged; slice values unchanged; Phase A: repository mechanism only; Phase B (real AlphaVPS proof): NOT AUTHORIZED / NOT PERFORMED, separately authorized after merge; AlphaVPS purchased/provisioned: operator-reported by Karl, not repository-observed; project deployment on AlphaVPS: NOT PERFORMED; actual host technical facts: UNKNOWN until Phase B; automatic upgrade / second host: NO (Karl decides); Gate-C eligibility: necessary-but-not-sufficient; src changed: NO; credentials: NONE; authenticated client/account reads: NONE; GateCLivePermit / A3: NOT ISSUED / NOT ENTERED; signing/order placement/cancel: NONE; OMS/reconciliation: NONE; dependency/workflow change: 0; S10-LIVE-ORCH-01: next core successor after execution-host substrate proof (NOT STARTED); ALPHA-03: separate / non-blocking; DATA-03: unchanged and non-blocking; Control Center: separate / non-canonical; paper/execution/live: NO; live: DISABLED; S10-DEPLOY-EXEC-01 capital/orders: USD 0 / 0; Merge authorized: NO
@@ -2146,3 +2126,23 @@ Realistic synthetic traces and local validation govern feasibility; independent
 implementation acceptance is PENDING. Completeness is conditional on pinned RPC
 conformance, never independently provider-attested. SEED02-D004 retains the real
 activation/operational source checks. Frozen METHOD and budgets are unchanged.
+
+## S10-WALLET-SEED-ACT-01 authorized local implementation
+
+Side19's reconciled V2 is accepted for conditional offline implementation; Karl
+authorized this step on2026-10-14 after exact-byte native draft readiness.
+SEED-02 PR235 is MERGED at1cac654773ea6c1db2e29b53037f2f44528ae33a, accepted head
+ed9b25a125081558f0d6716c9a88c70a1d38ca70; older local-only fragments are historical.
+ACT-01: RUNTIME/Risk3/M, exact9 paths, branch codex/s10-wallet-seed-act-01-readiness;
+contract docs/wallet_seed_source_forecast_contract.md, stable record
+docs/status_entries/S10-WALLET-SEED-ACT-01.md. Default-off eight-call non-study
+readiness, future-window offline preview,300s finalized-age guard, full-code
+checks, immutable original/PIT capture, physical accounting and manual external
+approval/origin review. SourceFrame/SeedResult and all scientific capture remain
+synthetic-only; METHOD and conditional provider-not-attested policy unchanged.
+No provider/model/account calls, real readiness/study/forecasts/labels, credentials,
+orders or capital. ACT-OPS-01 and STUDY-ACT-01 remain separate; protected runtime,
+configs, dependencies, SCIENCE, wallet admission, DATA03 and ALPHA03/04 unchanged.
+S10-WALLET-SEED-ACT-01 validation/security results are exact-head external evidence;
+unavailable tools/platform cases are disclosed, never PASS. Independent Side19
+local acceptance and release evidence pending; no push/PR/hosted CI/merge here.

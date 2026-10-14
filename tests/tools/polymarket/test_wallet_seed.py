@@ -9,6 +9,7 @@ from pathlib import Path
 import socket
 import subprocess
 import sys
+from types import SimpleNamespace
 import urllib.error
 
 import pytest
@@ -843,7 +844,7 @@ class FakeReadinessOpener:
         return self.response
 
 
-@pytest.mark.parametrize("fault", ("none", "non200", "open", "timeout", "oversize", "elapsed", "utc", "proxy", "calls", "bytes"))
+@pytest.mark.parametrize("fault", ("none", "non200", "open", "timeout", "oversize", "elapsed", "utc", "proxy", "calls", "bytes", "default", "redirect"))
 def test_readiness_transport_budgets(readiness_inputs, monkeypatch, fault):
     request, directory, frames, _ = readiness_inputs
     context = s._ReadinessRun(request, directory)
@@ -851,21 +852,38 @@ def test_readiness_transport_budgets(readiness_inputs, monkeypatch, fault):
     response = FakeReadinessResponse(b"a" * (65 if fault == "oversize" else 20), status=429 if fault == "non200" else 200,
         fault=TimeoutError("inert-secret-sentinel") if fault == "timeout" else None)
     opener = FakeReadinessOpener(response, urllib.error.URLError("inert-secret-sentinel") if fault == "open" else None)
+    active_opener = opener
+    if fault in ("default", "redirect"):
+        context.production = True
+        context.permit = s._ReadinessPermit(request["digest"], "synthetic-approval", s._CONSOLE_PERMIT, active=False)
+        timeouts = []
+        response.fp = SimpleNamespace(raw=SimpleNamespace(_sock=SimpleNamespace(settimeout=timeouts.append)))
+        def default_builder(*handlers):
+            assert isinstance(handlers[0], s.urllib.request.ProxyHandler) and handlers[0].proxies == {}
+            if fault == "redirect":
+                with pytest.raises(s.SeedError, match="REQUEST_DENIED"):
+                    handlers[1].redirect_request(None, None, 302, "redirect", {}, "https://fixture.invalid")
+                opener.fault = s.SeedError("REQUEST_DENIED")
+            return opener
+        monkeypatch.setattr(s.urllib.request, "build_opener", default_builder)
+        monkeypatch.setenv("HTTPS_PROXY", "http://fixture.invalid")
+        active_opener = None
     if fault == "elapsed": context.start_monotonic -= 121
     if fault == "utc": monkeypatch.setattr(s, "_utc_now", lambda: s._stamp(T0) + timedelta(seconds=120))
     if fault == "proxy": monkeypatch.setenv("HTTPS_PROXY", "http://fixture.invalid")
-    if fault in ("non200", "open", "timeout", "oversize", "elapsed", "utc"):
+    if fault in ("non200", "open", "timeout", "oversize", "elapsed", "utc", "redirect"):
         with pytest.raises(s.SeedError) as failure:
-            s._rpc_post(frames[0].request, 64, 1, opener, context=context)
+            s._rpc_post(frames[0].request, 64, 1, active_opener, context=context)
         assert "inert-secret-sentinel" not in str(failure.value)
     else:
-        assert s._rpc_post(frames[0].request, 64, 1, opener, context=context) == response.body
+        assert s._rpc_post(frames[0].request, 64, 1, active_opener, context=context) == response.body
     assert len(opener.requests) == 1 and context.calls == 1
     sent, timeout = opener.requests[0]
     assert sent.full_url == f"https://{s.RPC_HOST}/" and sent.method == "POST" and 0 < timeout <= 5
     assert dict(sent.header_items()) == {"Content-type": "application/json"}
     assert json.loads(sent.data)["method"] == "eth_chainId"
-    assert response.closed or fault == "open"
+    assert response.closed or fault in ("open", "redirect")
+    if fault == "default": assert timeouts and all(0 < value <= 1 for value in timeouts)
     if fault == "oversize": assert context.received_bytes == 65 and len(context.body) == 65
     if fault == "non200": assert context.received_bytes == 20
     if fault == "calls":

@@ -282,7 +282,7 @@ separate. No generated artifacts or real study evidence are committed here.
 
 Karl authorized offline implementation of Side19's exact reconciled V2 prompt/spec
 on 2026-10-14 after native draft readiness. The package remains RUNTIME/Risk3/M,
-exactly nine paths; no source, dependency, config or scientific-interface changes.
+exactly nine paths; no src/, dependency, config or scientific-interface changes.
 SEED-02 / PR235 is merged at 1cac654773ea6c1db2e29b53037f2f44528ae33a with accepted
 head ed9b25a125081558f0d6716c9a88c70a1d38ca70. Historical fragments are retained.
 
