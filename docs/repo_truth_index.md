@@ -2190,3 +2190,26 @@ remain separately evidenced; no hosted checks, acceptance or merge is presumed.
 ## S10-WALLET-SEED-01 prospective method protocol
 
 The canonical contract is `docs/wallet_incrementality_prospective_seed_protocol.md`, with six named documentation evidence nodes in `tests/test_wallet_incrementality_prospective_seed_protocol_docs.py`, exact package in `docs/wp_specs/S10-WALLET-SEED-01/` and stable record `docs/status_entries/S10-WALLET-SEED-01.md`. WALLET-03 PR #233 merged at `6a44d14dff4e631a5ba1fe6b94a46e532266512c`, head `5ab6f52408683e90cc0b713c58f565ed1928dce5`; retain its historical fragment. The METHOD digest freezes one uncalibrated prospective comparison; no STUDY seal or real evidence is created. S10-WALLET-SEED-02 source/forecast seed and numerical WALLET-04 remain separately gated. Protected runtime, scientific gates, DATA-03 and ALPHA-03/04 unchanged.
+
+## S10-WALLET-SEED-02 dormant source/forecast tooling
+
+`tools/polymarket/wallet_seed.py` supplies locally implemented synthetic/offline
+source/forecast interfaces; its sole test surface is
+`tests/tools/polymarket/test_wallet_seed.py`. Source/authority contract:
+`docs/wallet_seed_source_forecast_contract.md`; reviewed package:
+`docs/wp_specs/S10-WALLET-SEED-02/`; stable record:
+`docs/status_entries/S10-WALLET-SEED-02.md`. Predecessor SEED-01 / PR#234 merged at
+`887c8827d78f4a83557db6008da9ad5e4234b7cc`; its frozen METHOD is unchanged.
+RUNTIME/Risk3/M, nine exact paths; SYNTHETIC_ONLY/STUDY_NOT_ACTIVATED.
+No genuine source observation, enrolled study or qualification/trading authority.
+The real operator approval/origin path and acquisition remain separately gated by
+S10-WALLET-SEED-ACT-01. Independent Side19 implementation acceptance/release checks
+are pending; no PR, hosted CI or merge is performed in this local-only phase.
+
+Side19 bounded recovery (2026-10-14): accepted structural stop and targeted
+source-policy amendment; local correction uses exclusive bounded getLogs ranges,
+original returned-event receipt/header proofs and finalized frontier F by T0.
+Read the contract for RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED semantics.
+Realistic synthetic evidence/native checks do not establish physical provider
+exhaustiveness or grant acceptance. SEED02-D004 and the stable fragment retain
+pending independent review and prospective operational/approval/origin gates.

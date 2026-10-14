@@ -2747,10 +2747,24 @@ deterministic contract and require separate authority.
 
 | ID | Deferred item | Status | Priority | Gate | Boundary |
 |---|---|---|---|---|---|
-| S10-WALLET-SEED-01-D001 | Prove public-chain strong fill identity/finality and original CLOB book capture/retention; form exact prospective study seal and both forecast records | DEFERRED_TO_S10_WALLET_SEED_02 | P2 | Separate reviewed seed WP, Karl source-call/byte/elapsed budget and host activation; actual labels/groups before numerical WALLET-04 | Existing schemas represent evidence but do not prove a real source route. No decoder/client/collector/store, forecasts, study seal or data acquired by Phase A. DATA-03 remains independent. |
+| S10-WALLET-SEED-01-D001 | Prove public-chain strong fill identity/finality and original CLOB book capture/retention; form exact prospective study seal and both forecast records | SOFTWARE_LOCAL_IMPLEMENTED_REAL_ACTIVATION_DEFERRED | P2 | Separate reviewed seed WP, Karl source-call/byte/elapsed budget and host activation; actual labels/groups before numerical WALLET-04 | Existing schemas represent evidence but do not prove a real source route. No decoder/client/collector/store, forecasts, study seal or data acquired by Phase A. DATA-03 remains independent. |
 
 Local validation limitations remain honestly disclosed in the stable SEED-01 fragment and external exact-head evidence; unavailable optional tooling is not a PASS or a waived mandatory test.
 
+
+## S10-WALLET-SEED-02 local implementation / operator and release gates
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-WALLET-SEED-02-D001 | Trusted detached real operator approval/origin path, fresh entire RPC code hashes/finality, genuine complete source coverage and prospective study/label acquisition | DEFERRED_TO_S10_WALLET_SEED_ACT_01 | Separately reviewed exact code/phase/host/request/byte/time/output/human approval; no caller checksum or synthetic record grants real activation. Native tooling/fixture math is implemented, real enrolled evidence remains absent. |
+| S10-WALLET-SEED-02-D002 | Independent Side19 acceptance, exact-head hosted CI, PR publication/evidence mode and merge | PENDING_INDEPENDENT_CORRECTION_ACCEPTANCE | Structural stop accepted; targeted bounded source-policy amendment/local correction authorized. Review final exact-head realistic traces and full validation first; no publication, CI trigger or merge now. |
+| S10-WALLET-SEED-02-D003 | Optional Semgrep and complementary Windows/native/full-platform validation | AVAILABILITY_REPORTED_IN_EXTERNAL_EXACT_HEAD_EVIDENCE | Use installed permitted tools/environment only; no install/OS-policy bypass or PASS for an unavailable tool. Existing offline Linux image supplies the authoritative local suite; unresolved hosted/native/frontend skips remain disclosed. |
+| S10-WALLET-SEED-02-D004 | One-hour complete eligible finalized action-set proof under frozen source budgets | LOCAL_CORRECTION_CONDITIONAL_RPC_TRUST_REVIEW_PENDING | Side19 explicitly authorized bounded exhaustive eth_getLogs under disclosed RPC conformance assumption, not independent PublicNode attestation. Native original receipt/header/PIT/code/profile integrity and frozen METHOD/budgets remain required. Realistic positive and negative synthetic traces plus native/full validation are external exact-head evidence. Actual operational caps, all-or-error serving behavior, finalized support, reachability, fresh code and trusted capture/approval remain gated by ACT-01. No real collection or independent physical absence proof is claimed. Original 9f6df26 and structural stop f236eb5 remain ancestors. |
+
+SEED01-D001 software intake/forecast interfaces are locally implemented in nine paths;
+the same entry's real authorization/acquisition requirement is carried by SEED02-D001.
+SOURCE_ROUTE_VERIFIED_FOR_DRAFT records independent verifier source binding only,
+not fresh current RPC finality or real study origin. No DATA03/ALPHA03/04 policy changes.
 
 ## Wallet-Intelligence Roadmap Anchor (durable)
 
