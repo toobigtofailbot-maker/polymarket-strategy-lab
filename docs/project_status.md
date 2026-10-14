@@ -2126,3 +2126,23 @@ Realistic synthetic traces and local validation govern feasibility; independent
 implementation acceptance is PENDING. Completeness is conditional on pinned RPC
 conformance, never independently provider-attested. SEED02-D004 retains the real
 activation/operational source checks. Frozen METHOD and budgets are unchanged.
+
+## S10-WALLET-SEED-ACT-01 authorized local implementation
+
+Side19's reconciled V2 is accepted for conditional offline implementation; Karl
+authorized this step on2026-10-14 after exact-byte native draft readiness.
+SEED-02 PR235 is MERGED at1cac654773ea6c1db2e29b53037f2f44528ae33a, accepted head
+ed9b25a125081558f0d6716c9a88c70a1d38ca70; older local-only fragments are historical.
+ACT-01: RUNTIME/Risk3/M, exact9 paths, branch codex/s10-wallet-seed-act-01-readiness;
+contract docs/wallet_seed_source_forecast_contract.md, stable record
+docs/status_entries/S10-WALLET-SEED-ACT-01.md. Default-off eight-call non-study
+readiness, future-window offline preview,300s finalized-age guard, full-code
+checks, immutable original/PIT capture, physical accounting and manual external
+approval/origin review. SourceFrame/SeedResult and all scientific capture remain
+synthetic-only; METHOD and conditional provider-not-attested policy unchanged.
+No provider/model/account calls, real readiness/study/forecasts/labels, credentials,
+orders or capital. ACT-OPS-01 and STUDY-ACT-01 remain separate; protected runtime,
+configs, dependencies, SCIENCE, wallet admission, DATA03 and ALPHA03/04 unchanged.
+S10-WALLET-SEED-ACT-01 validation/security results are exact-head external evidence;
+unavailable tools/platform cases are disclosed, never PASS. Independent Side19
+local acceptance and release evidence pending; no push/PR/hosted CI/merge here.

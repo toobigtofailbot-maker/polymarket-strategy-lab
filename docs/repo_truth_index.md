@@ -2213,3 +2213,20 @@ Read the contract for RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED semantics.
 Realistic synthetic evidence/native checks do not establish physical provider
 exhaustiveness or grant acceptance. SEED02-D004 and the stable fragment retain
 pending independent review and prospective operational/approval/origin gates.
+
+## S10-WALLET-SEED-ACT-01 non-study readiness
+
+Current contract extension: docs/wallet_seed_source_forecast_contract.md;
+governed exact Side19 V2: docs/wp_specs/S10-WALLET-SEED-ACT-01/; stable local
+record: docs/status_entries/S10-WALLET-SEED-ACT-01.md; source/tests:
+tools/polymarket/wallet_seed.py and tests/tools/polymarket/test_wallet_seed.py.
+SEED-02 PR235 merged at1cac654773ea6c1db2e29b53037f2f44528ae33a, accepted head
+ed9b25a125081558f0d6716c9a88c70a1d38ca70. Retain its historical local fragment.
+RUNTIME/Risk3/M, exact9 files; offline implementation/synthetic tests only.
+Future-window preview, fixed eight-call non-study plan,300s observed finalized
+freshness, complete code hashes and immutable bounded capture. Manual local
+records/terminal presence never authenticate Karl; direct source origin is
+pending external review. METHOD/WALLET01/02/03 and provider-conditional coverage
+unchanged. Real operator approval, provider observations and study remain absent;
+ACT-OPS-01 / STUDY-ACT-01 separately gated. Local evidence is not PR/CI/release
+readiness or source-acquisition authority; independent Side19 acceptance pending.
