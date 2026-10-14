@@ -2747,7 +2747,7 @@ deterministic contract and require separate authority.
 
 | ID | Deferred item | Status | Priority | Gate | Boundary |
 |---|---|---|---|---|---|
-| S10-WALLET-SEED-01-D001 | Prove public-chain strong fill identity/finality and original CLOB book capture/retention; form exact prospective study seal and both forecast records | DEFERRED_TO_S10_WALLET_SEED_02 | P2 | Separate reviewed seed WP, Karl source-call/byte/elapsed budget and host activation; actual labels/groups before numerical WALLET-04 | Existing schemas represent evidence but do not prove a real source route. No decoder/client/collector/store, forecasts, study seal or data acquired by Phase A. DATA-03 remains independent. |
+| S10-WALLET-SEED-01-D001 | Prove public-chain strong fill identity/finality and original CLOB book capture/retention; form exact prospective study seal and both forecast records | SOFTWARE_LOCAL_IMPLEMENTED_REAL_ACTIVATION_DEFERRED | P2 | Separate reviewed seed WP, Karl source-call/byte/elapsed budget and host activation; actual labels/groups before numerical WALLET-04 | Existing schemas represent evidence but do not prove a real source route. No decoder/client/collector/store, forecasts, study seal or data acquired by Phase A. DATA-03 remains independent. |
 
 Local validation limitations remain honestly disclosed in the stable SEED-01 fragment and external exact-head evidence; unavailable optional tooling is not a PASS or a waived mandatory test.
 
@@ -2833,3 +2833,16 @@ qualification/economic/paper/live/Gate-C authority (no wallet live shortcut crea
 | S10-DEPLOY-PLAN-01-D003 | Exact upgrade-eligibility metric definitions, observation windows and isolated-execution baseline methodology | DEFERRED_TO_S10_DEPLOY_01 | P2 | S10-DEPLOY-01 must freeze them before any criterion is used as evidence | The ~85% RAM / ~15% MemAvailable / swap, ~85% CPU, ~80% disk / ~30-day headroom, ~10% I/O wait, >=20% p95 latency degradation, recovery-objective and isolation-failure criteria are review triggers only, never automatic upgrades or purchases; Karl decides after reviewing telemetry. Same-host isolation mechanism (Docker/systemd/other) is not frozen; Kubernetes is not required. |
 | S10-DEPLOY-PLAN-01-D004 | Jurisdiction, geoblocking, venue-terms, latency and provider-fit verification of the AlphaVPS Sofia, Bulgaria host | DEFERRED_TO_S10_DEPLOY_01 | P1 | S10-DEPLOY-01 (and any later auth/signing/live package) before the host carries paper or live runtime | S10-DEPLOY-PLAN-01 performs no provider probe, purchase, benchmark or legal/terms review; the planning direction is not evidence that the host is permitted, reachable or adequate for any venue path. The charter's jurisdiction, geoblocking, latency, reliability and operational-fit considerations remain verification obligations. |
 | S10-DEPLOY-PLAN-01-D005 | Package size-class label reconciliation | RECORDED_DESIGN_NOTE | P3 | None | Side14 drafted S10-DEPLOY-PLAN-01 as size M, but the repo WP spec guard caps M at 10 changed files; the exact 13-path scope is therefore classified L in the machine spec. Classification only: no path added, removed or widened. |
+
+## S10-WALLET-SEED-02 local implementation / operator and release gates
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-WALLET-SEED-02-D001 | Trusted detached real operator approval/origin path, fresh entire RPC code hashes/finality, genuine complete source coverage and prospective study/label acquisition | DEFERRED_TO_S10_WALLET_SEED_ACT_01 | Separately reviewed exact code/phase/host/request/byte/time/output/human approval; no caller checksum or synthetic record grants real activation. Native tooling/fixture math is implemented, real enrolled evidence remains absent. |
+| S10-WALLET-SEED-02-D002 | Independent Side19 acceptance, exact-head hosted CI, PR publication/evidence mode and merge | PENDING_INDEPENDENT_ACCEPTANCE | Review this local exact-head ZIP first; no publication, CI trigger or merge in current step. |
+| S10-WALLET-SEED-02-D003 | Optional Semgrep and complementary Windows/native/full-platform validation | AVAILABILITY_REPORTED_IN_EXTERNAL_EXACT_HEAD_EVIDENCE | Use installed permitted tools/environment only; no install/OS-policy bypass or PASS for an unavailable tool. Existing offline Linux image supplies the authoritative local suite; unresolved hosted/native/frontend skips remain disclosed. |
+
+SEED01-D001 software intake/forecast interfaces are locally implemented in nine paths;
+the same entry's real authorization/acquisition requirement is carried by SEED02-D001.
+SOURCE_ROUTE_VERIFIED_FOR_DRAFT records independent verifier source binding only,
+not fresh current RPC finality or real study origin. No DATA03/ALPHA03/04 policy changes.

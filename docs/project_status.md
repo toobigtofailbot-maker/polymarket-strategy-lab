@@ -2099,3 +2099,21 @@ are external exact-head evidence; Side19 independently assesses local acceptance
 ## S10-WALLET-SEED-01 Phase-A prospective method
 
 WALLET-03 / PR #233 is merged at `6a44d14dff4e631a5ba1fe6b94a46e532266512c` with implementation head `5ab6f52408683e90cc0b713c58f565ed1928dce5`; live merge history supersedes its retained pre-merge fragment. S10-WALLET-SEED-01 commits only the prospective METHOD protocol and documentation tests: METHOD_PROTOCOL_COMMITTED / STUDY_NOT_ACTIVATED / REAL_PAIRED_UNITS_NOT_ESTABLISHED. FAST, Risk 2, M; eight exact docs/tests paths; canonical contract `docs/wallet_incrementality_prospective_seed_protocol.md`; package `docs/wp_specs/S10-WALLET-SEED-01/`; stable evidence `docs/status_entries/S10-WALLET-SEED-01.md`. Fixed midpoint vs 10% wallet-direction perturbation is uncalibrated, not skill or profit. No actual enrolled cohort, real forecasts/labels, source collection, model/provider call, qualification/WP170, paper/execution/live/Gate C, orders or capital. DATA-03 and ALPHA-03/04 unchanged. Independent Side19 assessment and hosted CI remain pending; publication/merge not authorized.
+
+## S10-WALLET-SEED-02 local source/forecast implementation
+
+S10-WALLET-SEED-01 / PR#234 is MERGED at `887c8827d78f4a83557db6008da9ad5e4234b7cc`,
+head `c7922faa4051bd217e1805502f6ef4a95017e713`; retain its historical fragment.
+SEED-02 is LOCAL_IMPLEMENTATION / SYNTHETIC_ONLY / STUDY_NOT_ACTIVATED:
+RUNTIME/Risk3/M, exact nine paths, one dormant foreground tools module using unchanged
+native wallet ledger/profile/book APIs. Reviewed prompt/spec preserved; external
+exact-head validation and independent Side19 acceptance govern completion evidence.
+No trusted real approval adapter or original real source acquisition is activated.
+Actual enrolled/paired units:NOT_ESTABLISHED; synthetic math is not alpha/qualification.
+No source-runtime, config, dependency, protected execution/live, scheduler, orders
+or capital change. Publication/hosted CI/merge are not performed in this local-only
+step; Ready for review:NO, evidence mode:BLOCKED_NOT_READY. The separately gated
+S10-WALLET-SEED-ACT-01 owns genuine operator approval/origin/finality and acquisition.
+DATA03 and ALPHA03/04 remain separate. Stable record:
+`docs/status_entries/S10-WALLET-SEED-02.md`; contract:
+`docs/wallet_seed_source_forecast_contract.md`.

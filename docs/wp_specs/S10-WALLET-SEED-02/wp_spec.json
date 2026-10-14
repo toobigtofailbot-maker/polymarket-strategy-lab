@@ -1,0 +1,757 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-WALLET-SEED-02",
+    "title": "Verified CTF Source Intake and Prospective Paired Forecast Seed",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_PUBLIC_WALLET_SOURCE_FORECAST_TOOLING",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-wallet-seed-02-source-forecast",
+    "required_predecessor": {
+      "pr_number": 234,
+      "head_sha": "c7922faa4051bd217e1805502f6ef4a95017e713",
+      "merge_sha": "887c8827d78f4a83557db6008da9ad5e4234b7cc"
+    },
+    "objective": "Implement one bounded foreground tool reusing native wallet ledger/cohort/profile/book APIs: verified direct CTF fill intake, explicit public capture capability denied by default, one immutable prospective study seal and paired forecasts with independent CTF labels. Offline synthetic implementation only; real readiness/discovery/study/label acquisition and activation separately authorized. No protected trading/runtime change.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/polymarket/wallet_seed.py",
+      "tests/tools/polymarket/test_wallet_seed.py",
+      "docs/wallet_seed_source_forecast_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-SEED-02.md",
+      "docs/wp_specs/S10-WALLET-SEED-02/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-SEED-02/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "tools/polymarket/wallet_seed.py",
+      "tests/tools/polymarket/test_wallet_seed.py",
+      "docs/wallet_seed_source_forecast_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-WALLET-SEED-02.md",
+      "docs/wp_specs/S10-WALLET-SEED-02/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-SEED-02/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "src/",
+      ".github/",
+      "config/",
+      "configs/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "agent_runtime/",
+      "agent_memory/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/security/",
+      "tools/wp/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "rollback_surface": "Human-reviewed revert of these nine paths before operator activation. Preserve any later immutable study evidence; never overwrite a prior seal or truncate the existing wallet ledger.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only one tools module and tests; native source interfaces unchanged.",
+    "items": [
+      {
+        "surface": "tools.polymarket.wallet_seed",
+        "before": "Absent",
+        "after": "validate_source_route, decode_fill, build_study_seal, capture_seed_evidence, materialize_forecast_pair, attach_final_label, main; bounded foreground only.",
+        "change_authorized": true,
+        "compatibility_requirement": "No imports from this tool into src; no new package initializer/SDK/database/schema; no real invocation in this WP.",
+        "authority": "BOUNDED_TOOL_CAPABILITY_NOT_OPERATOR_ACTIVATION"
+      },
+      {
+        "surface": "WALLET01_02_03",
+        "before": "Merged immutable contracts, source-ledger/profile reconstruction and original-book admission.",
+        "after": "Unchanged; call production builders/readers and append API, never public Data-API trade relabeling.",
+        "change_authorized": false,
+        "compatibility_requirement": "Preserve native signatures, feed keys, windows, source fidelity, duplicate raw-reference guard and output safety flags.",
+        "authority": "REUSE_ONLY"
+      },
+      {
+        "surface": "public_market.public_get",
+        "before": "Fixed-host no-redirect capped raw-byte Gamma/CLOB GET.",
+        "after": "Reuse for original book/market reads with wrapper clock/budget/receipt retention; add only fixed-host read-only RPC POST in the new tool.",
+        "change_authorized": false,
+        "compatibility_requirement": "Never modify src; requests admitted before transport; default opener disables proxies; fake transport marked synthetic.",
+        "authority": "CAPABILITY_ONLY_NO_REAL_CALLS_IN_IMPLEMENTATION"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Frozen source and budget policy, not a real STUDY envelope.",
+    "items": [
+      {
+        "path": "seed.method_digest",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.chain_id",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.exchange",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.exchange_runtime_sha256",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.ctf",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.ctf_runtime_sha256",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.order_filled_topic",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.network_default",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.operator_activation",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.scope_units",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.decision_delay_seconds",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.quote_max_bytes",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.quote_max_levels",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.max_calls",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.max_total_bytes",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.max_elapsed_seconds",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.request_timeout_seconds",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.rpc_response_max_bytes",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.readiness_authorizes_study",
+        "source": "CONSTANT",
+        "type": "bool",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.study_activated",
+        "source": "CONSTANT",
+        "type": "bool",
+        "required_rule": "Exactly the constant in the valid SYNTHETIC_POLICY_ONLY example; transport ceilings may only be narrowed by a future approved activation seal.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed_policy_id",
+        "source": "DERIVED",
+        "type": "content_addressed_policy_identity",
+        "required_rule": "Identity covers the entire seed policy, never proves real source origin or activation.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Recompute exact canonical policy identity; mutation-sensitive and object-order-insensitive.",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "Policy digest only.",
+        "derivation_rule_id": "seed_policy_digest_v1"
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "One closed policy identity; operational STUDY and capture identities follow the same canonical whole-payload rule in the prompt.",
+    "items": [
+      {
+        "rule_id": "seed_policy_digest_v1",
+        "target_path": "seed_policy_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "seed"
+        ],
+        "excluded_paths": [],
+        "prefix": "walletseedpolicy:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Governance progression only; AUTHORIZED requires human/Side19-approved implementation. Source-route closure and native draft PASS grant no real activation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME deterministic draft readiness and independent Side19 draft review; no implementation or operator authority.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Side19 independently accepts the exact draft and Karl authorizes offline implementation; no collection/CI/publication/merge or economic authority inferred.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly nine allowed files implemented and required local evidence collected; real readiness/STUDY still NOT_ACTIVATED.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged native schema-1.0.0 failure order; study disposition precedence is separate method policy.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Policy-only examples contain no enrolled wallet/instrument/receipt/forecast; not activation.",
+    "items": [
+      {
+        "example_id": "SYNTHETIC_POLICY_ONLY",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "seed_policy_digest_v1"
+        ],
+        "input": {
+          "seed": {
+            "method_digest": "walletmethod:sha256:e08fe248dff75bd1e67503426801a6b6940d42ad4acb2bded89dd1650cba1656",
+            "chain_id": 137,
+            "exchange": "0xe111180000d2663c0091e4f400237545b87b996b",
+            "exchange_runtime_sha256": "3e2ba43e59d19191f0d208e39b1ec16f920bdda30ebfa062330ea9fe8d8363f5",
+            "ctf": "0x4d97dcd97ec945f40cf65f87097ace5ea0476045",
+            "ctf_runtime_sha256": "984de1496ba73cea948f777d72201b9418041dce65551bff0b4d62101d2acd62",
+            "order_filled_topic": "0xd543adfd945773f1a62f74f0ee55a5e3b9b1a28262980ba90b1a89f2ea84d8ee",
+            "network_default": "DENY",
+            "operator_activation": "SEPARATELY_GATED",
+            "scope_units": 1,
+            "decision_delay_seconds": 0,
+            "quote_max_bytes": 65536,
+            "quote_max_levels": 256,
+            "max_calls": 128,
+            "max_total_bytes": 8388608,
+            "max_elapsed_seconds": 120,
+            "request_timeout_seconds": 5,
+            "rpc_response_max_bytes": 2097152,
+            "readiness_authorizes_study": false,
+            "study_activated": false
+          },
+          "seed_policy_id": "walletseedpolicy:sha256:c75a8740f5709890f01fb5ed6c712d8f0ae930e58796462f4a3e1d83ff51bcbf"
+        }
+      },
+      {
+        "example_id": "POLICY_DIGEST_TAMPER_ONLY",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "IDENTITY_DERIVATION_INVALID"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "seed": {
+            "method_digest": "walletmethod:sha256:e08fe248dff75bd1e67503426801a6b6940d42ad4acb2bded89dd1650cba1656",
+            "chain_id": 137,
+            "exchange": "0xe111180000d2663c0091e4f400237545b87b996b",
+            "exchange_runtime_sha256": "3e2ba43e59d19191f0d208e39b1ec16f920bdda30ebfa062330ea9fe8d8363f5",
+            "ctf": "0x4d97dcd97ec945f40cf65f87097ace5ea0476045",
+            "ctf_runtime_sha256": "984de1496ba73cea948f777d72201b9418041dce65551bff0b4d62101d2acd62",
+            "order_filled_topic": "0xd543adfd945773f1a62f74f0ee55a5e3b9b1a28262980ba90b1a89f2ea84d8ee",
+            "network_default": "DENY",
+            "operator_activation": "SEPARATELY_GATED",
+            "scope_units": 1,
+            "decision_delay_seconds": 0,
+            "quote_max_bytes": 65536,
+            "quote_max_levels": 256,
+            "max_calls": 128,
+            "max_total_bytes": 8388608,
+            "max_elapsed_seconds": 120,
+            "request_timeout_seconds": 5,
+            "rpc_response_max_bytes": 2097152,
+            "readiness_authorizes_study": false,
+            "study_activated": false
+          },
+          "seed_policy_id": "walletseedpolicy:sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Seven assertion-bearing planned test nodes plus native exact-diff and authoritative full suite; native draft mode never executes these planned tests.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_verified_route_and_decode",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_verified_route_and_decode",
+        "expected_result": "Pinned code/ABI rejects wrong emitter/version/chain/topic/width and false maker or taker attribution; complementary BUY/BUY and SELL/SELL preserve each owner."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_original_chain_intake",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_original_chain_intake",
+        "expected_result": "Successful canonical original receipt/log/block/finality creates native immutable records; removed/reorg/missing/late bytes and self-rehashed caller origins cannot become admitted chain observations."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_native_book_and_profile_admission",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_native_book_and_profile_admission",
+        "expected_result": "Two separate native one-witness calls admit the same original bid/ask/body/head/profile; modified raw/manifest, stale/spread/conflicting books and outside native event window fail."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_prospective_seal_and_coverage",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_prospective_seal_and_coverage",
+        "expected_result": "A non-circular STUDY digest and detached post-digest approval distinction are enforced; in-seal digest-dependent references, absent/forged external approval, late/replaced seals, uncovered block/range, capped/partial feed and ambiguous group fail closed; only an original complete eligible-range empty result supports NO_SIGNAL."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_paired_forecast_label_and_conservation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_paired_forecast_label_and_conservation",
+        "expected_result": "Exact Decimal midpoint/blend/control math, independent CTF binary payout plus venue agreement, post-target label clocks and six-state enrolled conservation hold without false advantage claims."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_transport_activation_and_restart",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_transport_activation_and_restart",
+        "expected_result": "Import/offline mode performs zero network; approved fake transport checks exact host/method/budgets/no redirects/retries/proxies/credentials; replay and postcutoff growth never alter sealed decision inputs."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_safe_output_and_scope",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_safe_output_and_scope",
+        "expected_result": "Closed outputs scan every public field, invalid inputs never echo raw values, exact nine-file contract/status/spec agree and frozen method digest remains unchanged."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "native_readiness",
+        "test": "stable_committed_diff",
+        "command": "python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-SEED-02/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-SEED-02/wp_spec.json --repo-root . --check-diff --base 887c8827d78f4a83557db6008da9ad5e4234b7cc --head HEAD --format json",
+        "expected_result": "Exact nine-file committed diff is native IMPLEMENTATION_READY; this does not authorize operator activation, publication, CI or merge."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "authoritative stable-head full suite",
+        "command": "python -B -m pytest -q -p no:cacheprovider --junitxml=/validation/full-suite.xml",
+        "expected_result": "One final stable-head offline Linux full suite exits zero; exact counts, warnings, skips, commit and validation-environment limitations recorded; exact-head hosted plan remains separate."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-WALLET-SEED-ACT-01",
+    "next_title": "Separately Authorized Non-study Readiness and One-unit Prospective Public Source Activation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-WALLET-SEED-02",
+    "forbidden_in_this_wp": [
+      "Real source-readiness or public wallet discovery acquisition",
+      "Real enrolled STUDY seal or prospective observations/forecasts/labels",
+      "Operator capture invocation or real provider calls",
+      "Data API weak-to-strong relabeling",
+      "Frozen METHOD amendment or WALLET01/02/03 changes",
+      "WALLET04 empirical advantage/qualification/promotion",
+      "Credentials/private account/signing/orders/capital",
+      "Paper/execution/Gate C/live/scheduler/deployment",
+      "DATA03 or ALPHA03/04 changes",
+      "Hosted CI/PR publication/merge during drafting or without later authorization"
+    ]
+  }
+}
