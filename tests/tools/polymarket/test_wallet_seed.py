@@ -3,8 +3,13 @@ from copy import deepcopy
 from dataclasses import asdict, fields, replace
 from datetime import timedelta
 from hashlib import sha256
+import io
 import json
 from pathlib import Path
+import socket
+import subprocess
+import sys
+import urllib.error
 
 import pytest
 
@@ -624,3 +629,345 @@ def test_range_filter_covers_all_sealed_makers_without_token_narrowing(tmp_path,
     assert events == [] and proof["range_count"] == 14
     with pytest.raises(s.SeedError, match="COVERAGE_UNKNOWN"):
         s._coverage({**data, "logs": bundle["coverage"]["logs"]}, seal, inst)
+
+
+@pytest.fixture(autouse=True)
+def deny_source_network(monkeypatch):
+    def denied(*args, **kwargs):
+        pytest.fail("source network must remain disabled in synthetic tests")
+    monkeypatch.setattr(socket, "create_connection", denied)
+    monkeypatch.setattr(s.urllib.request.OpenerDirector, "open", denied)
+    monkeypatch.setattr(s.urllib.request, "urlopen", denied)
+
+
+def readiness_digest(request):
+    request["digest"] = s._identity("walletreadinessrequest:sha256:", {key: value for key, value in request.items() if key != "digest"})
+    return request
+
+
+@pytest.fixture
+def readiness_inputs(tmp_path, pins, monkeypatch):
+    now = s._stamp(T0)
+    monkeypatch.setattr(s, "_utc_now", lambda: now)
+    directory = tmp_path / "probe"
+    request = readiness_digest({"kind": "NON_STUDY_READINESS", "request_id": "synthetic_probe", "code_sha": CODE,
+        "method_digest": s.METHOD_DIGEST, "not_before": s._utc_text(now), "expires_at": s._utc_text(now + timedelta(seconds=120)),
+        "output_dir": str(directory), "budget": dict(s.LIMITS), "source_policy_id": s.READINESS_POLICY_ID})
+    header = {"number": "0x6000000", "hash": H3, "timestamp": hex(int((now - timedelta(seconds=60)).timestamp()))}
+    values = ("0x89", header, "0x6001", "0x6002", header, "0x", [], header)
+    frames = tuple(s.SourceFrame(s._readiness_plan(index, header), s.C.wallet_canonical_json_bytes({"jsonrpc": "2.0", "id": 1, "result": value}),
+        s._utc_text(now + timedelta(seconds=index)), CODE) for index, value in enumerate(values))
+    approval = {"kind": "MANUAL_EXTERNAL_APPROVAL_REFERENCE", "request_digest": request["digest"], "planned_operator": "KARL",
+        "external_review_ref": "synthetic-side19-fixture", "approved_at": s._utc_text(now - timedelta(seconds=1))}
+    return request, directory, frames, approval
+
+
+@pytest.mark.parametrize("fault", ("missing", "null", "type", "empty", "extra", "phase", "code", "method", "policy", "budget_missing", "budget_bool", "budget_float", "budget_calls", "budget_large", "path", "digest", "expired", "wide", "wording", "credential"))
+def test_readiness_request_scope(readiness_inputs, fault):
+    request, directory, frames, _ = readiness_inputs
+    assert s.validate_readiness_request(request=request).status == "READINESS_PREVIEW"
+    future = deepcopy(request)
+    future["not_before"] = s._utc_text(s._stamp(T0) + timedelta(seconds=30))
+    readiness_digest(future)
+    assert s.validate_readiness_request(request=future).status == "READINESS_PREVIEW"
+    assert s.capture_readiness(request=future, output_dir=directory, transport=s.SyntheticTransport(frames)).errors == ("WINDOW_INVALID",)
+    assert not directory.exists()
+    bad = deepcopy(request)
+    if fault == "missing": bad.pop("code_sha")
+    if fault == "null": bad["request_id"] = None
+    if fault == "type": bad["request_id"] = 1
+    if fault == "empty": bad["request_id"] = ""
+    if fault == "extra": bad["wallets"] = [WALLET]
+    if fault == "phase": bad["kind"] = "DECISION"
+    if fault == "code": bad["code_sha"] = "short"
+    if fault == "method": bad["method_digest"] = "changed"
+    if fault == "policy": bad["source_policy_id"] = "changed"
+    if fault == "budget_missing": bad["budget"].pop("bytes")
+    if fault == "budget_bool": bad["budget"]["calls"] = True
+    if fault == "budget_float": bad["budget"]["timeout_seconds"] = 1.0
+    if fault == "budget_calls": bad["budget"]["calls"] = 7
+    if fault == "budget_large": bad["budget"]["bytes"] += 1
+    if fault == "path": bad["output_dir"] = "relative"
+    if fault == "expired": bad["expires_at"] = T0
+    if fault == "wide": bad["expires_at"] = s._utc_text(s._stamp(T0) + timedelta(seconds=121))
+    if fault == "wording": bad["request_id"] = "trade_ready"
+    if fault == "credential": bad["api_key"] = "inert-secret-sentinel"
+    if fault != "budget_float": readiness_digest(bad)
+    if fault == "digest": bad["digest"] = "changed"
+    rejected = s.validate_readiness_request(request=bad)
+    assert rejected.status == "DENIED"
+    assert "inert-secret-sentinel" not in json.dumps(s.readiness_result_to_mapping(result=rejected))
+    assert s.capture_readiness(request=bad, output_dir=directory, transport=s.SyntheticTransport(frames)).status == "DENIED"
+    assert not directory.exists()
+
+
+class Terminal(io.StringIO):
+    def isatty(self):
+        return True
+
+
+@pytest.mark.parametrize("fault", ("absent", "hash_only", "wrong_digest", "wrong_operator", "future", "empty", "extra", "duplicate", "noninteractive", "eof", "challenge", "early"))
+def test_readiness_manual_boundary(readiness_inputs, monkeypatch, fault):
+    request, directory, frames, approval = readiness_inputs
+    assert s.capture_readiness(request=request, output_dir=directory).errors == ("PRODUCTION_DISABLED",)
+    assert s.capture_readiness(request=request, output_dir=directory, transport=object()).errors == ("PRODUCTION_DISABLED",)
+    with pytest.raises(s.SeedError, match="PRODUCTION_DISABLED"):
+        s._rpc_post(frames[0].request, 1024, 1)
+    output = io.StringIO()
+    monkeypatch.setattr(sys, "stdout", output)
+    assert s.main(["--status"]) == 0
+    assert json.loads(output.getvalue())["status"] == "PRODUCTION_DISABLED"
+    monkeypatch.setenv("ACT01_APPROVED", "true")
+    assert s.main(["--yes", "inert-secret-sentinel"]) == 1
+    assert "inert-secret-sentinel" not in output.getvalue()
+    invalid = deepcopy(approval)
+    if fault == "absent": invalid = None
+    if fault == "hash_only": invalid = {"digest": s._identity("approval:", approval)}
+    if fault == "wrong_digest": invalid["request_digest"] = "changed"
+    if fault == "wrong_operator": invalid["planned_operator"] = "OTHER"
+    if fault == "future": invalid["approved_at"] = s._utc_text(s._stamp(T0) + timedelta(seconds=1))
+    if fault == "empty": invalid["external_review_ref"] = ""
+    if fault == "extra": invalid["approved"] = True
+    if fault == "duplicate":
+        with pytest.raises(s.SeedError):
+            s._rpc_document(b'{"kind":"one","kind":"two"}')
+        invalid = {"kind": "conflict"}
+    monkeypatch.setattr(s, "_readiness_checkout", lambda checked: None)
+    monkeypatch.setattr(sys, "stdout", Terminal())
+    monkeypatch.setattr(sys, "stderr", Terminal())
+    monkeypatch.setattr(s.secrets, "token_hex", lambda size: "fixture-challenge")
+    approval_id = s._identity("walletreadinessapproval:sha256:", approval)
+    answer = "AUTHORIZE NON_STUDY_READINESS " + request["digest"] + " " + approval_id + " fixture-challenge\n"
+    monkeypatch.setattr(sys, "stdin", io.StringIO(answer) if fault == "noninteractive" else Terminal("" if fault == "eof" else "wrong\n" if fault == "challenge" else answer))
+    if fault == "early":
+        request["not_before"] = s._utc_text(s._stamp(T0) + timedelta(seconds=30))
+        readiness_digest(request)
+        invalid["request_digest"] = request["digest"]
+    with pytest.raises((s.SeedError, TypeError)):
+        s._readiness_console(request, invalid)
+    assert not directory.exists()
+    if fault != "early":
+        monkeypatch.setattr(sys, "stdin", Terminal(answer))
+        permit = s._readiness_console(request, approval)
+        assert type(permit) is s._ReadinessPermit and permit.active
+        result = s._run_readiness(request, directory, s.SyntheticTransport(frames), approval=approval, permit=permit)
+        assert result.origin == "SYNTHETIC" and result.human_identity == "NOT_MACHINE_ATTESTED"
+        assert result.operator_approval == "MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW"
+        assert not permit.active
+        with pytest.raises(s.SeedError, match="APPROVAL_INVALID"):
+            s._run_readiness(request, directory, s.SyntheticTransport(frames), approval=approval, permit=permit)
+
+
+@pytest.mark.parametrize("fault", ("none", "chain", "stale", "future", "boundary", "noncanonical", "missing", "null", "error", "id", "bool_id", "duplicate_key", "float", "truncated", "partial", "exchange_code", "ctf_code", "code_request", "before_header", "after_header", "predeployment_code", "logs", "filter", "large_runtime"))
+def test_readiness_fixed_source_plan(readiness_inputs, monkeypatch, fault):
+    request, directory, frames, _ = readiness_inputs
+    frames = list(frames)
+    if fault == "chain": frames[0] = change(frames[0], "0x1")
+    if fault in ("stale", "future", "boundary", "noncanonical", "missing"):
+        header = s._frame(frames[1])
+        if fault == "stale": header["timestamp"] = hex(int((s._stamp(T0) - timedelta(seconds=300)).timestamp()))
+        if fault == "future": header["timestamp"] = hex(int((s._stamp(T0) + timedelta(seconds=2)).timestamp()))
+        if fault == "boundary": header["timestamp"] = hex(int((s._stamp(T0) - timedelta(seconds=300)).timestamp()))
+        if fault == "noncanonical": header["timestamp"] = "0x00"
+        if fault == "missing": header.pop("timestamp")
+        frames[1] = change(frames[1], header)
+        if fault == "boundary":
+            frames[4] = change(frames[4], header)
+            frames[7] = change(frames[7], header)
+            frames = [replace(value, observed_at=T0) for value in frames]
+    if fault == "null": frames[1] = change(frames[1], None)
+    bodies = {"error": b'{"jsonrpc":"2.0","id":1,"error":{"code":-32001,"message":"pruned"}}',
+        "id": b'{"jsonrpc":"2.0","id":2,"result":"0x89"}', "bool_id": b'{"jsonrpc":"2.0","id":true,"result":"0x89"}',
+        "duplicate_key": b'{"jsonrpc":"2.0","id":1,"id":1,"result":"0x89"}', "float": b'{"jsonrpc":"2.0","id":1,"result":0.5}',
+        "truncated": b'{"jsonrpc":"2.0",', "partial": b'{"jsonrpc":"2.0","id":1,"result":"0x89","truncated":true}'}
+    if fault in bodies: frames[0] = replace(frames[0], body=bodies[fault])
+    if fault == "exchange_code": frames[2] = change(frames[2], "0x6003")
+    if fault == "ctf_code": frames[3] = change(frames[3], "0x6003")
+    if fault == "code_request": frames[2] = replace(frames[2], request=replace(frames[2].request, params=(s.EXCHANGE, "0x1")))
+    if fault in ("before_header", "after_header"):
+        index = 4 if fault == "before_header" else 7
+        header = s._frame(frames[index]); header["hash"] = H2
+        frames[index] = change(frames[index], header)
+    if fault == "predeployment_code": frames[5] = change(frames[5], "0x60")
+    if fault == "logs": frames[6] = change(frames[6], [{"transactionHash": TX}])
+    if fault == "filter": frames[6] = replace(frames[6], request=replace(frames[6].request, params=({"address": s.EXCHANGE, "fromBlock": "0x0", "toBlock": "0x50f81d0", "topics": [s.TOPIC]},)))
+    if fault == "large_runtime":
+        runtime = bytes.fromhex("60" * 21037)
+        monkeypatch.setattr(s, "EXCHANGE_HASH", sha256(runtime).hexdigest())
+        frames[2] = replace(frames[2], body=json.dumps({"jsonrpc": "2.0", "id": 1, "result": "0x" + runtime.hex()}).encode())
+    result = s.capture_readiness(request=request, output_dir=directory, transport=s.SyntheticTransport(tuple(frames)))
+    success = fault in ("none", "boundary", "large_runtime")
+    assert result.status == ("SYNTHETIC_READINESS_OBSERVED" if success else "READINESS_INCONCLUSIVE"), result
+    assert result.accounting["calls"] <= 8
+    assert result.provider_attestation == "NOT_ESTABLISHED" and result.enrolled_count == "NOT_ESTABLISHED"
+    assert result.observations["coverage"] == result.observations["current_period_logs"] == "NOT_ESTABLISHED"
+    assert not list(directory.glob("*.sqlite*")) and not (directory / "study.json").exists()
+    if success:
+        assert result.accounting["calls"] == 8
+        assert result.accounting["received_bytes"] == sum(len(value.body) for value in frames)
+        assert result.observations["log_probe"] == "EMPTY_METHOD_SHAPE_ONLY"
+        filters = frames[6].request.params[0]
+        assert int(filters["toBlock"], 16) - int(filters["fromBlock"], 16) + 1 == 128
+        assert filters["topics"] == [s.TOPIC] and int(filters["toBlock"], 16) == 84902353 - 1
+        assert result.observations["canonical_checks"] == 2
+    else:
+        assert list(directory.glob("*.quarantine.raw"))
+
+
+class FakeReadinessResponse:
+    def __init__(self, body, status=200, fault=None):
+        self.body = body
+        self.status = status
+        self.fault = fault
+        self.offset = 0
+        self.closed = False
+    def read(self, maximum):
+        if self.fault is not None:
+            raise self.fault
+        result = self.body[self.offset:self.offset + maximum]
+        self.offset += len(result)
+        return result
+    def close(self):
+        self.closed = True
+
+
+class FakeReadinessOpener:
+    def __init__(self, response, fault=None):
+        self.response = response
+        self.fault = fault
+        self.requests = []
+    def open(self, request, timeout):
+        self.requests.append((request, timeout))
+        if self.fault is not None:
+            raise self.fault
+        return self.response
+
+
+@pytest.mark.parametrize("fault", ("none", "non200", "open", "timeout", "oversize", "elapsed", "utc", "proxy", "calls", "bytes"))
+def test_readiness_transport_budgets(readiness_inputs, monkeypatch, fault):
+    request, directory, frames, _ = readiness_inputs
+    context = s._ReadinessRun(request, directory)
+    context.begin_call()
+    response = FakeReadinessResponse(b"a" * (65 if fault == "oversize" else 20), status=429 if fault == "non200" else 200,
+        fault=TimeoutError("inert-secret-sentinel") if fault == "timeout" else None)
+    opener = FakeReadinessOpener(response, urllib.error.URLError("inert-secret-sentinel") if fault == "open" else None)
+    if fault == "elapsed": context.start_monotonic -= 121
+    if fault == "utc": monkeypatch.setattr(s, "_utc_now", lambda: s._stamp(T0) + timedelta(seconds=120))
+    if fault == "proxy": monkeypatch.setenv("HTTPS_PROXY", "http://fixture.invalid")
+    if fault in ("non200", "open", "timeout", "oversize", "elapsed", "utc"):
+        with pytest.raises(s.SeedError) as failure:
+            s._rpc_post(frames[0].request, 64, 1, opener, context=context)
+        assert "inert-secret-sentinel" not in str(failure.value)
+    else:
+        assert s._rpc_post(frames[0].request, 64, 1, opener, context=context) == response.body
+    assert len(opener.requests) == 1 and context.calls == 1
+    sent, timeout = opener.requests[0]
+    assert sent.full_url == f"https://{s.RPC_HOST}/" and sent.method == "POST" and 0 < timeout <= 5
+    assert dict(sent.header_items()) == {"Content-type": "application/json"}
+    assert json.loads(sent.data)["method"] == "eth_chainId"
+    assert response.closed or fault == "open"
+    if fault == "oversize": assert context.received_bytes == 65 and len(context.body) == 65
+    if fault == "non200": assert context.received_bytes == 20
+    if fault == "calls":
+        context.calls = 128
+        with pytest.raises(s.SeedError): context.begin_call()
+        assert context.calls == 128
+    if fault == "bytes":
+        request["budget"]["bytes"] = 1
+        readiness_digest(request)
+        result = s.capture_readiness(request=request, output_dir=directory, transport=s.SyntheticTransport(frames))
+        assert result.status == "READINESS_INCONCLUSIVE" and result.accounting["calls"] == 1
+        assert result.accounting["received_bytes"] == 2 and result.accounting["byte_cap_breached"]
+
+
+@pytest.mark.parametrize("fault", ("none", "abort", "partial", "symlink", "existing", "path", "approval"))
+def test_readiness_immutable_capture_and_replay(readiness_inputs, monkeypatch, tmp_path, fault):
+    request, directory, frames, approval = readiness_inputs
+    observed = s._readiness_observe
+    def checked_observe(index, value, completed_at, frontier, observations):
+        assert (directory / "run.claim").is_file()
+        if fault == "abort" and index == 2:
+            raise KeyboardInterrupt()
+        return observed(index, value, completed_at, frontier, observations)
+    monkeypatch.setattr(s, "_readiness_observe", checked_observe)
+    if fault == "symlink":
+        target = tmp_path / "target"; target.mkdir()
+        try:
+            directory.symlink_to(target, target_is_directory=True)
+        except OSError:
+            pytest.skip("Windows symlink privilege unavailable; authoritative Linux checks this case")
+    if fault == "existing":
+        directory.mkdir(); (directory / "run.claim").write_bytes(b"prior-immutable-fixture")
+    if fault == "path":
+        directory = tmp_path / "different"
+    if fault == "partial":
+        retained = s._retain
+        def fail_metadata(path, name, content):
+            if name == "chain.json": raise OSError("inert-secret-sentinel")
+            return retained(path, name, content)
+        monkeypatch.setattr(s, "_retain", fail_metadata)
+    result = s.capture_readiness(request=request, output_dir=directory, transport=s.SyntheticTransport(frames))
+    if fault in ("symlink", "existing", "path"):
+        assert result.status == "DENIED"
+        if fault == "existing": assert (directory / "run.claim").read_bytes() == b"prior-immutable-fixture"
+        return
+    assert result.status == ("READINESS_INCONCLUSIVE" if fault in ("abort", "partial") else "SYNTHETIC_READINESS_OBSERVED")
+    assert (directory / "run.claim").exists()
+    if fault == "partial":
+        assert result.accounting["calls"] == 1 and result.receipt_id is None
+        assert (directory / "chain.raw").exists() and not (directory / "receipt.json").exists()
+    else:
+        metadata = json.loads((directory / "chain.json").read_bytes())
+        assert (directory / "chain.raw").read_bytes() == frames[0].body
+        assert metadata["raw_reference"]["content_sha256"] == sha256(frames[0].body).hexdigest()
+        assert metadata["raw_reference"]["pit"]["local_first_seen_time"] == frames[0].observed_at
+        assert metadata["provenance_manifest"]["input_evidence_reference_ids"] == [metadata["raw_reference"]["raw_evidence_reference_id"]]
+        receipt = json.loads((directory / "receipt.json").read_bytes())
+        assert receipt["code_sha"] == CODE and receipt["request_digest"] == request["digest"]
+        assert result.receipt_id == receipt["receipt_id"]
+    if fault == "abort": assert result.errors == ("OPERATOR_CANCELLED",) and result.accounting["calls"] == 3
+    before = {path.name: path.read_bytes() for path in directory.iterdir()}
+    if fault == "approval": approval["external_review_ref"] = "another-synthetic-reference"
+    replay = s.capture_readiness(request=request, output_dir=directory, transport=s.SyntheticTransport(frames))
+    assert replay.status == "DENIED"
+    assert before == {path.name: path.read_bytes() for path in directory.iterdir()}
+
+
+@pytest.mark.parametrize("variant", ("trade-ready", "TRADE_READY", "trade ready", "buy/sell recommendation", "Buy/Sell_Recommendation", "copy_signal"))
+def test_readiness_safe_output_and_no_promotion(readiness_inputs, variant):
+    request, directory, frames, _ = readiness_inputs
+    result = s.capture_readiness(request=request, output_dir=directory, transport=s.SyntheticTransport(frames))
+    serialized = s.readiness_result_to_mapping(result=result)
+    assert {item.name for item in fields(result)} == set(serialized) == s.READINESS_RESULT_FIELDS
+    for item in fields(result):
+        value = (variant,) if item.name == "errors" else {"nested": variant} if item.name in ("observations", "accounting") else variant
+        with pytest.raises(s.SeedError):
+            s.readiness_result_to_mapping(result=replace(result, **{item.name: value}))
+    with pytest.raises(s.SeedError):
+        s.readiness_result_to_mapping(result=replace(result, observations={"raw_metadata": {"api_key": "inert-secret-sentinel"}}))
+    forged = replace(result, origin="DIRECT_HTTPS_NON_STUDY_PENDING_REVIEW")
+    object.__setattr__(forged, "_commitment", s._identity("readinessresult:", asdict(forged)))
+    with pytest.raises(s.SeedError, match="OUTPUT_UNSAFE"):
+        s.readiness_result_to_mapping(result=forged)
+    assert s.capture_seed_evidence(seal=serialized, phase="DECISION", ledger_path=directory / "absent.sqlite", output_dir=directory).errors == ("PRODUCTION_DISABLED",)
+    assert serialized["numeric_summary"] is None and not serialized["study_activated"]
+    assert serialized["operator_approval"] == "MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW"
+    assert "inert-secret-sentinel" not in json.dumps(serialized)
+
+
+def test_readiness_import_and_cli_never_open_source_transport():
+    script = "import socket,urllib.request; deny=lambda *args,**kwargs:(_ for _ in ()).throw(AssertionError('network')); socket.create_connection=deny; urllib.request.OpenerDirector.open=deny; from tools.polymarket import wallet_seed; assert wallet_seed.main(['--status'])==0"
+    completed = subprocess.run([sys.executable, "-B", "-c", script], cwd=s.ROOT, capture_output=True, text=True, timeout=30)
+    assert completed.returncode == 0 and json.loads(completed.stdout)["status"] == "PRODUCTION_DISABLED"
+
+
+def test_readiness_policy_matches_exact_v2_package():
+    with pytest.raises(TypeError):
+        s.readiness_result_to_mapping(s.ReadinessResult("DENIED"))
+    spec = json.loads((s.ROOT / "docs/wp_specs/S10-WALLET-SEED-ACT-01/wp_spec.json").read_bytes())
+    example = spec["examples"]["items"][0]["input"]
+    assert example["readiness_policy_id"] == s.READINESS_POLICY_ID
+    assert s._identity("walletreadinesspolicy:sha256:", {"readiness": example["readiness"]}) == s.READINESS_POLICY_ID
+    assert example["readiness"]["max_finalized_age_seconds"] == 300 and example["readiness"]["plan_calls"] == 8
+    assert spec["scope"]["required_changed_files"] == spec["scope"]["allowed_changed_files"]
+    assert spec["scope"]["max_changed_files"] == 9 and not spec["authority"]["source_runtime"]

@@ -1,7 +1,7 @@
-"""SEED-02: dormant foreground source/forecast tooling; synthetic use only.
+"""Synthetic scientific seed and separately reviewed non-study readiness.
 
-There is deliberately no trusted operator-approval adapter in this package.
-Production capture stays closed even when a caller supplies plausible receipts.
+Local records and terminal presence never authenticate external human approval.
+Scientific production capture remains closed.
 """
 from __future__ import annotations
 
@@ -12,10 +12,15 @@ from decimal import Decimal, localcontext
 from functools import wraps
 from hashlib import sha256
 import json
+import math
+import os
 from pathlib import Path
 import re
+import secrets
+import subprocess
 import sys
 import time
+import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -221,6 +226,47 @@ class SyntheticDecisionClock:
     at: str
 
 
+def _rpc_document(body):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            _require(key not in result, "SOURCE_INVALID")
+            result[key] = value
+        return result
+    def invalid_number(value):
+        raise SeedError("SOURCE_INVALID")
+    document = json.loads(body, object_pairs_hook=pairs, parse_constant=invalid_number, parse_float=invalid_number)
+    def bounds(value, depth=0, counter=None):
+        counter = [0] if counter is None else counter
+        counter[0] += 1
+        _require(depth <= 24 and counter[0] <= 32768, "SOURCE_INVALID")
+        if type(value) in (dict, list):
+            _require(len(value) <= 1024, "SOURCE_INVALID")
+            for child in value.values() if type(value) is dict else value:
+                bounds(child, depth + 1, counter)
+        elif type(value) is str:
+            _require(len(value) <= 16384 or re.fullmatch(r"0x[0-9a-fA-F]+", value) is not None, "SOURCE_INVALID")
+        else:
+            _require(value is None or type(value) in (int, bool), "SOURCE_INVALID")
+    bounds(document)
+    return document
+
+
+def _source_body(body, venue=False):
+    _require(type(body) is bytes and len(body) <= 2097152, "SOURCE_INVALID")
+    document = decode_public_json(body) if venue else _rpc_document(body)
+    unsafe = []
+    _scan_forbidden_terms(document, "", unsafe)
+    _scan_raw_metadata_keys(document, "", unsafe)
+    _require(not unsafe, "SOURCE_INVALID")
+    if not venue:
+        _closed(document, ("jsonrpc", "id", "result"))
+        _require(document["jsonrpc"] == "2.0" and type(document["id"]) is int and document["id"] == 1)
+        _require(document["result"] is not None, "SOURCE_INVALID")
+        return document["result"]
+    return document
+
+
 def _frame(frame, method=None, cutoff=None):
     _require(type(frame) is SourceFrame and type(frame.request) is Request and frame.origin == "SYNTHETIC", "SOURCE_INVALID")
     _require(type(frame.body) is bytes and len(frame.body) <= 2097152)
@@ -230,43 +276,7 @@ def _frame(frame, method=None, cutoff=None):
     if cutoff is not None:
         _require(_stamp(frame.observed_at) <= _stamp(cutoff), "LATE_SOURCE")
     _require(_stamp(frame.started_at or frame.observed_at) <= _stamp(frame.observed_at), "LATE_SOURCE")
-    # Venue JSON's string cap is smaller than the pinned exchange runtime hex.
-    # RPC gets its own strict capped parser, permitting large hex only.
-    if frame.request.url is None:
-        def pairs(items):
-            result = {}
-            for key, value in items:
-                _require(key not in result, "SOURCE_INVALID")
-                result[key] = value
-            return result
-        def invalid_number(value):
-            raise SeedError("SOURCE_INVALID")
-        document = json.loads(frame.body, object_pairs_hook=pairs, parse_constant=invalid_number, parse_float=invalid_number)
-        def bounds(value, depth=0, counter=None):
-            counter = [0] if counter is None else counter
-            counter[0] += 1
-            _require(depth <= 24 and counter[0] <= 32768, "SOURCE_INVALID")
-            if type(value) in (dict, list):
-                _require(len(value) <= 1024, "SOURCE_INVALID")
-                for child in value.values() if type(value) is dict else value:
-                    bounds(child, depth + 1, counter)
-            elif type(value) is str:
-                _require(len(value) <= 16384 or re.fullmatch(r"0x[0-9a-fA-F]+", value) is not None, "SOURCE_INVALID")
-            else:
-                _require(value is None or type(value) in (int, bool), "SOURCE_INVALID")
-        bounds(document)
-    else:
-        document = decode_public_json(frame.body)
-    unsafe = []
-    _scan_forbidden_terms(document, "", unsafe)
-    _scan_raw_metadata_keys(document, "", unsafe)
-    _require(not unsafe, "SOURCE_INVALID")
-    if frame.request.url is None:
-        _closed(document, ("jsonrpc", "id", "result"))
-        _require(document["jsonrpc"] == "2.0" and type(document["id"]) is int and document["id"] == 1)
-        _require(document["result"] is not None, "SOURCE_INVALID")
-        return document["result"]
-    return document
+    return _source_body(frame.body, frame.request.url is not None)
 
 
 def _route(evidence, cutoff=None):
@@ -524,21 +534,61 @@ def _request(request, phase, payload):
         _require(phase == "LABEL" or call["data"][:10] not in ("0xdd34de67", "0x0504c814"), "REQUEST_DENIED")
 
 
-def _rpc_post(request, max_bytes, timeout, opener=None):
+def _rpc_post(request, max_bytes, timeout, opener=None, *, context=None):
     """Dormant bounded transport. Public capture cannot activate it in this WP."""
     _require(type(request) is Request and request.method in RPC_METHODS and request.url is None, "REQUEST_DENIED")
-    _require(type(max_bytes) is int and 0 < max_bytes <= 2097152 and type(timeout) is int and 0 < timeout <= 5, "LIMIT_INVALID")
+    _require(opener is not None or (type(context) is _ReadinessRun and context.production and context.active and type(context.permit) is _ReadinessPermit and context.permit.issuer is _CONSOLE_PERMIT and not context.permit.active and context.permit.request_digest == context.request["digest"]), "PRODUCTION_DISABLED")
+    _require(not (context is not None and context.production and opener is not None), "PRODUCTION_DISABLED")
+    _require(type(max_bytes) is int and 0 < max_bytes <= 2097152 and type(timeout) in (int, float) and math.isfinite(timeout) and 0 < timeout <= 5, "LIMIT_INVALID")
     data = json.dumps({"jsonrpc": "2.0", "id": 1, "method": request.method, "params": request.params}, separators=(",", ":")).encode()
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self, *args, **kwargs):
             raise SeedError("REQUEST_DENIED")
     client = opener or urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
     req = urllib.request.Request(f"https://{RPC_HOST}/", data=data, headers={"Content-Type": "application/json"}, method="POST")
-    with client.open(req, timeout=timeout) as response:
-        _require(response.status == 200, "SOURCE_INVALID")
-        body = response.read(max_bytes + 1)
-        _require(type(body) is bytes and len(body) <= max_bytes, "LIMIT_INVALID")
+    response = None
+    try:
+        try:
+            response = client.open(req, timeout=timeout)
+        except urllib.error.HTTPError as error:
+            response = error
+        status = response.status
+        _require(type(status) is int, "SOURCE_INVALID")
+        if context is not None:
+            context.http_status = status
+        chunks = []
+        received = 0
+        for _ in range((max_bytes + 65536) // 65536):
+            remaining = max_bytes + 1 - received
+            if remaining <= 0:
+                break
+            if context is not None:
+                remaining_timeout = min(timeout, context.remaining_seconds(), timeout - (time.monotonic() - context.call_monotonic))
+                _require(remaining_timeout > 0, "LIMIT_INVALID")
+                stream_socket = getattr(getattr(getattr(response, "fp", None), "raw", None), "_sock", None)
+                _require(not context.production or stream_socket is not None, "SOURCE_INVALID")
+                if stream_socket is not None:
+                    stream_socket.settimeout(remaining_timeout)
+            chunk = response.read(min(65536, remaining))
+            _require(type(chunk) is bytes and len(chunk) <= min(65536, remaining), "SOURCE_INVALID")
+            if not chunk:
+                break
+            chunks.append(chunk)
+            received += len(chunk)
+            if context is not None:
+                context.received_bytes += len(chunk)
+                context.body = b"".join(chunks)
+        body = b"".join(chunks)
+        _require(len(body) <= max_bytes, "LIMIT_INVALID")
+        _require(status == 200, "SOURCE_INVALID")
         return body
+    except SeedError:
+        raise
+    except (OSError, ValueError, urllib.error.URLError):
+        raise SeedError("SOURCE_UNAVAILABLE") from None
+    finally:
+        if response is not None:
+            response.close()
 
 
 def _retain(directory, name, content):
@@ -935,12 +985,424 @@ def attach_final_label(*, pair, label_bundle, as_of):
     return result
 
 
+READINESS_POLICY_ID = "walletreadinesspolicy:sha256:1131374f86691e8f599b119f97155a2cda70f4d38fb70b468971a94267d48a2e"
+READINESS_FIELDS = ("kind", "request_id", "code_sha", "method_digest", "not_before", "expires_at", "output_dir", "budget", "source_policy_id", "digest")
+READINESS_STATUSES = frozenset({"DENIED", "READINESS_PREVIEW", "READINESS_INCONCLUSIVE", "SYNTHETIC_READINESS_OBSERVED", "OBSERVED_ROUTE_COMPATIBLE_PENDING_REVIEW"})
+READINESS_ERRORS = frozenset({"FIELD_INVALID", "SOURCE_INVALID", "SOURCE_UNAVAILABLE", "CHAIN_INVALID", "VERSION_INVALID", "FINALITY_INVALID", "LIMIT_INVALID", "WINDOW_INVALID", "PATH_INVALID", "REPLAY_CONFLICT", "REQUEST_DENIED", "APPROVAL_INVALID", "PRODUCTION_DISABLED", "OPERATOR_CANCELLED", "ARGUMENT_INVALID"})
+_CONSOLE_PERMIT = object()
+_DIRECT_RESULT = object()
+
+
+@dataclass
+class _ReadinessPermit:
+    request_digest: str
+    approval_id: str
+    issuer: object = field(repr=False)
+    active: bool = True
+
+
+@dataclass(frozen=True)
+class ReadinessResult:
+    status: str
+    errors: tuple[str, ...] = ()
+    request_digest: str | None = None
+    receipt_id: str | None = None
+    origin: str = "SYNTHETIC"
+    operator_approval: str = "MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW"
+    human_identity: str = "NOT_MACHINE_ATTESTED"
+    observations: dict = field(default_factory=dict)
+    accounting: dict = field(default_factory=dict)
+    coverage_epistemics: str = COVERAGE_EPISTEMICS
+    provider_attestation: str = "NOT_ESTABLISHED"
+    enrolled_count: str = "NOT_ESTABLISHED"
+    numeric_summary: None = None
+    study_activated: bool = False
+    advisory_only: bool = True
+    no_execution_authority: bool = True
+    no_strategy_authority: bool = True
+    no_qualification_authority: bool = True
+
+
+READINESS_RESULT_FIELDS = frozenset(ReadinessResult.__dataclass_fields__)
+
+
+def readiness_result_to_mapping(*, result):
+    _require(type(result) is ReadinessResult, "OUTPUT_UNSAFE")
+    data = asdict(result)
+    _bounded(data)
+    unsafe = []
+    _scan_forbidden_terms(data, "", unsafe)
+    _scan_raw_metadata_keys(data, "", unsafe)
+    _scan_seed_output(data)
+    _require(not unsafe and type(result.status) is str and result.status in READINESS_STATUSES and type(result.errors) is tuple and all(type(code) is str and code in READINESS_ERRORS for code in result.errors), "OUTPUT_UNSAFE")
+    _require(type(result.observations) is dict and type(result.accounting) is dict, "OUTPUT_UNSAFE")
+    for key, prefix in (("request_digest", "walletreadinessrequest:sha256:"), ("receipt_id", "walletreadinesscapture:sha256:")):
+        value = getattr(result, key)
+        _require(value is None or type(value) is str and re.fullmatch(re.escape(prefix) + r"[0-9a-f]{64}", value) is not None, "OUTPUT_UNSAFE")
+    _require(result.origin in ("SYNTHETIC", "DIRECT_HTTPS_NON_STUDY_PENDING_REVIEW"), "OUTPUT_UNSAFE")
+    _require(result.operator_approval == "MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW" and result.human_identity == "NOT_MACHINE_ATTESTED", "OUTPUT_UNSAFE")
+    _require(result.coverage_epistemics == COVERAGE_EPISTEMICS and result.provider_attestation == result.enrolled_count == "NOT_ESTABLISHED" and result.numeric_summary is None, "OUTPUT_UNSAFE")
+    _require(result.study_activated is False and all(getattr(result, key) is True for key in ("advisory_only", "no_execution_authority", "no_strategy_authority", "no_qualification_authority")), "OUTPUT_UNSAFE")
+    if result.origin != "SYNTHETIC":
+        _require(getattr(result, "_direct_capture", None) is _DIRECT_RESULT and getattr(result, "_commitment", None) == _identity("readinessresult:", data), "OUTPUT_UNSAFE")
+    _require(result.status != "OBSERVED_ROUTE_COMPATIBLE_PENDING_REVIEW" or result.origin != "SYNTHETIC", "OUTPUT_UNSAFE")
+    return data
+
+
+def _readiness_public(fn):
+    @wraps(fn)
+    def call(*args, **kwargs):
+        try:
+            result = fn(*args, **kwargs)
+            readiness_result_to_mapping(result=result)
+            return result
+        except SeedError as error:
+            return ReadinessResult("DENIED", errors=(str(error) if str(error) in READINESS_ERRORS else "FIELD_INVALID",))
+        except Exception:
+            return ReadinessResult("DENIED", errors=("FIELD_INVALID",))
+    return call
+
+
+def _utc_now():
+    return datetime.now(timezone.utc)
+
+
+def _utc_text(value):
+    return canonicalize_utc_timestamp(value.isoformat())
+
+
+def _readiness_request(request):
+    _closed(request, READINESS_FIELDS)
+    _bounded(request)
+    unsafe = []
+    _scan_forbidden_terms(request, "", unsafe)
+    _scan_raw_metadata_keys(request, "", unsafe)
+    _scan_seed_output(request)
+    _require(not unsafe, "REQUEST_DENIED")
+    _require(request["kind"] == "NON_STUDY_READINESS" and request["method_digest"] == METHOD_DIGEST and request["source_policy_id"] == READINESS_POLICY_ID, "REQUEST_DENIED")
+    _require(type(request["request_id"]) is str and re.fullmatch(r"[a-z][a-z0-9_]{0,63}", request["request_id"]) is not None, "REQUEST_DENIED")
+    _require(type(request["code_sha"]) is str and re.fullmatch(r"[0-9a-f]{40}", request["code_sha"]) is not None, "VERSION_INVALID")
+    for key in ("not_before", "expires_at"):
+        _require(type(request[key]) is str and canonicalize_utc_timestamp(request[key]) == request[key], "WINDOW_INVALID")
+    begin, end = _stamp(request["not_before"]), _stamp(request["expires_at"])
+    _require(timedelta(0) < end - begin <= timedelta(seconds=120) and _utc_now() < end, "WINDOW_INVALID")
+    _budget(request["budget"])
+    _require(request["budget"]["calls"] >= 8, "LIMIT_INVALID")
+    value = request["output_dir"]
+    _require(type(value) is str and 0 < len(value) <= 4096 and all(ord(character) >= 32 for character in value), "PATH_INVALID")
+    _require(Path(value).is_absolute() and os.path.normpath(value) == value and str(Path(value)) == value, "PATH_INVALID")
+    payload = {key: value for key, value in request.items() if key != "digest"}
+    _require(request["digest"] == _identity("walletreadinessrequest:sha256:", payload), "REQUEST_DENIED")
+    return json.loads(C.wallet_canonical_json_bytes(request))
+
+
+@_readiness_public
+def validate_readiness_request(*, request):
+    checked = _readiness_request(request)
+    return ReadinessResult("READINESS_PREVIEW", request_digest=checked["digest"])
+
+
+def _readiness_window(request):
+    _require(_stamp(request["not_before"]) <= _utc_now() < _stamp(request["expires_at"]), "WINDOW_INVALID")
+
+
+def _readiness_path(request, output_dir):
+    path = Path(output_dir)
+    _require(str(path) == request["output_dir"] and path.is_absolute(), "PATH_INVALID")
+    _require(not any(part.is_symlink() for part in (path, *path.parents)) and path.resolve() == path, "PATH_INVALID")
+    if path.is_relative_to(ROOT.resolve()):
+        _require(path.is_relative_to(ROOT.resolve() / "local_data") and path != ROOT.resolve() / "local_data", "PATH_INVALID")
+        ignored = subprocess.run(["git", "check-ignore", "--quiet", "--", str(path.relative_to(ROOT))], cwd=ROOT, capture_output=True, timeout=5)
+        _require(ignored.returncode == 0, "PATH_INVALID")
+    _require(path.parent.is_dir() and (not path.exists() or path.is_dir() and not any(path.iterdir())), "REPLAY_CONFLICT")
+    if not path.exists():
+        path.mkdir()
+    return path
+
+
+@dataclass
+class _ReadinessRun:
+    request: dict = field(repr=False)
+    directory: Path = field(repr=False)
+    production: bool = False
+    permit: object = None
+    active: bool = True
+    start_monotonic: float = field(default_factory=time.monotonic)
+    call_monotonic: float = 0
+    calls: int = 0
+    received_bytes: int = 0
+    body: bytes = field(default=b"", repr=False)
+    http_status: int | None = None
+    started_at: str | None = None
+    completed_at: str | None = None
+    synthetic_elapsed: float = 0
+
+    def remaining_seconds(self):
+        elapsed = time.monotonic() - self.start_monotonic
+        _require(elapsed >= 0, "LIMIT_INVALID")
+        return min(self.request["budget"]["elapsed_seconds"] - max(elapsed, self.synthetic_elapsed), (_stamp(self.request["expires_at"]) - _utc_now()).total_seconds())
+
+    def begin_call(self):
+        _readiness_window(self.request)
+        _require(self.active and self.calls < self.request["budget"]["calls"] and self.received_bytes < self.request["budget"]["bytes"] and self.remaining_seconds() > 0, "LIMIT_INVALID")
+        self.calls += 1
+        self.body = b""
+        self.http_status = None
+        self.started_at = _utc_text(_utc_now())
+        self.completed_at = None
+        self.call_monotonic = time.monotonic()
+
+    def check_completion(self):
+        _require(self.started_at is not None and self.completed_at is not None and _stamp(self.started_at) <= _stamp(self.completed_at), "WINDOW_INVALID")
+        _require(_stamp(self.request["not_before"]) <= _stamp(self.started_at) <= _stamp(self.completed_at) < _stamp(self.request["expires_at"]), "WINDOW_INVALID")
+        _require((_stamp(self.completed_at) - _stamp(self.started_at)).total_seconds() <= self.request["budget"]["timeout_seconds"] and time.monotonic() - self.call_monotonic <= self.request["budget"]["timeout_seconds"] and self.remaining_seconds() > 0, "LIMIT_INVALID")
+
+    def accounting(self):
+        elapsed = max(0, time.monotonic() - self.start_monotonic, self.synthetic_elapsed)
+        return {"calls": self.calls, "received_bytes": self.received_bytes, "elapsed_seconds": format(elapsed, ".6f"), "byte_cap_breached": self.received_bytes > self.request["budget"]["bytes"], "elapsed_cap_breached": elapsed > self.request["budget"]["elapsed_seconds"]}
+
+
+def _readiness_plan(index, frontier):
+    if index == 0:
+        return Request("chain", "eth_chainId")
+    if index == 1:
+        return Request("finalized", "eth_getBlockByNumber", ("finalized", False))
+    if index in (2, 3):
+        return Request("exchange_code" if index == 2 else "ctf_code", "eth_getCode", (EXCHANGE if index == 2 else CTF, frontier["number"]))
+    if index in (4, 7):
+        return Request("canonical_before" if index == 4 else "canonical_after", "eth_getBlockByNumber", (frontier["number"], False))
+    if index == 5:
+        return Request("predeployment_code", "eth_getCode", (EXCHANGE, "0x50f81d0"))
+    return Request("predeployment_logs", "eth_getLogs", ({"address": EXCHANGE, "fromBlock": "0x50f8151", "toBlock": "0x50f81d0", "topics": [TOPIC]},))
+
+
+def _readiness_header(value):
+    _require(type(value) is dict, "FINALITY_INVALID")
+    header = {key: value[key] for key in ("number", "hash", "timestamp")}
+    for key in ("number", "timestamp"):
+        _require(hex(_quantity(header[key])) == header[key], "FINALITY_INVALID")
+    _hex(header["hash"], 32)
+    _require(header["hash"] == header["hash"].lower(), "FINALITY_INVALID")
+    return header
+
+
+def _readiness_observe(index, value, completed_at, frontier, observations):
+    if index == 0:
+        _require(value == "0x89", "CHAIN_INVALID")
+        observations["chain_id"] = 137
+    elif index == 1:
+        frontier.update(_readiness_header(value))
+        block_time = datetime.fromtimestamp(_quantity(frontier["timestamp"]), timezone.utc)
+        age = (_stamp(completed_at) - block_time).total_seconds()
+        _require(0 <= age <= 300, "FINALITY_INVALID")
+        observations.update(finalized_block=_quantity(frontier["number"]), finalized_hash=frontier["hash"], finalized_age_seconds=format(age, ".6f"))
+    elif index in (2, 3):
+        digest = sha256(_hex(value)).hexdigest()
+        _require(digest == (EXCHANGE_HASH if index == 2 else CTF_HASH), "VERSION_INVALID")
+        observations["exchange_code_sha256" if index == 2 else "ctf_code_sha256"] = digest
+    elif index in (4, 7):
+        _require(_readiness_header(value) == frontier, "FINALITY_INVALID")
+        observations["canonical_checks"] = observations.get("canonical_checks", 0) + 1
+    elif index == 5:
+        _require(value == "0x", "VERSION_INVALID")
+        observations["predeployment_code"] = "EMPTY_OBSERVED"
+    else:
+        _require(type(value) is list and not value, "SOURCE_INVALID")
+        observations["log_probe"] = "EMPTY_METHOD_SHAPE_ONLY"
+
+
+def _readiness_packet(context, request, valid):
+    name = request.name
+    content = context.body
+    body_hash = sha256(content).hexdigest()
+    origin = "DIRECT_HTTPS_NON_STUDY_PENDING_REVIEW" if context.production else "SYNTHETIC"
+    metadata = {"request": asdict(request), "started_at": context.started_at, "completed_at": context.completed_at, "http_status": context.http_status, "body_sha256": body_hash, "bytes": len(content), "origin": origin, "validated": valid, "code_sha": context.request["code_sha"], "request_digest": context.request["digest"]}
+    if valid:
+        reference = _identity("walletreadinesssource:sha256:", metadata)
+        raw = build_raw_evidence_reference(source_system="POLYGON_RPC", endpoint=request.method, retrieval_method="POST/read-only-RPC", content_sha256=body_hash, byte_length=len(content), media_type="application/json", pit=build_pit_timestamps(local_first_seen_time=context.completed_at, ingestion_time=context.completed_at), dq_flags=("OK",), replay_fidelity="EXACT", raw_snapshot_ref=reference, request_parameters={"request": _identity("rpc:", asdict(request))})
+        manifest = build_research_provenance_manifest(repo_code_identity=context.request["code_sha"], information_cutoff=context.completed_at, input_evidence_reference_ids=(raw.raw_evidence_reference_id,), input_content_hashes=(raw.content_sha256,), output_identity=reference, output_hash=body_hash, request_source_version_refs=(context.request["digest"], READINESS_POLICY_ID))
+        metadata.update(raw_reference=asdict(raw), provenance_manifest=asdict(manifest))
+    _retain(context.directory, name + (".raw" if valid else ".quarantine.raw"), content)
+    _retain(context.directory, name + ".json", C.wallet_canonical_json_bytes(metadata))
+
+
+def _run_readiness(request, output_dir, transport=None, *, approval=None, permit=None):
+    checked = _readiness_request(request)
+    production = transport is None
+    _require(not production or permit is not None, "PRODUCTION_DISABLED")
+    if permit is not None:
+        _require(type(permit) is _ReadinessPermit and permit.issuer is _CONSOLE_PERMIT and permit.active and permit.request_digest == checked["digest"] and permit.approval_id == _readiness_approval(checked, approval), "APPROVAL_INVALID")
+        permit.active = False
+    if production:
+        _readiness_approval(checked, approval)
+        _readiness_checkout(checked)
+    _require(production or type(transport) is SyntheticTransport and type(transport.frames) is tuple and len(transport.frames) == 8 and transport.evidence is None, "REQUEST_DENIED")
+    _readiness_window(checked)
+    directory = _readiness_path(checked, output_dir)
+    approval_record = approval if production else {"kind": "SYNTHETIC_ONLY_NO_OPERATOR_APPROVAL", "request_digest": checked["digest"]}
+    approval_id = _identity("walletreadinessapproval:sha256:", approval_record)
+    claim = {"request_digest": checked["digest"], "approval_id": approval_id, "code_sha": checked["code_sha"], "kind": "NON_STUDY_READINESS"}
+    with (directory / "run.claim").open("xb") as stream:
+        stream.write(C.wallet_canonical_json_bytes(claim))
+    _retain(directory, "request.json", C.wallet_canonical_json_bytes(checked))
+    _retain(directory, "approval.json", C.wallet_canonical_json_bytes(approval_record))
+    context = _ReadinessRun(checked, directory, production, permit)
+    frontier = {}
+    observations = {"venue_source": "NOT_ESTABLISHED", "current_period_logs": "NOT_ESTABLISHED", "coverage": "NOT_ESTABLISHED"}
+    errors = ()
+    retention_failed = False
+    for index in range(8):
+        planned = _readiness_plan(index, frontier)
+        valid = False
+        attempted = False
+        try:
+            context.begin_call()
+            attempted = True
+            maximum = min(2097152, checked["budget"]["bytes"] - context.received_bytes)
+            if production:
+                try:
+                    _rpc_post(planned, maximum, min(checked["budget"]["timeout_seconds"], context.remaining_seconds()), context=context)
+                finally:
+                    context.completed_at = _utc_text(_utc_now())
+            else:
+                source = transport.frames[index]
+                _require(type(source) is SourceFrame and source.origin == "SYNTHETIC" and source.code_sha == checked["code_sha"] and source.request == planned, "SOURCE_INVALID")
+                _require(type(source.body) is bytes, "SOURCE_INVALID")
+                context.started_at = source.started_at or source.observed_at
+                context.completed_at = source.observed_at
+                context.synthetic_elapsed = max(context.synthetic_elapsed, (_stamp(source.observed_at) - _stamp(checked["not_before"])).total_seconds())
+                context.body = source.body[:maximum + 1]
+                context.received_bytes += len(context.body)
+                context.http_status = 200
+            _require(len(context.body) <= maximum and context.received_bytes <= checked["budget"]["bytes"], "LIMIT_INVALID")
+            context.check_completion()
+            value = _source_body(context.body)
+            _readiness_observe(index, value, context.completed_at, frontier, observations)
+            valid = True
+        except KeyboardInterrupt:
+            errors = ("OPERATOR_CANCELLED",)
+        except SeedError as error:
+            errors = (str(error) if str(error) in READINESS_ERRORS else "FIELD_INVALID",)
+        except Exception:
+            errors = ("FIELD_INVALID",)
+        finally:
+            if attempted:
+                context.completed_at = context.completed_at or _utc_text(_utc_now())
+                try:
+                    _readiness_packet(context, planned, valid)
+                except Exception:
+                    errors = ("PATH_INVALID",)
+                    retention_failed = True
+        if errors:
+            break
+    context.active = False
+    if not errors:
+        try:
+            _readiness_window(checked)
+            _require(context.remaining_seconds() > 0, "LIMIT_INVALID")
+            completed_at = _utc_text(_utc_now()) if production else context.completed_at
+            age = (_stamp(completed_at) - datetime.fromtimestamp(_quantity(frontier["timestamp"]), timezone.utc)).total_seconds()
+            _require(0 <= age <= 300, "FINALITY_INVALID")
+            observations["finalized_age_seconds"] = format(age, ".6f")
+        except SeedError as error:
+            errors = (str(error),)
+    status = "READINESS_INCONCLUSIVE" if errors else "OBSERVED_ROUTE_COMPATIBLE_PENDING_REVIEW" if production else "SYNTHETIC_READINESS_OBSERVED"
+    result = ReadinessResult(status, errors=errors, request_digest=checked["digest"], origin="DIRECT_HTTPS_NON_STUDY_PENDING_REVIEW" if production else "SYNTHETIC", observations=observations, accounting=context.accounting())
+    receipt = asdict(result)
+    receipt.pop("receipt_id")
+    receipt.update(approval_id=approval_id, code_sha=checked["code_sha"], approved_budget=checked["budget"], source_policy_id=READINESS_POLICY_ID)
+    receipt_id = _identity("walletreadinesscapture:sha256:", receipt)
+    if not retention_failed:
+        try:
+            _retain(directory, "receipt.json", C.wallet_canonical_json_bytes({"receipt_id": receipt_id, **receipt}))
+            object.__setattr__(result, "receipt_id", receipt_id)
+        except Exception:
+            object.__setattr__(result, "status", "READINESS_INCONCLUSIVE")
+            object.__setattr__(result, "errors", ("PATH_INVALID",))
+    if production:
+        object.__setattr__(result, "_direct_capture", _DIRECT_RESULT)
+        object.__setattr__(result, "_commitment", _identity("readinessresult:", asdict(result)))
+    return result
+
+
+@_readiness_public
+def capture_readiness(*, request, output_dir, transport=None):
+    _require(type(transport) is SyntheticTransport, "PRODUCTION_DISABLED")
+    return _run_readiness(request, output_dir, transport)
+
+
+def _readiness_approval(request, approval):
+    _closed(approval, ("kind", "request_digest", "planned_operator", "external_review_ref", "approved_at"))
+    _scan_seed_output(approval)
+    _require(approval["kind"] == "MANUAL_EXTERNAL_APPROVAL_REFERENCE" and approval["request_digest"] == request["digest"] and approval["planned_operator"] == "KARL", "APPROVAL_INVALID")
+    reference = approval["external_review_ref"]
+    _require(type(reference) is str and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}", reference) is not None, "APPROVAL_INVALID")
+    _require(canonicalize_utc_timestamp(approval["approved_at"]) == approval["approved_at"] and _stamp(approval["approved_at"]) <= _stamp(request["not_before"]) and _stamp(approval["approved_at"]) <= _utc_now(), "APPROVAL_INVALID")
+    return _identity("walletreadinessapproval:sha256:", approval)
+
+
+def _readiness_checkout(request):
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True, timeout=5)
+    clean = subprocess.run(["git", "diff", "--quiet", "HEAD", "--"], cwd=ROOT, capture_output=True, timeout=5)
+    _require(head.stdout.strip() == request["code_sha"] and clean.returncode == 0, "VERSION_INVALID")
+
+
+def _readiness_load(path):
+    path = Path(path)
+    _require(path.suffix == ".json" and not any(part.lower() in ("secrets", "credentials", "keys") or part.lower().startswith(".env") for part in path.parts), "PATH_INVALID")
+    _require(path.is_file() and not any(part.is_symlink() for part in (path, *path.parents)), "PATH_INVALID")
+    with path.open("rb") as stream:
+        body = stream.read(32769)
+    _require(len(body) <= 32768, "FIELD_INVALID")
+    return _rpc_document(body)
+
+
+def _readiness_console(request, approval):
+    _require(sys.stdin.isatty() and sys.stderr.isatty() and sys.stdout.isatty(), "APPROVAL_INVALID")
+    approval_id = _readiness_approval(request, approval)
+    _readiness_window(request)
+    _readiness_checkout(request)
+    scope = {key: value for key, value in request.items() if key != "digest"}
+    scope.update(request_digest=request["digest"], approval_id=approval_id, endpoint=f"https://{RPC_HOST}/", calls=8, operator_approval="MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW", human_identity="NOT_MACHINE_ATTESTED")
+    print(json.dumps(scope, sort_keys=True), file=sys.stderr)
+    challenge = secrets.token_hex(16)
+    print("AUTHORIZE NON_STUDY_READINESS " + request["digest"] + " " + approval_id + " CHALLENGE " + challenge, file=sys.stderr)
+    answer = sys.stdin.readline(512)
+    _require(answer == "AUTHORIZE NON_STUDY_READINESS " + request["digest"] + " " + approval_id + " " + challenge + "\n", "APPROVAL_INVALID")
+    _readiness_window(request)
+    _readiness_checkout(request)
+    return _ReadinessPermit(request["digest"], approval_id, _CONSOLE_PERMIT)
+
+
+class _ReadinessParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise SeedError("ARGUMENT_INVALID")
+
+
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Dormant wallet seed; no operator activation in SEED-02.")
-    parser.add_argument("--status", action="store_true")
-    parser.parse_args(argv)
-    print(json.dumps(result_to_mapping(SeedResult("PRODUCTION_DISABLED")), sort_keys=True))
-    return 0
+    try:
+        parser = _ReadinessParser(description="Default-off wallet seed; non-study operator readiness is separately reviewed.", allow_abbrev=False)
+        parser.add_argument("--status", action="store_true")
+        parser.add_argument("--readiness-request")
+        parser.add_argument("--approval-record")
+        args = parser.parse_args(argv)
+        if args.readiness_request is None and args.approval_record is None:
+            print(json.dumps(result_to_mapping(SeedResult("PRODUCTION_DISABLED")), sort_keys=True))
+            return 0
+        _require(not args.status and args.readiness_request is not None and args.approval_record is not None, "ARGUMENT_INVALID")
+        _require(sys.stdin.isatty() and sys.stderr.isatty() and sys.stdout.isatty(), "APPROVAL_INVALID")
+        request = _readiness_request(_readiness_load(args.readiness_request))
+        approval = _readiness_load(args.approval_record)
+        permit = _readiness_console(request, approval)
+        result = _run_readiness(request, request["output_dir"], approval=approval, permit=permit)
+    except KeyboardInterrupt:
+        result = ReadinessResult("DENIED", errors=("OPERATOR_CANCELLED",))
+    except SeedError as error:
+        result = ReadinessResult("DENIED", errors=(str(error) if str(error) in READINESS_ERRORS else "FIELD_INVALID",))
+    except Exception:
+        result = ReadinessResult("DENIED", errors=("FIELD_INVALID",))
+    print(json.dumps(readiness_result_to_mapping(result=result), sort_keys=True))
+    return 0 if result.status == "OBSERVED_ROUTE_COMPATIBLE_PENDING_REVIEW" else 1
 
 
 if __name__ == "__main__":

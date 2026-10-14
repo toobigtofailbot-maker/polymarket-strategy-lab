@@ -1,0 +1,148 @@
+Package Identity:
+WP ID: S10-WALLET-SEED-ACT-01
+Title: Bounded Non-study Source Readiness and Manual Operator Boundary
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base: 1cac654773ea6c1db2e29b53037f2f44528ae33a
+Suggested branch: codex/s10-wallet-seed-act-01-readiness
+Package class: BOUNDED_PUBLIC_WALLET_READINESS_TOOLING
+Package size class: M; exact nine files
+Risk level: 3; capital USD0; orders0
+Governance track expected: RUNTIME
+Evidence mode expected: BLOCKED_NOT_READY until later exact-head release evidence.
+Runtime/network impact: dormant manual foreground public RPC readiness capability.
+Product impact: non-study only. Credential/dependency/trading impact: NONE.
+Recommended Codex mode: retain configured model; careful source/authority reasoning.
+SEND TO: implementation Codex chat only after Side19 accepts exact bytes and Karl authorizes implementation.
+RETURN TO: CURRENT POLYMARKET SIDE19 CHAT through Karl.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. Objective / Authority / Non-Authority Posture
+Implement default-off bounded READINESS in existing wallet_seed.py, with original capture/accounting, fresh entire deployed-code/finality checks and honest external operator review. One offline implementation WP, then a separately authored exact one-time non-study run authorization. This is a draft; native PASS is technical readiness only, not AUTHORIZED. No implementation, provider calls, real data/receipts, CI, publication or merge now.
+Implementation authority: exactly nine files after authorization; synthetic fixtures only. Report/export and canonical evidence authority: sanitized non-study operational observations and local integrity, never human authentication or study eligibility. Network authority: capability only; invocation requires later independent exact-scope approval and manual console ceremony. Paper/execution/live/credential/scheduler/dependency authority: NO.
+Reference every Centralized Boundary Group in docs/ai/codex/PROTECTED_PATHS.md: credentials/secrets; authenticated clients; wallet/account behavior; order placement/cancel; execution gateway; paper engine; scheduler/bot loop; runtime/daemon; dashboard/deployment; dependency/lock changes; external code copying; generated artifacts. Sole exception is the scoped foreground public-source tool and later ignored probe outputs. No src/config/SDK/key/secret store/framework/database/new ledger/schema/service/registry or copied source.
+Preserve METHOD walletmethod:sha256:e08fe248dff75bd1e67503426801a6b6940d42ad4acb2bded89dd1650cba1656 and SEED-02 source decoding, prospective clocks, ledger/profile, two WALLET03 book witnesses, math, labels and six-state conservation. Preserve RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED / provider_attestation=NOT_ESTABLISHED. Probe success/empty array cannot establish coverage, NO_SIGNAL, absence or attestation. SCIENCE, WALLET01/02/03, qualification/WP170, strategy/risk/Gate C, DATA-03, ALPHA-03/04 unchanged. Genuine pairs0; enrolled_count=NOT_ESTABLISHED; numeric_summary=null.
+
+2. Hard Merge Gate / scope
+Required predecessor: PR235 MERGED; accepted head ed9b25a125081558f0d6716c9a88c70a1d38ca70; merge/base 1cac654773ea6c1db2e29b53037f2f44528ae33a. Before future branch creation:
+git fetch origin --prune
+git switch main
+git pull --ff-only origin main
+git rev-parse HEAD main origin/main
+git status --short --branch
+git merge-base --is-ancestor ed9b25a125081558f0d6716c9a88c70a1d38ca70 main
+gh pr view 235 --json state,headRefOid,mergeCommit,mergedAt,url
+gh pr list --state open --json number,title,headRefName,baseRefName
+git branch --list '*wallet-seed-act*'
+git branch -r --list '*wallet-seed-act*'
+python -B tools/git/preflight_generated_artifact_guard.py
+Require clean main=origin/main=frozen base, predecessor files present, no conflicting/newer merge, ACT-01 branch/PR or completed claim. Stop before creating a branch on failure. Dedicated worktree preferred; branch-only fallback needs clean-state reason. No branch now.
+REQUIRED=ALLOWED, maximum9; all other paths forbidden:
+tools/polymarket/wallet_seed.py
+tests/tools/polymarket/test_wallet_seed.py
+docs/wallet_seed_source_forecast_contract.md
+docs/deferred_items_log.md
+docs/project_status.md
+docs/repo_truth_index.md
+docs/status_entries/S10-WALLET-SEED-ACT-01.md
+docs/wp_specs/S10-WALLET-SEED-ACT-01/wp_prompt.txt
+docs/wp_specs/S10-WALLET-SEED-ACT-01/wp_spec.json
+Add current ACT-01 doc sections, preserve historical SEED-02 fragments/specs. Update D001/D004 for implemented capability versus still-gated real approval/observations/study; record material limitations. Live merged state beats historical local-only status.
+
+3. Context Budget / Compatibility / Impossibility Check
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, project_status, repo_truth_index, deferred_items_log, docs/ai/codex/README.md and WP_EXECUTION_STATE_MACHINE.md. Apply TOKEN_EFFICIENCY_OPERATING_MODEL and reusable preflight/security/report blocks; state machine wins over stale adapters.
+Read for WP: METHOD, SEED-02 contract/prompt/spec, wallet_seed.py/tests; PROTECTED_PATHS, VALIDATION_MATRIX, WP_DRAFTING_STANDARD, NEGATIVE_TEST_MATRIX_POLICY, RESULT_OUTPUT_INVARIANT_STANDARD; exact shared PIT/raw/manifest signatures. Read only if blocked: security_tooling_status, native readiness/spec guard, existing permitted Linux validation environment. Do not read secrets, local real evidence, unrelated src/tools or dependencies. Search: SourceFrame, SyntheticTransport, _rpc_post, _frame, _route, _retain, public_get, required_changed_files, git diff --name-only.
+Required behavior | Controlling mechanism | Allowed action / compatibility
+RPC/body/route checks | _rpc_post / strict _frame / _route | extract pure decoder/route comparisons inside tool; retain synthetic admission
+PIT/original capture | shared raw/manifest builders, canonical JSON | reuse unchanged serializers; no readiness wallet-ledger append
+Source origin | SourceFrame/SyntheticTransport/SeedResult | remain SYNTHETIC; separate non-study result/private context, no fixture laundering
+Venue transport | public_get has fixed5s and loses error-body counts | reuse unchanged only in later study; no venue GET now
+Complete changed-set guards | adoption/manifest active machine-spec lookup | nine-file spec/status recognized; historical PIT guards retired by merged predecessors; no guard edits
+Human authorization | no machine trust root exists | external human review/control is prerequisite; checksums/TTY never authenticate Karl
+STOP on incompatibility; no extra subsystem, trust framework or guard weakening.
+
+4. Request and operator boundary (R001/R002)
+Add keyword-only validate_readiness_request(request), capture_readiness(request, output_dir, transport=None), readiness_result_to_mapping(result); main(argv=None) stays import-safe. Public capture_readiness is synthetic-only; None/arbitrary injected transport denies. Production is private CLI only; gate default-opener _rpc_post too. Fixture openers cannot emit direct origin. No --yes/--approved/environment/stdin bypass.
+Closed request fields: kind=NON_STUDY_READINESS; request_id (1..64 lowercase ASCII identifier); code_sha (actual future reviewed40-hex commit); method_digest; not_before/expires_at UTC; output_dir (exact canonical absolute fresh directory); budget (calls/bytes/elapsed_seconds/timeout_seconds); source_policy_id (ACT-01 policy identity from spec). No wallet/cohort/token/condition/label/study fields. Window<=120s; positive budgets<=SEED-02 ceilings, calls>=8, timeout1..5 integer seconds. Offline validate_readiness_request may preview a plan with future not_before, provided expires_at is still in the future; preview does not claim the request, invoke transport, authenticate an operator or attest onchain source facts. Only the separately approved private real CLI execution may open transport, and only when not_before<=actual current UTC<expires_at; a plan outside its window denies before any call. Fixed source algorithm, not caller-defined requests. Compute walletreadinessrequest:sha256: over entire canonical request payload excluding its digest.
+Detached record OUTSIDE preimage: kind=MANUAL_EXTERNAL_APPROVAL_REFERENCE, request_digest, planned_operator=KARL, external_review_ref (bounded ASCII reference), approved_at UTC<=not_before. Its hash is integrity only. Neither this record nor a self-hash/digest/caller flag independently enables production. Missing/null/type/empty/extra/duplicate/conflicting/stale/future/hash-only/synthetic approval denies before calls.
+Later Side19 reviews the fully resolved request and Karl approves exact digest in the actual chat. Karl compares that external statement against the record before invoking --readiness-request FILE --approval-record FILE outside agent/test/CI execution. Require interactive input/output terminal, display sanitized complete scope+digests, then require fresh challenge plus AUTHORIZE NON_STUDY_READINESS and both digests from terminal; EOF/cancel/noninteractive/mismatch means zero calls. No answer via args/env/redirected stdin. Mint private one-run context, invalidate after run, never serialize/load it.
+Trust limit: terminal/record cannot prove Karl or defeat hostile same-user code/PTY. Root is Karl's external statement, his control of invocation environment, and Side19's later independent comparison. Every output says operator_approval=MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW and human_identity=NOT_MACHINE_ATTESTED; never APPROVAL_VERIFIED or REAL study origin. Ordinary automation is denied and cannot produce an accepted Karl-authenticated result: no such machine claim exists. If this human-controlled process is unavailable, real invocation stays disabled. Implementation creates no operational request/approval.
+
+5. Eight-call non-study plan (R003/R004)
+Only POST https://polygon-bor-rpc.publicnode.com/; methods eth_chainId, eth_getBlockByNumber, eth_getCode, eth_getLogs. Reuse merged EXCHANGE/CTF/full runtime hashes/TOPIC; source-policy constants in spec must match. Exactly8 sequential calls:
+1 eth_chainId []; require0x89.
+2 eth_getBlockByNumber [finalized,false]; capture F number/hash/time; timestamp<=completion UTC and completion_utc-F.timestamp<=300 seconds (both nonnegative); stale/future/noncanonical timestamp makes READINESS_INCONCLUSIVE. Freshness means only an observed timely frontier, not source-provider finality attestation or historic receipt proof.
+3 eth_getCode [EXCHANGE,F.number]; SHA256 of all decoded bytes equals EXCHANGE_HASH.
+4 eth_getCode [CTF,F.number]; SHA256 of all decoded bytes equals CTF_HASH.
+5 eth_getBlockByNumber [F.number,false]; exact F hash/number/timestamp.
+6 eth_getCode [EXCHANGE,0x50f81d0]; require0x; block84902352 immediately before pinned deployment84902353.
+7 eth_getLogs [{address:EXCHANGE,fromBlock:0x50f8151,toBlock:0x50f81d0,topics:[TOPIC]}]; exactly128 predeployment blocks84902225..84902352, require empty. Method/range-shape probe only; no makers/receipts/wallets. Nonempty response stops, bounded originals quarantined without decoding/admitting trades.
+8 eth_getBlockByNumber [F.number,false]; unchanged F hash/number/timestamp.
+Mechanically verify tags/count/signatures before freeze. The predeployment code/log diagnostic cannot by itself prove the historical block was canonical, provider log completeness, or active-period capability; make no such claim. Only original runtime responses may establish the observed 300-second frontier age; offline preview does not. Pruned history/cap/unavailable means READINESS_INCONCLUSIVE; no fallback/current-log probe/retry. No intentional live overload/oversize/malformed request; synthetic tests exercise caps/errors.
+All8 pass -> OBSERVED_ROUTE_COMPATIBLE_PENDING_REVIEW; fixtures -> SYNTHETIC_READINESS_OBSERVED. Failures -> READINESS_INCONCLUSIVE with actual accounting; invalid authorization -> DENIED before network. Record finality lag. Venue reachability, current-hour logs/throughput/exhaustiveness/all-or-error, wallet identity/prospective inputs/labels remain NOT_ESTABLISHED; no NO_SIGNAL/study eligibility.
+
+6. Transport / retention / output (R004-R006)
+Reuse fixed _rpc_post HTTPS/no redirects/ProxyHandler({}); no production opener injection. Shared decoder rejects wrong id/type/version, duplicate keys, error/null, floats/nonfinite, structural excess and partial/truncation markers. Entire code hex remains allowed within2MiB. Preserve _frame/_route synthetic checks; no metadata stripping. Fixed params, no batch/fallback/retry/auth/proxy/header overrides.
+Count attempts before open, failures included; check UTC window/monotonic elapsed/remaining calls+bytes before and after calls. Ceilings128 calls/8388608 received bytes/120s/5s request/2097152 body. Read at most min(body cap,remaining bytes)+1; physical sentinel bytes count and breach stops before interpretation. Disclose <=1-byte sentinel overshoot, never claim cap compliance after breach. Bound open/read timeout by remaining deadline (internal positive fractional timeout may narrow the request's integer cap); close on all paths. Resolver/blocked I/O may overrun stdlib timeout: report actual overrun, stop further calls; no false hard wall-clock guarantee.
+Verify clean tracked checkout at exact request.code_sha. Require output outside tracked files or ignored local_data, canonical path without symlink aliases/components and no existing nonempty directory. Exclusive run.claim binds request+approval BEFORE first call; same path/request never reruns even after crash. Exact output binding prevents alternate-path replay; new request requires external approval. No global registry, deletion or repair retry.
+Exclusively retain each bounded original plus request/start/completion UTC, elapsed, physical byte count/status/hash. Use unchanged native PIT/raw/manifest builders/serializers for valid bodies: actual completion is first-seen/ingestion, exact code/request binding. No wallet ledger/cohort/profile/study append. Untrusted/failed bytes quarantine-only, never DQ OK. Publish terminal receipt last; crashed/partial runs keep claim/files without asserting atomic complete run. Never overwrite. Ctrl-C closes transport and retains neutral aborted accounting when possible; abrupt kill may leave partial files. No auto-resume.
+ReadinessResult public fields: status, errors, request_digest, receipt_id, origin, operator_approval, human_identity, observations, accounting, coverage_epistemics, provider_attestation, enrolled_count, numeric_summary, study_activated, advisory_only, no_execution_authority, no_strategy_authority, no_qualification_authority. Enumerate/classify and recursively scan ALL valid/invalid/nested fields with central helpers and field-coverage test; no raw bodies/headers/freeform upstream/path/approval contents/exceptions in stdout/results. Origins: SYNTHETIC or DIRECT_HTTPS_NON_STUDY_PENDING_REVIEW, direct minted only by actual private fixed transport. Caller construction/loaded JSON/rehash cannot pass serializer as direct capture. Private integrity is not human authentication or hostile-process security. SeedResult remains SYNTHETIC-only; no loader promotes readiness to accepted real/study evidence.
+
+7. Negative-test matrix / Requirement-to-evidence plan
+Spec evidence_plan freezes complete commands/expectations R001-R011. All six new nodes in tests/tools/polymarket/test_wallet_seed.py are PLANNED, not existing/passing:
+R001 test_readiness_request_scope: exact request/digest; a future-window offline preview succeeds without I/O/claim but premature CLI execution rejects, an expired preview rejects; missing/null/type/empty/extra/time/SHA/path/phase/budget mutations deny before transport.
+R002 test_readiness_manual_boundary: import/status/API/approval/digest/env/noninteractive/EOF/challenge/origin denials; synthetic positive cannot authenticate Karl.
+R003 test_readiness_fixed_source_plan: eight-call order/full hashes/canonical F, recent finalized frontier <=300s, predeployment range; future/stale F and ID/error/null/code/partial/nonempty/pruned faults inconclusive, historic predeployment empty response does not establish gateway exhaustiveness; no trades.
+R004 test_readiness_transport_budgets: fake HTTP/non200/redirect/proxy/header/error/timeout/oversize/calls/bytes/sentinel/UTC/monotonic; actual accounting, no ninth/retry.
+R005 test_readiness_immutable_capture_and_replay: bytes/PIT/manifests/claim-before-call; abort/crash/duplicate/conflict/replay/path/symlink; no overwrite/study mutation.
+R006 test_readiness_safe_output_and_no_promotion: every valid/invalid field scanned, nested/case/underscore/hyphen/existing typo forms, inert secret sentinel no-echo, safe wording accepted; forged direct/rehash/readiness-as-study denied.
+All15 canonical negative categories covered; use existing normalized forbidden forms without central-policy edits. Fixtures temporary/synthetic; patch HTTP/socket entrypoints so tests cannot acquire real data.
+R007 unchanged seed suite plus wallet/PIT/output/architecture/changed-set guards and METHOD rehash.
+R008 exact committed native --check-diff; R009 authoritative stable-head full suite; R010 actual-surface security; R011 hosted/posted/independent release evidence.
+No future-node PASS or implementation evidence in draft mode.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|authority|network|default|REJECT|denied|readiness.network_default|R002
+NR002|authority|approval|local_digest_only|REJECT|not_authenticated|readiness.human_identity|R002
+NR003|authority|origin|synthetic_input|PRESERVE_EXACT|synthetic|readiness.synthetic_origin|R006
+NR004|source|rpc|eight_checks_pass|ACCEPT|pending_external_review|readiness.plan_calls|R003
+NR005|source|logs|predeployment_empty|PRESERVE_EXACT|method_probe_only|readiness.probe_end_block|R003
+NR006|source|provider|successful_probe|PRESERVE_EXACT|not_attested|readiness.provider_attestation|R006
+NR007|transport|budget|breach|REJECT|inconclusive|readiness.max_total_bytes|R004
+NR008|transport|replay|existing_claim|REJECT|no_network|readiness.replay_policy|R005
+NR009|study|activation|readiness_input|REJECT|not_activated|readiness.study_activated|R006
+NR010|method|policy|all_paths|PRESERVE_EXACT|frozen|readiness.method_digest|R007
+NR011|authority|execution|any|REJECT|denied|NONE|R007
+END_NORMATIVE_RULE_MATRIX_V1
+
+8. Validation / Hard stops / Report-back / Successor boundary
+Local-first focused/adjacent checks while editing; one stable local full suite, native --check-diff, git diff --check, artifact guard, installed surface gitleaks/Semgrep with exact commands/results. Report/log unavailable tools honestly, no install/OS-policy bypass. Use existing permitted offline Linux image if required native binaries block Windows; record complementary Windows checks/limits. New head invalidates final evidence.
+RUNTIME: one combined independent implementation review and final Side19 PR review. Later one PR kept DRAFT while source changes; normal development authority permits final ready transition only at stable exact head. Trusted activated base selects eligible Tier2, default full plan otherwise; no CI/settings edits. Verify actual expanded selected rows/audits; run native PR consistency guard and re-fetch posted body; exactly one canonical evidence mode with all fields. BLOCKED_NOT_READY/Ready NO until closed. Stable status fragment: exact validation/counts/limits, no containing-head self-reference; optional final comment not required. No product suite/CI/PR/merge now; native draft gate+contract smoke only.
+STOP if real calls/data/operational approval needed during implementation — separately gated.
+STOP if externally reviewed human-controlled invocation unavailable — local checks cannot authenticate Karl.
+STOP if protected src/config/credential/order/runtime/dependency/extra file/method/source or guard rewrite needed — authority/scope expansion.
+STOP if immutable/neutral output, central scanner or full valid/invalid field coverage untestable — false evidence/echo risk.
+STOP if final required tests/security/evidence cannot rerun or posted body cannot be re-fetched — not merge-ready; log material deferral.
+Rollback: reviewed nine-path revert before activation; preserve user/immutable evidence, revoke operational request externally; no automatic retry.
+Report-back: exact base/head/files, commands/exits/counts/skips/security/scope/traceability/contradictions; distinguish workflow GitHub network from provider calls0/study0/orders0/USD0. Prepare implementation PR/review link only after authorization; merge remains Karl/Side19. No PR in draft.
+Successor boundary: S10-WALLET-SEED-ACT-OPS-01 is separately reviewed one-time non-study authorization/run, not another implementation WP; resolves actual code/window/path/digests and external human/origin review. Later S10-WALLET-SEED-STUDY-ACT-01 owns genuine readiness cohort/profile, approved STUDY seal, prospective DECISION and post-target LABEL. These production paths stay disabled; no METHOD/WALLET01/02/03 change, enrollment/forecast/qualification/numerical WALLET04/account/order/capital authority.

@@ -1,5 +1,9 @@
 # S10-WALLET-SEED-02 source and forecast contract
 
+The SEED-02 sections retain the merged synthetic scientific baseline. The ACT-01
+section below is the current non-study readiness extension; it supersedes the
+baseline CLI-only statement for that separately gated capability only.
+
 Status: LOCAL_IMPLEMENTATION / SYNTHETIC_ONLY / STUDY_NOT_ACTIVATED.
 The nine-path M/Risk3/RUNTIME package implements one foreground tool,
 `tools/polymarket/wallet_seed.py`, over unchanged WALLET-01/02/03. It implements
@@ -273,3 +277,103 @@ S10-WALLET-SEED-ACT-01 separately owns the trusted operator approval/origin path
 fresh RPC code/finality, genuine readiness/discovery, actual STUDY seal and one-unit
 prospective source/label acquisition. DATA03/ALPHA03/04 and numerical WALLET04 remain
 separate. No generated artifacts or real study evidence are committed here.
+
+## S10-WALLET-SEED-ACT-01 non-study readiness extension
+
+Karl authorized offline implementation of Side19's exact reconciled V2 prompt/spec
+on 2026-10-14 after native draft readiness. The package remains RUNTIME/Risk3/M,
+exactly nine paths; no source, dependency, config or scientific-interface changes.
+SEED-02 / PR235 is merged at 1cac654773ea6c1db2e29b53037f2f44528ae33a with accepted
+head ed9b25a125081558f0d6716c9a88c70a1d38ca70. Historical fragments are retained.
+
+New keyword-only validate_readiness_request(request) previews one closed flat
+request including its digest: kind, request_id, code_sha, method_digest,
+not_before, expires_at, output_dir, budget, source_policy_id, digest. Its identity
+is walletreadinessrequest:sha256: over the entire canonical object excluding digest.
+The frozen V2 policy identity is
+walletreadinesspolicy:sha256:1131374f86691e8f599b119f97155a2cda70f4d38fb70b468971a94267d48a2e.
+Preview permits a future not_before with a still-future expires_at, validates
+the at-most120s window and positive narrowed budgets, and performs no filesystem,
+transport, output claim, operator authentication or chain observation. Production
+launch must occur inside the actual current UTC window.
+
+capture_readiness(request, output_dir, transport=None) is synthetic-only. None,
+callbacks and arbitrary transport objects deny before acquisition; the exact
+SyntheticTransport supplies eight original fixture frames only. Existing
+SourceFrame, SeedResult, scientific capture, seal, forecast and label admission
+remain synthetic-only. No readiness evidence is loaded/promoted into these APIs,
+a wallet ledger, discovery cohort/profile or a study.
+
+Default CLI/status remains PRODUCTION_DISABLED. A later private foreground CLI
+requires --readiness-request FILE and --approval-record FILE, clean tracked code
+at the exact approved SHA, and a human-controlled interactive terminal. The
+detached record contains exactly kind=MANUAL_EXTERNAL_APPROVAL_REFERENCE,
+request_digest, planned_operator=KARL, external_review_ref, approved_at<=not_before.
+The operator first compares it to Karl's actual external exact-digest statement
+reviewed by Side19, then confirms both digests and a fresh console challenge.
+Flags/environment/redirected stdin, absence, disagreement, future/expired scope,
+or a digest-only approval cannot enable production. An in-process permit binds
+that request/record, is consumed once, and is never loaded from JSON. Import and
+offline/status paths do not call a provider. No actual approval/run is created
+by implementation or tests.
+
+This is a manual external trust boundary, not cryptographic human authentication
+or protection against hostile same-user Python/PTY control. Outputs always retain
+MANUAL_ASSERTION_REQUIRES_EXTERNAL_REVIEW and NOT_MACHINE_ATTESTED. Only the
+private fixed-source transport can mint DIRECT_HTTPS_NON_STUDY_PENDING_REVIEW;
+ordinary constructor/JSON/rehash cannot establish it. Synthetic seams never
+receive direct origin. Side19's independent external review remains necessary.
+
+Fixed source plan: only POST https://polygon-bor-rpc.publicnode.com/; chainId137,
+finalized header F, entire EXCHANGE/CTF code at F.number, numeric F cross-check,
+empty exchange code at84902352, an empty eth_getLogs filter covering exactly
+84902225..84902352 with [TOPIC], and a second numeric F cross-check. Exactly eight
+calls, no maker/market/token selection, receipts, wallet discovery, venue GET,
+retry, fallback, batch, scheduler or active-period fill/book/label collection.
+Finalized age is nonnegative and<=300s at observation and successful completion;
+stale/future/noncanonical header or changed code/canonical proof is inconclusive.
+Pruned history or nonempty/partial/error/capped response is inconclusive with no
+substitute probe. Predeployment code/log results are method-shape diagnostics;
+they prove neither historical block canonicality nor provider exhaustiveness,
+physical absence, current-period capability or study eligibility.
+
+Ceilings remain128 calls,8388608 total received bytes,120s,5s/request,2097152/body.
+Reserve before open, count failed attempts/physical chunks, clamp each request
+and socket read to remaining time/bytes, reject redirects/proxies/auth headers,
+and stop before interpreting breaches. A read sentinel can exceed the physical
+byte budget by at most one; the run reports the breach and is inconclusive.
+Stdlib resolver/I/O timeouts cannot guarantee hard wall-clock cancellation;
+actual overruns are accounted and prevent further calls. Original RPC decoding
+is shared without weakening synthetic-source checks or entire-code parsing.
+
+The canonical approved output must be external or under ignored local_data,
+fresh/empty and free of symlink components. Exclusively create run.claim before
+any attempt, binding request/approval/SHA. Retain request/record and each original
+body, clocks, request, status, hash/size and native raw/PIT/manifest records only
+for validated responses. Invalid/partial/nonempty responses remain quarantined.
+No ledger append or study artifact is created. Terminal receipt is published last;
+retention failure returns measured inconclusive accounting without a completed
+receipt. Ctrl-C stops/retains neutral accounting; abrupt kill can leave partial
+files and an irrevocably consumed claim. Replay, alternate output, conflict or
+replacement never overwrites/deletes evidence or resumes automatically.
+
+ReadinessResult's eighteen public fields are all serialized and recursively
+scanned on valid/invalid paths: status, errors, request_digest, receipt_id, origin,
+operator_approval, human_identity, observations, accounting, coverage_epistemics,
+provider_attestation, enrolled_count, numeric_summary, study_activated,
+advisory_only, no_execution_authority, no_strategy_authority,
+no_qualification_authority. No raw body/header/upstream exception/path or approval
+content enters stdout/results; the controlled terminal displays the approved
+scope before confirmation. Real enrolled count is NOT_ESTABLISHED, summary null,
+study_activated=false. Provider attestation remains NOT_ESTABLISHED and coverage
+RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED regardless of probe success.
+
+R001-R006 assert request/preview, manual boundary, exact source plan/freshness,
+transport budgets, retention/replay and field-covered no-promotion output with
+the complete negative matrix. R007 preserves adjacent/native scientific behavior;
+R008 exact-diff readiness, R009 stable full suite and R010 security are local gates.
+R011 independent acceptance/hosted/posted release evidence remains separately
+pending; no publication or hosted CI before Side19 local acceptance.
+ACT-OPS-01 separately authorizes an exact one-time non-study operator run.
+STUDY-ACT-01 separately owns genuine cohort/profile, approved prospective STUDY,
+DECISION and LABEL production capture. No operator/study/trading activation here.
