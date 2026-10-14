@@ -70,8 +70,9 @@ def coverage(side=0, token=7, empty=False):
     start = int((s._stamp(T0) - timedelta(hours=1)).timestamp())
     block2 = {"number": "0x2", "hash": H2, "parentHash": "0x" + "0" * 64, "timestamp": hex(start), "transactions": [] if empty else [TX]}
     block3 = {"number": "0x3", "hash": H3, "parentHash": H2, "timestamp": hex(int(s._stamp(T0).timestamp())), "transactions": []}
+    predecessor = {"number": "0x1", "hash": "0x" + "0" * 64, "parentHash": "0x" + "0" * 64, "timestamp": hex(start - 2)}
     receipt = {"transactionHash": TX, "blockHash": H2, "blockNumber": "0x2", "transactionIndex": "0x0", "status": "0x1", "logs": [log]}
-    return {"blocks": (frame("block2", "eth_getBlockByNumber", ("0x2", True), block2), frame("block3", "eth_getBlockByNumber", ("0x3", True), block3)),
+    return {"blocks": (frame("block2", "eth_getBlockByNumber", ("0x2", True), block2), frame("block3", "eth_getBlockByNumber", ("0x3", True), block3), frame("predecessor", "eth_getBlockByNumber", ("0x1", False), predecessor)),
         "receipts": () if empty else (frame("receipt", "eth_getTransactionReceipt", (TX,), receipt),),
         "logs": (change(raw, []) if empty else raw,), "finality": route(), "start_block": 2, "end_block": 3}
 
@@ -222,6 +223,10 @@ def test_prospective_seal_and_coverage(tmp_path, pins):
     assert result.status == "PENDING" and result.payload["vote"] is None and result.payload["p_wallet_added"] == result.payload["p_nonwallet"]
     partial = deepcopy(bundle["coverage"]); partial["blocks"] = partial["blocks"][:1]
     assert s.materialize_forecast_pair(seal=seal, decision_bundle={**bundle, "coverage": partial}, ledger_path=path).errors == ("COVERAGE_UNKNOWN",)
+    realistic = tmp_path / "r004-realistic"; realistic.mkdir()
+    rp, rs, rb, rf, capture = realistic_prepared(realistic, pins)
+    assert capture.payload["coverage"]["covered_block_count"] == 1771 and capture.payload["calls"] == len(rf) < 128
+    assert s.materialize_forecast_pair(seal=rs, decision_bundle=rb, ledger_path=rp).status == "PENDING"
 
 
 def label_bundle(inst, seen="2026-01-12T00:00:01Z", target=1, denominator=1, resolved=True):
@@ -405,3 +410,217 @@ def test_label_capture_preserves_gamma_source_and_receipt_refs(tmp_path, pins):
     assert result.payload["approved_budget"] == seal["payload"]["approved_source_call_byte_elapsed_limits"]
     payload = deepcopy(result.payload); identity = payload.pop("receipt_id")
     assert identity == s._identity("walletseedcapture:sha256:", payload)
+
+
+def realistic_prepared(tmp_path, pins, empty=False, token=7, opposing=False, offset=0):
+    """1771 finalized blocks, sparse original range replies and counted anchor search."""
+    path, _, seal, cohort, contexts = native_setup(tmp_path, pins)
+    t0 = s._stamp(T0); first, last, fill_number = 2, 1772, 352
+    seen = lambda seconds: (t0 - timedelta(seconds=seconds)).isoformat().replace("+00:00", "Z")
+    block_hash = lambda n: H2 if n == fill_number else H3 if n == last else "0x" + word(n)
+    cache = {}
+    def header(n):
+        if n not in cache:
+            cache[n] = frame("block_" + str(n), "eth_getBlockByNumber", (hex(n), False),
+                {"number": hex(n), "hash": block_hash(n), "parentHash": block_hash(n - 1),
+                 "transactions": ([TX] if n == fill_number and not empty else []) + ["0x" + "f" * 64],
+                 "timestamp": hex(int((t0 - timedelta(hours=1) + timedelta(seconds=2 * (n - first) + offset)).timestamp()))}, seen(3))
+        return cache[n]
+    # Every binary-search request is a retained SourceFrame and counted in capture.
+    low, high = 0, last
+    while low < high:
+        mid = (low + high) // 2
+        if s._quantity(s._frame(header(mid))["timestamp"]) < int((t0 - timedelta(hours=1)).timestamp()): low = mid + 1
+        else: high = mid
+    assert low == first
+    headers = (header(first), header(last), header(first - 1)) + (() if empty else (header(fill_number),))
+    finality = route(seen(4))
+    finality["finalized"] = change(finality["finalized"], {"number": hex(last), "hash": H3, "timestamp": s._frame(header(last))["timestamp"]})
+    for key in ("exchange_code", "ctf_code"):
+        finality[key] = replace(finality[key], request=replace(finality[key].request, params=(finality[key].request.params[0], hex(last))))
+    inst = instrument(seen(3))
+    inst["mapping"] = {key: replace(value, request=replace(value.request, params=(value.request.params[0], hex(last)))) for key, value in inst["mapping"].items()}
+    log = deepcopy(logs(token=token)[1]); log["blockNumber"] = hex(fill_number)
+    matched_logs = [] if empty else [log]
+    if opposing:
+        other = deepcopy(log); other["logIndex"] = "0x1"
+        other["data"] = "0x" + word(0) + word(8) + other["data"][130:]
+        matched_logs.append(other)
+    ranges = []
+    for index, start in enumerate(range(first, last + 1, 128)):
+        end = min(start + 127, last)
+        filters = {"address": s.EXCHANGE, "fromBlock": hex(start), "toBlock": hex(end), "topics": [s.TOPIC, None, "0x" + "0" * 24 + WALLET[2:]]}
+        ranges.append(frame("range_" + str(index), "eth_getLogs", (filters,), matched_logs if start <= fill_number <= end else [], seen(2)))
+    receipts = () if empty else (frame("receipt", "eth_getTransactionReceipt", (TX,),
+        {"transactionHash": TX, "blockHash": H2, "blockNumber": hex(fill_number), "transactionIndex": "0x0", "status": "0x1", "logs": matched_logs}, seen(1)),)
+    data = {"blocks": headers, "receipts": receipts, "logs": tuple(ranges), "finality": finality, "start_block": first, "end_block": last}
+    book = frame("book", "GET", (), {"market": CONDITION, "asset_id": "7", "bids": [{"price": "0.55", "size": "10"}], "asks": [{"price": "0.65", "size": "10"}], "neg_risk": False}, T0, url="https://clob.polymarket.com/book?token_id=7")
+    frames = tuple(finality.values()) + tuple(inst["mapping"].values()) + tuple(cache.values()) + receipts + tuple(ranges) + (book,)
+    captured = s.capture_seed_evidence(seal=seal, phase="DECISION", ledger_path=path, output_dir=tmp_path,
+        transport=s.SyntheticTransport(frames, {"instrument": inst, "coverage": data}))
+    assert captured.status == "SYNTHETIC_CAPTURE_RETAINED", captured
+    profile = s.P.build_wallet_profile_snapshot(wallet_ledger_path=path, cohort_snapshot=cohort, target_wallet=WALLET, as_of=T0, market_contexts=contexts)
+    bundle = {"instrument": inst, "coverage": data, "ledger_head": profile.wallet_ledger_head_hash, "cohort": cohort,
+        "profile": profile, "contexts": contexts, "identity_observability": {}, "books": (book,), "committed_at": s.SyntheticDecisionClock(T0)}
+    return path, seal, bundle, frames, captured
+
+
+@pytest.mark.parametrize("empty,token", ((True, 7), (False, 7), (False, 8)))
+def test_realistic_hourly_range_feasibility(tmp_path, pins, empty, token):
+    path, seal, bundle, frames, captured = realistic_prepared(tmp_path, pins, empty, token)
+    assert len(bundle["coverage"]["logs"]) == 14
+    assert len(bundle["coverage"]["blocks"]) <= 4
+    assert captured.payload["calls"] == len(frames) <= 45 < 128
+    assert captured.payload["bytes"] == sum(len(f.body) for f in frames) < 8388608
+    proof = captured.payload["coverage"]
+    assert proof["covered_block_count"] == 1771 and proof["finalized_frontier_time"] == "2026-01-10T23:59:00+00:00"
+    assert proof["status"] == "SOURCE_CONTRACT_COMPLETE_CONDITIONAL" and proof["provider_attestation"] == "NOT_ESTABLISHED"
+    result = s.materialize_forecast_pair(seal=seal, decision_bundle=bundle, ledger_path=path)
+    assert result.status == "PENDING", result
+    assert result.payload["coverage"] == proof and result.payload["p_nonwallet"] == "0.6"
+    assert result.payload["p_wallet_added"] == ("0.6" if empty else "0.64" if token == 7 else "0.54")
+    assert result.payload["vote"] == (None if empty else int(token == 7))
+    assert result.payload["enrolled_count"] == "NOT_ESTABLISHED" and not result.study_activated
+    if not empty:
+        event = next(e.payload for e in s.L.load_and_verify_wallet_evidence_ledger(path).snapshot.entries if e.record_kind == "WALLET_EVIDENCE_EVENT")
+        assert event["event_time"] == "2026-01-10T23:11:40Z"
+        assert bundle["coverage"]["logs"][2].observed_at == "2026-01-10T23:59:58Z"
+        assert bundle["profile"].included_wallet_event_ids == (event["wallet_event_id"],)
+
+
+@pytest.mark.parametrize("fault", ("missing", "overlap", "gap", "early", "late_range", "maker_filter", "token_filter", "emitter_filter", "topic_filter", "early_anchor", "late_finality", "wrong_frontier", "unfinal_log", "receipt", "header", "transaction_membership", "duplicate", "wrong_maker", "late_log", "timeout", "partial", "error", "oversize", "cap", "forged_origin", "body_rehash"))
+def test_realistic_range_negative_matrix(tmp_path, pins, fault):
+    path, seal, bundle, _, _ = realistic_prepared(tmp_path, pins)
+    data = deepcopy(bundle["coverage"]); ranges = list(data["logs"])
+    if fault == "missing": ranges.pop()
+    if fault in ("overlap", "gap", "early", "late_range", "maker_filter", "token_filter", "emitter_filter", "topic_filter"):
+        index = 1 if fault in ("overlap", "gap") else 0
+        filters = deepcopy(ranges[index].request.params[0])
+        if fault == "overlap": filters["fromBlock"] = hex(s._quantity(filters["fromBlock"]) - 1)
+        if fault == "gap": filters["fromBlock"] = hex(s._quantity(filters["fromBlock"]) + 1)
+        if fault == "early": filters["fromBlock"] = "0x1"
+        if fault == "late_range": filters["toBlock"] = hex(s._quantity(filters["toBlock"]) + 1)
+        if fault == "maker_filter": filters["topics"][2] = "0x" + word(2)
+        if fault == "token_filter": filters["topics"].append("0x" + word(7))
+        if fault == "emitter_filter": filters["address"] = s.CTF
+        if fault == "topic_filter": filters["topics"][0] = "0x" + "0" * 64
+        ranges[index] = replace(ranges[index], request=replace(ranges[index].request, params=(filters,)))
+    if fault == "early_anchor":
+        value = s._frame(data["blocks"][2]); value["timestamp"] = s._frame(data["blocks"][0])["timestamp"]
+        data["blocks"] = (*data["blocks"][:2], change(data["blocks"][2], value), data["blocks"][3])
+    if fault == "late_finality": data["finality"]["finalized"] = replace(data["finality"]["finalized"], observed_at="2026-01-11T00:00:01Z")
+    if fault == "wrong_frontier":
+        value = s._frame(data["finality"]["finalized"]); value["hash"] = "0x" + "3" * 64
+        data["finality"]["finalized"] = change(data["finality"]["finalized"], value)
+    if fault == "receipt": data["receipts"] = ()
+    if fault == "header":
+        value = s._frame(data["blocks"][3]); value["hash"] = "0x" + "3" * 64
+        data["blocks"] = (*data["blocks"][:3], change(data["blocks"][3], value))
+    if fault == "transaction_membership":
+        value = s._frame(data["blocks"][3]); value["transactions"].reverse()
+        data["blocks"] = (*data["blocks"][:3], change(data["blocks"][3], value))
+    if fault in ("unfinal_log", "duplicate", "wrong_maker", "cap", "body_rehash"):
+        value = s._frame(ranges[2])
+        if fault == "unfinal_log": value[0]["blockNumber"] = hex(1773)
+        if fault == "wrong_maker": value[0]["topics"][2] = "0x" + word(2)
+        if fault == "body_rehash": value[0]["data"] = "0x" + word(0) + word(8) + value[0]["data"][130:]
+        if fault == "duplicate": value *= 2
+        if fault == "cap": value *= 256
+        ranges[2] = change(ranges[2], value)
+    if fault == "late_log": ranges[0] = replace(ranges[0], observed_at="2026-01-11T00:00:01Z")
+    if fault == "timeout": ranges[0] = replace(ranges[0], started_at="2026-01-10T23:59:50Z")
+    if fault == "partial": ranges[0] = replace(ranges[0], body=b'{"jsonrpc":"2.0","id":1,"result":[],"truncated":true}')
+    if fault == "error": ranges[0] = replace(ranges[0], body=b'{"jsonrpc":"2.0","id":1,"error":{"code":-32005,"message":"range cap"}}')
+    if fault == "oversize": ranges[0] = replace(ranges[0], body=b" " * 2097153)
+    if fault == "forged_origin": object.__setattr__(ranges[0], "origin", "REAL_DIRECT_HTTPS")
+    data["logs"] = tuple(ranges)
+    result = s.materialize_forecast_pair(seal=seal, decision_bundle={**bundle, "coverage": data}, ledger_path=path)
+    assert result.status == "UNKNOWN" and result.payload.get("p_wallet_added") is None, result
+    assert sum(result.payload["synthetic_counts"].values()) == 1 and not result.study_activated
+
+
+def test_realistic_request_byte_elapsed_budget_exhaustion(tmp_path, pins):
+    path, seal, bundle, frames, _ = realistic_prepared(tmp_path, pins)
+    before = s.L.load_and_verify_wallet_evidence_ledger(path).snapshot.head_hash
+    extra = tuple(frame("extra_" + str(i), "eth_chainId", (), "0x89") for i in range(129 - len(frames)))
+    assert len(frames + extra) == 129
+    assert s.capture_seed_evidence(seal=seal, phase="DECISION", ledger_path=path, output_dir=tmp_path,
+        transport=s.SyntheticTransport(frames + extra)).errors == ("LIMIT_INVALID",)
+    # Dense returned transactions need receipts even when they share one block.
+    dense = deepcopy(bundle["coverage"]); template = s._frame(dense["receipts"][0]); rows = []; receipts = []
+    for index in range(110):
+        log = deepcopy(template["logs"][0]); log.update(transactionHash="0x" + word(index + 100), transactionIndex=hex(index), logIndex=hex(index))
+        rows.append(log)
+        record = {**template, "transactionHash": log["transactionHash"], "transactionIndex": hex(index), "logs": [log]}
+        receipts.append(frame("dense_receipt_" + str(index), "eth_getTransactionReceipt", (log["transactionHash"],), record))
+    dense["receipts"] = tuple(receipts)
+    dense["logs"] = (*dense["logs"][:2], change(dense["logs"][2], rows), *dense["logs"][3:])
+    block = s._frame(dense["blocks"][3]); block["transactions"] = [log["transactionHash"] for log in rows]
+    dense["blocks"] = (*dense["blocks"][:3], change(dense["blocks"][3], block))
+    dense_result = s.materialize_forecast_pair(seal=seal, decision_bundle={**bundle, "coverage": dense}, ledger_path=path)
+    assert dense_result.status == "UNKNOWN" and dense_result.errors == ("LIMIT_INVALID",)
+    for key, value in (("calls", len(frames) - 1), ("bytes", sum(len(f.body) for f in frames) - 1), ("elapsed_seconds", 3)):
+        limited = deepcopy(seal); limited["payload"]["approved_source_call_byte_elapsed_limits"][key] = value
+        limited["digest"] = s._identity("walletstudy:sha256:", limited["payload"]); limited = approve(limited)
+        assert s.capture_seed_evidence(seal=limited, phase="DECISION", ledger_path=path, output_dir=tmp_path,
+            transport=s.SyntheticTransport(frames)).errors == ("LIMIT_INVALID",)
+    assert s.L.load_and_verify_wallet_evidence_ledger(path).snapshot.head_hash == before
+
+
+def test_realistic_six_states_and_conditional_empty_limitation(tmp_path, pins):
+    path, seal, bundle, _, _ = realistic_prepared(tmp_path, pins)
+    pair = s.materialize_forecast_pair(seal=seal, decision_bundle=bundle, ledger_path=path)
+    assert pair.status == "PENDING"
+    bad = deepcopy(seal); bad["payload"]["method_digest"] = "wrong"
+    excluded = s.materialize_forecast_pair(seal=bad, decision_bundle=bundle, ledger_path=path)
+    unknown = s.materialize_forecast_pair(seal=seal, decision_bundle={**bundle, "books": ()}, ledger_path=path)
+    unmatched = s.materialize_forecast_pair(seal=seal, decision_bundle={**bundle, "committed_at": None}, ledger_path=path)
+    def final_label(denominator=1):
+        label = label_bundle(bundle["instrument"], target=denominator, denominator=denominator, resolved=bool(denominator))
+        number = hex(20000)
+        block = s._frame(label["route"]["finalized"]); block["number"] = number
+        label["route"]["finalized"] = change(label["route"]["finalized"], block)
+        for key in ("exchange_code", "ctf_code"):
+            value = label["route"][key]; label["route"][key] = replace(value, request=replace(value.request, params=(value.request.params[0], number)))
+        for owner in (label["instrument"]["mapping"], label):
+            for key, value in list(owner.items()):
+                if type(value) is s.SourceFrame and value.request.method == "eth_call":
+                    owner[key] = replace(value, request=replace(value.request, params=(value.request.params[0], number)))
+        return label
+    matched = s.attach_final_label(pair=pair, label_bundle=final_label(), as_of="2026-01-12T00:00:02Z")
+    censored = s.attach_final_label(pair=pair, label_bundle=final_label(0), as_of="2026-02-12T00:00:00Z")
+    for result, state in ((excluded, "EXCLUDED"), (unknown, "UNKNOWN"), (unmatched, "UNMATCHED"), (matched, "MATCHED"), (pair, "PENDING"), (censored, "CENSORED")):
+        assert result.status == state, result
+        assert sum(result.payload["synthetic_counts"].values()) == 1 and result.payload["enrolled_count"] == "NOT_ESTABLISHED"
+    assert matched.payload["delta"] == "0.0304"
+    # Empty conforming fixtures certify conditional coverage, never physical absence.
+    other = tmp_path / "empty"; other.mkdir()
+    empty_path, empty_seal, empty_bundle, _, capture = realistic_prepared(other, pins, empty=True)
+    no_signal = s.materialize_forecast_pair(seal=empty_seal, decision_bundle=empty_bundle, ledger_path=empty_path)
+    assert no_signal.payload["vote"] is None and capture.payload["provider_attestation"] == "NOT_ESTABLISHED"
+
+
+def test_realistic_same_clock_conflict_and_between_block_start(tmp_path, pins):
+    path, seal, bundle, _, capture = realistic_prepared(tmp_path, pins, opposing=True)
+    result = s.materialize_forecast_pair(seal=seal, decision_bundle=bundle, ledger_path=path)
+    assert capture.payload["coverage"]["returned_log_count"] == 2 and result.status == "UNKNOWN"
+    assert result.payload["p_wallet_added"] is None and sum(result.payload["synthetic_counts"].values()) == 1
+    other = tmp_path / "between"; other.mkdir()
+    path, seal, bundle, _, _ = realistic_prepared(other, pins, offset=1)
+    assert s.materialize_forecast_pair(seal=seal, decision_bundle=bundle, ledger_path=path).status == "PENDING"
+
+
+def test_range_filter_covers_all_sealed_makers_without_token_narrowing(tmp_path, pins):
+    _, seal, bundle, _, _ = realistic_prepared(tmp_path, pins, empty=True)
+    seal = deepcopy(seal); inst = deepcopy(bundle["instrument"]); data = deepcopy(bundle["coverage"])
+    makers = (WALLET, "0x" + "2" * 40); inst["wallets"] = makers
+    seal["payload"]["observation_group_missingness_policies"]["membership"] = list(makers)
+    ranges = []
+    for value in data["logs"]:
+        filters = deepcopy(value.request.params[0]); filters["topics"][2] = ["0x" + "0" * 24 + maker[2:] for maker in makers]
+        ranges.append(replace(value, request=replace(value.request, params=(filters,))))
+    data["logs"] = tuple(ranges)
+    events, proof = s._coverage(data, seal, inst)
+    assert events == [] and proof["range_count"] == 14
+    with pytest.raises(s.SeedError, match="COVERAGE_UNKNOWN"):
+        s._coverage({**data, "logs": bundle["coverage"]["logs"]}, seal, inst)

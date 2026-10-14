@@ -45,6 +45,8 @@ RPC_HOST = "polygon-bor-rpc.publicnode.com"
 SELECTORS = frozenset({"0x856296f7", "0xd42dc0c2", "0x39dd7530", "0xdd34de67", "0x0504c814", "0x03cee3df", "0x3b521d78"})
 RPC_METHODS = frozenset({"eth_chainId", "eth_getCode", "eth_getBlockByNumber", "eth_getBlockByHash", "eth_getTransactionReceipt", "eth_getLogs", "eth_call"})
 LIMITS = {"calls": 128, "bytes": 8388608, "elapsed_seconds": 120, "timeout_seconds": 5}
+LOG_RANGE_BLOCKS = 128
+COVERAGE_EPISTEMICS = "RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED"
 STATES = ("EXCLUDED", "UNKNOWN", "UNMATCHED", "MATCHED", "PENDING", "CENSORED")
 STUDY_FIELDS = (
     "method_digest", "code_sha", "condition_id", "target_token_id", "complement_token_id",
@@ -417,7 +419,8 @@ def _seal(seal):
     _scan_forbidden_terms(payload, "", unsafe); _scan_raw_metadata_keys(payload, "", unsafe)
     _require(not unsafe, "SEAL_INVALID")
     _require(re.fullmatch(r"[0-9a-f]{40}", payload["code_sha"]) is not None, "VERSION_INVALID")
-    _require(payload["method_digest"] == METHOD_DIGEST and payload["source_chain_id"] == 137)
+    _require(payload["method_digest"] == METHOD_DIGEST, "METHOD_INVALID")
+    _require(payload["source_chain_id"] == 137)
     _require(seal["digest"] == _identity("walletstudy:sha256:", payload), "SEAL_INVALID")
     _closed(payload["human_approval_record"], ("request_id", "requested_scope", "planned_approver"))
     _require(payload["human_approval_record"]["requested_scope"] == "ONE_UNIT_STUDY")
@@ -509,9 +512,10 @@ def _request(request, phase, payload):
     elif request.method == "eth_getLogs":
         _require(phase == "DECISION" and len(params) == 1)
         filters = _closed(params[0], ("address", "fromBlock", "toBlock", "topics"))
-        _require(filters["address"] == EXCHANGE and _quantity(filters["fromBlock"]) <= _quantity(filters["toBlock"]))
+        _require(filters["address"] == EXCHANGE and 0 <= _quantity(filters["toBlock"]) - _quantity(filters["fromBlock"]) < LOG_RANGE_BLOCKS)
         wallets = payload["observation_group_missingness_policies"]["membership"]
-        _require(filters["topics"][0:2] == [TOPIC, None] and len(filters["topics"]) == 3 and filters["topics"][2] in ["0x" + "0" * 24 + wallet[2:] for wallet in wallets])
+        makers = ["0x" + "0" * 24 + wallet[2:] for wallet in wallets]
+        _require(filters["topics"] == [TOPIC, None, makers[0] if len(makers) == 1 else makers], "COVERAGE_UNKNOWN")
     else:
         _require(len(params) == 2)
         call = _closed(params[0], ("to", "data")); _quantity(params[1])
@@ -561,6 +565,25 @@ def _raw(frame):
         request_parameters={"token_id": frame.request.url.split("token_id=", 1)[1]} if frame.request.url and "/book" in frame.request.url else {"request": _identity("rpc:", asdict(frame.request))})
 
 
+def _source_limits(frames, payload, cutoff=None):
+    budget = payload["approved_source_call_byte_elapsed_limits"]; _budget(budget)
+    _require(0 < len(frames) <= budget["calls"], "LIMIT_INVALID")
+    total = 0; starts = []; completions = []
+    for frame in frames:
+        _require(type(frame) is SourceFrame and frame.code_sha == payload["code_sha"], "VERSION_INVALID")
+        begin, end = _stamp(frame.started_at or frame.observed_at), _stamp(frame.observed_at)
+        _require(begin <= end and (cutoff is None or end <= _stamp(cutoff)), "LATE_SOURCE")
+        _require(end - begin <= timedelta(seconds=budget["timeout_seconds"]), "LIMIT_INVALID")
+        maximum = 65536 if frame.request.url and "/book" in frame.request.url else 2097152
+        _require(type(frame.body) is bytes and len(frame.body) <= maximum, "LIMIT_INVALID")
+        total += len(frame.body); starts.append(begin); completions.append(end)
+    _require(total <= budget["bytes"] and max(completions) - min(starts) <= timedelta(seconds=budget["elapsed_seconds"]), "LIMIT_INVALID")
+
+
+def _coverage_frames(bundle, instrument):
+    return tuple(bundle["finality"].values()) + tuple(instrument["mapping"].values()) + bundle["blocks"] + bundle["receipts"] + bundle["logs"]
+
+
 @_public
 def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=None):
     # No trusted external operator receipt exists yet. Even a self-consistent REAL
@@ -578,6 +601,7 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
         payload = _seal(seal); _approval(seal, phase)
     budget = payload["approved_source_call_byte_elapsed_limits"]; _budget(budget)
     _require(0 < len(transport.frames) <= budget["calls"] and len({f.request.name for f in transport.frames}) == len(transport.frames), "LIMIT_INVALID")
+    _source_limits(transport.frames, payload, payload.get("decision_time") if phase == "DECISION" else None)
     loaded = L.load_and_verify_wallet_evidence_ledger(ledger_path)
     _require(loaded.is_valid, "LEDGER_INVALID")
     start = time.monotonic(); used = 0; records = []; refs = []; raw_refs = []; manifest_refs = []
@@ -595,6 +619,7 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
             output_identity=frame.reference, output_hash=sha256(frame.body).hexdigest(), request_source_version_refs=(seal["digest"],))
         records += [raw, manifest]; refs.append(frame.reference)
         raw_refs.append(raw.raw_evidence_reference_id); manifest_refs.append(manifest.research_provenance_manifest_id)
+    coverage = None
     if transport.evidence is not None:
         _require(phase == "DECISION", "PHASE_INVALID")
         _closed(transport.evidence, ("instrument", "coverage"))
@@ -607,9 +632,11 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
             elif type(value) in (tuple, list):
                 for child in value: verify_refs(child)
         verify_refs(transport.evidence)
-        records += _chain_records(transport.evidence, seal)
+        chain_records, coverage = _chain_records(transport.evidence, seal)
+        records += chain_records
     # Prevalidate the complete batch before publishing any retained file.
     L._prepare_batch(records)
+    _require(time.monotonic() - start <= budget["elapsed_seconds"], "LIMIT_INVALID")
     binding = {"phase": phase, "seal_digest": seal["digest"], "sources": sorted(refs)}
     binding_file = "study.json" if phase != "READINESS" else "readiness.json"
     _retain(output_dir, binding_file, C.wallet_canonical_json_bytes({"payload": payload, "digest": seal["digest"]}))
@@ -621,6 +648,7 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
     receipt = {"phase": phase, "code_sha": payload["code_sha"], "seal_digest": seal["digest"], "origin": "SYNTHETIC",
         "source_refs": refs, "calls": len(transport.frames), "bytes": used, "ledger_head": appended.snapshot.head_hash,
         "approved_budget": dict(budget), "raw_evidence_reference_ids": raw_refs, "research_provenance_manifest_ids": manifest_refs,
+        "coverage_epistemics": COVERAGE_EPISTEMICS, "provider_attestation": "NOT_ESTABLISHED", "coverage": coverage,
         "requests": [{"request": asdict(frame.request), "started_at": frame.started_at or frame.observed_at, "completed_at": frame.observed_at,
                       "body_sha256": sha256(frame.body).hexdigest(), "bytes": len(frame.body), "reference": frame.reference} for frame in transport.frames]}
     receipt_id = _identity("walletseedcapture:sha256:", receipt)
@@ -629,69 +657,110 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
 
 
 def _coverage(bundle, seal, instrument):
+    """Complete only conditional on pinned RPC conformance, never provider attestation."""
     _closed(bundle, ("blocks", "receipts", "logs", "finality", "start_block", "end_block"))
-    cutoff = seal["payload"]["decision_time"]
-    _require(type(bundle["blocks"]) is tuple and bundle["blocks"] and len(bundle["blocks"]) <= 1024, "COVERAGE_UNKNOWN")
-    headers = [_frame(frame, "eth_getBlockByNumber", cutoff) for frame in bundle["blocks"]]
+    payload = seal["payload"]; cutoff = payload["decision_time"]
+    _require(all(type(bundle[key]) is tuple for key in ("blocks", "receipts", "logs")), "COVERAGE_UNKNOWN")
+    _source_limits(_coverage_frames(bundle, instrument), payload, cutoff)
+    _require(list(instrument["wallets"]) == payload["observation_group_missingness_policies"]["membership"], "GROUP_INVALID")
+    route = _route(bundle["finality"], cutoff); _mapping_proof(instrument, route, cutoff)
     first, last = bundle["start_block"], bundle["end_block"]
-    _require(type(first) is int and type(last) is int and first <= last and len(headers) == last - first + 1, "COVERAGE_UNKNOWN")
-    _require([_quantity(h["number"]) for h in headers] == list(range(first, last + 1)), "COVERAGE_UNKNOWN")
-    t0 = _stamp(cutoff); start = t0 - timedelta(hours=1)
-    _require(datetime.fromtimestamp(_quantity(headers[0]["timestamp"]), timezone.utc) <= start and datetime.fromtimestamp(_quantity(headers[-1]["timestamp"]), timezone.utc) >= t0, "COVERAGE_UNKNOWN")
-    for index, header in enumerate(headers):
-        _require(bundle["blocks"][index].request.params == (header["number"], True), "COVERAGE_UNKNOWN")
-        _hex(header["hash"], 32)
-        if index: _require(header["parentHash"] == headers[index - 1]["hash"], "FINALITY_INVALID")
-    route = _route(bundle["finality"], cutoff)
-    _require(last <= route["finalized_block"], "FINALITY_INVALID")
-    _require(last == route["finalized_block"] and headers[-1]["hash"] == route["finalized_hash"], "FINALITY_INVALID")
-    _mapping_proof(instrument, route, cutoff)
-    all_receipts = {}
-    for frame in bundle["receipts"]:
-        receipt = _frame(frame, "eth_getTransactionReceipt", cutoff)
-        _require(frame.request.params == (receipt["transactionHash"],) and receipt["transactionHash"] not in all_receipts, "COVERAGE_UNKNOWN")
-        all_receipts[receipt["transactionHash"]] = (frame, receipt)
-    expected = []
-    expected_transactions = set()
-    for header in headers:
-        _require(type(header["transactions"]) is list)
-        for index, tx in enumerate(header["transactions"]):
-            tx_hash = tx["hash"] if type(tx) is dict else tx
-            _require(tx_hash not in expected_transactions, "IDENTITY_INVALID")
-            expected_transactions.add(tx_hash)
-            _require(tx_hash in all_receipts, "COVERAGE_UNKNOWN")
-            _, receipt = all_receipts[tx_hash]
-            _require(receipt["blockHash"] == header["hash"] and receipt["blockNumber"] == header["number"] and _quantity(receipt["transactionIndex"]) == index, "FINALITY_INVALID")
-            for log in receipt["logs"]:
-                if C.canonicalize_evm_address(log["address"]) == EXCHANGE and log["topics"] and log["topics"][0].lower() == TOPIC:
-                    expected.append(log)
-    _require(set(all_receipts) == expected_transactions, "COVERAGE_UNKNOWN")
-    seen = []; events = []
-    for frame in bundle["logs"]:
-        _request(frame.request, "DECISION", seal["payload"])
+    _require(type(first) is int and type(last) is int and 0 < first <= last == route["finalized_block"], "COVERAGE_UNKNOWN")
+    start = _stamp(cutoff) - timedelta(hours=1)
+    headers = {}
+    for frame in bundle["blocks"]:
+        header = _frame(frame, "eth_getBlockByNumber", cutoff)
+        number = _quantity(header["number"])
+        _require(frame.request.params in ((header["number"], False), (header["number"], True)), "COVERAGE_UNKNOWN")
+        _require(number not in headers and first - 1 <= number <= last, "COVERAGE_UNKNOWN")
+        _hex(header["hash"], 32); _hex(header["parentHash"], 32)
+        timestamp = datetime.fromtimestamp(_quantity(header["timestamp"]), timezone.utc)
+        _require(timestamp <= _stamp(frame.observed_at) and timestamp <= _stamp(route["finalized_time"]), "FINALITY_INVALID")
+        headers[number] = (frame, header, timestamp)
+    _require(all(number in headers for number in (first - 1, first, last)), "COVERAGE_UNKNOWN")
+    _require(headers[first - 1][2] < start <= headers[first][2], "COVERAGE_UNKNOWN")
+    _require(headers[last][1]["hash"] == route["finalized_hash"] and headers[last][2] == _stamp(route["finalized_time"]), "FINALITY_INVALID")
+    ordered = sorted(headers)
+    for index, number in enumerate(ordered):
+        if index:
+            prev = ordered[index - 1]
+            _require(headers[prev][2] < headers[number][2], "FINALITY_INVALID")
+            if number == prev + 1:
+                _require(headers[number][1]["parentHash"] == headers[prev][1]["hash"], "FINALITY_INVALID")
+    # Exact disjoint numeric chunks cover the eligible finalized range once.
+    _require((last - first) // LOG_RANGE_BLOCKS + 1 == len(bundle["logs"]), "COVERAGE_UNKNOWN")
+    expected_ranges = [(n, min(n + LOG_RANGE_BLOCKS - 1, last)) for n in range(first, last + 1, LOG_RANGE_BLOCKS)]
+    _require(len(bundle["logs"]) == len(expected_ranges), "COVERAGE_UNKNOWN")
+    rows = []; seen = set()
+    for frame, bounds in zip(bundle["logs"], expected_ranges):
+        _request(frame.request, "DECISION", payload)
+        filters = frame.request.params[0]
+        _require((_quantity(filters["fromBlock"]), _quantity(filters["toBlock"])) == bounds, "COVERAGE_UNKNOWN")
         logs = _frame(frame, "eth_getLogs", cutoff)
-        _require(type(logs) is list and len(logs) <= 256)
-        seen += logs
-    # Complete block/receipt enumeration is an original-response proof of absence,
-    # rather than trusting an empty or silently truncated getLogs result.
-    relevant = [log for log in expected if "0x" + _hex(log["topics"][2], 32)[12:].hex() in instrument["wallets"]]
-    _require(sorted(C.wallet_canonical_json_bytes(x) for x in seen) == sorted(C.wallet_canonical_json_bytes(x) for x in relevant), "COVERAGE_UNKNOWN")
-    for log in relevant:
+        # The ceiling may be a provider cap. Exact-cap results fail conservatively.
+        _require(type(logs) is list and len(logs) < 256, "COVERAGE_UNKNOWN")
+        for log in logs:
+            _require(type(log) is dict and log.get("removed") is False, "FINALITY_INVALID")
+            _require(C.canonicalize_evm_address(log["address"]) == EXCHANGE and len(log["topics"]) == 4 and log["topics"][0] == TOPIC, "ABI_INVALID")
+            topics = [_hex(topic, 32) for topic in log["topics"]]
+            _require(topics[2][:12] == topics[3][:12] == bytes(12) and "0x" + topics[2][12:].hex() in instrument["wallets"], "COVERAGE_UNKNOWN")
+            data = _hex(log["data"], 224); _hex(log["transactionHash"], 32); _hex(log["blockHash"], 32)
+            _require(int.from_bytes(data[:32], "big") in (0, 1) and int.from_bytes(data[64:96], "big") > 0 and int.from_bytes(data[96:128], "big") > 0, "ABI_INVALID")
+            _quantity(log["transactionIndex"])
+            number = _quantity(log["blockNumber"])
+            _require(bounds[0] <= number <= bounds[1] and number in headers, "FINALITY_INVALID")
+            identity = (log["transactionHash"], _quantity(log["logIndex"]))
+            _require(identity not in seen, "COVERAGE_UNKNOWN")
+            seen.add(identity); rows.append((frame, log))
+    receipts = {}
+    for frame in bundle["receipts"]:
+        record = _frame(frame, "eth_getTransactionReceipt", cutoff)
+        tx = record["transactionHash"]
+        _require(frame.request.params == (tx,) and tx not in receipts, "IDENTITY_INVALID")
+        _require(record["status"] == "0x1", "FINALITY_INVALID")
+        receipts[tx] = (frame, record)
+    _require(set(receipts) == {log["transactionHash"] for _, log in rows}, "COVERAGE_UNKNOWN")
+    expected = []
+    for tx, (_, record) in receipts.items():
+        number = _quantity(record["blockNumber"])
+        _require(number in headers and record["blockHash"] == headers[number][1]["hash"], "FINALITY_INVALID")
+        transactions = headers[number][1]["transactions"]
+        index = _quantity(record["transactionIndex"])
+        _require(type(transactions) is list and index < len(transactions), "COVERAGE_UNKNOWN")
+        transaction = transactions[index]
+        _require((transaction["hash"] if type(transaction) is dict else transaction) == tx, "COVERAGE_UNKNOWN")
+        for log in record["logs"]:
+            if C.canonicalize_evm_address(log["address"]) == EXCHANGE and log["topics"] and log["topics"][0] == TOPIC:
+                _require(len(log["topics"]) == 4, "ABI_INVALID")
+                maker = _hex(log["topics"][2], 32)
+                _require(maker[:12] == bytes(12), "ABI_INVALID")
+                if "0x" + maker[12:].hex() in instrument["wallets"]:
+                    expected.append(log)
+    _require(sorted(C.wallet_canonical_json_bytes(x) for x in expected) == sorted(C.wallet_canonical_json_bytes(x) for _, x in rows), "COVERAGE_UNKNOWN")
+    events = []
+    for source, log in rows:
+        frame, record = receipts[log["transactionHash"]]
+        number = _quantity(log["blockNumber"]); block = headers[number][0]
+        for key in ("transactionHash", "blockHash", "blockNumber", "transactionIndex"):
+            _require(log[key] == record[key], "IDENTITY_INVALID")
+        _require(sum(item == log for item in record["logs"]) == 1, "IDENTITY_INVALID")
         token = str(int.from_bytes(_hex(log["data"], 224)[32:64], "big"))
         if token not in (instrument["target_token_id"], instrument["complement_token_id"]):
             continue
-        header_index = _quantity(log["blockNumber"]) - first
-        source = next(f for f in bundle["logs"] if log in _frame(f))
-        block = bundle["blocks"][header_index]
-        event, _ = _fill(source, all_receipts[log["transactionHash"]][0], block, {"route": bundle["finality"], "canonical": block, "cutoff": cutoff}, instrument, selected_log=log)
-        if start <= _stamp(event.event_time) <= t0:
-            events.append((source, event))
+        event, _ = _fill(source, frame, block, {"route": bundle["finality"], "canonical": block, "cutoff": cutoff}, instrument, selected_log=log)
+        _require(start <= _stamp(event.event_time) <= _stamp(route["finalized_time"]), "COVERAGE_UNKNOWN")
+        events.append((source, event))
     _require(len({e.wallet_event_id for _, e in events}) == len(events), "IDENTITY_INVALID")
-    return events
+    proof = {"status": "SOURCE_CONTRACT_COMPLETE_CONDITIONAL", "epistemics": COVERAGE_EPISTEMICS,
+        "provider_attestation": "NOT_ESTABLISHED", "start_block": first, "finalized_frontier": last,
+        "finalized_frontier_time": route["finalized_time"], "covered_block_count": last - first + 1,
+        "range_count": len(expected_ranges), "returned_log_count": len(rows),
+        "source_refs": [f.reference for f in _coverage_frames(bundle, instrument)]}
+    return events, proof
 
 
 def _chain_records(evidence, seal):
-    events = _coverage(evidence["coverage"], seal, evidence["instrument"])
+    events, proof = _coverage(evidence["coverage"], seal, evidence["instrument"])
     run = C.derive_ingest_run_key({"study_digest": seal["digest"], "phase": "DECISION"})
     records = []
     pages = {}
@@ -712,7 +781,7 @@ def _chain_records(evidence, seal):
         link = C.build_wallet_reconciliation_link(reconciliation_state="CHAIN_ONLY", relation_kind="CHAIN_CONFIRMATION",
             event_ids=(event.wallet_event_id,), finality_state="FINALIZED")
         records += [event, observation, link]
-    return records
+    return records, proof
 
 
 def _decision_ledger(path, expected_head):
@@ -735,9 +804,16 @@ def materialize_forecast_pair(*, seal, decision_bundle, ledger_path):
     _require(all(context.independence_group_id == payload["leakage_group_id"] for context in decision_bundle["contexts"]), "GROUP_INVALID")
     t0 = _stamp(payload["decision_time"])
     _require(_stamp(profile.as_of) == t0 and profile.cohort_snapshot_id == payload["cohort_reference_id"], "PROFILE_INVALID")
-    events = _coverage(decision_bundle["coverage"], seal, instrument)
+    events, proof = _coverage(decision_bundle["coverage"], seal, instrument)
+    snapshot = _decision_ledger(ledger_path, decision_bundle["ledger_head"])
+    for frame in _coverage_frames(decision_bundle["coverage"], instrument):
+        raw = _raw(frame)
+        manifest = build_research_provenance_manifest(repo_code_identity=frame.code_sha, information_cutoff=frame.observed_at,
+            input_evidence_reference_ids=(raw.raw_evidence_reference_id,), input_content_hashes=(raw.content_sha256,),
+            output_identity=frame.reference, output_hash=sha256(frame.body).hexdigest(), request_source_version_refs=(seal["digest"],))
+        _require(raw.raw_evidence_reference_id in snapshot.record_ids() and manifest.research_provenance_manifest_id in snapshot.record_ids(), "SOURCE_INVALID")
     native_ids = set(profile.included_wallet_event_ids)
-    _require(all(event.wallet_event_id in native_ids for _, event in events), "PROFILE_INVALID")
+    _require(native_ids == {event.wallet_event_id for _, event in events}, "PROFILE_INVALID")
     books = []
     for frame in decision_bundle["books"]:
         _require(frame.code_sha == payload["code_sha"], "VERSION_INVALID")
@@ -764,32 +840,32 @@ def materialize_forecast_pair(*, seal, decision_bundle, ledger_path):
             "bids": sorted((x["price"], x["size"]) for x in document["bids"]), "asks": sorted((x["price"], x["size"]) for x in document["asks"])}
         books.append((frame.observed_at, bid, ask, frame.reference, _identity("book:", semantic_book)))
     if not books:
-        return _pair("UNKNOWN", payload, decision_bundle, None, None, None)
+        return _pair("UNKNOWN", payload, decision_bundle, None, None, None, proof)
     latest = max(_stamp(x[0]) for x in books); selected = [x for x in books if _stamp(x[0]) == latest]
     if len({x[4] for x in selected}) != 1:
-        return _pair("UNKNOWN", payload, decision_bundle, None, None, None)
+        return _pair("UNKNOWN", payload, decision_bundle, None, None, None, proof)
     buys = [(frame.observed_at, event) for frame, event in events if event.side == "BUY"]
     vote = None
     if buys:
         last = max(_stamp(seen) for seen, _ in buys)
         votes = {int(event.token_value == payload["target_token_id"]) for seen, event in buys if _stamp(seen) == last}
-        if len(votes) != 1: return _pair("UNKNOWN", payload, decision_bundle, None, None, None)
+        if len(votes) != 1: return _pair("UNKNOWN", payload, decision_bundle, None, None, None, proof)
         vote = votes.pop()
     if type(decision_bundle["committed_at"]) is not SyntheticDecisionClock or _stamp(decision_bundle["committed_at"].at) != t0:
-        return _pair("UNMATCHED", payload, decision_bundle, None, None, vote)
+        return _pair("UNMATCHED", payload, decision_bundle, None, None, vote, proof)
     with localcontext() as context:
         context.prec = 80
         p0 = (selected[0][1] + selected[0][2]) / 2
         pw = p0 if vote is None else Decimal("0.9") * p0 + Decimal("0.1") * vote
-    return _pair("PENDING", payload, decision_bundle, _fixed(p0), _fixed(pw), vote)
+    return _pair("PENDING", payload, decision_bundle, _fixed(p0), _fixed(pw), vote, proof)
 
 
-def _pair(status, payload, bundle, p0, pw, vote):
+def _pair(status, payload, bundle, p0, pw, vote, proof):
     pair = {"method_digest": METHOD_DIGEST, "decision_time": payload["decision_time"], "target_event_end": payload["target_event_end"],
         "code_sha": payload["code_sha"],
         "label_deadline": payload["label_deadline"], "condition_id": payload["condition_id"], "target_token_id": payload["target_token_id"], "complement_token_id": payload["complement_token_id"],
         "rule_snapshot_digest": payload["rule_snapshot_digest"], "leakage_group_id": payload["leakage_group_id"], "ledger_head": bundle["ledger_head"],
-        "p_nonwallet": p0, "p_wallet_added": pw, "p_masked": p0, "vote": vote,
+        "p_nonwallet": p0, "p_wallet_added": pw, "p_masked": p0, "vote": vote, "coverage": proof,
         "label": None, "loss_nonwallet": None, "loss_wallet_added": None, "delta": None,
         "enrolled_count": "NOT_ESTABLISHED", "synthetic_counts": {state: int(state == status) for state in STATES}}
     pair["pair_id"] = _identity("walletseedpair:sha256:", pair)

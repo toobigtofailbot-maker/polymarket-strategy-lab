@@ -457,6 +457,32 @@
         "failure_category": "IDENTITY_DERIVATION_INVALID",
         "safe_output": "Policy digest only.",
         "derivation_rule_id": "seed_policy_digest_v1"
+      },
+      {
+        "path": "seed.coverage_epistemics",
+        "source": "CONSTANT",
+        "type": "str",
+        "required_rule": "Exact Side19-authorized bounded source-contract amendment constant; no provider attestation or operator activation inferred.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "seed.log_range_max_blocks",
+        "source": "CONSTANT",
+        "type": "int",
+        "required_rule": "Exact Side19-authorized bounded source-contract amendment constant; no provider attestation or operator activation inferred.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Closed seed policy, source route and exact prompt/spec literal equality; no actual study or acquisition authority inferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Public source-policy constants only; no credentials, personal identity, provider body or measured advantage.",
+        "derivation_rule_id": null
       }
     ]
   },
@@ -626,9 +652,11 @@
             "request_timeout_seconds": 5,
             "rpc_response_max_bytes": 2097152,
             "readiness_authorizes_study": false,
-            "study_activated": false
+            "study_activated": false,
+            "coverage_epistemics": "RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED",
+            "log_range_max_blocks": 128
           },
-          "seed_policy_id": "walletseedpolicy:sha256:c75a8740f5709890f01fb5ed6c712d8f0ae930e58796462f4a3e1d83ff51bcbf"
+          "seed_policy_id": "walletseedpolicy:sha256:d1334fe6b69a77263d8cbddc7c9ba6a8711873eb116c80aaa07a0bc4cc851cac"
         }
       },
       {
@@ -660,7 +688,9 @@
             "request_timeout_seconds": 5,
             "rpc_response_max_bytes": 2097152,
             "readiness_authorizes_study": false,
-            "study_activated": false
+            "study_activated": false,
+            "coverage_epistemics": "RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED",
+            "log_range_max_blocks": 128
           },
           "seed_policy_id": "walletseedpolicy:sha256:0000000000000000000000000000000000000000000000000000000000000000"
         }
@@ -697,7 +727,7 @@
         "source": "pytest",
         "test": "test_prospective_seal_and_coverage",
         "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/polymarket/test_wallet_seed.py::test_prospective_seal_and_coverage",
-        "expected_result": "A non-circular STUDY digest and detached post-digest approval distinction are enforced; in-seal digest-dependent references, absent/forged external approval, late/replaced seals, uncovered block/range, capped/partial feed and ambiguous group fail closed; only an original complete eligible-range empty result supports NO_SIGNAL."
+        "expected_result": "A non-circular STUDY digest and detached post-digest approval distinction are enforced; in-seal digest-dependent references, absent/forged external approval, late/replaced seals, uncovered block/range, capped/partial feed and ambiguous group fail closed; only an original complete eligible-range empty result supports NO_SIGNAL. Realistic >=1700-block exclusive bounded ranges fit 128 total captured requests under explicitly conditional RPC conformance, never provider attestation; lagging finalized frontier is valid and ranges/filters/proofs/caps/clocks/budgets fail closed."
       },
       {
         "requirement_id": "R005",

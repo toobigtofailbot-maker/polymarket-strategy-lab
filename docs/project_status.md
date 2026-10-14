@@ -2106,7 +2106,8 @@ S10-WALLET-SEED-01 / PR#234 is MERGED at `887c8827d78f4a83557db6008da9ad5e4234b7
 head `c7922faa4051bd217e1805502f6ef4a95017e713`; retain its historical fragment.
 SEED-02 is LOCAL_IMPLEMENTATION / SYNTHETIC_ONLY / STUDY_NOT_ACTIVATED:
 RUNTIME/Risk3/M, exact nine paths, one dormant foreground tools module using unchanged
-native wallet ledger/profile/book APIs. Reviewed prompt/spec preserved; external
+native wallet ledger/profile/book APIs. Initial review chain retained; the authorized
+bounded source-policy prompt/spec amendment is current; external
 exact-head validation and independent Side19 acceptance govern completion evidence.
 No trusted real approval adapter or original real source acquisition is activated.
 Actual enrolled/paired units:NOT_ESTABLISHED; synthetic math is not alpha/qualification.
@@ -2118,8 +2119,10 @@ DATA03 and ALPHA03/04 remain separate. Stable record:
 `docs/status_entries/S10-WALLET-SEED-02.md`; contract:
 `docs/wallet_seed_source_forecast_contract.md`.
 
-Side19 correction disposition (2026-10-14): STRUCTURAL_COVERAGE_PROOF_BLOCKED;
-independent acceptance WITHHELD for one-hour coverage feasibility. Reviewed code
-and frozen METHOD/budgets are preserved. SEED02-D004 records the missing fixed-
-provider exhaustive-range binding; current full-receipt fallback exceeds 128 calls.
-The follow-up is a truth-record reconciliation, not a corrected/accepted source route.
+Side19 bounded recovery (2026-10-14): structural stop ACCEPTED; conditional RPC
+source-policy amendment and local correction authorized. Bounded disjoint log
+ranges replace full-chain traversal and allow a finalized frontier before T0.
+Realistic synthetic traces and local validation govern feasibility; independent
+implementation acceptance is PENDING. Completeness is conditional on pinned RPC
+conformance, never independently provider-attested. SEED02-D004 retains the real
+activation/operational source checks. Frozen METHOD and budgets are unchanged.

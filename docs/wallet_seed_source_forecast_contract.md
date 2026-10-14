@@ -99,17 +99,56 @@ CTF pure-view calldata and fixed-block results prove two slots, collection index
 sets1/2 and the two exact positions using the verified collateral. Unsupported
 condition/token/version/identity never acquires strong evidence via a caller flag.
 
-The complete-coverage route conservatively enumerates original canonical blocks
-and ALL transaction receipts. It checks contiguous numbering/parent hashes,
-finalized end hash, exact transaction membership/index and original relevant logs.
-getLogs results must equal the relevant receipt logs; an empty/truncated response
-cannot hide a fill. If full receipt enumeration is unavailable or exceeds budget,
-the result stays UNKNOWN. This minimum implementation does not trust a caller's
-provider-completeness boolean. No-signal requires complete original absence proof.
+Side19's 2026-10-14 bounded source-policy amendment treats the pinned authorized
+RPC as conforming to Ethereum's exhaustive eth_getLogs contract. Completeness is
+SOURCE_CONTRACT_COMPLETE_CONDITIONAL, with epistemics
+RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED. Receipts and immutable pair
+reports explicitly retain provider_attestation=NOT_ESTABLISHED. This assumption
+is not cryptographic absence, physical provider verification or real capture origin.
+A consistently silent omission of an entire transaction cannot be detected by this
+API path; tests do not establish that PublicNode's serving backend is exhaustive.
 
-### Side19 feasibility stop (2026-10-14)
+The range begins at the first canonical block at/after T0-3600s, proved by its
+adjacent predecessor timestamp being earlier; both original numeric headers bind
+the boundary. Exclusive deterministic inclusive chunks contain at most 128 blocks
+and exactly cover through finalized frontier F, observed by T0. F.timestamp<T0
+is valid. The unfinalized suffix is not an admissible action set. No source clock
+is replaced by block time or repaired after T0. Numeric canonical RPC/header
+semantics are part of the disclosed RPC trust boundary; no full ancestry traversal
+is claimed. F preceding the lookback boundary remains conservatively UNKNOWN.
 
-Independent acceptance of reviewed head
+Each filter contains the exact exchange/topic and every sealed maker, using the
+same scalar/OR-list form throughout, without token narrowing. Strict original
+replies must cover the exact ranges once. Every returned matching transaction
+requires its original successful receipt and numeric canonical event header;
+the returned block's transaction-hash list must place that transaction at its
+original receipt index. Unrelated transaction hashes need no receipt traversal;
+receipt logs must exactly equal returned matching rows within those transactions.
+This detects returned-row/receipt omissions, conflicts and duplicates, not wholly
+omitted transactions. Every proof raw/manifest must already be registered at the
+frozen decision head, and native profile event IDs must match the decoded set.
+
+Any range/filter drift, missing/overlapping/gapped chunk, failed/partial reply,
+reorg/proof conflict, late availability/finality, timeout, oversize, record-ceiling
+ambiguity or budget exhaustion prevents a paired wallet forecast. Exactly 256
+rows is rejected conservatively as possible cap ambiguity. Conditional complete
+empty ranges plus all anchors/provenance may support NO_SIGNAL; an isolated empty
+array cannot. Every capture request, including retained search probes, is counted
+against the same 128-call/8MiB/120-second/5-second-request ceilings. No hidden
+batching, fallback traversal, retry, new dependency or service is introduced.
+
+Synthetic realistic fixtures cover 1,771 finalized blocks at two seconds/block,
+F sixty seconds before T0, fourteen range replies and a retained binary anchor
+search. Positive empty, target/complement BUY, native profile/window and paired
+states plus negative cases are reported with exact counted requests in external
+traces. They prove local feasibility under the assumption, not real provider
+behavior. Actual host reachability, operational limits/all-or-error behavior,
+finalized support, fresh code hashes and trusted approval/origin lineage remain
+separate prospective activation gates. The frozen SEED-01 METHOD is unchanged.
+
+### Historical Side19 feasibility stop (2026-10-14; superseded source policy)
+
+At the structural-stop stage, independent acceptance of reviewed head
 `9f6df26e8b44ba646a6a69081f1f2c7f6fe003f4` is WITHHELD. Its passing local
 tests do not prove realistic one-hour coverage. The source tool is preserved;
 no corrected COMPLETE route or feasible pilot is claimed.
@@ -121,7 +160,7 @@ Eligible coverage must be exhaustive through F, not pretend that suffix is final
 or wait past T0. Event time still selects the native lookback; availability remains
 independent. Neither rule, budget nor METHOD digest is amended here.
 
-The current unconditional block/receipt enumeration needs at least 1,771 original
+The former unconditional block/receipt enumeration needed at least 1,771 original
 block calls for a two-second chain over [T0-3600s,T0-60s], before any receipts or
 other inputs. That exceeds both 128 total calls and the 1,024-header guard. The
 existing last-header-at-or-after-T0 condition separately rejects lagging finality.
@@ -137,7 +176,7 @@ Bor RPC endpoint but supplies no inspected endpoint-specific exhaustiveness,
 pagination/truncation/error-limit contract or serving-version binding. This is
 an unresolved evidence gap, not a finding that PublicNode actually truncates.
 
-The reviewed WP explicitly requires provider-attested exhaustive original range
+At that stage the reviewed WP required provider-attested exhaustive original range
 results or original complete receipt enumeration. A caller completeness flag,
 successful short/empty array, general Ethereum specification or synthetic
 service response cannot close the missing provider binding. Repeated overlapping
@@ -145,7 +184,10 @@ queries cannot rule out consistent omission. Without that binding, sparse range
 queries cannot establish COMPLETE; the receipt fallback cannot fit this budget.
 No alternative host/API, batching to conceal logical calls, new dependency or
 after-T0 repair is authorized. Stop: STRUCTURAL_COVERAGE_PROOF_BLOCKED.
-SEED02-D004 records the exact closure needed before source correction resumes.
+Side19 accepted that stop, then explicitly authorized the conditional RPC source
+policy above within the same nine paths. Both stop and original code remain
+ancestors; final implementation acceptance still awaits independent review.
+SEED02-D004 now tracks the local correction and remaining activation evidence.
 
 Canonical chain events, TRADES-category pages, original observations and CHAIN_ONLY
 finality links append using unchanged native builders/ledger. POLYGON_RPC raw

@@ -2206,7 +2206,10 @@ The real operator approval/origin path and acquisition remain separately gated b
 S10-WALLET-SEED-ACT-01. Independent Side19 implementation acceptance/release checks
 are pending; no PR, hosted CI or merge is performed in this local-only phase.
 
-Side19 correction disposition (2026-10-14): acceptance WITHHELD;
-STRUCTURAL_COVERAGE_PROOF_BLOCKED, tracked at SEED02-D004. Read the contract's
-Side19 feasibility stop and external diagnostic before claiming complete eligible
-one-hour coverage. The reviewed source/test code, METHOD and budgets are preserved.
+Side19 bounded recovery (2026-10-14): accepted structural stop and targeted
+source-policy amendment; local correction uses exclusive bounded getLogs ranges,
+original returned-event receipt/header proofs and finalized frontier F by T0.
+Read the contract for RPC_CONTRACT_CONDITIONAL_NOT_PROVIDER_ATTESTED semantics.
+Realistic synthetic evidence/native checks do not establish physical provider
+exhaustiveness or grant acceptance. SEED02-D004 and the stable fragment retain
+pending independent review and prospective operational/approval/origin gates.
