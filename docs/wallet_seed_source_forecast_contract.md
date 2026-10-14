@@ -107,6 +107,46 @@ cannot hide a fill. If full receipt enumeration is unavailable or exceeds budget
 the result stays UNKNOWN. This minimum implementation does not trust a caller's
 provider-completeness boolean. No-signal requires complete original absence proof.
 
+### Side19 feasibility stop (2026-10-14)
+
+Independent acceptance of reviewed head
+`9f6df26e8b44ba646a6a69081f1f2c7f6fe003f4` is WITHHELD. Its passing local
+tests do not prove realistic one-hour coverage. The source tool is preserved;
+no corrected COMPLETE route or feasible pilot is claimed.
+
+The frozen METHOD admits actions within [T0-3600s,T0] only when their effective
+finality and original evidence availability are observed by T0. A finalized
+frontier F may precede T0; the unfinalized suffix contributes no admissible action.
+Eligible coverage must be exhaustive through F, not pretend that suffix is final
+or wait past T0. Event time still selects the native lookback; availability remains
+independent. Neither rule, budget nor METHOD digest is amended here.
+
+The current unconditional block/receipt enumeration needs at least 1,771 original
+block calls for a two-second chain over [T0-3600s,T0-60s], before any receipts or
+other inputs. That exceeds both 128 total calls and the 1,024-header guard. The
+existing last-header-at-or-after-T0 condition separately rejects lagging finality.
+The external synthetic diagnostic reproduces both; it is not a positive proof.
+
+[Ethereum's API contract](https://ethereum.github.io/execution-apis/api/methods/eth_getLogs/)
+specifies all matching logs. The inspected
+[Bor GetLogs wrapper](https://github.com/0xPolygon/bor/blob/develop/eth/filters/api.go)
+returns underlying logs or errors; that mutable upstream example is not evidence
+of the gateway's deployed client/configuration. The
+[PublicNode Polygon page](https://polygon.publicnode.com/) identifies the approved
+Bor RPC endpoint but supplies no inspected endpoint-specific exhaustiveness,
+pagination/truncation/error-limit contract or serving-version binding. This is
+an unresolved evidence gap, not a finding that PublicNode actually truncates.
+
+The reviewed WP explicitly requires provider-attested exhaustive original range
+results or original complete receipt enumeration. A caller completeness flag,
+successful short/empty array, general Ethereum specification or synthetic
+service response cannot close the missing provider binding. Repeated overlapping
+queries cannot rule out consistent omission. Without that binding, sparse range
+queries cannot establish COMPLETE; the receipt fallback cannot fit this budget.
+No alternative host/API, batching to conceal logical calls, new dependency or
+after-T0 repair is authorized. Stop: STRUCTURAL_COVERAGE_PROOF_BLOCKED.
+SEED02-D004 records the exact closure needed before source correction resumes.
+
 Canonical chain events, TRADES-category pages, original observations and CHAIN_ONLY
 finality links append using unchanged native builders/ledger. POLYGON_RPC raw
 provenance is not relabeled Data-API origin. Raw bytes and manifests are registered

@@ -2117,3 +2117,9 @@ S10-WALLET-SEED-ACT-01 owns genuine operator approval/origin/finality and acquis
 DATA03 and ALPHA03/04 remain separate. Stable record:
 `docs/status_entries/S10-WALLET-SEED-02.md`; contract:
 `docs/wallet_seed_source_forecast_contract.md`.
+
+Side19 correction disposition (2026-10-14): STRUCTURAL_COVERAGE_PROOF_BLOCKED;
+independent acceptance WITHHELD for one-hour coverage feasibility. Reviewed code
+and frozen METHOD/budgets are preserved. SEED02-D004 records the missing fixed-
+provider exhaustive-range binding; current full-receipt fallback exceeds 128 calls.
+The follow-up is a truth-record reconciliation, not a corrected/accepted source route.
