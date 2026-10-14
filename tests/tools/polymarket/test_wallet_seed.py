@@ -390,3 +390,18 @@ def test_label_source_bindings_rejected(tmp_path, pins, fault):
         else: venue["umaResolutionStatus"] = "unknown"
         label["venue"] = change(label["venue"], venue)
     assert s.attach_final_label(pair=pair, label_bundle=label, as_of="2026-01-12T00:00:02Z").status == "UNKNOWN"
+
+
+def test_label_capture_preserves_gamma_source_and_receipt_refs(tmp_path, pins):
+    path, seal, bundle, _ = prepared(tmp_path, pins)
+    venue = label_bundle(bundle["instrument"])["venue"]
+    result = s.capture_seed_evidence(seal=approve(seal, "LABEL"), phase="LABEL", ledger_path=path,
+        output_dir=tmp_path, transport=s.SyntheticTransport((venue,)))
+    assert result.status == "SYNTHETIC_CAPTURE_RETAINED", result
+    raw = s._raw(venue)
+    assert raw.source_system == "POLYMARKET_GAMMA" and raw.endpoint == "/markets/17"
+    assert result.payload["raw_evidence_reference_ids"] == [raw.raw_evidence_reference_id]
+    assert len(result.payload["research_provenance_manifest_ids"]) == 1
+    assert result.payload["approved_budget"] == seal["payload"]["approved_source_call_byte_elapsed_limits"]
+    payload = deepcopy(result.payload); identity = payload.pop("receipt_id")
+    assert identity == s._identity("walletseedcapture:sha256:", payload)

@@ -551,8 +551,10 @@ def _retain(directory, name, content):
 
 
 def _raw(frame):
-    return build_raw_evidence_reference(source_system="POLYMARKET_CLOB" if frame.request.url and "/book" in frame.request.url else "POLYGON_RPC",
-        endpoint="/book" if frame.request.url and "/book" in frame.request.url else frame.request.method,
+    book = frame.request.url and "/book" in frame.request.url
+    venue = frame.request.url and frame.request.url.startswith("https://gamma-api.polymarket.com/markets/")
+    return build_raw_evidence_reference(source_system="POLYMARKET_CLOB" if book else "POLYMARKET_GAMMA" if venue else "POLYGON_RPC",
+        endpoint="/book" if book else "/markets/" + frame.request.url.rsplit("/", 1)[1] if venue else frame.request.method,
         retrieval_method="GET" if frame.request.url else "POST/read-only-RPC", content_sha256=sha256(frame.body).hexdigest(),
         byte_length=len(frame.body), media_type="application/json", pit=build_pit_timestamps(local_first_seen_time=frame.observed_at, ingestion_time=frame.observed_at),
         dq_flags=("OK",), replay_fidelity="EXACT", raw_snapshot_ref=frame.reference,
@@ -578,7 +580,7 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
     _require(0 < len(transport.frames) <= budget["calls"] and len({f.request.name for f in transport.frames}) == len(transport.frames), "LIMIT_INVALID")
     loaded = L.load_and_verify_wallet_evidence_ledger(ledger_path)
     _require(loaded.is_valid, "LEDGER_INVALID")
-    start = time.monotonic(); used = 0; records = []; refs = []
+    start = time.monotonic(); used = 0; records = []; refs = []; raw_refs = []; manifest_refs = []
     cutoff = payload.get("decision_time") if phase == "DECISION" else None
     for frame in transport.frames:
         _request(frame.request, phase, payload)
@@ -592,6 +594,7 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
             input_evidence_reference_ids=(raw.raw_evidence_reference_id,), input_content_hashes=(raw.content_sha256,),
             output_identity=frame.reference, output_hash=sha256(frame.body).hexdigest(), request_source_version_refs=(seal["digest"],))
         records += [raw, manifest]; refs.append(frame.reference)
+        raw_refs.append(raw.raw_evidence_reference_id); manifest_refs.append(manifest.research_provenance_manifest_id)
     if transport.evidence is not None:
         _require(phase == "DECISION", "PHASE_INVALID")
         _closed(transport.evidence, ("instrument", "coverage"))
@@ -617,6 +620,7 @@ def capture_seed_evidence(*, seal, phase, ledger_path, output_dir, transport=Non
     _require(appended.is_valid, "LEDGER_INVALID")
     receipt = {"phase": phase, "code_sha": payload["code_sha"], "seal_digest": seal["digest"], "origin": "SYNTHETIC",
         "source_refs": refs, "calls": len(transport.frames), "bytes": used, "ledger_head": appended.snapshot.head_hash,
+        "approved_budget": dict(budget), "raw_evidence_reference_ids": raw_refs, "research_provenance_manifest_ids": manifest_refs,
         "requests": [{"request": asdict(frame.request), "started_at": frame.started_at or frame.observed_at, "completed_at": frame.observed_at,
                       "body_sha256": sha256(frame.body).hexdigest(), "bytes": len(frame.body), "reference": frame.reference} for frame in transport.frames]}
     receipt_id = _identity("walletseedcapture:sha256:", receipt)
