@@ -160,7 +160,10 @@ same-clock opposing votes are UNKNOWN. pW=0.9*p0+0.1*vote; proven no-signal equa
 p0 and masked control equals p0. No costs, size or economics enter binary Brier.
 The final label uses independent same-rule CTF complementary binary payout and
 explicit venue resolution agreement, canonical finality and strictly post-target
-availability by deadline. Unresolved verified sources are PENDING before deadline,
+availability by deadline. Gamma's native id/conditionId/clobTokenIds/outcomePrices,
+negRisk, closed and umaResolutionStatus fields must agree with CTF; the finalized
+block itself must be post-target. Mapping, book and label frames bind the sealed
+code revision. Unresolved verified sources are PENDING before deadline,
 CENSORED after; unknown proof is UNKNOWN, never CENSORED. A valid label scores
 the identical immutable source-bound pair; a rehashed caller mapping is rejected.
 

@@ -276,12 +276,14 @@ def _route(evidence, cutoff=None):
     _require(evidence["finalized"].request.params == ("finalized", False))
     _hex(block["hash"], 32)
     number = _quantity(block["number"])
+    block_time = datetime.fromtimestamp(_quantity(block["timestamp"]), timezone.utc)
+    _require(block_time <= _stamp(evidence["finalized"].observed_at), "FINALITY_INVALID")
     for key, address, expected in (("exchange_code", EXCHANGE, EXCHANGE_HASH), ("ctf_code", CTF, CTF_HASH)):
         frame = evidence[key]
         _require(frame.request.params == (address, block["number"]), "VERSION_INVALID")
         code = _hex(_frame(frame, "eth_getCode", cutoff))
         _require(sha256(code).hexdigest() == expected, "VERSION_INVALID")
-    return {"chain_id": 137, "finalized_block": number, "finalized_hash": block["hash"],
+    return {"chain_id": 137, "finalized_block": number, "finalized_hash": block["hash"], "code_sha": evidence["chain"].code_sha, "finalized_time": block_time.isoformat(),
             "route_id": _identity("walletseedroute:sha256:", [evidence[k].reference for k in sorted(evidence)])}
 
 
@@ -315,6 +317,7 @@ def _mapping_proof(instrument, route, cutoff):
     block = hex(route["finalized_block"])
     def read(key, contract, data):
         frame = frames[key]
+        _require(frame.code_sha == route["code_sha"], "VERSION_INVALID")
         _require(frame.request.params == ({"to": contract, "data": data}, block), "INSTRUMENT_INVALID")
         return _hex(_frame(frame, "eth_call", cutoff), 32)
     _require(int.from_bytes(read("slots", CTF, "0xd42dc0c2" + condition), "big") == 2, "INSTRUMENT_INVALID")
@@ -724,6 +727,8 @@ def materialize_forecast_pair(*, seal, decision_bundle, ledger_path):
         _require(instrument[key] == payload[key], "SEAL_INVALID")
     cohort, profile = decision_bundle["cohort"], decision_bundle["profile"]
     _require(cohort.wallet_discovery_cohort_snapshot_id == payload["cohort_reference_id"] and profile.subject_wallets == instrument["wallets"], "PROFILE_INVALID")
+    _require(list(instrument["wallets"]) == payload["observation_group_missingness_policies"]["membership"], "GROUP_INVALID")
+    _require(all(context.independence_group_id == payload["leakage_group_id"] for context in decision_bundle["contexts"]), "GROUP_INVALID")
     t0 = _stamp(payload["decision_time"])
     _require(_stamp(profile.as_of) == t0 and profile.cohort_snapshot_id == payload["cohort_reference_id"], "PROFILE_INVALID")
     events = _coverage(decision_bundle["coverage"], seal, instrument)
@@ -731,6 +736,7 @@ def materialize_forecast_pair(*, seal, decision_bundle, ledger_path):
     _require(all(event.wallet_event_id in native_ids for _, event in events), "PROFILE_INVALID")
     books = []
     for frame in decision_bundle["books"]:
+        _require(frame.code_sha == payload["code_sha"], "VERSION_INVALID")
         document = _frame(frame, cutoff=payload["decision_time"])
         _require(frame.request.url == f"https://clob.polymarket.com/book?token_id={payload['target_token_id']}", "SOURCE_INVALID")
         if _stamp(frame.observed_at) < t0 - timedelta(seconds=30): continue
@@ -801,6 +807,7 @@ def attach_final_label(*, pair, label_bundle, as_of):
     for key in ("condition_id", "target_token_id", "complement_token_id", "rule_snapshot_digest", "leakage_group_id"):
         _require(instrument[key] == original[key], "LABEL_INVALID")
     route = _route(label_bundle["route"], as_of); _mapping_proof(instrument, route, as_of)
+    _require(route["code_sha"] == original["code_sha"] and _stamp(route["finalized_time"]) > _stamp(original["target_event_end"]), "LABEL_INVALID")
     clocks = [frame.observed_at for key, frame in label_bundle.items() if type(frame) is SourceFrame]
     clocks += [frame.observed_at for frame in label_bundle["route"].values()]
     _require(all(_stamp(clock) > _stamp(original["target_event_end"]) and _stamp(clock) > _stamp(original["decision_time"]) for clock in clocks), "LABEL_INVALID")
@@ -809,21 +816,30 @@ def attach_final_label(*, pair, label_bundle, as_of):
         data = selector + original["condition_id"][2:]
         if key != "denominator": data += format(0 if key == "target_numerator" else 1, "064x")
         frame = label_bundle[key]
+        _require(frame.code_sha == original["code_sha"], "VERSION_INVALID")
         _require(frame.request.params == ({"to": CTF, "data": data}, hex(route["finalized_block"])), "LABEL_INVALID")
         values.append(int.from_bytes(_hex(_frame(frame, "eth_call", as_of), 32), "big"))
     denominator, target, complement = values
     venue = _frame(label_bundle["venue"], cutoff=as_of)
+    _require(label_bundle["venue"].code_sha == original["code_sha"], "VERSION_INVALID")
     _require(label_bundle["venue"].request.url == f"https://gamma-api.polymarket.com/markets/{instrument['gamma_market_id']}", "LABEL_INVALID")
-    _require(venue.get("conditionId") == original["condition_id"] and type(venue.get("resolved")) is bool and venue.get("disputed") is False and venue.get("void") is False and venue.get("cancelled") is False, "LABEL_INVALID")
+    _require(str(venue.get("id")) == instrument["gamma_market_id"] and venue.get("conditionId") == original["condition_id"] and venue.get("negRisk") is False, "LABEL_INVALID")
+    _require(not any(venue.get(flag) is True for flag in ("disputed", "void", "cancelled")), "LABEL_INVALID")
+    tokens, prices = venue.get("clobTokenIds"), venue.get("outcomePrices")
+    tokens = json.loads(tokens) if type(tokens) is str else tokens
+    prices = json.loads(prices) if type(prices) is str else prices
+    _require(type(tokens) is list and type(prices) is list and len(tokens) == len(prices) == 2 and set(tokens) == {original["target_token_id"], original["complement_token_id"]}, "LABEL_INVALID")
+    resolution = venue.get("umaResolutionStatus")
     if denominator == 0:
-        _require(venue["resolved"] is False, "LABEL_INVALID")
+        _require(resolution in ("proposed", "unresolved"), "LABEL_INVALID")
         status = "CENSORED" if _stamp(as_of) > _stamp(original["label_deadline"]) else "PENDING"
     else:
         _require(target in (0, denominator) and complement in (0, denominator) and target + complement == denominator, "LABEL_INVALID")
         y = int(target == denominator)
         _require(pair.status != "MATCHED" or original["label"] == y, "LABEL_INVALID")
-        _require(venue["resolved"] is True, "LABEL_INVALID")
-        _require(venue.get("winningToken") == (original["target_token_id"] if y else original["complement_token_id"]), "LABEL_INVALID")
+        _require(resolution == "resolved" and venue.get("closed") is True, "LABEL_INVALID")
+        by_token = {token: _decimal(price) for token, price in zip(tokens, prices)}
+        _require(by_token[original["target_token_id"]] == y and by_token[original["complement_token_id"]] == 1 - y, "LABEL_INVALID")
         _require(all(_stamp(clock) <= _stamp(original["label_deadline"]) for clock in clocks), "LATE_SOURCE")
         with localcontext() as context:
             context.prec = 80

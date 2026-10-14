@@ -36,7 +36,7 @@ def word(value):
 def route(seen=T0):
     return {
         "chain": frame("chain", "eth_chainId", (), "0x89", seen),
-        "finalized": frame("finalized", "eth_getBlockByNumber", ("finalized", False), {"number": "0x3", "hash": H3}, seen),
+        "finalized": frame("finalized", "eth_getBlockByNumber", ("finalized", False), {"number": "0x3", "hash": H3, "timestamp": hex(int(s._stamp(seen).timestamp()))}, seen),
         "exchange_code": frame("exchange_code", "eth_getCode", (s.EXCHANGE, "0x3"), "0x6001", seen),
         "ctf_code": frame("ctf_code", "eth_getCode", (s.CTF, "0x3"), "0x6002", seen),
     }
@@ -231,7 +231,8 @@ def label_bundle(inst, seen="2026-01-12T00:00:01Z", target=1, denominator=1, res
     for key, selector, value in zip(("denominator", "target_numerator", "complement_numerator"), ("0xdd34de67", "0x0504c814", "0x0504c814"), values):
         data = selector + CONDITION[2:] + ("" if key == "denominator" else word(0 if key == "target_numerator" else 1))
         result[key] = frame(key, "eth_call", ({"to": s.CTF, "data": data}, "0x3"), "0x" + word(value), seen)
-    result["venue"] = frame("venue", "GET", (), {"conditionId": CONDITION, "resolved": resolved, "disputed": False, "void": False, "cancelled": False, "winningToken": "7" if target else "8"}, seen, url="https://gamma-api.polymarket.com/markets/17")
+    result["venue"] = frame("venue", "GET", (), {"id": "17", "conditionId": CONDITION, "umaResolutionStatus": "resolved" if resolved else "proposed", "closed": True,
+        "negRisk": False, "clobTokenIds": '["7","8"]', "outcomePrices": '["1","0"]' if target else '["0","1"]'}, seen, url="https://gamma-api.polymarket.com/markets/17")
     return result
 
 
@@ -352,3 +353,40 @@ def test_opposing_votes_keep_one_unknown_group(tmp_path, pins):
     decoded = s.decode_fill(raw_log=(data["logs"][0], 1), receipt=data["receipts"][0], block=data["blocks"][0],
         finality={"route": data["finality"], "canonical": data["blocks"][0], "cutoff": T0}, instrument=bundle["instrument"])
     assert decoded.payload["event"]["token_value"] == "8" and decoded.payload["event"]["log_index"] == 1
+
+
+@pytest.mark.parametrize("fault", ("mapping_code", "book_code", "membership", "context_group"))
+def test_decision_bindings_rejected(tmp_path, pins, fault):
+    path, seal, bundle, _ = prepared(tmp_path, pins)
+    bundle = deepcopy(bundle)
+    if fault == "mapping_code":
+        bundle["instrument"]["mapping"]["slots"] = replace(bundle["instrument"]["mapping"]["slots"], code_sha="b" * 40)
+    if fault == "book_code": bundle["books"] = (replace(bundle["books"][0], code_sha="b" * 40),)
+    if fault == "membership":
+        seal = deepcopy(seal)
+        seal["payload"]["observation_group_missingness_policies"]["membership"] = ["0x" + "2" * 40]
+        seal["digest"] = s._identity("walletstudy:sha256:", seal["payload"])
+        seal = approve(seal)
+    if fault == "context_group":
+        bundle["contexts"] = tuple(replace(context, independence_group_id="other_group") for context in bundle["contexts"])
+    assert s.materialize_forecast_pair(seal=seal, decision_bundle=bundle, ledger_path=path).status in ("UNKNOWN", "EXCLUDED")
+
+
+@pytest.mark.parametrize("fault", ("old_finalized", "mapping_code", "payout_code", "venue_code", "wrong_prices", "unknown_status"))
+def test_label_source_bindings_rejected(tmp_path, pins, fault):
+    path, seal, bundle, _ = prepared(tmp_path, pins)
+    pair = s.materialize_forecast_pair(seal=seal, decision_bundle=bundle, ledger_path=path)
+    label = label_bundle(bundle["instrument"])
+    if fault == "old_finalized":
+        block = s._frame(label["route"]["finalized"])
+        block["timestamp"] = hex(int(s._stamp(T0).timestamp()))
+        label["route"]["finalized"] = change(label["route"]["finalized"], block)
+    if fault == "mapping_code": label["instrument"]["mapping"]["slots"] = replace(label["instrument"]["mapping"]["slots"], code_sha="b" * 40)
+    if fault == "payout_code": label["denominator"] = replace(label["denominator"], code_sha="b" * 40)
+    if fault == "venue_code": label["venue"] = replace(label["venue"], code_sha="b" * 40)
+    if fault in ("wrong_prices", "unknown_status"):
+        venue = s._frame(label["venue"])
+        if fault == "wrong_prices": venue["outcomePrices"] = '["0","1"]'
+        else: venue["umaResolutionStatus"] = "unknown"
+        label["venue"] = change(label["venue"], venue)
+    assert s.attach_final_label(pair=pair, label_bundle=label, as_of="2026-01-12T00:00:02Z").status == "UNKNOWN"
