@@ -1,0 +1,199 @@
+Package Identity:
+  WP ID: S10-WALLET-SEED-01
+  Title: Prospective Wallet Comparison Method Protocol and Source Admission Freeze
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: 6a44d14dff4e631a5ba1fe6b94a46e532266512c
+  Suggested branch: codex/s10-wallet-seed-01-prospective-protocol
+  Package class: OFFLINE_WALLET_COMPARISON_PROTOCOL_DOCS_TESTS
+  Package size class: M
+  Risk level: 2
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED after separately approved publication; BLOCKED_NOT_READY meanwhile
+  Runtime impact: NONE
+  Product impact: One prospective research method/source contract; no product behavior
+  Network impact: Product/provider NONE; authenticated Git workflow separately authorized
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE; capital/orders USD 0 / 0
+Governance track expected: FAST
+Recommended Codex Mode:
+  Model/reasoning: Retain the user's configured model; high reasoning recommended for source and clock consistency.
+  Reason: Eight-file documentation/test execution, with a bounded scientific contract.
+  Escalate or STOP if: Safe completion requires source acquisition, source edits, another gate's policy, or an extra changed file.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. Objective and authorization boundary
+
+After Side19 review, native readiness and Karl's explicit Phase-A implementation authorization, commit one minimum-complete METHOD protocol and its documentation tests. This text is presently a draft, not that authorization. The deliverable freezes a versioned, falsifiable prospective hypothesis and exact future source/forecast admission rules. It does not freeze an actual enrolled cohort, register a WP170 experiment, collect a sample, evaluate forecasts, or establish empirical advantage. Prior audited scope has 0 verified eligible real pairs; outside that scope is UNKNOWN. Do not rerun the local-data inventory.
+
+Required predecessor: PR #233, implementation head 5ab6f52408683e90cc0b713c58f565ed1928dce5, merged at 6a44d14dff4e631a5ba1fe6b94a46e532266512c. Live merge history supersedes the historical pre-merge WALLET-03 status fragment. Preserve that fragment and all WALLET-01/02/03 sources unchanged.
+
+2. Authority / Non-Authority Posture
+
+Implementation authority: Only these eight documentation/test paths, and only after the AUTHORIZED transition. Report/export authority: package evidence only. Canonical evidence authority: this method contract and WP artifacts only; no promotion of real data, no upstream policy override. Paper, execution, live, credential, runtime/scheduler, dependency-change and product network authority: NO. This package permits local offline documentation tests with synthetic examples and temporary test files; it permits no collector/operator invocation, real wallet/account read, credential read, RPC/indexer/market fetch, provider/model call, signing, order or capital operation.
+
+Reference every Centralized Boundary Group in docs/ai/codex/PROTECTED_PATHS.md: credentials/secrets, authenticated clients, wallet/account behavior, order placement/cancel, execution gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment, dependency/lock changes, external code copying, generated artifacts. None is crossed. WALLET-04 numerical evaluation, GATE-WALLET, scientific/qualification gates, WP170, strategy lifecycle, ALPHA-03/04 and DATA-03 remain separately owned and unchanged. Human approval and hashes are research governance, never wallet signatures or trading authorization.
+
+3. Hard merge and execution-base gate
+
+These commands are for later authorized execution, not a request to run them while drafting:
+git status --short
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git rev-parse origin/main
+git log -1 --oneline
+git status --short --branch
+git merge-base --is-ancestor 5ab6f52408683e90cc0b713c58f565ed1928dce5 HEAD
+gh pr view 233 --json state,headRefOid,mergeCommit
+gh pr list --state open --json number,title,headRefName
+
+Require clean local main == origin/main == frozen base, PR #233 merged with exact head/merge, predecessor files present, no overlapping branch/PR, no completed SEED-01 claim, and no generated-artifact violation. A newer main requires a Side19-reviewed base refresh before execution; never silently rebase this frozen package. Use a dedicated worktree/branch after this gate; never stack on WALLET-03. No branch creation now. No hosted CI, PR publication or merge is granted by this draft; eventual publication requires Karl's separate approval and remains DRAFT until the hosted-check approval.
+
+4. Exact changed-file scope and output
+
+REQUIRED = ALLOWED = 8 (no historical test exceptions):
+docs/wallet_incrementality_prospective_seed_protocol.md
+tests/test_wallet_incrementality_prospective_seed_protocol_docs.py
+docs/deferred_items_log.md
+docs/project_status.md
+docs/repo_truth_index.md
+docs/status_entries/S10-WALLET-SEED-01.md
+docs/wp_specs/S10-WALLET-SEED-01/wp_prompt.txt
+docs/wp_specs/S10-WALLET-SEED-01/wp_spec.json
+
+One canonical Markdown protocol contains the full method and one closed machine-readable JSON method block, named wallet-comparison-method@1.0.0. Do not add another plan/schema file, production validator, CLI, database or source adapter. Copy the exact valid example's method payload from wp_spec.json into an envelope with only method and method_digest. Encode the fixed constants/rules from sections 6-9, plus study_state=NOT_ACTIVATED and authority flags. method_digest is walletmethod:sha256: plus SHA-256 of canonical UTF-8 JSON {"method": method_payload} (sort_keys=true; separators=(',',':'); ensure_ascii=false; allow_nan=false; explicit nulls and array order preserved). The digest field is outside this preimage. Document/test it explicitly; the prose and method block must agree. The digest identifies the METHOD; it proves neither source authenticity nor a registered study. The future STUDY seal has a different identity and may not masquerade as this method digest. This WP produces no real study seal.
+
+Add concise status/index entries after retained historical headings. Reconcile WALLET-03 as merged by GitHub evidence without editing its old fragment. Status: METHOD_PROTOCOL_COMMITTED / STUDY_NOT_ACTIVATED / REAL_PAIRED_UNITS_NOT_ESTABLISHED; no real study freeze, local acceptance or merge-ready claim inferred. One deferred entry, S10-WALLET-SEED-01-D001, owns the bounded public-chain identity plus raw-book retention/forecast-seal successor; keep DATA-03 untouched.
+
+5. Context budget and compatibility
+
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, scoped project_status/repo_truth_index/deferred_items, docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE.md and TOKEN_EFFICIENCY_OPERATING_MODEL.md.
+Read for this WP: its prompt/spec, WP_SPEC_STANDARD.md, WP_DRAFTING_STANDARD.md, VALIDATION_MATRIX.md, NEGATIVE_TEST_MATRIX_POLICY.md, PROTECTED_PATHS.md; wallet_public_evidence_foundation_contract.md, wallet_profile_snapshot_contract.md, wallet_copyability_research_contract.md; bounded signatures in wallet contracts/ledger/profile/reconciliation/copyability and research_provenance; historical complete-diff guards and the prior audit findings.
+Read only if blocked: the exact native readiness or historical guard implementation causing the block. Avoid broad snapshots. Search terms: S10-WALLET-SEED-01, CHAIN_NATIVE_STRONG, OBSERVED, finality, canonical_evidence_policy, active_wp_spec.
+Do not edit: src/, tools/, .github/, dependencies/locks, previous WP artifacts, private files or local_data/. Do not inspect real data or operator/credential homes in this execution. Bounded read-only source references above are the only source-reading exception.
+
+Compatibility table:
+Method freeze | one new protocol + test | allowed | compatible; no runtime schema.
+Strong action | contracts.build_wallet_evidence_event + reconciliation.build_chain_event_evidence + verified WALLET-01/02/03 builders | read-only reference | compatible as a future admission contract, acquisition unproved.
+Book proof | unchanged WALLET-03 original-source builder | read-only reference | compatible; two one-witness calls avoid duplicate raw-reference prohibition.
+Historical scope | active status/spec-derived exact sets; docs/tests only | existing guards unchanged | no extra path justified.
+Future collection/scoring | no implementation here | forbidden | recorded as successor, not necessary for completing Phase A.
+
+6. Exact prospective study method (R001-R003)
+
+Hypothesis: a small fixed directional wallet intervention improves paired binary Brier loss relative to a contemporaneous nonwallet market forecast. It is deliberately uncalibrated; no wallet skill assumption is made. Name arms p_nonwallet and p_wallet_added; do not reuse qualification's B1/B2 names or source classes.
+
+Pilot: ONE predeclared standard-binary condition, target token and complementary token; ONE canonical public-account cluster; ONE calendar decision cutoff T0. Choose these manually for source/contract feasibility before any study data collection, without historical PnL/rank, outcome or wallet-direction screening. The operator must record the selection reason as operational feasibility, not predictive merit. Cohort cluster membership uses only discovery-admissible protocol-declared/onchain-confirmed links; do not infer people. Unknown relation/group coverage blocks independent-sample claims. No second market, alternate wallet, replaced failed unit or automatic extension.
+
+Future activation seal must contain exact method digest; published code SHA; namespaced condition/token pair, binary-rule snapshot digest, event/leakage-group ID and source_chain_id; verified cohort/profile source references and cluster membership digest; Tfreeze, T0, target_event_end and label_deadline; forecast versions NONWALLET_MIDPOINT_V1 / WALLET_BLEND_010_V1; observation/group/missingness policies; source-route evidence references; exact planned source-call/byte/elapsed limits approved by Karl; and human authorization bound to the exact seal digest. No unfilled parameter is permitted in an actual seal.
+
+Require Tfreeze <= T0 - 24 hours; no study collection until freeze/approval; discovery cutoff <= Tfreeze; T0 + 1 hour <= target_event_end <= T0 + 7 days; label_deadline = target_event_end + 30 days. Enrollment is outcome-blind and committed before collection; decision membership is the single sealed unit, not a unit chosen when a wallet trades. The evaluation interval is [T0,T0+1 microsecond); action lookback [T0-3600 seconds,T0]. A study amendment requires human approval, new digest and genuinely future interval; never backdate or replace excluded/censored units in the original pilot. No fit, tuning, cross-validation, formation/selection sample or existing WP170 split is created. With one group, there is no train/test sharing. Future repeat cohorts require separately frozen group exclusion, purge and embargo rules; this pilot grants no repeat right.
+
+All availability clocks are explicit UTC. Local first-seen/retained availability is decisive when present; otherwise native public availability only when independently evidenced under the shared admissibility rule; event/block time never substitutes. Missing/uncertain/corrected/backfilled clocks reject admission. Effective finality must be observed by T0 for wallet actions. Keep source identities, observed clocks and later revisions append-only; post-cutoff corrections cannot improve the original forecast.
+
+Nonwallet rule: select the latest original retained target-token CLOB GET /book observed in [T0-30 seconds,T0], admitted by section 7, with 0 < best_bid <= best_ask < 1 and spread <= 0.1. Select by availability clock, not price; simultaneous semantically conflicting books produce UNKNOWN, while byte-identical duplicates collapse. Let p_nonwallet=(best_bid+best_ask)/2. No last-trade, historical price, complement, stale quote or wallet-based fallback. Use Decimal precision 80 and canonical fixed-point strings; reject floats/exponents/nonfinite values. The 30-second freshness and 0.1 spread limits are frozen feasibility choices, not empirical optimality claims. Nonwallet means no explicit wallet/account/direction features or wallet-dependent book selection; it does not assert that market prices are unaffected by wallet trading. Both arms share that possibly contaminated public price. The comparison tests only additional predictive information conditional on it, not causal independence or an unpriced executable edge.
+
+Wallet input: among admissible finalized standard BUY fills by the sealed cluster for either sealed token within the lookback, use the last decisively observed event after native reconciliation. The action must also satisfy the unchanged native cohort/profile evidence window; never bypass its event-time/window exclusions to manufacture admissibility. v=1 for target-token BUY; v=0 for complement BUY. Ignore sizes, SELL, PnL, rebates, rank and historical skill. Same-clock opposing directions or unsupported identity/finality make the wallet arm UNKNOWN; never tie-break towards a favorable direction. Equivalent actions/related addresses collapse natively; distinct same-direction same-clock fills give the same vote. A COMPLETE source-coverage receipt with no qualifying BUY gives NO_SIGNAL; absent/partial feed coverage is UNKNOWN, not NO_SIGNAL.
+
+Wallet rule: p_wallet_added=0.9*p_nonwallet+0.1*v for a known vote; p_wallet_added=p_nonwallet for proved NO_SIGNAL. Unknown wallet coverage, identity, availability or finality means no wallet-added forecast and UNKNOWN. A forecast absent despite verified applicable source coverage and other admission facts is UNMATCHED. Unknown is never silently converted to a no-signal or unmatched observation. Weight 0.1 is a preregistered conservative perturbation, not fitted/calibrated belief. Both forecasts have decision timestamp T0, with observation_delay_seconds=0: use only information already admissible by T0, with no post-cutoff waiting, interpolation or wallet-triggered decision shift. Same target, information cutoffs and unit membership apply to both arms. Costs/fees/sizing do not enter predictive Brier loss; no economic comparison is claimed. Negative control: on that same matched unit mask wallet information, yielding p_masked=p_nonwallet and exactly zero loss difference; this diagnostic is not a third primary test or additional observation.
+
+7. Source admission and exact future prerequisite (R002)
+
+Freeze CHAIN_NATIVE_STRONG as the sole wallet-action route for this seed; no API fallback or SOURCE_CONTENT_DERIVED upgrade. Require retained public chain log, transaction receipt and canonical block/finality evidence, native identity (chain_id, transaction_hash, log_index), block hash/number, transaction index, removed=false, FINALIZED, confirmation/finality availability <=T0; and audited protocol/ABI/contract-version evidence connecting the specific fill, public account, condition/token, BUY direction and standard binary economic object. Exact chain ID/contracts come from the precollection sealed source evidence; no unverified address or ABI is prescribed here. An arbitrary caller label is insufficient. Reorg/disagreement/ambiguous decoding cannot be admitted. Existing contracts represent this data; reconciliation does not supply a real RPC/indexer or prove the decoder. That missing source capture/decoding proof is the ONE prerequisite for the future seed operator, not for this documentation WP.
+
+Load original WALLET-01 ledger with exact expected head; canonically rebuild WALLET-02 cohort/profile and use unchanged build_wallet_copyability_research_assessment. Original source inputs must rederive mapped evidence. A self-hashed standalone mapping never establishes authenticity. Track a verified ledger snapshot at T0 and source-route receipt; later labels/append growth do not redefine the decision head.
+
+Book witnesses require actual retained bytes, SHA-256/byte length, RawEvidenceReference and ResearchProvenanceManifest stored in that ledger; source_system=POLYMARKET_CLOB, endpoint=/book, method=GET, media_type=application/json, request token_id and response asset_id/market matching the sealed identifiers. Raw/witness clocks must agree; manifest cutoff <= quote availability <=T0, ingestion <=T0, no future revision/resolution, DQ OK, replay EXACT/FAITHFUL. Validate both bid and ask top levels and depth against original bytes. To reuse the unchanged builder's duplicate-reference rule, prove bid and ask using two separate calls with the same original profile/head/cohort/context inputs and one witness each; never pass two witnesses sharing a raw reference into one call. Both must be OBSERVED and match the same retained book. The future source operator must independently attest the recorded endpoint/response capture path; hashes alone prove retained-byte integrity. WS frames are not interchangeable with /book. Missing source binding remains inadmissible even if SCENARIO_ONLY calculation is possible.
+
+Copyability delay/cost result status is not forecast or label admission. This predictive method uses quote/event source evidence only and never needs invented fees or realized follower fills; explicit unknown cost assumptions remain unknown. Existing WALLET-03 limits and immutable flags remain binding.
+
+8. Independent label and accounting (R004-R005)
+
+Prediction target: eventual final binary payout of the sealed target token after target_event_end. Label Y is 1 or 0 only when independently obtained retained public settlement evidence binds the same chain/condition/token mapping and frozen rule snapshot: finalized canonical block, positive CTF payout denominator, binary target/complement numerators summing to the denominator and each 0 or denominator; plus consistent retained public venue resolved status. Label evidence availability must be > target_event_end and > T0 and <= label_deadline. No wallet/provider-model-derived label, weather substitution, unresolved/disputed/void/cancelled label, caller success flag or silent rewriting. Settlement route/contract mapping must be proved by the future source operator before activation; absent proof yields UNKNOWN, not CENSORED. CENSORED is reserved for otherwise admissible forecasts whose verified label source has not produced an admissible final label by the deadline. Early settlement inconsistent with the frozen event end requires review/exclusion, not a shifted horizon.
+
+Status precedence on the sole ENROLLED unit: EXCLUDED for contradiction, unsupported instrument/identity, leak or invalid seal; otherwise UNKNOWN for uncertain grouping, source coverage, clocks, finality or source-route proof; otherwise UNMATCHED when either required forecast is absent despite verified coverage and observability; otherwise MATCHED if both forecasts and an admissible final label are present; otherwise PENDING if both forecasts are present but the final label has not yet become admissible and the deadline has not passed; otherwise CENSORED once the deadline has passed without an admissible final label, provided the source route itself is verified. Before the deadline, unresolved labels are PENDING, not CENSORED, and cannot establish advantage. Primary reasons are mutually exclusive by this order; retain secondary diagnostic reasons without adding them to denominators. Candidate diagnostics before enrollment do not enlarge the enrolled denominator. A negative terminal is a completed pilot, not permission to replace the unit.
+
+Conservation: enrolled = excluded + unknown + unmatched + pending + censored + matched; enrolled=1 only after a real study seal; METHOD-only enrolled count is NOT_ESTABLISHED, not a fake 1. Track forecast-eligible count separately (pending+censored+matched). Independent matched groups are unique frozen leakage groups of matched units; unknown group count stays null and yields UNKNOWN. Related accounts, duplicate fills, shared market/condition/event outcomes never multiply groups. This pilot has at most one independent group, with no significance or generalizable skill inference.
+
+For a MATCHED unit only: L_nonwallet=(p_nonwallet-Y)^2, L_wallet_added=(p_wallet_added-Y)^2, delta=L_nonwallet-L_wallet_added (positive is lower wallet-added Brier loss for that unit). Report both losses, signed delta, complete statuses and the group count together; no winners-only summary. Zero matched units: INSUFFICIENT_EVIDENCE and all numerical loss/advantage summaries null. Statistical power, thresholds, fitting and promotion are later separately authorized decisions.
+
+9. Contract tests and evidence plan (R001-R008)
+
+Create only tests/test_wallet_incrementality_prospective_seed_protocol_docs.py. Test the closed normative method block, exact formulas/constants/authority/state, digest preimage and mutation sensitivity, named source requirements, and retained historical limitations. Use Decimal algebra and clearly labelled synthetic fact/example packets to demonstrate admission precedence, missingness and conservation; test-local helpers are documentation checks, not a production evidence validator or authenticity proof. No real ledger/data/network required. Every planned node below must contain reachable meaningful assertions after implementation.
+
+Named nodes:
+test_seed01_method_block_and_freeze_identity (R001): parse the single closed block, verify complete constants, independently recompute exact digest, included-scalar and array-reorder sensitivity, object insertion-order insensitivity, exact prefix and input-relative target resolution, digest-outside-preimage non-self-reference, and no actual seal claim. No business-policy field is excluded from method identity.
+test_seed01_source_route_and_cutoff_contract (R002): require every chain/book/source-bound-builder constraint and failure; reject synthetic late quote/action, weak/relabelled identity, self-hash-only proof, WS/source-less quote and incomplete coverage.
+test_seed01_forecast_algebra_and_controls (R003): midpoint/blend/no-signal/masked-control formulas, opposite direction, ties, unknown values and baseline wallet contamination. Golden p0=0.6,Y=1,v=1 -> pW=0.64,L0=0.16,LW=0.1296,delta=0.0304; v=0 -> pW=0.54,LW=0.2116,delta=-0.0516; proved no-signal -> delta=0. These are illustrative math, not observations.
+test_seed01_label_finality_and_horizon_contract (R004): same-instrument independent finalized payout, observation after target, invalid/unknown/void/conflicting label and no weather substitution.
+test_seed01_membership_and_denominator_contract (R005): one frozen unit/group; primary-reason precedence, conservation, null unknown grouping, no post-outcome replacement, duplicates/related fills not new units, pending/censored/zero matched.
+test_seed01_scope_truth_and_non_authority (R006): spec exact eight paths/mirror, current status/index references, predecessor reconciliation, deferred entry, historical preservation and all forbidden authority assertions.
+
+Negative-test matrix required: YES. Cover missing/null/wrong type/empty/unknown field; future/stale clocks; duplicate/conflict; false authority; identity/source mismatch; lookahead; baseline contamination; unknown grouping; invalid labels; zero matched; no-signal vs missing. Free-text credential-token/typo/case wording-filter categories are NOT_APPLICABLE: no free-text validator is introduced; closed-field/false-authority tests and existing repository secret/boundary scans remain required. Never label synthetic negatives as observed adversarial source validation.
+
+Focused: python -B -m pytest -q -p no:cacheprovider tests/test_wallet_incrementality_prospective_seed_protocol_docs.py
+Adjacent: python -B -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence tests/data_layer/point_in_time_market_research/test_research_provenance.py tests/data_layer/analytical_research/test_experiment_os_boundaries.py tests/data_layer/analytical_research/test_qualification_boundaries.py tests/data_layer/analytical_research/test_qualification_gate_boundaries.py tests/test_architecture_boundaries.py tests/test_wallet_intelligence_architecture_contract_docs.py tests/test_wallet_copyability_delay_report_contract_docs.py tests/test_project_status_docs.py tests/test_repo_truth_docs.py tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py tests/test_local_research_workflow_value_measurement_harness_contract_docs.py tests/test_point_in_time_market_research_data_foundation_contract_docs.py tests/test_human_review_label_workflow_docs.py tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py tests/data_layer/point_in_time_market_research/test_records_and_synthetic_corpus.py
+Stable committed candidate (R007): python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-SEED-01/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-SEED-01/wp_spec.json --repo-root . --check-diff --base 6a44d14dff4e631a5ba1fe6b94a46e532266512c --head HEAD --format json
+Exact scope: python -B tools/git/diff_scope_summary.py --base 6a44d14dff4e631a5ba1fe6b94a46e532266512c --head HEAD --wp-spec docs/wp_specs/S10-WALLET-SEED-01/wp_spec.json --format text
+Artifact guard: python -B tools/git/preflight_generated_artifact_guard.py
+Whitespace: git diff --check 6a44d14dff4e631a5ba1fe6b94a46e532266512c HEAD
+Broad suite (R008), once on stable committed HEAD in verified offline Linux checkout: python -B -m pytest -q -p no:cacheprovider --junitxml=/validation/full-suite.xml
+
+Use the already available s10-live-orch-validate:py312 image, canonical Git bytes, LF/Linux-native writable exec-capable /validation and /tmp, network disabled, no host checkout bind, and pinned Python3.12/native dependency/import/document-byte/shell preflight. No install or Windows policy bypass. The prior two local skips are historical: strict-hosted DuckDB proof and unavailable locked frontend Node; assess current applicability and disclose exact skips, never blanket-waive them. Run available in-scope security/static hygiene and report unavailable tools honestly. No broad suite now; these are future execution commands. Exact-head CI remains mandatory before merge but requires Karl's separate authorization; no ready transition/check bypass now. All R001-R008 statuses are PLANNED until their actual command evidence exists. Draft native readiness checks do not execute these tests or grant authority.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|freeze|study|unsealed|REJECT|not_activated|method.freeze|R001
+NR002|freeze|study|approved_before_collection|REQUIRE|prospective_only|method.freeze|R001
+NR003|source|action|strong_finalized_original|ACCEPT|wallet_input|method.sources|R002
+NR004|source|action|weak_or_late|REJECT|unknown_or_excluded|method.sources|R002
+NR005|source|book|original_bound_fresh|ACCEPT|market_input|method.sources|R002
+NR006|source|book|ws_or_unbound|REJECT|no_baseline|method.sources|R002
+NR007|forecast|nonwallet|admissible_book|REQUIRE|midpoint|method.forecasts|R003
+NR008|forecast|wallet_added|known_vote|REQUIRE|fixed_blend|method.forecasts|R003
+NR009|forecast|wallet_added|proved_no_signal|REQUIRE|unchanged_baseline|method.forecasts|R003
+NR010|forecast|wallet_added|unknown_coverage|REJECT|unknown|method.forecasts|R003
+NR011|label|target|final_after_horizon|ACCEPT|binary_label|method.labels|R004
+NR012|label|target|unknown_at_deadline|PRESERVE_EXACT|no_loss|method.labels|R004
+NR013|sample|unit|matched|REQUIRE|one_group|method.accounting|R005
+NR014|sample|unit|zero_matched|REQUIRE|insufficient_evidence|method.accounting|R005
+NR015|authority|package|phase_a|FORBID|docs_tests_only|method.authority|R006
+END_NORMATIVE_RULE_MATRIX_V1
+
+10. Concrete hard stops, rollback and report-back
+
+STOP if predecessor/main differs or the tree is dirty -- because the package has no authority over an unknown base or unrelated changes.
+STOP if an extra path/guard edit is necessary -- because exact scope must be reviewed before extension.
+STOP if method completion is made contingent on real source collection -- because Phase A records the future source gate, not its execution.
+STOP if a dependency/workflow/source/runtime file would change -- because the authority mirror forbids it.
+STOP if original source authenticity is replaced with self-hash/caller assertions or constants presented as calibrated -- because that would change the scientific claim.
+STOP if status claims a real enrolled/frozen cohort or observed advantage -- because Phase A has no empirical evidence.
+STOP if required stable-head local validation cannot run -- because no test/readiness result can be invented or waived.
+STOP before posting or Ready-for-review if exact-head hosted approval/evidence is absent -- because local technical readiness is not publication, review or merge authority.
+
+Rollback: human-approved revert of exactly this docs/tests change before any future seed. No store/runtime rollback exists. If a later study has used the method, preserve its immutable plan/evidence and never silently substitute a revised method for that study.
+
+Successor boundary: S10-WALLET-SEED-02, Bounded Prospective Public Wallet Source and Forecast Seed. It alone may be separately drafted to prove the public-chain decode/finality and original /book capture/retention route and produce the exact study seal/forecast records, with collection activated only by a further exact budget/host/human gate. It does not automatically authorize numerical WALLET-04. Do not implement or launch it here.
+
+Report-back: exact base/head and eight-file diff; focused/adjacent/full counts, exits/warnings/skips; R001-R008 traceability; native exact-diff readiness; artifact/scope/security findings; method digest and STUDY_NOT_ACTIVATED; deferred successor; accurate Git-vs-product network wording. Keep posted evidence BLOCKED_NOT_READY / Ready NO until exact-head CI and a complete native evidence mode are satisfied. After separately approved PR creation, attach its review link. No optional final comment is required. Final Side19 independent review and Karl-only merge remain separate. No follow-up defect claimed where none occurred.

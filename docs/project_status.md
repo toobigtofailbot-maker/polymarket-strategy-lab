@@ -2094,3 +2094,8 @@ Karl authorized the eleventh historical WP81 test path; the exact source-set
 guard now passes both approved and forbidden-path probes (D007 resolved). The
 original ten-file commit remains an ancestor. Final full-suite preflight/results
 are external exact-head evidence; Side19 independently assesses local acceptance.
+
+
+## S10-WALLET-SEED-01 Phase-A prospective method
+
+WALLET-03 / PR #233 is merged at `6a44d14dff4e631a5ba1fe6b94a46e532266512c` with implementation head `5ab6f52408683e90cc0b713c58f565ed1928dce5`; live merge history supersedes its retained pre-merge fragment. S10-WALLET-SEED-01 commits only the prospective METHOD protocol and documentation tests: METHOD_PROTOCOL_COMMITTED / STUDY_NOT_ACTIVATED / REAL_PAIRED_UNITS_NOT_ESTABLISHED. FAST, Risk 2, M; eight exact docs/tests paths; canonical contract `docs/wallet_incrementality_prospective_seed_protocol.md`; package `docs/wp_specs/S10-WALLET-SEED-01/`; stable evidence `docs/status_entries/S10-WALLET-SEED-01.md`. Fixed midpoint vs 10% wallet-direction perturbation is uncalibrated, not skill or profit. No actual enrolled cohort, real forecasts/labels, source collection, model/provider call, qualification/WP170, paper/execution/live/Gate C, orders or capital. DATA-03 and ALPHA-03/04 unchanged. Independent Side19 assessment and hosted CI remain pending; publication/merge not authorized.

@@ -2742,6 +2742,16 @@ deterministic contract and require separate authority.
 | S10-ALPHA-02-D004 | S10-ALPHA-04 downstream outcome learning and adaptive allocation | DEFERRED | P2 | S10-ALPHA-04 | ALPHA-02 allocation is fixed pre-outcome deterministic control; no settlement-informed selection or bandit learning |
 | S10-ALPHA-02-D005 | Qualification, executable economics, paper trading, execution, Gate C, and live capital | DEFERRED_BLOCKED_BY_SEPARATE_GATES | P1 | S10-GATE-AF1 then QUAL/GATE-QUAL/WP170/WP172/WP173 and human Gate C | Discovery priority is not expected return, qualification, strategy, executable edge, or paper/live authority |
 
+
+## S10-WALLET-SEED-01 — prospective source and forecast seed
+
+| ID | Deferred item | Status | Priority | Gate | Boundary |
+|---|---|---|---|---|---|
+| S10-WALLET-SEED-01-D001 | Prove public-chain strong fill identity/finality and original CLOB book capture/retention; form exact prospective study seal and both forecast records | DEFERRED_TO_S10_WALLET_SEED_02 | P2 | Separate reviewed seed WP, Karl source-call/byte/elapsed budget and host activation; actual labels/groups before numerical WALLET-04 | Existing schemas represent evidence but do not prove a real source route. No decoder/client/collector/store, forecasts, study seal or data acquired by Phase A. DATA-03 remains independent. |
+
+Local validation limitations remain honestly disclosed in the stable SEED-01 fragment and external exact-head evidence; unavailable optional tooling is not a PASS or a waived mandatory test.
+
+
 ## Wallet-Intelligence Roadmap Anchor (durable)
 
 Objective: prove when PUBLIC wallet behavior deserves strategic use; do not assume

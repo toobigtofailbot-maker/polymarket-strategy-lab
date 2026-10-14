@@ -2185,3 +2185,8 @@ both approved modules must exist, and missing/third matched paths reject (D007
 resolved). Original commit 3bcce95a2f33b2ab1af976a29787a99c3fa38a37 is preserved as
 an ancestor. Final full-suite environment preflight/result and Side19 assessment
 remain separately evidenced; no hosted checks, acceptance or merge is presumed.
+
+
+## S10-WALLET-SEED-01 prospective method protocol
+
+The canonical contract is `docs/wallet_incrementality_prospective_seed_protocol.md`, with six named documentation evidence nodes in `tests/test_wallet_incrementality_prospective_seed_protocol_docs.py`, exact package in `docs/wp_specs/S10-WALLET-SEED-01/` and stable record `docs/status_entries/S10-WALLET-SEED-01.md`. WALLET-03 PR #233 merged at `6a44d14dff4e631a5ba1fe6b94a46e532266512c`, head `5ab6f52408683e90cc0b713c58f565ed1928dce5`; retain its historical fragment. The METHOD digest freezes one uncalibrated prospective comparison; no STUDY seal or real evidence is created. S10-WALLET-SEED-02 source/forecast seed and numerical WALLET-04 remain separately gated. Protected runtime, scientific gates, DATA-03 and ALPHA-03/04 unchanged.
