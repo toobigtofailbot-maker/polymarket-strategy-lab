@@ -1,5 +1,12 @@
 # Deferred Items Log
 
+## S10-HERMES-TS01
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-HERMES-TS01-D001 | Conflicting standalone certificate gate before FAST implementation | RESOLVED_SAME_RUN_FAST_GATE | Native readiness passes IMPLEMENTATION_READY without a certificate; the separately mandatory wp_spec_guard command exits 2 because it requires --certificate. Karl approved the SIDE20 same-run correction on 2026-10-16: remove the erroneous standalone CLI requirement, retain its historical exit 2 and use the controlling native FAST readiness exit 0. Continue the original eight-path implementation; no certificate or guard change. |
+| S10-HERMES-TS01-D002 | Real Gamma/CLOB source acquisition and TS02 | SEPARATELY_GATED | Remain unauthorized; offline TS01 fixtures cannot prove upstream observation. No acquisition, provider, PR, Actions, merge or trading performed. |
+
 
 ## S10-PIT-CLOCK-ORDER-01
 

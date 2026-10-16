@@ -1,0 +1,375 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-TS01",
+    "title": "Producer-owned Gamma+CLOB source witness and cold-reopen evidence export",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "TRUSTED_PUBLIC_SOURCE_EVIDENCE",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-ts01",
+    "required_predecessor": {
+      "pr_number": 237,
+      "head_sha": "b2c66358c78baf7e06296302bfd08a1e0089517a",
+      "merge_sha": "f3791826ca4f7723372e3caa103addcc7fe7aef6"
+    },
+    "objective": "Extend existing WP169 producer/store to capture exactly one Gamma market-by-id plus linked CLOB book with bounded producer timestamps, HTTP status, raw bytes and cold-reopen store membership; offline implementation only.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/polymarket/market_truth_data_api.py",
+      "src/data_layer/polymarket/market_truth_store.py",
+      "tests/data_layer/polymarket/test_market_truth_data_api.py",
+      "tests/data_layer/polymarket/test_market_truth_models_store.py",
+      "docs/wp_specs/S10-HERMES-TS01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-TS01/wp_spec.json",
+      "docs/status_entries/S10-HERMES-TS01.md",
+      "docs/deferred_items_log.md"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/polymarket/market_truth_data_api.py",
+      "src/data_layer/polymarket/market_truth_store.py",
+      "tests/data_layer/polymarket/test_market_truth_data_api.py",
+      "tests/data_layer/polymarket/test_market_truth_models_store.py",
+      "docs/wp_specs/S10-HERMES-TS01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-TS01/wp_spec.json",
+      "docs/status_entries/S10-HERMES-TS01.md",
+      "docs/deferred_items_log.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "local_data/",
+      "src/risk_engine/",
+      "src/execution_gateway/",
+      "src/research_runtime/",
+      "src/paper_trading/",
+      "tools/ci/",
+      "agent_runtime/",
+      "agent_memory/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only the 8 scoped paths in the dedicated TS01 worktree; retain operator data/evidence; do not mutate historical store or deploy.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Keep all WP169 public signatures, store DDL, source/occurrence IDs and existing clients unchanged; add a narrowly named TS01 capture/export entrypoint.",
+    "items": [
+      {
+        "surface": "PublicMarketDataClient.get_page",
+        "before": "Frozen read-only (endpoint,params)->PublicPageResult API and historical transport seam.",
+        "after": "Exactly unchanged; dedicated private producer helper captures witness without modifying existing result shape.",
+        "change_authorized": false,
+        "compatibility_requirement": "Legacy tests, raw identities and error/retry semantics remain intact.",
+        "authority": "LOCAL_TS01_ONLY"
+      },
+      {
+        "surface": "MarketTruthStore.append",
+        "before": "Append-only exact-schema SQLite commit and receipt.",
+        "after": "Exactly unchanged; additive checked raw-membership read required for export.",
+        "change_authorized": false,
+        "compatibility_requirement": "No DDL alteration, migration, raw identity change, or unrelated store output.",
+        "authority": "LOCAL_TS01_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "TS01 requires checkable HTTP witness/source linkage but creates no new market-trading authority.",
+    "items": [
+      {
+        "path": "ts01.producer_witness",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Witness is producer-captured, per actual attempt, bound to normalized allowlisted URL+params, status, UTC request/response clocks, exact raw occurrence and sha256; never model-authored.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Producer-only capture with exact bytes, bounded attempt count and fail-closed mismatch/redirect/oversize.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Local opaque IDs, URL/params, UTC clocks, status and SHA256 only.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ts01.cold_export",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Read-only cold reopened archive, exact DDL and SHA256 membership, two linked accepted 2xx occurrences and self-consistent producer receipt; no model or caller envelope as source proof.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verify Gamma actual market response token and book request, reread both raw bytes from archive and cross-check every witness field.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Bounded source ledger plus raw digests, IDs and explicit unverified-freshness flag.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No change to WP169 raw/occurrence/observation identity derivations.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Native governance progression; human authorization is already supplied for the bounded repair.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native FAST pre-implementation spec/readiness checks pass over frozen 8-file package.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl directly approves this complete local implementation WP in the CURRENT Codex chat.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly 8 paths and same-run offline tests/guards pass at stable local HEAD; one verified ZIP returned to Side20.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged native WP failure table; shared PIT runtime reasons remain unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Real input-domain behavior will be checked via the five focused pytest nodes, not illustrative examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Four focused nodes, one surrounding WP169 regression and one stable-head repository full suite; all offline before publication.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_ts01_producer_witness_binds_attempts_and_clocks",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_market_truth_data_api.py::test_ts01_producer_witness_binds_attempts_and_clocks",
+        "expected_result": "Producer-authored capture binds canonical URL and exact params, per-attempt HTTP status, ordered UTC request/response clocks, byte length, SHA256 and raw occurrence with zero credential/redirect expansion."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ts01_gamma_clob_link_and_negative_transport",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_market_truth_data_api.py::test_ts01_gamma_clob_link_and_negative_transport",
+        "expected_result": "Only a validated Gamma market-by-id and one token from its returned clobTokenIds may link a CLOB book; redirects, wrong token, invalid payload, oversize/429 retries and network/error terminals fail closed."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_ts01_cold_reopen_export_membership_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_market_truth_models_store.py::test_ts01_cold_reopen_export_membership_and_tamper",
+        "expected_result": "A fresh verified SQLite reopen matches both stored raw bytes and producer receipt, refuses missing/tampered/replaced files, status/clock/hash/cursor mismatch, and leaves store byte-identical."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_ts01_store_schema_legacy_and_idempotence",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_market_truth_models_store.py::test_ts01_store_schema_legacy_and_idempotence",
+        "expected_result": "Frozen SQLite DDL, raw IDs, cursor grammar, atomic store append, no extra records on identical retries and no old-client behavior regressions."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "related families",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_market_truth_data_api.py tests/data_layer/polymarket/test_market_truth_models_store.py tests/data_layer/polymarket/test_market_truth_runtime.py tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "All WP169 producer/storage/runtime and legacy public-client tests pass without changed endpoint, error, cursor, store schema or API contracts."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "full suite",
+        "command": "python -B -m pytest -q -rs -p no:cacheprovider",
+        "expected_result": "One authoritative stable-head broad suite finishes with zero failures and honest skip/warning/environment reporting; actual exits are retained."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-TS02",
+    "next_title": "Hermes bounded two-stage source-ledger to tool-free canonical assessment",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-TS01",
+    "forbidden_in_this_wp": [
+      "New general crawler, retrieval stack, Firecrawl, source-quality ranking or third-party SDK",
+      "Any paid or real Polymarket/Gamma/CLOB call under this implementation authorization",
+      "Hermes runtime/model tools, strict-schema+tools provider probes or Stage B implementation",
+      "Database schema migrations, raw ID changes, historical backfills or global store refactor",
+      "GitHub push/PR/hosted CI/merge before a separate Karl authorization",
+      "Signing, trading, orders, capital, Gate C, deployment or paper/live activation"
+    ]
+  }
+}

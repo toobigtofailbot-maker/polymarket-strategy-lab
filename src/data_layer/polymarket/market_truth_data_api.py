@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
+import pathlib
+import tempfile
 import threading
 import time
 import urllib.parse
@@ -32,6 +35,7 @@ from .market_truth import (
     canonical_decimal,
     canonical_json_bytes,
     make_raw_envelope,
+    is_rfc3339_micros,
     normalize_public_record,
     sha256_hex,
 )
@@ -458,6 +462,8 @@ class PublicMarketDataClient:
         self._sleeper: Callable[[float], None] = time.sleep
         self._rate_limiter: RateLimiter | None = None
         self.retry_delays: list[float] = []
+        # Only the bounded TS01 orchestration enables this producer-owned capture.
+        self._ts01_attempts: list[dict[str, object]] | None = None
 
     def get_page(self, endpoint: str, params: Mapping[str, str | int]) -> PublicPageResult:
         normalized = _normalize_params(endpoint, params)
@@ -478,9 +484,15 @@ class PublicMarketDataClient:
                 # terminal STOPPED / () / NETWORK_CALL_LIMIT at the receipt boundary.
                 self._rate_limiter.acquire(source_kind)
             try:
+                if self._ts01_attempts is not None:
+                    started_at = self._clock()
+                    started_ns = time.monotonic_ns()
                 status, resp_headers, body = self._transport(
                     url, headers, self._limits.request_timeout_seconds
                 )
+                if self._ts01_attempts is not None:
+                    elapsed_ns = time.monotonic_ns() - started_ns
+                    completed_at = self._clock()
             except MarketTruthError:
                 return PublicPageResult("FAILED", ("NETWORK_TIMEOUT",), tuple(attempts), None)
             except Exception:
@@ -493,6 +505,13 @@ class PublicMarketDataClient:
                 occurrence_sequence=attempt, limits=self._limits,
             )
             attempts.append(raw)
+            if self._ts01_attempts is not None:
+                self._ts01_attempts.append({
+                    "endpoint": endpoint, "params": normalized, "url": url,
+                    "http_status": status, "request_started_at": started_at,
+                    "response_completed_at": completed_at, "duration_ns": elapsed_ns,
+                    **{key: getattr(raw, key) for key in _TS01_RAW_FIELDS},
+                })
             if 200 <= status < 300:
                 return PublicPageResult("OK", (), tuple(attempts), len(attempts) - 1)
             if status in _RETRYABLE and attempt < self._limits.max_retries:
@@ -700,3 +719,280 @@ def _default_transport(
 
 
 import urllib.error  # noqa: E402  (used by _default_transport)
+
+
+# TS01 is an additive local witness, never signed upstream provenance or permission.
+_TS01_RAW_FIELDS = (
+    "raw_id", "occurrence_id", "source_kind", "source_id", "source_cursor",
+    "received_at", "media_type", "raw_sha256", "byte_length",
+)
+_TS01_RECEIPT_BYTES = 65_536
+
+
+def _ts01_json(payload: bytes) -> object:
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise MarketTruthError("RESPONSE_INVALID")
+            result[key] = value
+        return result
+
+    return json.loads(payload, object_pairs_hook=unique)
+
+
+def _ts01_bounded_body(response, maximum: int) -> bytes:
+    declared = response.headers.get("Content-Length")
+    if declared is not None and (
+        not isinstance(declared, str) or not declared.isascii() or not declared.isdigit()
+        or len(declared) > 10 or int(declared) > maximum
+    ):
+        raise MarketTruthError("RESPONSE_TOO_LARGE")
+    body = response.read(maximum + 1)
+    if len(body) > maximum:
+        raise MarketTruthError("RESPONSE_TOO_LARGE")
+    if declared is not None and int(declared) != len(body):
+        raise MarketTruthError("RESPONSE_INVALID")
+    return body
+
+
+def _ts01_transport(maximum: int):
+    import urllib.request
+
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    def get(url, headers, timeout):
+        request = urllib.request.Request(url, headers=dict(headers), method="GET")
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+        try:
+            response = opener.open(request, timeout=timeout)
+        except urllib.error.HTTPError as error:
+            response = error
+        with response:
+            return int(response.code), dict(response.headers), _ts01_bounded_body(response, maximum)
+
+    return get
+
+
+def _ts01_pair_link(gamma: RawEnvelope, book: RawEnvelope | None, market_id: str,
+                    limits: AcquisitionLimits) -> str:
+    market = _ts01_json(gamma.raw_bytes)
+    if (not isinstance(market, dict) or isinstance(market.get("id"), bool)
+            or not isinstance(market.get("id"), (str, int))
+            or str(market["id"]) != market_id
+            or not isinstance(market.get("conditionId"), str)
+            or _CONDITION_RE.fullmatch(market["conditionId"]) is None):
+        raise MarketTruthError("RESPONSE_INVALID")
+    tokens = market.get("clobTokenIds")
+    if isinstance(tokens, str):
+        tokens = _ts01_json(tokens.encode("utf-8"))
+    if (not isinstance(tokens, list) or not 1 <= len(tokens) <= 100
+            or any(not isinstance(token, str) or not _TOKEN_RE.fullmatch(token) for token in tokens)
+            or len(set(tokens)) != len(tokens)):
+        raise MarketTruthError("RESPONSE_INVALID")
+    token = tokens[0]
+    if book is not None:
+        document = _ts01_json(book.raw_bytes)
+        if (not isinstance(document, dict) or document.get("asset_id") != token
+                or document.get("market") != market["conditionId"]):
+            raise MarketTruthError("RESPONSE_INVALID")
+        for side in ("bids", "asks"):
+            levels = document.get(side)
+            if not isinstance(levels, list) or len(levels) > limits.max_book_levels_per_side:
+                raise MarketTruthError("RESPONSE_INVALID")
+            for level in levels:
+                if (not isinstance(level, dict)
+                        or not isinstance(level.get("price"), str)
+                        or not isinstance(level.get("size"), str)
+                        or canonical_decimal(level["price"]) is None
+                        or canonical_decimal(level["size"]) is None
+                        or not 0 <= __import__("decimal").Decimal(level["price"]) <= 1):
+                    raise MarketTruthError("RESPONSE_INVALID")
+    return token
+
+
+def _ts01_paths(path):
+    # Reuse the store's existing path validation without creating or opening it.
+    store = MarketTruthStore(path)
+    database = store._path
+    receipt = database.with_suffix(".ts01.json")
+    if receipt.is_symlink() or (receipt.exists() and (
+        not receipt.is_file() or receipt.stat().st_nlink != 1
+    )):
+        raise MarketTruthError("STORE_CONFLICT")
+    return database, receipt
+
+
+def _ts01_verify(database, receipt, limits):
+    with receipt.open("rb") as stream:
+        payload = stream.read(_TS01_RECEIPT_BYTES + 1)
+    if len(payload) > _TS01_RECEIPT_BYTES:
+        raise MarketTruthError("RESPONSE_TOO_LARGE")
+    document = _ts01_json(payload)
+    if not isinstance(document, dict) or set(document) != {"body", "sha256"}:
+        raise MarketTruthError("RESPONSE_INVALID")
+    body = document["body"]
+    if (not isinstance(body, dict) or set(body) != {
+                "schema", "market_id", "token_id", "attempts", "selected", "transport_mode"}
+            or body["schema"] != "ts01-local-producer-witness-v1"
+            or body["transport_mode"] not in ("INJECTED", "NATIVE_HTTP")
+            or sha256_hex(canonical_json_bytes(body)) != document["sha256"]
+            or canonical_json_bytes(document) != payload):
+        raise MarketTruthError("RESPONSE_INVALID")
+    market_id = body["market_id"]
+    if not isinstance(market_id, str) or _normalize_params("market-by-id", {"id": market_id}) != {"id": market_id}:
+        raise MarketTruthError("RESPONSE_INVALID")
+    attempts = body["attempts"]
+    if not isinstance(attempts, list) or not 2 <= len(attempts) <= 2 * (limits.max_retries + 1):
+        raise MarketTruthError("RESPONSE_INVALID")
+    raw_rows = MarketTruthStore._read_raw_occurrences(
+        database, [item["occurrence_id"] for item in attempts], limits,
+    )
+    selected = []
+    previous_receive = ""
+    phase = "market-by-id"
+    attempt_index = 0
+    success_rows = []
+    ledger = []
+    witness_fields = set(_TS01_RAW_FIELDS) | {
+        "endpoint", "params", "url", "http_status", "request_started_at",
+        "response_completed_at", "duration_ns",
+    }
+    for item, raw in zip(attempts, raw_rows):
+        expected_params = {"id": market_id} if phase == "market-by-id" else {"token_id": body["token_id"]}
+        normalized = _normalize_params(phase, expected_params)
+        start, end = item["request_started_at"], item["response_completed_at"]
+        status = item["http_status"]
+        if (set(item) != witness_fields or item["endpoint"] != phase
+                or item["params"] != normalized or item["url"] != _build_url(phase, normalized)[0]
+                or any(item[key] != getattr(raw, key) for key in _TS01_RAW_FIELDS)
+                or raw.source_kind != ("GAMMA" if phase == "market-by-id" else "CLOB")
+                or raw.source_id != _SOURCE_ID[raw.source_kind] + phase
+                or raw.source_cursor != f"http:{phase}:offset:0:attempt:{attempt_index}"
+                or not is_rfc3339_micros(start) or not is_rfc3339_micros(end)
+                or not previous_receive <= start <= end <= raw.received_at
+                or not _is_int(item["duration_ns"]) or item["duration_ns"] < 0
+                or not _is_int(status) or not 100 <= status <= 599):
+            raise MarketTruthError("RESPONSE_INVALID")
+        previous_receive = raw.received_at
+        ledger.append({**item, "raw_bytes": raw.raw_bytes})
+        if 200 <= status < 300:
+            if _page_bound_error([_ts01_json(raw.raw_bytes)], phase, 1, limits) is not None:
+                raise MarketTruthError("RESPONSE_INVALID")
+            selected.append(raw.occurrence_id)
+            success_rows.append(raw)
+            if phase == "market-by-id":
+                if _ts01_pair_link(raw, None, market_id, limits) != body["token_id"]:
+                    raise MarketTruthError("RESPONSE_INVALID")
+                phase = "book"
+                attempt_index = 0
+            else:
+                phase = "complete"
+        elif status in _RETRYABLE and attempt_index < limits.max_retries:
+            attempt_index += 1
+        else:
+            raise MarketTruthError("RESPONSE_INVALID")
+    if phase != "complete" or body["selected"] != selected or len(success_rows) != 2:
+        raise MarketTruthError("RESPONSE_INVALID")
+    _ts01_pair_link(*success_rows, market_id, limits)
+    return {"status": "ADMITTED", "proof_level": "LOCAL_PRODUCER_WITNESS",
+            "transport_mode": body["transport_mode"],
+            "market_id": market_id, "token_id": body["token_id"],
+            "receipt_sha256": document["sha256"], "attempts": ledger, "selected": selected}
+
+
+def export_trusted_research_pair(path, *, limits: AcquisitionLimits | None = None) -> dict:
+    """Cold reopen only; never create, repair, write or infer a missing receipt."""
+    try:
+        database, receipt = _ts01_paths(path)
+        return _ts01_verify(database, receipt, limits or AcquisitionLimits())
+    except Exception:
+        return {"status": "NOT_ADMITTED", "error_code": "RESPONSE_INVALID"}
+
+
+def collect_trusted_research_pair(
+    path, market_id: str, *, transport=None, clock=None, limits: AcquisitionLimits | None = None,
+) -> dict:
+    """One foreground pair; injected transport proves software invariants only.
+
+    A sidecar is a trusted local producer receipt, not tamper-proof attestation.
+    Callers must protect it and the archive as operator evidence.
+    """
+    lock_fd = None
+    temporary = None
+    try:
+        active = limits or AcquisitionLimits()
+        normalized = _normalize_params("market-by-id", {"id": market_id})
+        market_id = normalized["id"]
+        database, receipt = _ts01_paths(path)
+        lock = receipt.with_suffix(".lock")
+        lock_fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        if receipt.exists():
+            result = _ts01_verify(database, receipt, active)
+            if result["market_id"] != market_id:
+                raise MarketTruthError("STORE_CONFLICT")
+            return result
+        underlying = transport or _ts01_transport(active.max_response_bytes)
+
+        def bounded(url, headers, timeout):
+            status, response_headers, body = underlying(url, headers, timeout)
+            if (not _is_int(status) or not 100 <= status <= 599
+                    or not isinstance(body, bytes) or len(body) > active.max_response_bytes):
+                raise MarketTruthError("RESPONSE_INVALID")
+            return status, response_headers, body
+
+        client = PublicMarketDataClient(active, transport=bounded, clock=clock)
+        client._rate_limiter = RateLimiter(active)
+        client._ts01_attempts = []
+        successes = []
+        with MarketTruthStore(database, active) as store:
+            for endpoint in ("market-by-id", "book"):
+                params = normalized if endpoint == "market-by-id" else {"token_id": token}
+                page = client.get_page(endpoint, params)
+                _, raw, terminal = archive_page_attempts(store, endpoint, page, 1, active)
+                if terminal is not None or raw is None:
+                    raise MarketTruthError("RESPONSE_INVALID")
+                successes.append(raw)
+                token = _ts01_pair_link(successes[0], None, market_id, active)
+            _ts01_pair_link(*successes, market_id, active)
+        body = {"schema": "ts01-local-producer-witness-v1", "market_id": market_id,
+                "transport_mode": "INJECTED" if transport is not None else "NATIVE_HTTP",
+                "token_id": token, "attempts": client._ts01_attempts,
+                "selected": [raw.occurrence_id for raw in successes]}
+        payload = canonical_json_bytes({"body": body, "sha256": sha256_hex(canonical_json_bytes(body))})
+        if len(payload) > _TS01_RECEIPT_BYTES:
+            raise MarketTruthError("RESPONSE_TOO_LARGE")
+        fd, temporary = tempfile.mkstemp(prefix=".ts01-", dir=receipt.parent)
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            os.fsync(stream.fileno())
+        # Verify the staged receipt against the cold committed archive before promotion.
+        result = _ts01_verify(database, pathlib.Path(temporary), active)
+        if receipt.exists() or receipt.is_symlink():
+            raise MarketTruthError("STORE_CONFLICT")
+        os.rename(temporary, receipt)
+        temporary = None
+        if os.name != "nt":
+            directory_fd = os.open(receipt.parent, os.O_RDONLY)
+            try:
+                os.fsync(directory_fd)
+            finally:
+                os.close(directory_fd)
+        return result
+    except Exception:
+        return {"status": "NOT_ADMITTED", "error_code": "RESPONSE_INVALID"}
+    finally:
+        if temporary is not None:
+            try:
+                os.unlink(temporary)
+            except OSError:
+                pass  # A cleanup failure cannot leak an operator path via the API.
+        if lock_fd is not None:
+            os.close(lock_fd)
+            try:
+                os.unlink(lock)
+            except OSError:
+                pass  # A surviving admission lock fails closed on the next attempt.

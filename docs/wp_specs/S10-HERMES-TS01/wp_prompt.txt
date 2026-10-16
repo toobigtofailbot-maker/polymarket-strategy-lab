@@ -1,0 +1,48 @@
+WP ID: S10-HERMES-TS01
+Title: Trusted Research Evidence — Gamma+CLOB producer witness
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: TRUSTED_PUBLIC_SOURCE_EVIDENCE
+Package size class: M; exactly 8 files; risk level: 2
+Base branch: main
+Frozen base: f3791826ca4f7723372e3caa103addcc7fe7aef6
+Required predecessor: PR237 head b2c66358c78baf7e06296302bfd08a1e0089517a, merge f3791826ca4f7723372e3caa103addcc7fe7aef6
+Suggested branch: codex/s10-hermes-ts01
+Governance track expected: FAST
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. Objective / Authority / Non-Authority
+Karl authorizes local implementation upon direct forwarding/approval of the complete SIDE20 TS01 WP. Reuse WP169 PublicMarketDataClient, RawEnvelope and MarketTruthStore. Implement exactly one Gamma market-by-id plus one Gamma-linked CLOB book producer-captured attempt ledger and independently verified cold-reopen read-only export. No real network, provider call, model/Hermes, trading, runtime activation, capital, push, PR, hosted CI or merge. Keep existing public APIs, DDL, IDs, time semantics, rate/retry budgets unchanged. Witness fields are URL, normalized params, producer UTC start/end and receipt clocks, HTTP status per bounded attempt, original raw IDs/hash/byte length and exact archive byte membership. Choose one Gamma market-by-id by positive-decimal id, parse its clobTokenIds ordered list and request only index-0 token from CLOB /book. Write one canonical, idempotent same-directory atomically promoted local receipt sidecar only after successful two-raw archive, never alter exact SQLite schema or raw identities. Reopen the existing archive cold, check original raw bytes/digests/cursors/status/clocks/link against sidecar and return a bounded non-authoritative source ledger. Interrupted/partial/mismatched receipt or tampered/raw-missing store is NOT_ADMITTED. Test injected transport only; no real requests authorized.
+2. Hard Merge Gate / Exact Scope
+Clean main=origin/main=f3791826ca4f7723372e3caa103addcc7fe7aef6; PR237 merged; dedicated worktree; exactly 8 paths: src/data_layer/polymarket/market_truth_data_api.py, src/data_layer/polymarket/market_truth_store.py, tests/data_layer/polymarket/test_market_truth_data_api.py, tests/data_layer/polymarket/test_market_truth_models_store.py, docs/wp_specs/S10-HERMES-TS01/wp_prompt.txt, docs/wp_specs/S10-HERMES-TS01/wp_spec.json, docs/status_entries/S10-HERMES-TS01.md, docs/deferred_items_log.md. No other code, tests, guard, schema or dependency changes. Worktree/local tests only.
+3. Context Budget / Compatibility / Impossibility Check
+Inspect same 4 code/test modules, AGENTS.md, native guards, WP169 consumers and historical allowlists. Reuse public allowlist GET, raw-first append, exact SQLite verification and frozen cursor; add producer receipt without changing PublicPageResult. TS01 hardened no-redirect/byte-capped transport; local acquisition clocks, per-attempt HTTP status; single Gamma ID and index-0 token derived from Gamma's returned ordered clobTokenIds; atomic receipt and cold verified archive export. Skill discovery + actual invocation of relevant available Codex skills, fallback native commands if unavailable. No broad architecture/protocol refactor.
+4. Evidence Plan / Requirement Mapping / Negative Test Matrix
+R001 producer attempt clocks/url/status/raw membership; R002 exact linked Gamma/CLOB, redirect/oversize/retry/wrong token fails closed; R003 cold store reopen/receipt+raw tamper no echo/mutation; R004 unchanged DDL/identity/idempotence; R005 existing WP169 producer/store/runtime/public-client regression; R006 one final stable full suite. Four planned named assertion-bearing test nodes are in the two required test files. Negative matrix: bad ID/token/shape, wrong host/redirect, non-2xx/retry timeout/oversize, clock reversal/invalid UTC, partial receipt, altered raw/DB, wrong source/URL/identity, duplicate conflict. No fake live source proof.
+5. Hard Stops / Rollback
+Stop on scope expansion, incompatible frozen API/SQLite DDL, failed mandatory validators needing forbidden changes, any provider call or access violation, or live source authenticity claim from fixture data. Preserve local evidence and failed exit; same-scope implementation issues handled in same run. Rollback only scoped patch by explicit owner choice.
+6. Successor Boundary / Report Back
+TS02, Hermes provider/model and real source acquisition are separate Karl-gated. Deliver one self-contained ZIP to Karl → CURRENT Side20, hashes/CRC, exact git lineage, 8 files, real commands/exits/skips, offline test evidence, changed-source diff and native readiness. No automatic publication/merge/trading. Ready for review: NO until Side20 independently accepts.
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|ts01|producer_witness|actual_attempt|REQUIRE|exact_source_attempt|ts01.producer_witness|R001
+NR002|ts01|cold_export|reopened_store|REQUIRE|verified_archive_member|ts01.cold_export|R003
+NR003|ts01|compatibility|wp169_frozen|PRESERVE_EXACT|same_contract_and_ddl|NONE|R004
+END_NORMATIVE_RULE_MATRIX_V1

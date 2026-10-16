@@ -22,6 +22,172 @@ CONDITION = "0x" + "a" * 64
 RECEIVED = "2024-07-03T09:46:40.000000Z"
 
 
+def _ts01_pair(path):
+    from src.data_layer.polymarket.market_truth_data_api import collect_trusted_research_pair
+    import datetime
+
+    moment = datetime.datetime(2024, 7, 3, tzinfo=datetime.timezone.utc)
+    def clock():
+        nonlocal moment
+        moment += datetime.timedelta(microseconds=1)
+        return moment.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    def transport(url, headers, timeout):
+        document = ({"id": "42", "conditionId": CONDITION, "clobTokenIds": ["7", "8"]}
+                    if "/markets/" in url else
+                    {"asset_id": "7", "market": CONDITION, "bids": [], "asks": []})
+        return 200, {}, json.dumps(document).encode()
+    return collect_trusted_research_pair(path, "42", transport=transport, clock=clock)
+
+
+def test_ts01_cold_reopen_export_membership_and_tamper(tmp_path):
+    import copy
+    from contextlib import closing
+    import sqlite3
+    import subprocess
+    import sys
+    from src.data_layer.polymarket import market_truth_data_api as api
+
+    path = tmp_path / "pair.sqlite3"
+    result = _ts01_pair(path)
+    assert result["status"] == "ADMITTED"
+    original_db = path.read_bytes()
+    receipt = path.with_suffix(".ts01.json")
+    original_receipt = receipt.read_bytes()
+    # Independent interpreter has no producer state, module cache or open writer.
+    probe = subprocess.run([sys.executable, "-B", "-c",
+        "import sys; from src.data_layer.polymarket.market_truth_data_api import export_trusted_research_pair; "
+        "r=export_trusted_research_pair(sys.argv[1]); assert r['status']=='ADMITTED'; "
+        "assert all(x['raw_bytes'] for x in r['attempts'])", str(path)], capture_output=True)
+    assert probe.returncode == 0, probe.stderr
+    assert path.read_bytes() == original_db and receipt.read_bytes() == original_receipt
+
+    def refused():
+        before = path.read_bytes()
+        assert api.export_trusted_research_pair(path) == {"status": "NOT_ADMITTED", "error_code": "RESPONSE_INVALID"}
+        assert path.read_bytes() == before
+
+    for payload in (b'', b'{', b'null', b'[]', b'x' * 65_537,
+                    b'{"body":{},"body":{},"sha256":"x"}'):
+        receipt.write_bytes(payload); refused()
+    receipt.write_bytes(original_receipt)
+    base = json.loads(original_receipt)
+    mutations = [
+        ("url", "https://example.invalid/book"), ("url", ""),
+        ("http_status", 302), ("http_status", True),
+        ("request_started_at", "2030-01-01T00:00:00.000000Z"),
+        ("response_completed_at", "2020-01-01T00:00:00.000000Z"),
+        ("request_started_at", "not-UTC"), ("duration_ns", -1),
+        ("raw_sha256", "0" * 64), ("byte_length", 0),
+        ("source_cursor", "http:markets:offset:0:attempt:0"),
+        ("source_id", "polymarket:clob:book"), ("params", {"id": "43"}),
+        ("occurrence_id", "missing"), ("received_at", "2030-01-01T00:00:00.000000Z"),
+    ]
+    for key, value in mutations:
+        document = copy.deepcopy(base)
+        document["body"]["attempts"][0][key] = value
+        # Even a recomputed digest cannot admit a semantically invalid witness.
+        document["sha256"] = mt.sha256_hex(mt.canonical_json_bytes(document["body"]))
+        receipt.write_bytes(mt.canonical_json_bytes(document)); refused()
+    for key, value in (("token_id", "8"), ("selected", []), ("attempts", [])):
+        document = copy.deepcopy(base); document["body"][key] = value
+        document["sha256"] = mt.sha256_hex(mt.canonical_json_bytes(document["body"]))
+        receipt.write_bytes(mt.canonical_json_bytes(document)); refused()
+    # A valid-looking changed status/clock also fails the original receipt digest.
+    document = copy.deepcopy(base); document["body"]["attempts"][0]["http_status"] = 201
+    receipt.write_bytes(mt.canonical_json_bytes(document)); refused()
+    receipt.write_bytes(original_receipt)
+    for sql in (
+        "DELETE FROM raw_occurrences WHERE source_kind='CLOB'",
+        "UPDATE raw_occurrences SET raw_bytes=x'7b7d' WHERE source_kind='CLOB'",
+        "UPDATE raw_occurrences SET raw_sha256='wrong' WHERE source_kind='CLOB'",
+        "ALTER TABLE raw_occurrences ADD COLUMN foreign_field TEXT",
+    ):
+        path.write_bytes(original_db)
+        with closing(sqlite3.connect(path)) as connection:
+            connection.execute(sql)
+            connection.commit()
+        refused()
+    path.write_bytes(original_db)
+    receipt.unlink(); refused()  # crash between archive and promotion
+    receipt.write_bytes(original_receipt)
+    wrong = tmp_path / "wrong.sqlite3"
+    with MarketTruthStore(wrong):
+        pass
+    wrong.with_suffix(".ts01.json").write_bytes(original_receipt)
+    assert api.export_trusted_research_pair(wrong)["status"] == "NOT_ADMITTED"
+    path.unlink()
+    assert api.export_trusted_research_pair(path)["status"] == "NOT_ADMITTED"
+    assert not path.exists()  # read-only export must not create a missing DB
+
+
+def test_ts01_store_schema_legacy_and_idempotence(tmp_path, monkeypatch):
+    from contextlib import closing
+    import sqlite3
+    import threading
+    from src.data_layer.polymarket import market_truth_data_api as api
+    from src.data_layer.polymarket import market_truth_store as stores
+
+    path = tmp_path / "pair.sqlite3"
+    result = _ts01_pair(path)
+    assert result["status"] == "ADMITTED"
+    receipt = path.with_suffix(".ts01.json")
+    original = (path.read_bytes(), receipt.read_bytes())
+    with closing(sqlite3.connect(path)) as connection:
+        tables = dict(connection.execute("SELECT name, sql FROM sqlite_master WHERE type='table'"))
+        assert set(tables) == set(stores._TABLES) | {"sqlite_sequence"}
+        assert all(stores._normalize_ddl(tables[name]) == stores._normalize_ddl(ddl)
+                   for name, ddl in stores._TABLES.items())
+        assert connection.execute("PRAGMA application_id").fetchone()[0] == APPLICATION_ID
+        assert connection.execute("PRAGMA user_version").fetchone()[0] == USER_VERSION
+    def forbidden(*args):
+        pytest.fail("idempotent repeat must not reacquire")
+    assert api.collect_trusted_research_pair(path, "42", transport=forbidden) == result
+    assert api.collect_trusted_research_pair(path, "43", transport=forbidden)["status"] == "NOT_ADMITTED"
+    assert original == (path.read_bytes(), receipt.read_bytes())
+    rows = MarketTruthStore._read_raw_occurrences(path, result["selected"])
+    with MarketTruthStore(path) as store:
+        assert all(store.append(raw).status == "OK" for raw in rows)
+        assert store.receipt().raw_count == 2
+    assert path.read_bytes() == original[0]
+    for keys in (None, [], [None], [result["selected"][0]] * 2, ["missing"]):
+        with pytest.raises(mt.MarketTruthError):
+            MarketTruthStore._read_raw_occurrences(path, keys)
+    assert api.export_trusted_research_pair(path, limits=mt.AcquisitionLimits(max_store_rows=1))["status"] == "NOT_ADMITTED"
+    # Simulate another producer holding the cross-process admission lock.
+    lock = receipt.with_suffix(".lock"); lock.write_bytes(b'')
+    assert api.collect_trusted_research_pair(path, "42", transport=forbidden)["status"] == "NOT_ADMITTED"
+    assert lock.exists(); lock.unlink()
+    # Two actual producers cannot interleave promotion or overwrite the winner.
+    concurrent = tmp_path / "concurrent.sqlite3"
+    entered, release = threading.Event(), threading.Event()
+    original_transport = api._ts01_pair_link
+    results = []
+    def paused_link(*args):
+        entered.set()
+        assert release.wait(5)
+        return original_transport(*args)
+    with monkeypatch.context() as patch:
+        patch.setattr(api, "_ts01_pair_link", paused_link)
+        producer = threading.Thread(target=lambda: results.append(_ts01_pair(concurrent)))
+        producer.start()
+        try:
+            assert entered.wait(5)
+            assert api.collect_trusted_research_pair(concurrent, "42", transport=forbidden)["status"] == "NOT_ADMITTED"
+        finally:
+            release.set()
+            producer.join(5)
+        assert not producer.is_alive() and results[0]["status"] == "ADMITTED"
+    assert api.export_trusted_research_pair(concurrent) == results[0]
+    # Atomic promotion failure leaves only raw evidence and never an admitted pair.
+    def fail_rename(*args):
+        raise OSError("do not echo")
+    monkeypatch.setattr(api.os, "rename", fail_rename)
+    interrupted = tmp_path / "interrupted.sqlite3"
+    assert _ts01_pair(interrupted)["status"] == "NOT_ADMITTED"
+    assert api.export_trusted_research_pair(interrupted)["status"] == "NOT_ADMITTED"
+    assert not list(tmp_path.glob(".ts01-*"))
+
+
 def _tmpdb(tmp_path: pathlib.Path, name: str = "wp169.sqlite3") -> pathlib.Path:
     return tmp_path / name
 

@@ -6,6 +6,7 @@ import json
 
 import pytest
 
+
 from src.data_layer.polymarket import market_truth as mt
 from src.data_layer.polymarket.market_truth_data_api import (
     NetworkBudgetExhausted,
@@ -561,3 +562,144 @@ def test_collect_public_page_resume_checkpoint_lifecycle(tmp_path) -> None:
         assert rbad.status == "FAILED"
         after = store.load_checkpoint(key)
         assert after.state == before.state and after.value_json == before.value_json
+
+
+def _ts01_bodies():
+    return (
+        json.dumps({"id": "42", "conditionId": CONDITION, "clobTokenIds": '["7","8"]'}).encode(),
+        json.dumps({"asset_id": "7", "market": CONDITION,
+                    "bids": [{"price": "0.4", "size": "2"}], "asks": []}).encode(),
+    )
+
+
+def test_ts01_producer_witness_binds_attempts_and_clocks(tmp_path):
+    from src.data_layer.polymarket import market_truth_data_api as api
+
+    calls = []
+    gamma, book = _ts01_bodies()
+
+    def transport(url, headers, timeout):
+        calls.append((url, dict(headers), timeout))
+        if len(calls) == 1:
+            return 429, {"Retry-After": "0"}, b'{"retry":true}'
+        return 200, {}, gamma if "/markets/" in url else book
+
+    path = tmp_path / "pair.sqlite3"
+    result = api.collect_trusted_research_pair(path, "42", transport=transport, clock=_clock())
+    assert result["status"] == "ADMITTED"
+    assert result["proof_level"] == "LOCAL_PRODUCER_WITNESS"
+    assert result["transport_mode"] == "INJECTED"
+    assert result["token_id"] == "7"
+    assert [call[0] for call in calls] == [
+        api.GAMMA_BASE + "/markets/42", api.GAMMA_BASE + "/markets/42",
+        api.CLOB_BASE + "/book?token_id=7",
+    ]
+    assert all(set(headers) == {"Accept", "User-Agent"} for _, headers, _ in calls)
+    assert [attempt["http_status"] for attempt in result["attempts"]] == [429, 200, 200]
+    for item in result["attempts"]:
+        assert item["request_started_at"] < item["response_completed_at"] < item["received_at"]
+        assert item["duration_ns"] >= 0
+        assert item["byte_length"] == len(item["raw_bytes"])
+        assert item["raw_sha256"] == mt.sha256_hex(item["raw_bytes"])
+        assert item["occurrence_id"] and item["raw_id"]
+    assert result["attempts"][0]["source_cursor"] == "http:market-by-id:offset:0:attempt:0"
+    assert result["attempts"][1]["source_cursor"] == "http:market-by-id:offset:0:attempt:1"
+    assert result == api.export_trusted_research_pair(path)
+
+    # Capture is opt-in; normal callers still sample only the original receive clock.
+    ticks = []
+    client = api.PublicMarketDataClient(transport=lambda *a: (200, {}, gamma),
+                                       clock=lambda: ticks.append(1) or "2024-07-03T10:00:01.000000Z")
+    assert client.get_page("market-by-id", {"id": 42}).status == "OK"
+    assert ticks == [1] and client._ts01_attempts is None
+
+
+def test_ts01_gamma_clob_link_and_negative_transport(tmp_path, monkeypatch):
+    import io
+    import urllib.error
+    import urllib.request
+    from src.data_layer.polymarket import market_truth_data_api as api
+
+    gamma, book = _ts01_bodies()
+    # A negative from each actual trust boundary, without expanding the test framework.
+    invalid_markets = [b'null', b'[]', b'{}', b'{', b'\xff',
+            b'{"id":"42","id":"43"}',
+            json.dumps({"id": "43", "clobTokenIds": ["7"]}).encode()]
+    invalid_markets += [json.dumps({"id": "42", "conditionId": CONDITION,
+                                    "clobTokenIds": tokens}).encode()
+                        for tokens in (None, [], ["7", "7"], [7], ["07"], "not-json")]
+    for index, body in enumerate(invalid_markets):
+        result = api.collect_trusted_research_pair(tmp_path / f"gamma{index}.sqlite3", "42",
+            transport=lambda *args, body=body: (200, {}, body), clock=_clock())
+        assert result == {"status": "NOT_ADMITTED", "error_code": "RESPONSE_INVALID"}
+    for index, invalid_book in enumerate((b'{}', b'[]',
+            json.dumps({"asset_id": "8", "market": CONDITION, "bids": [], "asks": []}).encode(),
+            json.dumps({"asset_id": "7", "market": CONDITION, "bids": [None], "asks": []}).encode())):
+        result = api.collect_trusted_research_pair(tmp_path / f"book{index}.sqlite3", "42",
+            transport=lambda url, *a, body=invalid_book: (200, {}, gamma if "/markets/" in url else body),
+            clock=_clock())
+        assert result["status"] == "NOT_ADMITTED"
+    for market_id in (None, "", "0", "01", "0x123", True, "42?x=1"):
+        def forbidden(*args):
+            pytest.fail("invalid market must never acquire")
+        assert api.collect_trusted_research_pair(tmp_path / "invalid.sqlite3", market_id,
+            transport=forbidden)["status"] == "NOT_ADMITTED"
+
+    # No sleeping: 429 exhaustion retains all bounded attempts and writes no receipt.
+    calls = []
+    limited = tmp_path / "retry.sqlite3"
+    assert api.collect_trusted_research_pair(limited, "42", clock=_clock(),
+        transport=lambda *a: (calls.append(1) or 429, {"Retry-After": "0"}, b'{}'))["status"] == "NOT_ADMITTED"
+    assert len(calls) == mt.AcquisitionLimits().max_retries + 1
+    with MarketTruthStore(limited) as store:
+        assert store.receipt().raw_count == len(calls)
+    assert not limited.with_suffix(".ts01.json").exists()
+    for name, transport in (
+        ("redirect", lambda *a: (302, {"Location": "https://example.invalid"}, b'{}')),
+        ("oversize", lambda *a: (200, {}, b'x' * 1025)),
+        ("badstatus", lambda *a: (True, {}, gamma)),
+        ("timeout", lambda *a: (_ for _ in ()).throw(TimeoutError("do not echo"))),
+    ):
+        assert api.collect_trusted_research_pair(tmp_path / f"{name}.sqlite3", "42",
+            transport=transport, clock=_clock(), limits=mt.AcquisitionLimits(max_response_bytes=1024))["status"] == "NOT_ADMITTED"
+
+    class Response(io.BytesIO):
+        code = 200
+        headers = {}
+        def read(self, size=-1):
+            assert size == 1025  # hard cap at the read, never an unbounded read()
+            return super().read(size)
+
+    with pytest.raises(mt.MarketTruthError):
+        api._ts01_bounded_body(Response(b'x' * 2048), 1024)
+    for declared in ("2048", "x", "1", "-1"):
+        response = Response(b'{}'); response.headers = {"Content-Length": declared}
+        with pytest.raises(mt.MarketTruthError):
+            api._ts01_bounded_body(response, 1024)
+
+    # Exercise the actual no-redirect opener policy, with no sockets or external calls.
+    seen = []
+    def fake_opener(proxy, handler):
+        assert isinstance(proxy, urllib.request.ProxyHandler) and proxy.proxies == {}
+        assert isinstance(handler, urllib.request.HTTPRedirectHandler)
+        assert handler.redirect_request(None, None, 302, "", {}, "https://example.invalid") is None
+        class Opener:
+            def open(self, request, timeout):
+                seen.append((request.full_url, request.get_method()))
+                raise urllib.error.HTTPError(request.full_url, 302, "", {}, Response(b'{}'))
+        return Opener()
+    monkeypatch.setattr(urllib.request, "build_opener", fake_opener)
+    assert api.collect_trusted_research_pair(tmp_path / "default.sqlite3", "42")["status"] == "NOT_ADMITTED"
+    assert seen == [(api.GAMMA_BASE + "/markets/42", "GET")]
+
+    # Locally sampled backwards/invalid clocks must never promote a pair receipt.
+    for index, bad_clock in enumerate((
+        lambda: "invalid", iter(["2024-07-03T10:00:02.000000Z",
+                                 "2024-07-03T10:00:01.000000Z"] * 3).__next__,
+    )):
+        assert api.collect_trusted_research_pair(tmp_path / f"clock{index}.sqlite3", "42",
+            transport=lambda url, *a: (200, {}, gamma if "/markets/" in url else book),
+            clock=bad_clock)["status"] == "NOT_ADMITTED"
+    assert api.collect_trusted_research_pair(tmp_path / "rowbound.sqlite3", "42",
+        transport=lambda url, *a: (200, {}, gamma if "/markets/" in url else book),
+        clock=_clock(), limits=mt.AcquisitionLimits(max_store_rows=1))["status"] == "NOT_ADMITTED"

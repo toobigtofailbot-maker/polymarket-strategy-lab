@@ -453,6 +453,50 @@ class MarketTruthStore:
             self._connection.close()
             self._connection = None
 
+    @classmethod
+    def _read_raw_occurrences(
+        cls, path: str | pathlib.Path, occurrence_ids: Sequence[str],
+        limits: AcquisitionLimits | None = None,
+    ) -> tuple[RawEnvelope, ...]:
+        """Cold, read-only, bounded lookup with the frozen schema/domain/ID checks."""
+        active = limits or AcquisitionLimits()
+        if (not isinstance(occurrence_ids, Sequence)
+                or not 1 <= len(occurrence_ids) <= 2 * (active.max_retries + 1)
+                or any(not isinstance(key, str) or len(key) > 128 for key in occurrence_ids)
+                or len(set(occurrence_ids)) != len(occurrence_ids)):
+            raise MarketTruthError("STORE_CONFLICT")
+        store = cls(path, active)
+        if not store._path.is_file():
+            raise MarketTruthError("STORE_CONFLICT")
+        connection = None
+        try:
+            connection = sqlite3.connect(store._path.resolve().as_uri() + "?mode=ro", uri=True)
+            connection.execute("PRAGMA query_only=ON")
+            connection.execute("BEGIN")
+            store._verify_existing(connection)
+            if (store._row_count(connection) > active.max_store_rows
+                    or store._store_bytes(connection) > active.max_store_bytes):
+                raise MarketTruthError("STORE_CONFLICT")
+            result = []
+            fields = tuple(field.name for field in dataclasses.fields(RawEnvelope))
+            for key in occurrence_ids:
+                row = connection.execute(
+                    "SELECT " + ",".join(fields) + " FROM raw_occurrences "
+                    "WHERE occurrence_id=? AND typeof(raw_bytes)='blob' "
+                    "AND length(raw_bytes)<=?", (key, active.max_response_bytes),
+                ).fetchone()
+                if row is None:
+                    raise MarketTruthError("STORE_CONFLICT")
+                raw = RawEnvelope(**dict(zip(fields, row)))
+                store._validate_raw(raw)
+                result.append(raw)
+            return tuple(result)
+        except (sqlite3.Error, OSError, TypeError, ValueError, OverflowError):
+            raise MarketTruthError("STORE_CONFLICT") from None
+        finally:
+            if connection is not None:
+                connection.close()
+
     def __enter__(self) -> "MarketTruthStore":
         self.initialize()
         return self
