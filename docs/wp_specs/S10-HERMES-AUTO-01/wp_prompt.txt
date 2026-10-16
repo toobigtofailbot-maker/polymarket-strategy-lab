@@ -1,0 +1,96 @@
+WP ID: S10-HERMES-AUTO-01
+Title: Autonomous Hermes Opportunity-to-Intent Decision Cycle — Vertical Slice
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: HERMES_AUTONOMOUS_OPPORTUNITY_DECISION_CONNECTOR
+Package size class: M; EXACTLY SEVEN changed paths; risk 3
+Governance track expected: RUNTIME
+Base branch: main; verified head: 7d1e817793612ffc607ff4278abc4a6c71eb9acd
+Predecessor: PR #238 head fc4c6cd0ddf40ffe8816346c1f88d8cf926d6e05; merge 7d1e817793612ffc607ff4278abc4a6c71eb9acd
+Suggested branch: codex/s10-hermes-auto-01-opportunity-cycle
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE — OWNER-ALIGNED AUTHORITY / NON-AUTHORITY
+Karl's EXTREME HERMES V2.1 target is Hermes as the autonomous market/strategy intelligence (opportunity, side, order shape and proposed risk within a standing owner-authorized global policy); existing deterministic STRAT-LIFE, EXEC-FEAS, exploratory Gate C, and protected LIVE-ORCH remain final hard execution authorities. Per-strategy/per-trade human review is NOT a target invariant for the eventual standing autonomous envelope. This WP builds the FIRST SMALL CODED CONNECTION toward that target, not another advisory report. Long qualification, 50-date OOS, DATA-03 and dashboard are NOT prerequisites to this slice.
+
+Karl's forwarding of this package authorizes LOCAL CODE + OFFLINE TESTS only. DO NOT invoke Hermes/provider/Firecrawl APIs, load credentials, initialize live account, place/cancel/sign orders, start autonomous daemon/scheduler, modify gateway/risk/policy enforcement, push/PR/hosted CI/merge, or spend capital. Runtime provider/capital/standing-envelope activation separately authorized. The source must be import-side-effect-free; all test provider/market fixtures are injected and explicitly SYNTHETIC_ONLY.
+
+Required real product behavior in this WP: one bounded decision cycle accepts a canonical limited set of actual Alpha candidate/StrategyVersion subject references and a strict Hermes-originated opportunity CHOICE (not a deterministic forced rank), builds a validated proposed ExecutionIntent, runs EXISTING EXEC-FEAS and exploratory Gate C, and emits a canonical sanitized one-cycle receipt including NO_TRADE, rejection and inconclusive outcomes. Future real Hermes proposal source can replace the injected test choice without replacing the deterministic core. Do not claim that an injected fake is a genuine autonomous model decision or that an exploratory Gate-C permit is live authority.
+
+# 2. SIDE19 PRE-FREEZE FEASIBILITY / HISTORICAL GUARDS (MANDATORY BEFORE EDITS)
+Refresh current main and inherited branch/worktree state. Inspect actual APIs and test fixtures for:
+- src/data_layer/analytical_research/alpha_discovery.py and alpha_factory_registry.py, alpha_factory.py;
+- src/strategy_lifecycle/{{models,policy,store}}.py and StrategyVersion/PortfolioAuthorityPolicy;
+- src/research_runtime/hermes_controlled_runtime/strategy_manager.py (HermesStrategyAssessment, latest assessment, verified store);
+- src/execution_feasibility/{{models,evaluator,public_market}}.py (build_execution_intent, assess_execution_feasibility, validate_*);
+- src/exploratory_gate_c/{{evaluator,models}}.py (evaluate_exploratory_gate_c, build_exploratory_gate_c_permit);
+- src/research_runtime/paper_performance_bridge.py and src/paper_trading/ (reuse future feedback);
+- all repository tracked-path guards/architecture tests referencing src/research_runtime and this proposed source/test path; startup docs and native WP guard.
+The prior mandatory preflight is complete: 788 baseline tests passed; hypothetical six-path addition yielded 781 passed / seven failures, all in tests/test_architecture_boundaries.py. This SAME-WP amendment explicitly authorizes that single guard file as the seventh and final tracked change. Before implementation inspect its APPROVED_SRC_SCOPES and last-three invariant, then validate the updated exact seven-path scope and probe for any remaining blockers. No eighth path or guard bypass is authorized. If an eighth tracked path is genuinely required, STOP with evidence; do not modify unrelated code. Complete the native API feasibility check, then implement without broader architectural surveys.
+
+# 3. EXACT SEVEN-FILE SCOPE
+1. src/research_runtime/autonomous_opportunity_cycle.py
+2. tests/research_runtime/test_autonomous_opportunity_cycle.py
+3. docs/hermes_autonomous_opportunity_cycle_contract.md
+4. docs/status_entries/S10-HERMES-AUTO-01.md
+5. docs/wp_specs/S10-HERMES-AUTO-01/wp_prompt.txt
+6. docs/wp_specs/S10-HERMES-AUTO-01/wp_spec.json
+7. tests/test_architecture_boundaries.py  (HISTORICAL ALLOWLIST ONLY)
+
+No edits to existing Hermes manager/runner/TS02, STRAT-LIFE, Alpha Factory, EXEC-FEAS, Gate C, WP173, LIVE-ORCH, credential/gateway/risk paths, CI, dependencies, configs, README or unrelated documentation. The ONLY permitted historical compatibility edit is tests/test_architecture_boundaries.py: insert EXACTLY ONE additional literal in APPROVED_SRC_SCOPES, equal to "src/research_runtime/autonomous_opportunity_cycle.py", plus one narrowly factual comment. Insert before the existing final three scopes ("src/strategy_lifecycle", "src/execution_feasibility", "src/exploratory_gate_c") to preserve test_strategy_lifecycle_is_only_new_approved_source_family. Do not add a directory prefix, wildcard, dynamic exception, test skip or modified predicate/assertion. Do not add another service, strategy optimizer, adapter framework, general event-bus, second account journal, model runner, tool wrapper or CLI. Small public exports only in the new module. Preserve existing tests, guard semantics and live-disabled status.
+
+# 3a. REQUIRED SEVENTH-PATH GUARD NEGATIVE CONTROL (SAME-RUN)
+- Verify the historical guard itself is the sole change beyond the original six-file WP. Its APPROVED_SRC_SCOPES must accept only the exact new module; the existing final-three ordering invariant is unchanged. Keep all seven existing assertion bodies, approved older paths and all other guard tests byte-identical except the exact comment/list insertion.
+- Run the seven previously failing test IDs with the actual new source file; they must PASS. The existing last-three invariant must PASS. Then prove that a distinct sibling such as src/research_runtime/autonomous_opportunity_cycle_unapproved.py would still FAIL the architecture scope predicate, in a reversible test fixture/temporary test setup with no additional tracked path. Remove temporary probes before final diff; never introduce a bypass just to satisfy tests.
+- Revalidate the exact seven-file changed set against the amended WP spec with the repository-native readiness gate; do not assume that prior six-file readiness authorizes this amendment. Then follow the unchanged scope, targeted tests and exactly one final full local suite on the final implementation head.
+
+# 4. MINIMUM-COMPLETE FUNCTIONAL CONTRACT
+A. Inputs — One explicit foreground cycle accepts (i) read-only verified lifecycle store path and current Hermes strategy-manager store path, (ii) a *bounded* candidate menu (maximum 8) of exact canonical Alpha candidate IDs and associated exact native StrategyVersion and public market/condition/token identities, (iii) strictly typed or strict-decoded UNTRUSTED Hermes opportunity choice supplied by an injected producer, (iv) native PublicExecutionVenueSnapshot(s) already source-verified or injected explicitly SYNTHETIC, (v) explicit monotonic/evaluation timestamp and caller deadline. No automatic network, provider or model call. Missing/ambiguous lineage or stale/unverified producer proofs fail closed; no raw title or model prose becomes an authorization. A new candidate may be explored without formal OOS or WP172 PASS, but it must have valid canonical research identity.
+B. Hermes is the chooser — choice selects exactly one offered candidate, strategy, BUY/SELL side, GTC/GTD execution style (if allowed by native contracts), share size and price limit, or says NO_TRADE; optional PAUSE/REASSESS is a NO_NEW_EXPOSURE result. Do NOT silently substitute deterministic scoring as the decision-maker or secretly swap the selected candidate/side/size. Use native build_execution_intent bound to the actual StrategyVersion; avoid accepting caller-crafted forged intent/assessment IDs. Strict finite canonical decimal syntax, bounds and deadline; hard-reject unknown fields, duplicate JSON keys, unsupported order types, price/size out of bounds, empty choice, dangling market IDs and conflicting source cutoff. No unconstrained strategy mutation or arbitrary JSON-to-command path.
+C. Legitimate authority — require the *latest* same-strategy verified HermesStrategyAssessment from the actual immutable store; bind its ID, context fingerprint and active portfolio policy. Existing Gate-C accepts only certain assessment action/risk pairs; treat other actions as NO_NEW_EXPOSURE. Injected choice/fixtures have PROOF_LEVEL=SYNTHETIC_ONLY and may validate mechanics, but must never be presented as a real model-generated or live-executable signal. NEVER synthesize a Hermes receipt, real cost, Alpha evidence or approved capital policy. A genuine future provider path needs separately authorized runtime and its own strict provenance binding. For model origin proof, record as UNVERIFIED until that future adapter exists.
+D. Reuse authoritative evaluations — for a proposed intent, call existing assess_execution_feasibility(intent,snapshot,evaluated_at_ns=...), then evaluate_exploratory_gate_c(...) on exact store paths and exact native objects. Only call build_exploratory_gate_c_permit if the native decision is PERMIT_ELIGIBLE; return a PREVIEW permit tagged NON_EXECUTABLE_WITHOUT_SEPARATE_LIVE_AUTHORITY, never send to LIVE-ORCH, never sign or request private account. Do not reimplement safety or trust returned model booleans. Native risk/venue rejection or absence of active allocation returns reason-coded NO_TRADE/REJECTED, not invented eligibility. A permit from this WP is never sufficient for live.
+E. Recorded learning input — always return one canonical, content-addressed bounded DecisionCycleReceipt with candidate menu digest, requested choice digest, selected strategy/market if any, Hermes assessment id (if found), exact timestamp/cutoff, native feasibility/decision/permit IDs when present, full *sanitized existing native* reasons, explicit NO_TRADE/REJECTED/ELIGIBLE_PREVIEW/INCONCLUSIVE result, source/proof level, and fixed no_live/no_order flags. No raw model text, account secret, env or filesystem path. Plain native canonical JSON + sha256; no new DB/ledger in this WP. The receipt is a future input to verified paper/reality performance feedback, not proof of edge. Repeated identical inputs produce byte-identical receipts without mutating any store; changed choice/cutoff or public evidence changes receipt identity. Any exception returns a closed sanitized result and never partial hard authority.
+F. Reuse and efficiency — one new compact import-safe module, one focused test module, one lean contract doc, governing prompt/spec/status. Prefer composition of existing validators and deterministic objects over new cross-system record types; do not expand/modify their public APIs. A specific infeasible native API preflight requiring a protected/extra file is a MATERIAL STOP, never papered over.
+
+# 5. EVIDENCE PLAN / REQUIREMENT MAPPING / NEGATIVE TEST MATRIX / NON-AUTHORITY
+R001: valid fake-origin choice controls which candidate and exact intent is selected (not a hidden deterministic rank); native type/ID binding and current Hermes assessment required. Both YES and NO_TRADE produce canonical receipts.
+R002: feasible native execution evaluation followed by eligible native exploratory Gate C yields only ELIGIBLE_PREVIEW; all identities and upper bounds exact. No live/order/credential path imported or called.
+R003: stale market, unsupported fee/shape, no policy/allocation, old assessment, paused/quarantined strategy, price/tick/minimum failure, policy budget overshoot => reason-coded closed rejection; no permit.
+R004: malicious/untrusted proposal unknown/duplicate keys, invalid numeric types/NaN, forged source, outside candidate menu, excessive candidates, wrong strategy, bad deadline => no trade; no raw leak; unchanged stores.
+R005: repeat/different snapshots and choices => deterministic content ID and no store mutation, no network/provider/process/scheduler side effects; source truth and no-trade denominator retained.
+R006: relevant existing Alpha/STRAT-LIFE/Hermes strategy/EXEC-FEAS/exploratory Gate C and startup/guard regressions pass. Run one stable-head local full suite ONLY AFTER relevant focused tests succeed. No hosted CI under this authority.
+
+# 6. SKILL ROUTING / LEAN REVIEW
+Apply available installed skills only where valuable: $wp-predraft-inspector, $hermes-alpha-reuse-check, $wp-minimum-test-plan; $ponytail, $code-simplifier during coding; $ponytail-review, $find-bugs, $runtime-authority-boundary-review, $canonical-evidence-audit and $verification-before-completion at final review. Actually read applicable SKILL.md and record what each contributed, not name-only theater. No refactor-only round or extra test suite. Reuse Value → Reuse → Efficiency → Implementation → Improvement → Verification. Follow Side19 A-F local-first: A verify/preflight/skills, B implement, C focused verification, D SIDE20 independent review (NOT self-approval), E one source/evidence ZIP, F publication/CI/merge only separately authorized. Karl alone merges after SIDE20 MERGE READY.
+
+# 7. HARD STOPS / SUCCESSOR BOUNDARY / REPORT BACK / FINAL EVIDENCE
+Native readiness `--check-diff` on exact seven files; focused and one stable-head full local pytest; relevant historical guard negative controls unchanged; tracked dirty baseline separate from this isolated branch; no runtime/credentials/capital/orders; evidence manifest sha256/length/CRC; final head SHA and all actual counts. Return one ZIP and precise LOCAL_PASS/LOCAL_BLOCKED (do not claim provider-active autonomy). No PR/push/CI/merge.
+
+NEXT: smallest REAL provider compatible Hermes trade-choice output connector / once-authorized bounded genuine model cycle and research-paper performance feedback, then protected host/account one-trade canary, then *separate protected* unattended standing-envelope gateway mode. The current `live_orch.canary` interactive phrase and one-CREATE structure is commissioning only, not an autonomous daemon; NEVER bypass by scripted TTY or weaken terminal safeguards. DATA-03/120-day science off critical path. If this WP is locally accepted, SIDE20 separately governs real provider calls and publication.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|hermes_auto|choice|selected_candidate_native|REQUIRE|model_selected_exact_proposal|cycle.hermes_choice|R001
+NR002|hermes_auto|native_economics|exact_intent|REQUIRE|native_feasibility_only|cycle.exec_feas|R002
+NR003|hermes_auto|native_eligibility|policy_and_hermes_current|REQUIRE|native_gate_c_preview_only|cycle.gate_c|R003
+NR004|hermes_auto|untrusted_choice|unknown_or_forged|REJECT|no_trade_no_authority|cycle.hermes_choice|R004
+NR005|hermes_auto|learning_evidence|all_outcomes|REQUIRE|bounded_canonical_receipt|cycle.receipt|R005
+END_NORMATIVE_RULE_MATRIX_V1

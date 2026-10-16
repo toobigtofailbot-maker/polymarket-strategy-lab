@@ -1,0 +1,424 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-AUTO-01",
+    "title": "Autonomous Hermes Opportunity-to-Intent Decision Cycle — Vertical Slice",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_AUTONOMOUS_OPPORTUNITY_DECISION_CONNECTOR",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-auto-01-opportunity-cycle",
+    "required_predecessor": {
+      "pr_number": 238,
+      "head_sha": "fc4c6cd0ddf40ffe8816346c1f88d8cf926d6e05",
+      "merge_sha": "7d1e817793612ffc607ff4278abc4a6c71eb9acd"
+    },
+    "objective": "Compose a bounded, foreground, credential-free one-cycle autonomous Hermes opportunity choice into native ExecutionIntent, EXEC-FEAS and exploratory Gate C using canonical Alpha and STRAT-LIFE inputs; emit source-labelled NO_TRADE/rejected/eligible-preview receipts for future learning. No real provider/model invocation, gateway order, account or capital authority. DATA-03 and formal OOS not prerequisites.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/autonomous_opportunity_cycle.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "docs/hermes_autonomous_opportunity_cycle_contract.md",
+      "docs/status_entries/S10-HERMES-AUTO-01.md",
+      "docs/wp_specs/S10-HERMES-AUTO-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-AUTO-01/wp_spec.json",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/autonomous_opportunity_cycle.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "docs/hermes_autonomous_opportunity_cycle_contract.md",
+      "docs/status_entries/S10-HERMES-AUTO-01.md",
+      "docs/wp_specs/S10-HERMES-AUTO-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-AUTO-01/wp_spec.json",
+      "tests/test_architecture_boundaries.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "tools/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_architecture_boundaries.py"
+    ],
+    "rollback_surface": "Revert exactly seven scoped files (including the historical architecture guard allowlist); no existing research/Hermes/Alpha/STRAT-LIFE/EXEC-FEAS/Gate-C/paper/gateway source or stores modified, no production state to unwind.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Add only one import-safe connector; all canonical validators and state stores remain unchanged.",
+    "items": [
+      {
+        "surface": "build_execution_intent / assess_execution_feasibility",
+        "before": "Canonical exact StrategyVersion-bound intent and current public execution economics",
+        "after": "Unchanged, composed from validated bounded Hermes-choice fields",
+        "change_authorized": false,
+        "compatibility_requirement": "Always native identity/quantity/price/freshness/fee validation; never allow AI supplied feasibility booleans",
+        "authority": "LOCAL_OFFLINE_PREVIEW_ONLY"
+      },
+      {
+        "surface": "evaluate_exploratory_gate_c / build_exploratory_gate_c_permit",
+        "before": "Native canonical eligibility decision with active PortfolioAuthorityPolicy and current Hermes assessment",
+        "after": "Unchanged; read-only connected for exact verified stores and intent",
+        "change_authorized": false,
+        "compatibility_requirement": "No reimplementation of Gate C; permit remains no-execution/no-live and needs further host/account authorization",
+        "authority": "LOCAL_OFFLINE_PREVIEW_ONLY"
+      },
+      {
+        "surface": "load_hermes_strategy_manager_store / load_strategy_lifecycle_store",
+        "before": "Verified durable canonical strategy judgment and portfolio policy state",
+        "after": "Unchanged; read only verified state; no strategy mutation",
+        "change_authorized": false,
+        "compatibility_requirement": "Fail closed on missing/stale/non-permit-compatible Hermes evidence and absent policy/allocation",
+        "authority": "LOCAL_OFFLINE_PREVIEW_ONLY"
+      },
+      {
+        "surface": "autonomous_opportunity_cycle.evaluate_once",
+        "before": "ABSENT",
+        "after": "NEW explicit injected-choice one-cycle deterministic bridge with NO_TRADE evidence",
+        "change_authorized": true,
+        "compatibility_requirement": "Pure inputs, bounded menu, strict choice validation, no provider, network, scheduler, gateway or account calls",
+        "authority": "LOCAL_OFFLINE_PREVIEW_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Hermes proposal is model-controlled but never risk authority; record source/proof and all non-trade outcomes.",
+    "items": [
+      {
+        "path": "cycle.hermes_choice",
+        "source": "CALLER",
+        "type": "object",
+        "required_rule": "Strictly decoded bounded model-origin proposal selects exact offered candidate and native intent shape or NO_TRADE; source stays UNVERIFIED/SYNTHETIC_ONLY.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject extras, duplicates, coercions, NaN/Inf, forged ID, stale clocks, choice not in menu, unsafe content.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical choice hash only, no raw model prose",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cycle.exec_feas",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Actual native ExecutionIntent + PublicExecutionVenueSnapshot evaluated by existing EXEC-FEAS unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No eligibility from stale/missing venue; no independent AI verdict.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Native assessment ID/status/reasons",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cycle.gate_c",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Native exploratory gate evaluation read-only on verified strategy lifecycle + Hermes manager stores; preview only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No permit on rejected/inconclusive; no gateway call.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Native decision/preview ID and reasons",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cycle.receipt",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Bounded content-addressed no-trade denominator and selected-menu/choice/evidence IDs; fixed no_order/no_live.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Repeat exact inputs reproduce bytes and ID; changes propagate; secret/path and raw content excluded.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "canonical bounded sanitized receipt",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Use repo canonical JSON+SHA256 for stage/run local identities; no cross-system canonical identity schema change.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Local-only; no real provider/runtime/trading activation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native WP RUNTIME gate passes exact seven-path input, including the narrowly amended architecture guard.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl forwards one full prompt/spec as local-only authorization.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly seven approved files (one historical architecture-guard allowlist correction) pass relevant focused and final stable-head local tests, no external provider/account/trades.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged native WP failure table; shared PIT runtime reasons remain unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Exact behavioral negative/positive examples are covered by named pytest nodes to avoid an independent duplicate spec language.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Five native one-cycle focused tests plus one final exact-head required local validation; no hosted CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_hermes_choice_controls_candidate_and_exact_intent",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_hermes_choice_controls_candidate_and_exact_intent",
+        "expected_result": "Native exact chosen candidate/side/size + NO_TRADE with verified soft assessment; no deterministic substitution"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_exec_feas_and_gate_c_only_preview",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_native_exec_feas_and_gate_c_only_preview",
+        "expected_result": "Only native feasible + eligible Gate C yields non-executable preview; no gateway import"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_missing_or_stale_policy_hermes_venue_rejects",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_missing_or_stale_policy_hermes_venue_rejects",
+        "expected_result": "Missing/paused/stale/budget/fee/minimum failures all return closed no-trade"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_untrusted_choice_and_forged_lineage_fail_closed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_untrusted_choice_and_forged_lineage_fail_closed",
+        "expected_result": "Malicious/unknown/duplicate/NaN/outside menu proposals refused"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_content_address_replay_no_side_effects",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_content_address_replay_no_side_effects",
+        "expected_result": "Byte-identical receipts for replay; changed inputs change ID; no store mutations or network"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "readiness_scope_guard_targeted_and_single_full_suite",
+        "command": "python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-AUTO-01/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-AUTO-01/wp_spec.json --repo-root . --check-diff --base 7d1e817793612ffc607ff4278abc4a6c71eb9acd --head HEAD --format json && python -B -m pytest -q -p no:cacheprovider",
+        "expected_result": "RUNTIME native readiness passes, exact seven-file scope and architecture-guard positive/negative controls, focused native Alpha/Hermes/STRAT-LIFE/EXEC-FEAS/Gate C and one final full local suite clean with actual counts, no provider or economic calls."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-AUTO-REAL-01",
+    "next_title": "Genuine bounded Hermes trade-choice provider execution + verified paper outcome feedback",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-AUTO-01",
+    "forbidden_in_this_wp": [
+      "Provider/model/Firecrawl calls or usage of credentials",
+      "Any live/private account, order signing/transmit/cancel, capital or gateway import",
+      "Any unattended scheduler/daemon or bypass of live_orch interactive canary confirmation",
+      "Any policy/allocation mutation or automatic adjustment to hard safety envelope",
+      "Any change to existing Hermes, Alpha, STRAT-LIFE, EXEC-FEAS, Gate C, paper or LIVE-ORCH source or tests",
+      "Any mandatory 120-day DATA-03/OOS prerequisite, historical cohort backfill or unwarranted profitability claim",
+      "Any GitHub push/PR, hosted CI or merge under local authority"
+    ]
+  }
+}
