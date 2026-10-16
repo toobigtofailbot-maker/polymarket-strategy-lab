@@ -1,5 +1,11 @@
 # Deferred Items Log
 
+## S10-HERMES-TS02
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-HERMES-TS02-D001 | Real tool-free provider compatibility and empirical Stage B assessment | SEPARATELY_GATED | This local offline core consumes cold TS01 results and produces SYNTHETIC_ONLY terminals. Hermes blank/invalid toolsets do not prove tool-free transport; actual adapter, credentials, budgeted provider invocation and strategy-manager outcome require later explicit authorization. Historical two-path guard compatibility is resolved by Karl's eight-file amendment; independent SIDE20 acceptance, publication and hosted CI remain pending and unauthorized here. |
+
 ## S10-HERMES-TS01
 
 | ID | Item | State | Required next evidence |
