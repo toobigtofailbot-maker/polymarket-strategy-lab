@@ -1,6 +1,6 @@
 # S10-HERMES-TS02 — offline reliability core
 
-State: IMPLEMENTED_LOCAL / SIDE20_REVIEW_PENDING / PROVIDER_TOOLFREE_UNPROVEN / CI_PENDING.
+State: IMPLEMENTED_LOCAL / LOCAL_VALIDATION_BLOCKED / SIDE20_REVIEW_PENDING / PROVIDER_TOOLFREE_UNPROVEN / CI_PENDING.
 Evidence mode: BLOCKED_NOT_READY for publication. Ready for review: NO (release).
 Merge ready: NO. Karl authorized the original local WP and exact eight-file same-run
 historical compatibility amendment on 2026-10-16. No publication or merge authority.
@@ -55,3 +55,19 @@ Full actual commands, exits, reviewer outcomes and skill limits belong in the ZI
 Workflow network: main sync fetch/pull only. Real source/provider/model/account calls,
 credentials, push, PR, hosted CI, deployment, paper/live, orders and capital: zero.
 S10-HERMES-TS02-D001 keeps actual provider transport and acceptance separately gated.
+
+## Final validation blocker
+
+The one authoritative full local suite on implementation commit
+aca9bd2985f5ca6a4df03dd5d57911687f9dc415 returned exit 1: 13941 passed, one failed,
+two inherited skips and 125 warnings. Failure:
+tests/test_hermes_advisory_foundation_architecture_docs.py::test_no_actual_hermes_implementation_artifacts_added
+rejects the mandatory src/research_runtime/hermes_controlled_runtime/two_stage.py
+through a second frozen exact allowlist. This guard was missed in preflight and
+the initial independent review. Its repair would require a ninth functional path,
+explicitly forbidden by the eight-file amendment; it is not modified or bypassed.
+Implementation has stopped. TS02_OFFLINE_CORE_VALIDATED is NOT achieved. The final
+evidence commit adds only this truthful status and the D002 blocker entry; full
+failure evidence remains bound to the unchanged implementation commit above.
+No second full suite is run for this known out-of-scope failure. Return one verified
+implemented-but-blocked ZIP to CURRENT SIDE20 for scope reconciliation.

@@ -5,6 +5,7 @@
 | ID | Item | State | Required next evidence |
 |---|---|---|---|
 | S10-HERMES-TS02-D001 | Real tool-free provider compatibility and empirical Stage B assessment | SEPARATELY_GATED | This local offline core consumes cold TS01 results and produces SYNTHETIC_ONLY terminals. Hermes blank/invalid toolsets do not prove tool-free transport; actual adapter, credentials, budgeted provider invocation and strategy-manager outcome require later explicit authorization. Historical two-path guard compatibility is resolved by Karl's eight-file amendment; independent SIDE20 acceptance, publication and hosted CI remain pending and unauthorized here. |
+| S10-HERMES-TS02-D002 | Second historical source allowlist requires a ninth file | BLOCKED_OUTSIDE_EIGHT_FILE_SCOPE | Full local suite at aca9bd2985f5ca6a4df03dd5d57911687f9dc415: 13941 passed, one failed, two skipped. tests/test_hermes_advisory_foundation_architecture_docs.py rejects mandatory two_stage.py; this separate frozen guard was missed in preflight and remains untouched. SIDE20/Karl must reconcile scope before any repair; no bypass, publication, hosted CI or second full run. |
 
 ## S10-HERMES-TS01
 
