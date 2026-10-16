@@ -588,6 +588,12 @@ def _retained_dq_flags(evidence: ObservabilityEvidence) -> tuple[str, ...]:
     return tuple(sorted(retained))
 
 
+def _utc_instant_key(canonical_timestamp: str) -> tuple[str, int]:
+    """Order validated canonical UTC strings without losing fractional precision."""
+    whole_second, _, fraction = canonical_timestamp[:-1].partition(".")
+    return whole_second, int(fraction.ljust(9, "0"))
+
+
 def evaluate_replay_admissibility(
     cutoff: str,
     evidence: ObservabilityEvidence,
@@ -613,6 +619,7 @@ def evaluate_replay_admissibility(
         else None
     )
     retained = _retained_dq_flags(evidence)
+    cutoff_key = _utc_instant_key(cutoff)
 
     # Rule 5: a correction/revision first observed or published after cutoff is
     # not admissible at that cutoff. The prior immutable observation is evaluated
@@ -631,7 +638,7 @@ def evaluate_replay_admissibility(
 
     # Rule 2/3: exact local first-seen is the strongest observability clock.
     if local_first_seen is not None:
-        if local_first_seen <= cutoff:
+        if _utc_instant_key(local_first_seen) <= cutoff_key:
             return ReplayAdmissibilityResult(
                 "ADMISSIBLE", "LOCAL_FIRST_SEEN", retained
             )
@@ -639,7 +646,7 @@ def evaluate_replay_admissibility(
 
     # Rule 4: fall back to an exact directly evidenced public-available time.
     if public_available is not None:
-        if public_available <= cutoff:
+        if _utc_instant_key(public_available) <= cutoff_key:
             return ReplayAdmissibilityResult(
                 "ADMISSIBLE", "PUBLIC_AVAILABLE", retained
             )
