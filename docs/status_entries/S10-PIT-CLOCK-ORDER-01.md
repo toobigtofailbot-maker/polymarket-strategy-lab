@@ -41,3 +41,11 @@ One private canonical UTC nanosecond key, one cutoff-key computation and two rep
 See S10-PIT-CLOCK-ORDER-01-D001 in docs/deferred_items_log.md. Broader two-stage/source-admission work remains separate and blocked. Historical research can be re-evaluated only by a separately approved rerun; existing records/IDs are not rewritten.
 
 Ready for review: NO. Review the one exact-head local ZIP first; subsequent PR publication, CI and merge remain Karl's decisions.
+
+## Same-run SIDE20 follow-up (Karl explicitly authorized)
+
+Previous locally tested commit: 0b1fd49bf32e21fad89a9d885b73a3f005a48812. Both PIT functional files remain byte-identical. Relocate the complete PIT deferred subsection before the five historical terminal deployment-plan rows, preserving every old row and its last-line guarantee. No guard edit.
+
+Matched unchanged baseline/candidate diagnostics: all three synthetic deployment-shell tests fail with generated executable fixtures under noexec /tmp, and all three pass under an isolated executable /fixtures tmpfs. Root cause: fixture execution denied by mount, not demonstrated deployment code failure. Keep /tmp noexec, source read-only, network none, capabilities dropped and no-new-privileges; use only the dedicated disposable fixture area for POSIX executable test files. Provide separate writable output-only local_data tmpfs for the four output tests. No deployment/test/source/security-policy changes.
+
+After documentation remediation, rerun the exact guard and four output tests, then essential focused/native/identity/scope checks and one final stable-HEAD full suite. Actual immutable-head results, skips/warnings/failures and old/new lineage are in the replacement terminal ZIP; this fragment does not predeclare a full-suite PASS. Return to existing SIDE20 through Karl. No new WP, publication, hosted CI, merge, runtime, provider, account or trading authority. Ready for review: NO until independent review and later owner publication decision.
