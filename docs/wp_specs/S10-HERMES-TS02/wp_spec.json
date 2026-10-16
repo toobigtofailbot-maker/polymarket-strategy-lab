@@ -250,7 +250,7 @@
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "Native RUNTIME deterministic readiness on exact eight-path prompt and spec passes.",
+        "condition": "Native RUNTIME deterministic readiness on exact nine-path prompt and spec passes.",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
@@ -262,7 +262,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Exactly eight approved paths and one final stable-head offline validation evidence ZIP pass; no real provider or network calls.",
+        "condition": "Exactly nine approved paths and one final stable-head offline validation evidence ZIP pass; no real provider or network calls.",
         "failure_category": "SCOPE_POLICY_INVALID"
       }
     ]
