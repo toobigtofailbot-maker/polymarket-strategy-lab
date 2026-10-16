@@ -352,6 +352,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 # source path only (canonical soft strategy decisions; no execution,
                 # live, credential, policy or scheduler authority).
                 "src/research_runtime/hermes_controlled_runtime/strategy_manager.py",
+                # S10-HERMES-TS02: exact offline two-stage source only (no live provider authority).
+                "src/research_runtime/hermes_controlled_runtime/two_stage.py",
             }
     findings = []
     for path in tracked:

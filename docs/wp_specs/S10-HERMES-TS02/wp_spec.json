@@ -1,0 +1,419 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-TS02",
+    "title": "Hermes two-stage structured-assessment offline reliability core",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_TWO_STAGE_OFFLINE_EVIDENCE_CORE",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-ts02-offline-core",
+    "required_predecessor": {
+      "pr_number": 238,
+      "head_sha": "fc4c6cd0ddf40ffe8816346c1f88d8cf926d6e05",
+      "merge_sha": "7d1e817793612ffc607ff4278abc4a6c71eb9acd"
+    },
+    "objective": "Add isolated offline Stage A-to-Stage B source-bound handoff, native strategy JSON validation, durable fail-closed per-stage/terminal audit and zero-redispatch replay without provider calls or a real Stage-B tool-free transport; preserve existing Hermes and TS01 APIs exactly.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/two_stage.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_two_stage.py",
+      "docs/hermes_two_stage_offline_reliability_contract.md",
+      "docs/wp_specs/S10-HERMES-TS02/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-TS02/wp_spec.json",
+      "docs/status_entries/S10-HERMES-TS02.md",
+      "docs/deferred_items_log.md",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/two_stage.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_two_stage.py",
+      "docs/hermes_two_stage_offline_reliability_contract.md",
+      "docs/wp_specs/S10-HERMES-TS02/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-TS02/wp_spec.json",
+      "docs/status_entries/S10-HERMES-TS02.md",
+      "docs/deferred_items_log.md",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "local_data/",
+      "src/risk_engine/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "tools/",
+      "src/operator_cockpit_frontend/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "src/strategy_lifecycle/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py"
+    ],
+    "rollback_surface": "Revert only the nine named scoped TS02 local files in the existing branch; preserve old full-suite failure/evidence and frozen original Hermes/TS01 runtime. No provider call or production state was created.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Add one isolated offline two-stage API; existing Hermes policy, controller, native validator, strategy manager and TS01 functions stay signature-and-behavior identical.",
+    "items": [
+      {
+        "surface": "validate_research_draft(...,strategy_mode=True)",
+        "before": "Authoritative native untrusted JSON/authority and strategy consistency validator.",
+        "after": "Unchanged, called after offline injected Stage B response.",
+        "change_authorized": false,
+        "compatibility_requirement": "All schema, safety, policy, source reference and role fields remain mandatory.",
+        "authority": "LOCAL_TS02_OFFLINE_ONLY"
+      },
+      {
+        "surface": "export_trusted_research_pair(path)",
+        "before": "TS01 cold read-only verified paired Gamma/CLOB archive.",
+        "after": "Unchanged; consumed as separate verified producer-owned input for bounded handoff.",
+        "change_authorized": false,
+        "compatibility_requirement": "No TS01 DDL/identity/receipt mutation or additional public HTTP acquisition.",
+        "authority": "LOCAL_TS02_OFFLINE_ONLY"
+      },
+      {
+        "surface": "run_controlled_hermes_research and strategy manager",
+        "before": "Pinned web-only single-stage Hermes controller and soft strategy manager.",
+        "after": "Unchanged; no new activation, real tool-free provider call, or canonical strategy-manager promotion.",
+        "change_authorized": false,
+        "compatibility_requirement": "Existing context/strategy/native guards continue passing; no fake success.",
+        "authority": "LOCAL_TS02_OFFLINE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The offline TS02 layer keeps trust provenance explicit and forbids model-authored evidence from being promoted.",
+    "items": [
+      {
+        "path": "ts02.handoff",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Hash-bound canonical cutoff-respecting summary from cold TS01 receipt and a bounded explicitly marked UNTRUSTED Stage A text excerpt (no source authority).",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No look-ahead, mismatched selected Gamma/CLOB, unverified receipt or missing/raw invalid archived rows; never interpret Stage A URL prose as source.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Bounded source hashes, IDs, clocks and proof level only.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ts02.stage_b",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Injected OFFLINE ONLY callback must see empty tool-capability surface and native strategy schema.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native validate_research_draft strategy-mode, strict expected request id, bounded source and strategy parameter names; any failure stops.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized native validation status and bounded output identity; no provider claims.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ts02.journal",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Durable pre-dispatch reservation, tamper-verifiable append-only/immutable stage and terminal records; cold replay never redispatches.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Canonical hashes, predecessor chain, exclusive per-run identity and fail-closed corruption/crash.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Run/stage digests and sanitized terminal status only.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ts02.terminal",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Every offline callback result is SYNTHETIC_ONLY even when native draft schema passes; no fake HermesResearchRunReceipt/StrategyAssessment/cost.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject any provider-verified or capital-authorizing claim.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed synthetic-only terminal category.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Use repo canonical JSON+SHA256 for stage/run local identities; no cross-system canonical identity schema change.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Local implementation only; no publication or paid provider activation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME deterministic readiness on exact nine-path prompt and spec passes.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl forwards the full prompt/spec for local-only Codex implementation.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly nine approved paths and one final stable-head offline validation evidence ZIP pass; no real provider or network calls.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged native WP failure table; shared PIT runtime reasons remain unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Exact behavioral negative/positive examples are covered by named pytest nodes to avoid an independent duplicate spec language.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Four new focused offline nodes, existing relevant Hermes/WP169 regression families, one stable-head full local suite and native readiness/scope receipts; no hosted CI under this approval.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_ts02_handoff_requires_cold_ts01_membership_and_cutoff",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_two_stage.py::test_ts02_handoff_requires_cold_ts01_membership_and_cutoff",
+        "expected_result": "Verified TS01 cold pair and UTC cutoff required; fake/late/tampered/mismatched source rejects before B callback."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ts02_stage_b_toolfree_contract_and_native_strategy_validator",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_two_stage.py::test_ts02_stage_b_toolfree_contract_and_native_strategy_validator",
+        "expected_result": "Injected Stage B sees explicit empty tool surface and native strategy output contract; good synthetic JSON validates and malicious/malformed/missing flags fail."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_ts02_durable_reservation_zero_redispatch_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_two_stage.py::test_ts02_durable_reservation_zero_redispatch_and_tamper",
+        "expected_result": "Durable reserve occurs before callback; crash/replay/conflict/tamper never dispatches again and reports sanitized fail closed."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_ts02_terminal_proof_levels_and_usage_nonfabrication",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_two_stage.py::test_ts02_terminal_proof_levels_and_usage_nonfabrication",
+        "expected_result": "Synthetic success remains labelled synthetic with no invented actual provider, Hermes runtime receipt, usage, cost or strategy promotion."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_ts02_existing_hermes_strategy_context_and_ts01_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_two_stage.py::test_ts02_existing_hermes_strategy_context_and_ts01_compatibility",
+        "expected_result": "Unchanged controller/strategy/context/TS01 families pass. BOTH native historical tracked-file guards accept exact TS02 tracked paths and reject an unlisted new Hermes implementation module; no matcher, regex, prior allowlist or other test weakened."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "native_readiness_exact_scope_full_local_suite",
+        "command": "python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-TS02/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-TS02/wp_spec.json --repo-root . --check-diff --base 7d1e817793612ffc607ff4278abc4a6c71eb9acd --head HEAD --format json && python -B -m pytest -q -p no:cacheprovider",
+        "expected_result": "Native readiness exact NINE-file diff, artifact/whitespace and both independent guard checks pass; final stable-head full repository pytest exits 0 with true counts/skips; retain previous 1-failure evidence and one cryptographically verified final evidence ZIP."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-TS02-REAL",
+    "next_title": "Hermes genuinely tool-free Stage B provider adapter and one bounded paid A/B empirical run",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-TS02",
+    "forbidden_in_this_wp": [
+      "Any real Hermes/provider/model/Firecrawl request or live Stage B invocation",
+      "Any provider credential/key/authentication, new SDK/CLI wrapper or generic agent refactor",
+      "Pretending --toolsets empty/none is a verified zero-tool surface",
+      "Any native Hermes policy/controller/strategy manager public API or DDL change",
+      "Any second TS01 market source acquisition or canonical PIT data migration",
+      "Any GitHub push/PR/hosted Actions/merge under local-only authority",
+      "Any capital, paper/live, scheduler, execution, risk, wallet or order authority"
+    ]
+  }
+}

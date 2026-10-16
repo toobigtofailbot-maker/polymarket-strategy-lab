@@ -416,6 +416,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 # source and focused test paths only (no wildcard, no regex change).
                 "src/research_runtime/hermes_controlled_runtime/strategy_manager.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_strategy_manager.py",
+                # S10-HERMES-TS02
+                "src/research_runtime/hermes_controlled_runtime/two_stage.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_two_stage.py",
             }
     findings = []
     for path in tracked:

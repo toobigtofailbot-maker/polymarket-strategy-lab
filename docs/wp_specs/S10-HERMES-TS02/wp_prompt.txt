@@ -1,0 +1,101 @@
+WP ID: S10-HERMES-TS02
+Title: Hermes two-stage structured-assessment OFFLINE reliability core
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: HERMES_TWO_STAGE_OFFLINE_EVIDENCE_CORE
+Package size class: M; exactly 9 paths; risk level: 3
+Base branch: main
+Frozen base: 7d1e817793612ffc607ff4278abc4a6c71eb9acd
+Required predecessor: PR #238 head fc4c6cd0ddf40ffe8816346c1f88d8cf926d6e05; merge 7d1e817793612ffc607ff4278abc4a6c71eb9acd
+Suggested branch: codex/s10-hermes-ts02-offline-core
+Governance track expected: RUNTIME
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE — AUTHORITY / NON-AUTHORITY
+Karl authorizes exactly the LOCAL/OFFLINE implementation when he forwards this WP to the CURRENT Codex engineering chat. No source network, provider/model/Firecrawl call, repo push, PR publication, hosted CI, merge, credentials, paper/live, orders or capital. Preserve the six-phase SIDE19 LEAN-PATH workflow (prepare → local implementation → stable-head validation → SIDE20 independent review → freeze evidence → separately authorized publication and hosted CI; Karl merges green PRs himself). This is not permission to publish. No new paid Hermes invocation is authorized.
+
+Implement the smallest useful two-stage RELIABILITY CORE with a hard distinction between Stage A web research (UNTRUSTED), a producer-witness-bound Stage A→B handoff, Stage B schema assessment (TOOL-FREE CONTRACT, OFFLINE/FAKE ONLY), and a fail-closed terminal record with deterministic zero-redispatch replay. Use unchanged native Hermes validator, the existing strategy/context/Alpha contracts, and TS01's exact cold-verified exporter. Real tool-free provider transport is NOT YET PROVEN and IS NOT IMPLEMENTED here. Do NOT call a synthetic valid JSON draft a genuine provider-qualified strategy assessment. No automatic strategy-manager history writes.
+
+Historical facts: two genuine controlled manager runs ended OUTPUT_SCHEMA_INVALID and no canonical assessment; combined Google strict-schema+web-tools requests returned HTTP 400. Real TS01 smoke separately passed with 3 genuine public GETs and a cold-verifiable Gamma/CLOB pair on merged main. Those old observations are not new execution authorizations and are not repeated.
+
+# 2. INCREMENTAL NINTH-GUARD COMPATIBILITY PREFLIGHT (NO NETWORK)
+The ORIGINAL full compatibility inspection, pinned Hermes v0.21.3 proof, reused API/schema/validator interfaces, source fixtures and skill assessment are retained in the previous evidence ZIP. Do not repeat them. This incremental amendment concerns only the second historical source allowlist and final validation. The known upstream finding remains: --toolsets empty/omitted falls back to configured tools; invalid-only values do not create a tool-free Stage B; never relax the existing web-only Hermes controller policy or claim a genuine provider-qualified success.
+
+Produce a compact machine-checkable feasibility note IN EXTERNAL EVIDENCE before editing: exact existing signatures; safest <=9-file additive implementation; which existing helpers can be called safely; representative current regression tests; verify the historical tracked-file Hermes guard against the proposed two TS02 paths. Karl authorized the eighth historical guard and now authorizes the ninth exact test path named in Section 3. The full-suite failure on implementation commit aca9bd2985f5ca6a4df03dd5d57911687f9dc415 identifies the second guard; add only the exact TS02 source to its allowlist. Check both existing guards and all tracked-file denylist checks BEFORE the next full suite. If any mandatory behavior requires a TENTH file, changed Hermes policy/controller/manager, credentials or provider invocations, STOP for owner reconciliation rather than bypassing a guard. A missing truly tool-free REAL adapter is an EXPECTED limitation, not a blocker to this offline core.
+
+Pinned upstream source was independently read at commit 345cd2b before drafting. Its CLI's empty toolset normalization yields None and config fallback; invalid-only toolset overrides exit 2; AIAgent receives an enabled_toolsets list, but that does not prove empty effective tool schemas. No real Stage B transport in this WP. No external repo code copying.
+
+# 3. EXACT NINE-PATH SCOPE / NO SURPRISE EDITS
+1. src/research_runtime/hermes_controlled_runtime/two_stage.py — new import-safe stdlib-only, offline protocol/journal/verification core; no provider launcher.
+2. tests/research_runtime/hermes_controlled_runtime/test_two_stage.py — assertion-bearing tests (listed below), no external network/process.
+3. docs/hermes_two_stage_offline_reliability_contract.md — small human-readable API/proof-level contract.
+4. docs/wp_specs/S10-HERMES-TS02/wp_prompt.txt — EXACT raw copy of this prompt.
+5. docs/wp_specs/S10-HERMES-TS02/wp_spec.json — EXACT supplied JSON.
+6. docs/status_entries/S10-HERMES-TS02.md — truthful local result/authority/limitations.
+7. docs/deferred_items_log.md — one concise separate real-provider/compatibility deferral.
+8. tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py — ONLY append the two exact TS02 source/test paths to the existing test_no_actual_hermes_implementation_artifacts_added allowed set, with one S10-HERMES-TS02 comment. Preserve all forbidden_patterns, matching logic, baseline allowed entries and every other test unchanged.
+9. tests/test_hermes_advisory_foundation_architecture_docs.py — ONLY add the exact literal "src/research_runtime/hermes_controlled_runtime/two_stage.py" to its existing test_no_actual_hermes_implementation_artifacts_added allowed set, with one S10-HERMES-TS02 comment. Do NOT widen/alter a regex, allow a directory, whitelist the whole module family, remove assertions, change any other test, or add other file paths.
+
+No editing existing runtime/model/policy/controller/manager, TS01, original Hermes output validator, any OTHER native guards or other tests, workflow, dependencies, config, protected paths or generated artifacts. Exceptions are ONLY the two specifically named historical guard-test allowlists in paths #8 and #9. Prove both unchanged guard functions accept the actually tracked TS02 files and continue rejecting an unrelated similarly named Hermes source. No blanket exemptions, wildcard, prefix, regex change or test deletion. No new SDK/vendor adapter, CLI wrapper, background worker or server.
+
+Historical compatibility amendment #2: SAME S10-HERMES-TS02 implementation/worktree, currently preserved at blocked commit 3d4fd4fee2efea37471cb45c2cdb0705f8afdd4e. Karl explicitly authorizes adding ONLY the ninth named historical guard, after the full suite found exactly one failure. Preserve prior full-suite and focused receipts. Update both governing files to these exact approved bytes, rerun native diff readiness, and continue in the SAME run. No new WP, functional feature, provider call or branch restart.
+
+# 4. REQUIRED BEHAVIOR — REUSE, TRUST, RETRY/REPLAY
+A. Input contract: only explicit caller-supplied bounded UNTRUSTED Stage-A captured research text + a separate TS01 `export_trusted_research_pair` RESULT derived from cold-open archive. Stage A provenance is labelled INJECTED/UNVERIFIED unless backed by a separately authorized genuine producer runtime. Original Stage A text and its own URL claims are never trusted sources; the bounded excerpt may inform Stage B as explicitly untrusted text, never as an attested URL or instruction. No assertion that the historical failed Hermes manager receipt is a usable Stage-A output. No download or repo path inferred from model output. For synthetic tests allow TS01 transport_mode=INJECTED but label the whole result SYNTHETIC_ONLY.
+
+B. Handoff: use existing TS01 export to require `status=ADMITTED`/`proof_level=LOCAL_PRODUCER_WITNESS`, two selected exact occurrences, CLOB `asset_id`/market condition matched to the Gamma first returned token; bind canonical SHA256 of a bounded deterministic summary to Stage A captured-text SHA256 and a clearly marked, bounded UNTRUSTED_STAGE_A_TEXT field (max 20,000 UTF-8 bytes, inert data only), stable stage/run/request ids, market/token, verified raw hashes and receipt digest, source receive clocks and caller cutoff. Cutoff comparison must use UTC parsed times and no look-ahead: evidence received after the cutoff cannot enter. TS01 raw Gamma/CLOB source bytes remain locally preserved at TS01 store, never embedded wholesale in handoff/model prompt or evidence ZIP. The model-facing Stage-A excerpt must be bounded, marked UNTRUSTED, and hash-bound; never echo it in terminal receipts or logs. If link/clock/receipt/missing rows are wrong: STOP before any Stage B callback.
+
+C. Stage B is an OFFLINE ONLY injected callback/protocol, with explicit `tool_capabilities=()` and no process, socket or provider creation inside this module. Do not make a Hermes CLI --toolsets='' / 'none' call. The callback receives only the canonical bounded handoff and the existing machine-generated strategy draft output contract, plus exact expected request id/strategy parameter names. No hidden source, credential or scheduler support. Always validate its arbitrary returned bytes using existing `validate_research_draft(..., strategy_mode=True, strategy_parameter_names=...)` and existing strategy consistency checks. Invalid JSON, missing/false authority flags, unsafe content, schema shape, unsupported parameter keys, missing source references or mismatched request id terminate with non-success; no re-prompt or auto-provider retry. The native validator and policy are not weakened.
+
+D. Evidence and replay: for one caller-selected ignored/local output directory, create a bounded immutable run ID from canonical, source-bound preimage; reserve the stage dispatch slot durably with exclusive-create/atomic staging BEFORE invoking the injected Stage B callback; store bounded append-only stages or immutable per-run records for A, handoff, B outcome and terminal with exact canonical SHA256 and predecessor chain. Cold verification detects mutation, deletion, conflicting output, corruption or partial interrupted write and fails closed. Once a dispatch slot was reserved, a repeat call/replay NEVER calls Stage B again, including after crash, timeout, parsing failure or refusal. If recovery is impossible, return explicit INCOMPLETE_BLOCKED; no lock deletion or auto-resume. The terminal must carry `OFFLINE_SYNTHETIC_VALIDATED`, `INVALID_OUTPUT`, `SOURCE_UNTRUSTED`, `INTERRUPTED_BLOCKED`, or equivalent closed truthful codes. Never fabricate `RESEARCH_DRAFT_VALIDATED`/native HermesResearchRunReceipt, usage file, paid cost, provider/model verification, source signature or canonical StrategyAssessment. Keep exact original raw upstream receipts immutable.
+
+E. Strict output: a synthetic draft that passes the native validator proves *offline software mechanics only*. No model/provider call or truly tool-free network capability has been proven. No consumer-facing API shall promote offline terminal to an accepted strategy decision or risk instruction. Maintain existing strategy manager and controlled research public APIs byte-exact. An explicit real Stage-B provider path needs a FUTURE separate budgeted, credential-authorized, policy-compatible WP and empirical tool-free proof.
+
+# 5. EVIDENCE PLAN / REQUIREMENT MAPPING / NEGATIVE TEST MATRIX
+R001 `test_ts02_handoff_requires_cold_ts01_membership_and_cutoff`: valid exact TS01 verified synthetic pair and UTC cutoff accept into labelled offline handoff; wrong link/hash/receipt, missing archive, later receive, raw spoof fail closed with zero B callback. No fake upstream signature.
+R002 `test_ts02_stage_b_toolfree_contract_and_native_strategy_validator`: fake Stage B gets only explicit empty tool capability set and native schema; good full strategy draft validates; invalid JSON/missing authority/wrong request/unknown params/unsafe output rejected with no fake native provider success.
+R003 `test_ts02_durable_reservation_zero_redispatch_and_tamper`: durable pre-dispatch reserve; failed/crashed/second call does not redispatch; invalid hash/altered/deleted/partial chain fails closed; no auto-lock cleanup or file-path echo.
+R004 `test_ts02_terminal_proof_levels_and_usage_nonfabrication`: synthetic is never labelled provider-qualified, no fake provider usage, receipt, priced cost or strategy-manager assessment; Stage A URL alone cannot become a trusted source.
+R005 `test_ts02_existing_hermes_strategy_context_and_ts01_compatibility`: named old Hermes controller, strategy manager, context, runner/models plus WP169/TS01 regressions must pass with no behavioral changes; no existing tests or historical guards weakened. Run BOTH historical tracked-file guards in isolation; both must accept the actual TS02 tracked inventory and reject a synthetic unlisted Hermes implementation file. Only the first guard adds two exact names; the second adds only the single exact TS02 source filename. Never weaken unrelated matching or tests.
+R006 FINAL stable-HEAD full local suite after ninth guard plus native WP readiness (exact NINE changed paths), both historical guards, generated-artifact and whitespace checks; record actual exit codes and inherited skips; one ZIP final evidence.
+
+Write four NEW focused nodes matching R001-R004, plus one named test node matching R005 OR cite exact unchanged existing regression families and assert their real execution; map all six requirements to observed commands in ZIP. Negative coverage should be representative, not gigantic. Favor <300 source lines if sound; do not sacrifice correctness to a mechanical line quota. No test-only provider fake may be injected through public production runtime as a genuine provider.
+
+# 6. SKILL-ASSISTED IMPROVEMENT / EFFICIENCY
+At local preflight discover all Codex 55 user skill names but load only appropriate skills; actually read SKILL.md and record used vs mere SOURCE_LOCATED. Preferred workflow: `$wp-predraft-inspector`, `$hermes-alpha-reuse-check`, `$wp-minimum-test-plan`; `$ponytail` and `$code-simplifier` while designing; `$systematic-debugging` only for genuine failure; `$canonical-evidence-audit`, `$runtime-authority-boundary-review`, `$find-bugs`, `$ponytail-review`, `$verification-before-completion` after patch. Optional `$spec-to-code-compliance` if beneficial. Skill analysis must produce a concrete change/avoidance/decision for every used skill; no quota, no automatic external second opinion, no unauthorized refactor or security engine installation. Native repository standards and this WP override skills. Value → Reuse → Efficiency → Implementation → Improvement → Verification.
+
+Reuse the already-created dedicated TS02 worktree and blocked code/tests; do NOT restart, rebase, or redo the already evidenced baseline/red tests. Refresh main only read-only and STOP on divergence. Fix ordinary 9-path mistakes within SAME RUN. Focused tests during editing; one authoritative FINAL stable-HEAD full pytest ONCE after both historical guard fixes and scope/doc reconciliation, using the existing permitted offline validation image. Avoid repeating the already completed failed full run before this gate. Preserve its 13941 passed/2 skipped/1 failed receipt; do not claim that earlier failed run as a full PASS. No repeated broad searches/full-suites without a changed HEAD. Never trigger GitHub Actions by publishing a PR before separate Karl approval. Karl will manually merge after Side20 independently declares MERGE READY.
+
+# 7. HARD STOPS / SUCCESSOR BOUNDARY / REPORT BACK
+STOP without expansion if pinned provider semantics would accidentally enable tools, protected/auth scope is necessary, original code API must be broken, native readiness cannot pass within the nine-path budget, or full-suite bug requires unrelated edits. Return exact blocker and unchanged evidence; never invent counts, approval or source proof. A real provider is intentionally not a success gate of this offline WP.
+
+Return ONE ZIP to Karl → CURRENT SIDE20 containing README/verdict, actual changed files or diffs, baseline/main/HEAD ancestry, exact file-scope, readiness commands/returns, focused and full test receipts, true skill usage, material negative cases, external synthetic fixtures only, canonical hashes+byte lengths+CRC, no credentials or real Stage A/B raw text from providers. No push/PR/hosted CI/merge, no new real TS01 source calls.
+
+Success state: `TS02_OFFLINE_CORE_VALIDATED / PROVIDER_TOOLFREE_UNPROVEN / CI_PENDING`; not `HERMES_REAL_SUCCESS`, not `MERGE_READY` until required exact-head CI later. Subsequent real tool-free-provider implementation/use and actual strategy-manager outcome must remain separately gated.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|hermes_ts02|source|cold_ts01_verified|REQUIRE|verified_pair_and_cutoff|ts02.handoff|R001
+NR002|hermes_ts02|stage_b|tool_capabilities|REQUIRE|empty_tool_surface_offline|ts02.stage_b|R002
+NR003|hermes_ts02|replay|reserved_dispatch|REJECT|second_dispatch|ts02.journal|R003
+NR004|hermes_ts02|terminal|synthetic_only|REQUIRE|no_genuine_provider_claim|ts02.terminal|R004
+NR005|hermes_ts02|legacy_contract|existing_controller_manager|PRESERVE_EXACT|old_api_and_authority|NONE|R005
+END_NORMATIVE_RULE_MATRIX_V1
