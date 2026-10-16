@@ -29,7 +29,8 @@
       "docs/wp_specs/S10-HERMES-TS02/wp_spec.json",
       "docs/status_entries/S10-HERMES-TS02.md",
       "docs/deferred_items_log.md",
-      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py"
     ],
     "allowed_changed_files": [
       "src/research_runtime/hermes_controlled_runtime/two_stage.py",
@@ -39,7 +40,8 @@
       "docs/wp_specs/S10-HERMES-TS02/wp_spec.json",
       "docs/status_entries/S10-HERMES-TS02.md",
       "docs/deferred_items_log.md",
-      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py"
     ],
     "forbidden_prefixes": [
       ".github/",
@@ -56,12 +58,13 @@
       "secrets/",
       "src/strategy_lifecycle/"
     ],
-    "max_changed_files": 8,
+    "max_changed_files": 9,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
-      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py"
     ],
-    "rollback_surface": "Revert only eight scoped TS02 local files; the unchanged Hermes controller, policy, strategy manager, TS01 SQLite and public API keep their prior bytes and behavior; no provider call or production state was created.",
+    "rollback_surface": "Revert only the nine named scoped TS02 local files in the existing branch; preserve old full-suite failure/evidence and frozen original Hermes/TS01 runtime. No provider call or production state was created.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -387,14 +390,14 @@
         "source": "pytest",
         "test": "test_ts02_existing_hermes_strategy_context_and_ts01_compatibility",
         "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_two_stage.py::test_ts02_existing_hermes_strategy_context_and_ts01_compatibility",
-        "expected_result": "Existing controller/strategy/context/TS01 compatibility proofs still pass unchanged; tests never relax native guards. Historical tracked-file guard accepts only exact TS02 source/test additions; third unrelated Hermes path remains rejected."
+        "expected_result": "Unchanged controller/strategy/context/TS01 families pass. BOTH native historical tracked-file guards accept exact TS02 tracked paths and reject an unlisted new Hermes implementation module; no matcher, regex, prior allowlist or other test weakened."
       },
       {
         "requirement_id": "R006",
         "source": "validation",
         "test": "native_readiness_exact_scope_full_local_suite",
         "command": "python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-TS02/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-TS02/wp_spec.json --repo-root . --check-diff --base 7d1e817793612ffc607ff4278abc4a6c71eb9acd --head HEAD --format json && python -B -m pytest -q -p no:cacheprovider",
-        "expected_result": "Readiness and exact eight-path diff pass; one stable-head full repo pytest exits 0 with genuine counts and truthful skips; one SHA256/byte-length/CRC evidence ZIP."
+        "expected_result": "Native readiness exact NINE-file diff, artifact/whitespace and both independent guard checks pass; final stable-head full repository pytest exits 0 with true counts/skips; retain previous 1-failure evidence and one cryptographically verified final evidence ZIP."
       }
     ]
   },
