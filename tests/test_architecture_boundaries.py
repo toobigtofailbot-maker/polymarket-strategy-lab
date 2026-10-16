@@ -196,6 +196,8 @@ APPROVED_SRC_SCOPES = (
     # local/offline strategy lifecycle and global portfolio-policy state only. It has no
     # network, credential, scheduler, Hermes-runtime, paper, order, execution or live
     # authority, and it is not a parent src/ wildcard approval.
+    # S10-HERMES-AUTO-01: exact offline opportunity connector only.
+    "src/research_runtime/autonomous_opportunity_cycle.py",
     "src/strategy_lifecycle",
     # S10-EXEC-FEAS-01 approves exactly the stdlib-only src/execution_feasibility family: the
     # current-public, read-only execution-feasibility evaluator (two fixed-host unauthenticated
