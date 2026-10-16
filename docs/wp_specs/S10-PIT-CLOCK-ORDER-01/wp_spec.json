@@ -1,0 +1,371 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-PIT-CLOCK-ORDER-01",
+    "title": "Precise nanosecond PIT clock ordering",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SHARED_PIT_CLOCK_CORRECTION",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "suggested_branch": "codex/side19-pit-clock-order",
+    "required_predecessor": {
+      "pr_number": 236,
+      "head_sha": "75db804b3351e1d3c6699336a0dadd77c97a4133",
+      "merge_sha": "4ee22b89bb63ae3fd11e935943694577e3444919"
+    },
+    "objective": "Correct only the two shared observability comparisons using a private nanosecond key; preserve public parsing, serialization, IDs, error/reason precedence and alias. Local validation only, no PR publication or hosted CI.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/point_in_time_market_research/research_provenance.py",
+      "tests/data_layer/point_in_time_market_research/test_research_provenance.py",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-PIT-CLOCK-ORDER-01.md",
+      "docs/wp_specs/S10-PIT-CLOCK-ORDER-01/wp_prompt.txt",
+      "docs/wp_specs/S10-PIT-CLOCK-ORDER-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/point_in_time_market_research/research_provenance.py",
+      "tests/data_layer/point_in_time_market_research/test_research_provenance.py",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-PIT-CLOCK-ORDER-01.md",
+      "docs/wp_specs/S10-PIT-CLOCK-ORDER-01/wp_prompt.txt",
+      "docs/wp_specs/S10-PIT-CLOCK-ORDER-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "config/",
+      "configs/",
+      "local_data/",
+      "tools/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/research_runtime/",
+      "agent_runtime/",
+      "agent_memory/"
+    ],
+    "max_changed_files": 6,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly the six scoped paths in the isolated branch; preserve all historical evidence and user files. No runtime activation.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Public signatures and all serializers remain unchanged.",
+    "items": [
+      {
+        "surface": "evaluate_replay_admissibility",
+        "before": "Existing public function and error/result contract.",
+        "after": "Same signature and serialization, precise UTC order at the two shared comparison sites only.",
+        "change_authorized": false,
+        "compatibility_requirement": "Preserve all errors, reasons, flags, canonical IDs and aliases.",
+        "authority": "LOCAL_PIT_CORRECTION_ONLY"
+      },
+      {
+        "surface": "canonicalize_utc_timestamp",
+        "before": "Existing public function and error/result contract.",
+        "after": "Same signature and serialization, precise UTC order at the two shared comparison sites only.",
+        "change_authorized": false,
+        "compatibility_requirement": "Preserve all errors, reasons, flags, canonical IDs and aliases.",
+        "authority": "LOCAL_PIT_CORRECTION_ONLY"
+      },
+      {
+        "surface": "observable_at",
+        "before": "Existing public function and error/result contract.",
+        "after": "Same signature and serialization, precise UTC order at the two shared comparison sites only.",
+        "change_authorized": false,
+        "compatibility_requirement": "Preserve all errors, reasons, flags, canonical IDs and aliases.",
+        "authority": "LOCAL_PIT_CORRECTION_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Exact instant order and existing precedence are normative.",
+    "items": [
+      {
+        "path": "pit.instant_order",
+        "source": "DERIVED",
+        "type": "tuple",
+        "required_rule": "Compare fixed UTC whole-second component plus integer fractional nanoseconds; no float or microsecond truncation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Compare fixed UTC whole-second component plus integer fractional nanoseconds; no float or microsecond truncation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Existing status, basis and retained flags only.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "pit.precedence",
+        "source": "DERIVED",
+        "type": "tuple",
+        "required_rule": "Existing correction, uncertainty, local, public, missing precedence and canonicalization/error order stay unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing correction, uncertainty, local, public, missing precedence and canonicalization/error order stay unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Existing status, basis and retained flags only.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No identity algorithm or serialization is changed.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Native governance progression; human authorization is already supplied for the bounded repair.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native FAST deterministic readiness passes for exact six-path package.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorized this bounded PIT correction and local validation.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly six scoped paths corrected and locally validated; no publication or runtime action.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged native WP failure table; shared PIT runtime reasons remain unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Executable independent oracle and negative tests provide actual function evidence; no new spec identity derivation.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Focused regression, close consumers, one final full suite and native exact-scope readiness.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_nanosecond_order_matches_independent_oracle",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/point_in_time_market_research/test_research_provenance.py::test_nanosecond_order_matches_independent_oracle",
+        "expected_result": "Exact UTC ordering across 0-9 significant fractional digits, +/-1ns/us/ms and calendar boundaries, both clocks and missing clocks."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_nanosecond_precedence_and_error_contracts",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/point_in_time_market_research/test_research_provenance.py::test_nanosecond_precedence_and_error_contracts",
+        "expected_result": "Historical five precedence/flag observations and six errors preserved, including contradictory clocks and correction-before-uncertainty."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_nanosecond_serialization_identity_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/point_in_time_market_research/test_research_provenance.py::test_nanosecond_serialization_identity_compatibility",
+        "expected_result": "Fixed historical canonical timestamp strings, logical preimages and independent raw/manifest identity fixtures retain exact bytes and IDs."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "related families",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/point_in_time_market_research/test_research_provenance.py tests/research_runtime/hermes_controlled_runtime/test_context_broker_reconciliation.py tests/data_layer/wallet_intelligence/test_profile.py tests/data_layer/wallet_intelligence/test_copyability.py",
+        "expected_result": "All actual shared and close consumer tests pass without changing callers, authority or error contracts."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "full suite",
+        "command": "python -B -m pytest -q -rs -p no:cacheprovider",
+        "expected_result": "One stable-candidate repository full suite; report every failure, skip and environment limit without waivers."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-PIT-REVIEW-01",
+    "next_title": "Independent Side19 review and owner decision",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-PIT-CLOCK-ORDER-01",
+    "forbidden_in_this_wp": [
+      "PR publication, hosted CI, merge and deployment",
+      "Hermes/schema-bridge/two-stage implementation",
+      "Provider, Firecrawl, real source acquisition, account or credential operations",
+      "Risk, execution, orders, capital, trading and historical backfill"
+    ]
+  }
+}

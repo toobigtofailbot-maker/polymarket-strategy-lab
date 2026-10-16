@@ -1,0 +1,75 @@
+Package Identity:
+WP ID: S10-PIT-CLOCK-ORDER-01
+Title: Precise nanosecond PIT clock ordering
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Frozen base: 4ee22b89bb63ae3fd11e935943694577e3444919
+Required predecessor: PR236, head75db804b3351e1d3c6699336a0dadd77c97a4133, merge4ee22b89bb63ae3fd11e935943694577e3444919.
+Suggested branch: codex/side19-pit-clock-order
+Package class: SHARED_PIT_CLOCK_CORRECTION
+Package size class: M; exact six paths, exactly two functional files.
+Risk level: 2; capital USD0, orders0
+Governance track expected: FAST
+Evidence mode expected: BLOCKED_NOT_READY; local-only return, PR/CI forbidden pending later owner approval.
+Runtime impact: precise research PIT observability order only. Product/network/credential/dependency/trading authority: none.
+Recommended Codex mode: keep configured model; stop on out-of-scope failures.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. Objective / Authority / Non-Authority Posture
+Karl explicitly authorizes the minimal local PIT correction and local validation in the forwarded SIDE19_PIT_CORRECTION_SINGLE_PASS_AUTHORIZATION_20261016.md. Readiness is not authorization; current human authorization applies after native package checks. One isolated worktree. Implement one private nanosecond key and replace only local/public comparisons; compute cutoff key once. Keep validation order, canonical strings, IDs, serializer preimages, reasons, flags, correction/uncertainty/local/public/missing precedence and observable_at unchanged.
+Implementation authority: six exact paths below, two functional. Report/export authority: local source/test evidence and exactly one verified ZIP. Canonical evidence authority: WP status/spec evidence only; no historical reclassification. All Centralized Boundary Groups in docs/ai/codex/PROTECTED_PATHS.md remain forbidden: credentials/secrets; authenticated clients; wallet/account behavior; order placement/cancel; execution gateway; paper engine; scheduler/bot loop; runtime/daemon; dashboard/deployment; dependency/lock changes; external code copying; generated artifacts. Temporary test outputs stay external and uncommitted. Workflow git sync and dependency-environment checks are distinct from product network; no market/provider calls. Existing approved local Python3.12 validation image already has pytest and project pins; do not alter trusted Hermes.
+
+2. Hard Merge Gate / Exact Scope
+Before branch creation require clean local main=origin/main=frozen base and predecessor commit/files present. Remote identity and git merge parents are local merge evidence; no published-PR claim is made. Dedicated worktree, one branch. No PR publication, hosted CI, merge or deployment. Local implementation can be validated without claiming review/merge readiness.
+Required=allowed, maximum6; all other paths forbidden:
+src/data_layer/point_in_time_market_research/research_provenance.py
+tests/data_layer/point_in_time_market_research/test_research_provenance.py
+docs/deferred_items_log.md
+docs/status_entries/S10-PIT-CLOCK-ORDER-01.md
+docs/wp_specs/S10-PIT-CLOCK-ORDER-01/wp_prompt.txt
+docs/wp_specs/S10-PIT-CLOCK-ORDER-01/wp_spec.json
+Normal governance minimum: prompt/spec, stable status fragment, deferred log for unavailable/pending release evidence; no project-status/index churn is needed. Existing full-changed-set guards derive exact scope from the active spec/status fragment; do not edit guards.
+
+3. Context Budget / Compatibility / Impossibility Check
+Read mandatory startup files and current WP state machine; targeted helper, its existing tests, close context-broker/wallet consumers, test workflow, validation matrix and native readiness/spec rules. Reuse the existing parser and error contract. Oracle tests use independent calendar ordinal plus integer nanoseconds, never the production key. No new dependency, utility module or consumer rewrite. Source keys use fixed-width canonical UTC whole seconds and an integer fraction padded to nine digits; no datetime fractional truncation. Prior 236 synthetic vectors contain44 mismatches; all236 must agree after correction. Preserve five historical precedence/flag and six error observations. Preserve baseline public-function AST/serialization and raw/manifest identity fixtures. No unrelated timestamp variant hunt.
+
+4. Evidence Plan / Requirement Mapping / Negative Test Matrix
+R001: test_nanosecond_order_matches_independent_oracle, exact instant order and all fractional/rollover cases.
+R002: test_nanosecond_precedence_and_error_contracts, historical precedence/errors plus invalid/null/type/empty, future/stale order and conflicting clocks.
+R003: test_nanosecond_serialization_identity_compatibility, unchanged canonical bytes and logical IDs.
+R004: actual shared provenance, Hermes context-broker and wallet profile/copyability tests.
+R005: one authoritative stable-candidate full pytest, actual counts/skips/failures preserved externally.
+Negative matrix required: YES for temporal admission. Missing/null/type/empty/format/future/conflict and accepted zero-offset spelling categories covered. Forbidden wording/token/case filters are inapplicable: this change does not add a text or secret scanner. No security bypass or fake credential needed.
+Run native pre-implementation readiness, then final --check-diff with exact base and commit. Run generated-artifact/diff scope and whitespace checks and relevant offline boundary/security checks. No test skip insertion, guard weakening or unrelated full-suite retry. Capture expected baseline red evidence before the single source correction and final green evidence after. All outputs external.
+
+5. Hard Stop Conditions / Rollback
+Stop on dirty/stale main, unexpected source change, validation failure requiring another functional path, parser/error/identity change, unavailable required testing environment, or protected authority crossing. Preserve evidence of any failure. Revert the six-path local patch only by later human decision; never delete user files or historical evidence. Do not restart the abandoned Hermes derivative or TS01/TS02 work.
+
+6. Successor Boundary / Report Back
+Separate independent Side19 review, PR publication/hosted CI/merge and historical derived-research reruns all require later owner approval. Return exactly one self-contained CRC/hash/byte-length verified ZIP containing source/test diff, exact git identities, prompt/spec hashes, all actual test/native gate results and limitations. Ready for review: NO pending authorized review/publication. No trading or runtime authority is created.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|pit|clock_order|canonical_utc|REQUIRE|exact_instant_order|pit.instant_order|R001
+NR002|pit|precedence|all_inputs|PRESERVE_EXACT|same_reasons_and_flags|pit.precedence|R002
+NR003|pit|identity|serialization|PRESERVE_EXACT|same_bytes_and_ids|NONE|R003
+END_NORMATIVE_RULE_MATRIX_V1

@@ -9,6 +9,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import random
+from datetime import date
+from decimal import Decimal
 
 import pytest
 
@@ -338,3 +341,163 @@ def test_admissibility_event_time_alone_never_admissible():
 def test_observable_at_alias_matches():
     ev = rp.ObservabilityEvidence(local_first_seen_time="2026-01-02T00:00:00Z")
     assert rp.observable_at("2026-01-03T00:00:00Z", ev).status == "ADMISSIBLE"
+
+
+# Independent calendar/Decimal oracle: never calls the production canonicalizer
+# or order key, and never converts fractional seconds through datetime.
+_NS_PER_SECOND = 1_000_000_000
+_CLOCK_BRANCHES = ("local_first_seen_time", "public_available_time", "none")
+
+
+def _instant_ns(value: str) -> int:
+    body = value[:-1] if value.endswith("Z") else value[:-6]
+    day, clock = body.split("T")
+    whole, _, fraction = clock.partition(".")
+    hour, minute, second = map(int, whole.split(":"))
+    seconds = ((date.fromisoformat(day).toordinal() * 24 + hour) * 60 + minute) * 60 + second
+    return seconds * _NS_PER_SECOND + int(Decimal("0." + (fraction or "0")) * _NS_PER_SECOND)
+
+
+def _render_ns(value: int, *, width: int = 9, zone: str = "Z") -> str:
+    seconds, fraction = divmod(value, _NS_PER_SECOND)
+    ordinal, seconds = divmod(seconds, 86400)
+    hour, seconds = divmod(seconds, 3600)
+    minute, second = divmod(seconds, 60)
+    assert fraction % 10 ** (9 - width) == 0
+    suffix = "." + f"{fraction:09d}"[:width] if width else ""
+    return f"{date.fromordinal(ordinal).isoformat()}T{hour:02d}:{minute:02d}:{second:02d}{suffix}{zone}"
+
+
+def _nanosecond_vectors():
+    # Exact inputs of the retained 236-case Side19 characterization.
+    vectors = []
+    for width in range(10):
+        fraction = "." + "123456789"[:width] if width else ""
+        cutoff = f"2026-10-16T00:00:00{fraction}Z"
+        for branch in _CLOCK_BRANCHES:
+            vectors.append((cutoff, cutoff, branch))
+            vectors.append((cutoff, _render_ns(_instant_ns(cutoff), zone="+00:00"), branch))
+    for cutoff in (
+        "2026-10-16T00:00:00Z", "2026-10-16T00:00:00.1Z",
+        "2026-10-16T00:00:00.123456789Z", "2026-10-16T00:00:00.999999999Z",
+        "2024-03-01T00:00:00Z", "2025-01-01T00:00:00Z",
+        "2000-03-01T00:00:00Z", "1900-03-01T00:00:00Z",
+    ):
+        for delta in (-1_000_000, -1000, -1, 0, 1, 1000, 1_000_000):
+            for branch in _CLOCK_BRANCHES:
+                vectors.append((cutoff, _render_ns(_instant_ns(cutoff) + delta), branch))
+    for a, b in (("0.1", "0.11"), ("0.11", "0.1"), ("0.0000001", "0.000000101"), ("0.000000101", "0.0000001")):
+        for branch in _CLOCK_BRANCHES[:2]:
+            vectors.append((f"2026-10-16T00:00:0{a}Z", f"2026-10-16T00:00:0{b}Z", branch))
+    assert len(vectors) == 236
+    return vectors
+
+
+@pytest.mark.parametrize("cutoff,observed,branch", _nanosecond_vectors())
+def test_nanosecond_order_matches_independent_oracle(cutoff, observed, branch):
+    ev = rp.ObservabilityEvidence(**{branch if branch != "none" else "event_time": observed})
+    if branch == "none":
+        expected = ("NOT_ADMISSIBLE", "NO_OBSERVABILITY_EVIDENCE")
+    elif _instant_ns(observed) > _instant_ns(cutoff):
+        expected = ("NOT_ADMISSIBLE", "NOT_YET_SEEN")
+    else:
+        expected = ("ADMISSIBLE", "LOCAL_FIRST_SEEN" if branch == "local_first_seen_time" else "PUBLIC_AVAILABLE")
+    result = rp.evaluate_replay_admissibility(cutoff, ev)
+    assert (result.status, result.basis) == expected
+    assert result.retained_dq_flags == ()
+    assert rp.observable_at(cutoff, ev) == result
+
+
+def test_nanosecond_generated_order_and_boundaries():
+    rng = random.Random(1916)
+    low = _instant_ns("1900-01-01T00:00:00Z")
+    high = _instant_ns("2200-01-01T00:00:00Z")
+    anchors = [rng.randrange(low, high) for _ in range(128)]
+    anchors += [_instant_ns(t) for t in (
+        "2026-10-16T00:00:59.999999999Z", "2026-10-16T00:59:59.999999999Z",
+        "2026-10-31T23:59:59.999999999Z", "2024-02-29T23:59:59.999999999Z",
+    )]
+    for moment in anchors:
+        for delta in (-1_000_000, -1000, -1, 0, 1, 1000, 1_000_000):
+            cutoff, observed = _render_ns(moment), _render_ns(moment + delta)
+            for branch in _CLOCK_BRANCHES[:2]:
+                result = _admit(cutoff, **{branch: observed})
+                assert result.status == ("ADMISSIBLE" if delta <= 0 else "NOT_ADMISSIBLE")
+    for instant in ("0001-01-01T00:00:00Z", "9999-12-31T23:59:59.999999999Z"):
+        for branch in _CLOCK_BRANCHES[:2]:
+            assert _admit(instant, **{branch: instant}).status == "ADMISSIBLE"
+
+
+def test_nanosecond_zero_offset_and_equivalent_fraction_spellings():
+    for zone in ("Z", "+00:00", "-00:00"):
+        for fraction in ("", ".0", ".000000000", ".100000000", ".123456780", ".123456789"):
+            spelling = f"2026-10-16T00:00:00{fraction}{zone}"
+            canonical = rp.canonicalize_utc_timestamp(spelling)
+            for branch in _CLOCK_BRANCHES[:2]:
+                assert _admit(spelling, **{branch: canonical}).status == "ADMISSIBLE"
+                assert _admit(canonical, **{branch: spelling}).status == "ADMISSIBLE"
+
+
+def test_nanosecond_precedence_and_error_contracts():
+    cutoff = "2026-10-16T00:00:00Z"
+    observations = (
+        ({"local_first_seen_time": cutoff, "public_available_time": "2026-10-17T00:00:00Z"}, "ADMISSIBLE", "LOCAL_FIRST_SEEN", ()),
+        ({"local_first_seen_time": "2026-10-17T00:00:00Z", "public_available_time": "2026-10-15T00:00:00Z"}, "NOT_ADMISSIBLE", "NOT_YET_SEEN", ()),
+        ({"is_correction_after_cutoff": True, "decisive_clock_uncertain": True}, "NOT_ADMISSIBLE", "CORRECTION_AFTER_CUTOFF", ("CORRECTED", "TIMESTAMP_UNCERTAIN")),
+        ({"local_first_seen_time": cutoff, "decisive_clock_uncertain": True}, "INDETERMINATE", "TIMESTAMP_UNCERTAIN", ("TIMESTAMP_UNCERTAIN",)),
+        ({"local_first_seen_time": cutoff, "source_unavailable": True, "is_backfilled": True, "persisted": False}, "ADMISSIBLE", "LOCAL_FIRST_SEEN", ("BACKFILLED", "SOURCE_UNAVAILABLE")),
+    )
+    for kwargs, status, basis, flags in observations:
+        result = _admit(cutoff, **kwargs)
+        assert (result.status, result.basis, result.retained_dq_flags) == (status, basis, flags)
+    historical_errors = (
+        (None, "TIMESTAMP_TYPE_INVALID"),
+        ("2026-10-16T00:00:00", "TIMESTAMP_FORMAT_INVALID"),
+        ("2026-10-16T00:00:00.1234567890Z", "TIMESTAMP_FORMAT_INVALID"),
+        ("2026-10-16T00:00:00+01:00", "TIMESTAMP_NOT_UTC"),
+        ("1900-02-29T00:00:00Z", "TIMESTAMP_FORMAT_INVALID"),
+    )
+    for invalid, error in historical_errors:
+        with pytest.raises(ValueError) as caught:
+            _admit(invalid)
+        assert str(caught.value) == error
+    with pytest.raises(ValueError) as caught:
+        rp.evaluate_replay_admissibility(cutoff, object())
+    assert str(caught.value) == "FIELD_TYPE_INVALID"
+
+
+@pytest.mark.parametrize("invalid,error", (
+    (False, "TIMESTAMP_TYPE_INVALID"), ([], "TIMESTAMP_TYPE_INVALID"),
+    ({}, "TIMESTAMP_TYPE_INVALID"), ("", "TIMESTAMP_FORMAT_INVALID"),
+    ("2026-10-16t00:00:00z", "TIMESTAMP_FORMAT_INVALID"),
+    ("2026-10-16T00:00:60Z", "TIMESTAMP_FORMAT_INVALID"),
+))
+def test_nanosecond_validation_order_before_policy(invalid, error):
+    cutoff = "2026-10-16T00:00:00Z"
+    for branch in _CLOCK_BRANCHES[:2]:
+        with pytest.raises(ValueError) as caught:
+            _admit(cutoff, **{branch: invalid}, is_correction_after_cutoff=True, decisive_clock_uncertain=True)
+        assert str(caught.value) == error
+    # Both supplied clocks are validated before local precedence or correction.
+    with pytest.raises(ValueError) as caught:
+        _admit(cutoff, local_first_seen_time=cutoff, public_available_time=invalid)
+    assert str(caught.value) == error
+    with pytest.raises(ValueError) as caught:
+        rp.evaluate_replay_admissibility(invalid, object())
+    assert str(caught.value) == error
+
+
+def test_nanosecond_serialization_identity_compatibility():
+    for original, expected in (
+        ("2026-10-16T00:00:00.000000000+00:00", "2026-10-16T00:00:00Z"),
+        ("2026-10-16T00:00:00.123456780Z", "2026-10-16T00:00:00.12345678Z"),
+        ("2026-10-16T00:00:00.123456789Z", "2026-10-16T00:00:00.123456789Z"),
+    ):
+        assert rp.canonicalize_utc_timestamp(original) == expected
+    # Frozen baseline identities bind the exact canonical logical preimage bytes.
+    raw = _raw()
+    assert raw.raw_evidence_reference_id == "rawevidence:sha256:8dacbbaceb92562d1bf43a65e3a337a7edeaa7020a0464c96f173830fb24f9b0"
+    assert _oracle_sha256(raw.logical_preimage()) == raw.raw_evidence_reference_id.split(":")[-1]
+    manifest = _manifest()
+    assert manifest.research_provenance_manifest_id == "researchmanifest:sha256:641695e58d23c855d04c367734c8e9e4f3ab7128060482da5aeeedab1f656eb0"
+    assert _oracle_sha256(manifest.logical_preimage()) == manifest.research_provenance_manifest_id.split(":")[-1]
