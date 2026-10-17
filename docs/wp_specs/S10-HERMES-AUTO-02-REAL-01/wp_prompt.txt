@@ -1,0 +1,104 @@
+WP ID: S10-HERMES-AUTO-02-REAL-01
+Title: Dormant Single-Request Hermes Codex Transport / Honest Origin Proof
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: HERMES_REAL_PROVIDER_SINGLE_DISPATCH_PREFLIGHT
+Package size: L — EXACTLY TWELVE tracked paths. Risk level 3.
+Governance track expected: RUNTIME
+Frozen base: main @ 7c62419ba5d7cb1d3edf61d96a0cb3039b16650f (PR #241 merged)
+Required predecessor: PR #241 head 722e8feec18f31aeeda0f0b0b7ddd9f19eb403e4; merge 7c62419ba5d7cb1d3edf61d96a0cb3039b16650f
+Suggested branch: claude/s10-hermes-auto02-real01-one-request
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. VALUE — PRODUCT TARGET, AUTHORITY AND WHAT THIS WP IS NOT
+Karl's long-term aim is genuine Hermes-driven opportunities under a separately approved deterministic capital/risk envelope, not another fake autonomous demo. The shortest immediate technical gap is a **provider-specific, replaceable and verifiable one-call wire seam**, because current merged AUTO-02 is explicitly OFFLINE_INJECTED only. This WP completes that **dormant implementation/offline proof**, then SIDE20 reviews it; only a later PROTECTED authorization may authenticate and send exactly one real request. Do not report REAL_PROVIDER_PROVEN or actual economic/model results under this WP.
+
+Provider route under examination: native pinned Hermes v0.21.3 commit `345cd2b057a452236de401d3534b8502a7465e8d`, `provider=openai-codex`, `api_mode=codex_responses`, documented official endpoint `https://chatgpt.com/backend-api/codex`, historically `model=gpt-5.6-sol`. These are a COMPATIBILITY CANDIDATE, not guarantees of current access, contractual terms, billing, model availability, server model-identity attestation or a required long-term provider. Keep the future route replaceable at one named seam; DO NOT build a generic provider framework now. If server-authenticated model identity is unavailable, record `MODEL_IDENTITY_UNVERIFIED`; do not fake it. If the route cannot meet requirements, the next empirical gate may select direct API without rebuilding the deterministic core.
+
+This WP authorizes local source/test/doc changes and offline fake-wire tests. **It does not authorize** provider/model/Firecrawl/network calls, ANY real credential or authenticated client, key store or `.env`/`auth.json` read, paid tokens/usage, real data transmission, runtime deployment, paper/live orders, wallet/account access, capital, gate activation, scheduler, branch publication, PR, hosted CI or merge. Merely writing a model-backed trade preview does NOT grant execution authority. The existing web-only H1 policy, core StrategyLifecycle, EXEC-FEAS, exploratory Gate C, WP173 paper engine, live gateway/risk and deployment stay unchanged.
+
+# 2. SIDE19 — REUSE AND BOUNDED 10-MINUTE PREFLIGHT BEFORE CODE
+- Start in a FRESH Claude Code chat. Read full attached ZIP, `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md` and their mandatory repo-truth/state-machine pointers. On Karl's Windows machine default checkout `C:\GitHub\polymarket-strategy-lab`; verify actual filesystem instead of assuming. Run native Remote Main Sync Gate/refresh read-only GitHub metadata, confirm clean independent worktree and `origin/main=7c62419ba5d7cb1d3edf61d96a0cb3039b16650f`, PR241 merged. Stop on different main SHA/dirty unsafe base; no silent rebase, stash, reset or interference with other worktrees.
+- Discover actual CC Skills and read the relevant `SKILL.md`. Use Claude Code Skill tool or `/skill`, NOT Codex `$skill`. Sequence `wp-predraft-inspector`, `hermes-alpha-reuse-check`, `runtime-authority-boundary-review`, `ponytail-review`, `verification-before-completion`; use `canonical-evidence-audit`/`systematic-debugging` only if material. Each invoked skill should yield one concrete finding; unavailable skill may be read as GUIDANCE_ONLY but not claimed executed. See `CLAUDE_CODE_SKILLS_ROUTING.md`.
+- Directly inspect merged `tool_free_stage_b.py`, `autonomous_feedback.py`, `autonomous_opportunity_cycle.py`, `src/research_runtime/hermes_controlled_runtime/response_capture.py`, exact H1 native runner policy, and first-party tests only as needed; inspect pinned upstream exact `run_agent.py`, `agent/agent_init.py`, `agent/chat_completion_helpers.py::build_api_kwargs`, `agent/codex_runtime.py`, `agent/agent_runtime_helpers.py::create_openai_client`, `agent/turn_tool_validation.py`. Do not repeat broad research.
+- **Crucial preflight:** `AIAgent(enabled_toolsets=[])` and `build_api_kwargs` have already passed offline tool-surface proof (AUTO-02). Do NOT regenerate another tool selector. Establish what the `codex_responses` path actually sends AFTER SDK transforms using a fully local fake/in-memory HTTP capture, no model credentials and no network. The upstream Codex response assembler can populate `model` from the requested model; it is **not independently server-observed identity**. The primary OpenAI SDK sets `max_retries=0`, while the normal Hermes conversation layer can retry and recover. Never call `run_conversation`; identify a direct one-send path, with no auxiliary, refresh, title or background inference. Pinned `run_agent.py` auto-loads `.env` at import; refuse actual project/pin-local `.env`, and use sterile home/env. If merely importing or constructing the native Hermes path could read credentials or perform real network, STOP and report exact code evidence; don't handwave.
+- Before edits, preflight both exact-file historical guards (`tests/test_hermes_advisory_foundation_architecture_docs.py`, `tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py`). They can match **new production AND test filenames**; add only exact literal registrations under this authorization, preserve negative unknown sibling. `tests/test_architecture_boundaries.py` already allows the existing Hermes package; do not expand unnecessary scopes. Check `docs/ai/codex/PROTECTED_PATHS.md` and the state-machine classification.
+- Run `python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_prompt.txt --spec docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_spec.json --repo-root .` before implementation. RUNTIME readiness is a local deterministic format/scope check, not independent proof. If missing fields/grammar conflict, correct only these two scoped WP files, keep exact authority/semantics, and report redline in evidence. Do not broaden mode to PROTECTED by stealth. If legitimate work requires reading OAuth state/authenticated client or an external inference call, STOP: separate protected certificate and Karl authorization required.
+
+# 3. EXACT TWELVE CHANGED FILES — ALL OTHER PATHS INVARIANT
+1. `src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py` (NEW)
+2. `src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py` (MODIFIED)
+3. `src/research_runtime/autonomous_opportunity_cycle.py` (MODIFIED)
+4. `tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py` (NEW)
+5. `tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py` (MODIFIED)
+6. `tests/research_runtime/test_autonomous_opportunity_cycle.py` (MODIFIED)
+7. `docs/hermes_real_provider_stage_b_contract.md` (NEW)
+8. `docs/status_entries/S10-HERMES-AUTO-02-REAL-01.md` (NEW)
+9. `docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_prompt.txt` (NEW)
+10. `docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_spec.json` (NEW)
+11. `tests/test_hermes_advisory_foundation_architecture_docs.py` (MODIFIED)
+12. `tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py` (MODIFIED)
+
+Use only these, count exactly 12. No new SDK, lockfile, tools CLI, user config, GitHub workflow, status index or broad paper files. If any path is actually unnecessary but an exact required path is frozen, keep it as a minimal substantive contract/test/status update, not filler. If critical functionality needs a 13th path, STOP with evidence; no arbitrary file additions.
+
+# 4. IMPLEMENTATION — R001–R006, MINIMUM COMPLETE SPECIFICATION
+**R001 — Native final-wire no-tool proof.** New `real_provider_stage_b.py` reuses existing AUTO-02 pin/selector report plus native Hermes `build_api_kwargs`, rather than copying its selector. For the FIRST locked `openai-codex/codex_responses` candidate, use only sterile offline test transport (fake SDK/HTTP response or in-memory mock). Capture effective outbound POST **after SDK transformation**, validate method, base host/path, tool keys absence (`tools`, `tool_choice`, server-side builtins), no model override, correct candidate input and no unexpected secondary egress. Do not log prompt/body/headers. A preflight that stops before actual SDK transformation must label itself pre-SDK and cannot claim final-wire proof. Positive default-tools control from AUTO-02 retained.
+
+**R002 — One request and immutable attempt reservation.** Distinct `real01` local journal namespace; reserve immutable request identity *before* the fake dispatch; consume attempt on ambiguous error, timeout or crash. Actual outbound model generation count in captured transport must be **exactly one for the successful fake test** and NEVER more than one for the same id. SDK retry=0, application retry=0, Hermes conversation/recovery/fallback disabled or entirely bypassed; no refresh/aux inference or post-timeout second call. Collision/parallel attempt fail closed. Never overwrite terminal or replay by re-sending. Bound output 16,384 bytes, input size, wall time and response shape using existing constants.
+
+**R003 — Truthful origin and accounting.** Model request labels are not upstream model identity. A fake provider JSON value, local response's `.model` on the Codex assembler, self-asserted tool-free receipt, `usage=0`, cost=0 or provider-defined arbitrary ID is **not empirical authentication**. Define distinct sanitized record with request ID, native Hermes pin/tool fingerprint, final SDK-wire BODY digest (no body copy), expected model/route, independently observed server identity **when actually present**, response request-ID origin, first dispatch/finish clocks, raw choice digest, usage fields vs absent/unknown, price source vs unverified, retry attempts, and terminal status. Because ALL tests are offline, their terminal/proof class must stay `OFFLINE_WIRE_SIMULATED` or `REAL_PROVIDER_PROOF_PENDING`; no `REAL_PROVIDER_VERIFIED` success from mocks. Missing server model identity => `MODEL_IDENTITY_UNVERIFIED`, not falsely promoted. No raw prompt/model output, headers, secrets, file paths or account details in committed evidence.
+
+**R004 — Strict untrusted output and protocol.** Reuse AUTO-02 strict choice output and `choice_output_schema_sha256`, exact menu/request clock/cutoff/source. Validate at most one final response, complete finish, absence of function/builtin/server tool calls, byte cap and strict JSON; invalid output, 429/5xx, tool attempt, empty/incomplete SSE, model mismatch, absent usage/cost or excess charge observed => terminal with accurate flags, no retry. `NO_TRADE` valid. Never imply true alpha, strategy qualification or profitability from a single fake answer.
+
+**R005 — Additive protected-future AUTO-01 seam.** Add a narrow optional real-origin verifier and compatibility routing in existing `autonomous_feedback.py` and `autonomous_opportunity_cycle.py` only. A *real* proof can be admitted only after genuine first-party transport evidence in a future protected run, not by changing the `proof_level` string or furnishing fake SDK traffic. Until empirical proof is separately authorized and observed, the new branch **fails closed** with explicit `REAL_ORIGIN_UNVERIFIED` and returns a canonical non-executable/no-trade/reject outcome. Preserve byte-identical no-producer AUTO-01 calls and existing OFFLINE_INJECTED producer proofs. Preserve original feasibility and exploratory Gate C behavior unchanged. No live permit, paper order, strategy promotion or policy alteration.
+
+**R006 — Exact regression/scope/evidence.** Test the real fake-wire path + contradictory/forged provider data + tool leakage + hidden retries + 429/5xx/replay/timeout + cutoff/stale market/store heads + old AUTO01/AUTO02 byte compatibility. Confirm the two historical allowlists cover both new module/test as needed and still reject hostile sibling; do not weaken their matcher. Run relevant targeted tests and one final clean stable-head full repository suite. Always mark `PROVIDER_NOT_INVOKED` and `MODEL_ORIGIN_UNVERIFIED` on an offline-only finish. If the first choice of endpoint cannot be safely reproduced without creds, return blocker `REAL_ROUTE_OFFLINE_COMPATIBILITY_UNPROVEN`; do not switch providers without a new approval.
+
+# 5. EFFICIENCY + PONYTAIL REVIEW — NO OVERBUILD
+Keep one tiny transport-specific seam; reuse merged validators, hashes, journal helpers and native response capture. Do not implement generic provider orchestration, trading model benchmark, source search, OOS/weather campaigns, another paper engine, training algorithm, cost service or agent daemon. Use short status/docs. Avoid full-suite reruns after an unchanged head, but always one final stable-head full suite before local delivery. Resolve small defects in scope without a second corrective WP. A *material* risk, true identity-proof impossibility, out-of-scope change or authority escalation must stop, not be silently downgraded to successful empirical provider proof.
+
+# 6. VERIFICATION + OUTPUT FORMAT
+Expected new tests are frozen in `wp_spec.json` R001–R006. Verify tests actually exist at those exact paths and names, and that names are unique; the R006 guard node is anchored only to the first guard file, but RUN BOTH guard families. Include no new heavyweight CI tasks. Run focused tests first, then one final full local pytest on stable head, generated artifact check, gitleaks where available, diff whitespace, exact `--check-diff --base 7c62419ba5d7cb1d3edf61d96a0cb3039b16650f --head HEAD` native WP readiness, and test guard negative siblings. Check latest commit tree unchanged after tests.
+
+Produce **one** local evidence ZIP OUTSIDE the repo with: exact base/head/diff list and source SHA, fixed governance/readiness summary, pinned Hermes native source proof, fake final-wire body digest and request-attempt count, mock/negative outcomes with explicit `NO_PROVIDER_CALL`, R001–R006 captured test names/results, final full-suite counts/skips, real-offline authority review, skills executed and findings, rerun commands, independent manifest SHA256+sizes+CRC. No raw prompts, secrets, account IDs or unchecked source dumps. Give the ZIP to CURRENT SIDE20 for independent LOCAL_PASS assessment. **No push/PR/hosted CI/merge until Karl separately authorizes after SIDE20 local acceptance.**
+
+# 7. SUCCESS, REAL-ACTIVATION GATE AND STOP
+Successful local delivery = an actual *native-pinned offline SDK-wire-compatible*, one-attempt, tool-free real-transport plan and origin-admission guard, **NOT** proof of model-origin/provider isolation. If Codex OAuth cannot expose independently verifiable model identity, label limitation honestly, and identify what provider-route change the future protected empirical gate needs without switching routes now.
+
+STOP when: main differs, safe local pinned env unavailable, tool-free final wire fails, code requires any credential/auth-store access, any external request is unavoidable even in offline test, historical guard exact path cannot fit, native readiness detects PROTECTED requirement, more than twelve files or changed authority, or secret exposure. Report exact blocker and minimal next owner decision. Publish nothing.
+
+Next separately authorized milestone: `S10-HERMES-AUTO-02-REAL-01-ACTIVATION` is a PROTECTED one-call real-provider experiment requiring independently certified exact WP raw-byte hashes, privacy/retention and terms confirmation, current available provider/model/endpoint, operator-supplied credential routing, exact hard call/token/timeout/spend limits and preflight destination permission. **Not part of this local implementation.** A full provider test may fail/inconclusive after it spends; never silently request again.
+
+# 8. NATIVE READINESS STRUCTURE ANCHORS (do not reopen scope)
+Objective: section 1 and identity.objective — dormant one-request native Hermes Codex transport and honest origin evidence only.
+Authority/Non-authority: section 1 and canonical mirror; no network/credential/provider call or publication.
+Hard stops: section 7. Scope: section 3 and exact spec. Evidence plan: section 6 + six R-test records.
+Negative test matrix: the R001-R006 negatives in sections 4 and 6 (tool leakage, forged origin, hidden retry, 429/5xx/timeout/replay, strict-choice rejection, hostile guard sibling).
+Successor boundary: PROTECTED one genuine smoke authorization; report-back: external verified ZIP to SIDE20.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|hermes_native_wire|native_stage_b|final_request_toolfree|REQUIRE|no_tools_or_unapproved_egress|real01.wire_preflight|R001
+NR002|provider_transport|single_attempt|attempt_reserved|REQUIRE|no_retry_or_redispatch|real01.once_only|R002
+NR003|provider_provenance|model_identity|server_observed_independently|REQUIRE|unknown_not_verified|real01.origin_proof|R003
+NR004|model_output|untrusted_choice|strict_contract|REQUIRE|no_tool_or_incomplete_acceptance|real01.strict_choice|R004
+NR005|auto01_admission|real_witness|provider_empirical_source_required|REQUIRE|legacy_offline_byte_identity|real01.auto01_dormant|R005
+END_NORMATIVE_RULE_MATRIX_V1

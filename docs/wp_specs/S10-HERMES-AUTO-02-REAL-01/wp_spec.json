@@ -1,0 +1,449 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-AUTO-02-REAL-01",
+    "title": "Dormant Single-Request Hermes Codex Transport and Honest Origin Proof",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_REAL_PROVIDER_SINGLE_DISPATCH_PREFLIGHT",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-hermes-auto02-real01-one-request",
+    "required_predecessor": {
+      "pr_number": 241,
+      "head_sha": "722e8feec18f31aeeda0f0b0b7ddd9f19eb403e4",
+      "merge_sha": "7c62419ba5d7cb1d3edf61d96a0cb3039b16650f"
+    },
+    "objective": "Build and offline-verify a dormant, provider-replaceable one-inference-attempt Hermes Stage B wire adapter and real-origin evidence admissibility boundary using existing openai-codex Codex Responses as the first route under study. No real provider call, credential read, product network, publication, capital or order.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+      "src/research_runtime/autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "docs/hermes_real_provider_stage_b_contract.md",
+      "docs/status_entries/S10-HERMES-AUTO-02-REAL-01.md",
+      "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_spec.json",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+      "src/research_runtime/autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "docs/hermes_real_provider_stage_b_contract.md",
+      "docs/status_entries/S10-HERMES-AUTO-02-REAL-01.md",
+      "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/wp_spec.json",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "tools/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 12,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "rollback_surface": "Revert these twelve exact tracked files only. Offline AUTO-02, AUTO-01 legacy behavior, H1 web-only Hermes, native market/science, strategy/lifecycle, paper engine, execution and Gate C remain untouched. No real provider, key or billing state exists under this WP.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "A separate dormant origin and native-wire plan, not a switched-on provider client; existing offline and no-producer APIs retain byte-compatibility.",
+    "items": [
+      {
+        "surface": "Pinned Hermes AIAgent + native build_api_kwargs + OpenAI Codex Responses serializer",
+        "before": "AUTO-02 proves no-tools request construction, but no actual final SDK-wire or provider semantics.",
+        "after": "Using isolated fake/no-network transport only, produce native pinned full request and inspect final request body after SDK transformations; exact route candidate openai-codex, api_mode codex_responses; provider not invoked.",
+        "change_authorized": false,
+        "compatibility_requirement": "Reuse pin and tool_surface_fingerprint, don't fork Hermes, use CLI empty --toolsets or run_conversation. Do not read homes, auth.json, .env, or instantiate authenticated real client.",
+        "authority": "OFFLINE_WIRE_SIMULATION_ONLY"
+      },
+      {
+        "surface": "New real provider stage B envelope and terminal journal",
+        "before": "AUTO-02 OfflineStageBBackend is exact-type offline-only, with independent reservation and offline labels.",
+        "after": "One separate dormant real-intent transport plan/reservation and fake-instrumented wire transcript with honest simulation-only or identity-inconclusive labels; no send-capable credential/network client.",
+        "change_authorized": true,
+        "compatibility_requirement": "No status/flag alone may produce REAL_PROVIDER_OBSERVED; immutable request identity; no retry/fallback; halt on interrupted attempt; independent journal namespace.",
+        "authority": "LOCAL_DORMANT_REAL_PREFLIGHT"
+      },
+      {
+        "surface": "AUTO-02 autonomous_feedback + AUTO-01 evaluate_once optional producer_evidence",
+        "before": "Offline producer and legacy no-producer path are strictly validated; native EXEC-FEAS and exploratory Gate C are dormant preview only.",
+        "after": "Add a narrow optional real-witness verification seam which fails closed unless truly observed proof is admissible; offline fixtures can never generate empirical real-origin labels or executable permits.",
+        "change_authorized": true,
+        "compatibility_requirement": "Legacy no-producer receipts byte-identical; AUTO-02 offline producer record/receipts byte-identical; no inference-based proof promotion or model self-attestation; unchanged core deterministic calls.",
+        "authority": "NON_EXECUTABLE_REAL_SOURCE_ADMISSION_DORMANT"
+      },
+      {
+        "surface": "H1 web-only runtime, strategy manager, WP173, risk, gateway, deployment and CI",
+        "before": "Merged protected/native mechanics and standing no-real-live authority.",
+        "after": "Unmodified; tested compatibility only.",
+        "change_authorized": false,
+        "compatibility_requirement": "No provider call; no paper/outcome write; no allocation/policy change; no permanent background process.",
+        "authority": "NO_CHANGE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Native one-call wire preflight, truthful unverified model identity, durable once-only attempt and strict AUTO-01 admission.",
+    "items": [
+      {
+        "path": "real01.wire_preflight",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Using exact pinned Hermes AIAgent(enabled_toolsets=[]) and SDK-level fake transport, verify effective empty tools at the final HTTP body; no default fallback/side network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject any late tools/tool_choice, server-side built-in tools, unexpected endpoint, inferred tool-free proof, or environmental secret read.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_WIRE_COMPATIBILITY_CHECKED_OR_BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "real01.once_only",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reserve one request before transport, count one model-generation request and zero retries/fallbacks, fail closed on terminal/error/cold replay/unknown prior progress.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Negative fixture for 429, 5xx, timeout, interrupted record, concurrency, replay and SDK-internal retry; never send paid transport.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline one-request-attempt counter and journal terminal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "real01.origin_proof",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Distinguish claimed provider/model from server-observed identity. Bind route, wire digest, pinned build/schema/menu, source and clocks, evidence request/response IDs, tokens and known/unknown cost.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fixture-supplied model field is not independent identity; normal Codex echo cannot verify model; if server-supplied proof absent mark MODEL_IDENTITY_UNVERIFIED, not REAL_PROVIDER_VERIFIED.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized source provenance and explicit unknowns",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "real01.strict_choice",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse AUTO-02 16,384-byte strict JSON choice, model/menu hashes, information cutoff and deadline, reject tool calls/incomplete/unsafe shapes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "NO_TRADE is valid; no fake valid model choice accepted as empirical proof, no text generated by model may provide authority.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized accepted/rejected/unknown terminal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "real01.auto01_dormant",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Narrow opt-in real-witness verifier consumes a genuinely admissible provider record only; all old AUTO-01 and offline producer paths unchanged, preview never executable.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject externally forged attestation, changed store head/menu/cutoff, source label substitution, partial source proof and synthetic fixtures; native feasibility/Gate C remain unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Existing receipt format with honest origin state, no live or order",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Reuse native SHA256 and content-addressing, adding only a local bounded evidence record; no new cross-system identity standard.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Only local implementation and offline evidence are authorized; protected real provider activation is a distinct future review.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Frozen merged main, exact 12 paths and historical allowlist checks; native RUNTIME readiness mirrors and source preflight valid.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl forwards this exact local/offline implementation package. No authenticated Codex/provider request or publication.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "At exact 12-path stable head, native readiness, focused red/green negatives and one final full local suite pass; complete evidence ZIP; no network/credential/provider invocation.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Use targeted named tests and no extra fixture duplication.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Local fake-wire and native pinned preflight prove test seam without a model/network call, with one final full suite and no unnecessary testing campaign.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_real01_native_final_wire_has_no_tool_or_unapproved_endpoint",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py::test_real01_native_final_wire_has_no_tool_or_unapproved_endpoint",
+        "expected_result": "In-process/fake transport at exact pin shows serialized no-tools and endpoint path; intentionally injected tool schema and unexpected egress fails; does not read real credentials or call provider."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_real01_one_request_reservation_and_no_retry_on_failure",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py::test_real01_one_request_reservation_and_no_retry_on_failure",
+        "expected_result": "One fake inference HTTP emission; SDK/client/outer retries disabled, 429/5xx/timeout/replay/fork/multiple callers never redispatch and terminal receipt remains truthful."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_real01_origin_labels_fail_closed_without_server_model_attestation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py::test_real01_origin_labels_fail_closed_without_server_model_attestation",
+        "expected_result": "Requested model, fake response model, client-echoed response model and fabricated provider IDs cannot set real/model-verified status; honest UNKNOWN usage/cost and bounded public receipt."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_real01_untrusted_response_strict_choice_and_tool_rejection",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py::test_real01_untrusted_response_strict_choice_and_tool_rejection",
+        "expected_result": "Valid NO_TRADE and TRADE mock JSON classified offline only; tool/function/server-side tool/incomplete/malformed/multiple replies rejected with no additional request."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_real01_real_witness_seam_preserves_auto01_and_auto02",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_real01_real_witness_seam_preserves_auto01_and_auto02",
+        "expected_result": "Legacy bytes invariant; offline producer bytes invariant; real-intent fixture with no empirical witness cannot enter as REAL or alter risk/feasibility/Gate C, replay or decision boundaries."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_no_actual_hermes_implementation_artifacts_added",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/test_hermes_advisory_foundation_architecture_docs.py::test_no_actual_hermes_implementation_artifacts_added",
+        "expected_result": "Both historical exact-file allowlists admit exactly the new module and new test; unknown sibling remains blocked, native readiness/format/full suite/secret/whitespace checks remain green."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-AUTO-02-REAL-01-ACTIVATION",
+    "next_title": "Separately certified protected one-call real Hermes Codex provider empirical authorization and execution",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-AUTO-02-REAL-01",
+    "forbidden_in_this_wp": [
+      "Any actual model/provider/Firecrawl/market API call or product-network request, OAuth/credential/auth.json/.env/home access, authenticated HTTP client construction with live bearer or billing/account action",
+      "Any claim that fake SDK/server data proves actual provider identity, model identity, cost, usage or tool isolation",
+      "Any network-enabled default route, hidden retries, fallback/model switch, startup telemetry, auxiliary/title generation or provider re-dispatch",
+      "Any order, capital, live trading, wallet/account, gateway, signing, cancelling, risk-policy or current-host change",
+      "Any daemon, scheduler, background runtime, paper engine/fill/order change, broker or second agent",
+      "Any SDK/dependency upgrade, upstream Hermes vendoring, tracked workflow/CI modification, untargeted refactor or more than twelve files",
+      "Any GitHub push, PR, hosted CI or merge without subsequent explicit Karl authorization"
+    ]
+  }
+}

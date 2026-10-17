@@ -335,7 +335,8 @@ def test_auto02_optional_producer_witness_preserves_legacy_synthetic(tmp_path, m
     base = types.ModuleType("auto01_base")
     exec(compile(source, "auto01_base", "exec"), base.__dict__)
     params = inspect.signature(cycle.evaluate_once).parameters
-    assert list(params) == [*inspect.signature(base.evaluate_once).parameters, "producer_evidence"]
+    assert list(params)[:len(params) - 1] == [*inspect.signature(base.evaluate_once).parameters, "producer_evidence"]
+    assert list(params)[-1] == "real_origin_evidence"  # S10-HERMES-AUTO-02-REAL-01 additive seam
     assert params["producer_evidence"].default is None
     abstain = {key: proposal[key] for key in cycle._CLOCK_KEYS}
     abstain["action"] = "PAUSE"
@@ -372,3 +373,83 @@ def test_auto02_optional_producer_witness_preserves_legacy_synthetic(tmp_path, m
         rejected = cycle.evaluate_once(**dict(args, choice=json.dumps(choice), producer_evidence=record))
         closed(rejected)
         assert rejected["proof_level"] == "OFFLINE_PRODUCER_BOUND" and rejected["choice_provenance_id"] is None
+
+
+# --- S10-HERMES-AUTO-02-REAL-01 additive: dormant fail-closed real-origin seam ---------
+REAL01_BASE_SHA = "7c62419ba5d7cb1d3edf61d96a0cb3039b16650f"
+
+
+def test_real01_real_witness_seam_preserves_auto01_and_auto02(tmp_path, monkeypatch):
+    import inspect
+    import types
+    from src.research_runtime.hermes_controlled_runtime import autonomous_feedback as fb
+    from src.research_runtime.hermes_controlled_runtime import real_provider_stage_b as rp
+    _, args, proposal, _ = world(tmp_path)
+    # The merged AUTO-02 implementation, loaded verbatim, is the byte-equality oracle.
+    source = subprocess.run(["git", "show", REAL01_BASE_SHA + ":src/research_runtime/autonomous_opportunity_cycle.py"],
+                            cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    base = types.ModuleType("auto02_base")
+    exec(compile(source, "auto02_base", "exec"), base.__dict__)
+    params = inspect.signature(cycle.evaluate_once).parameters
+    assert list(params) == [*inspect.signature(base.evaluate_once).parameters, "real_origin_evidence"]
+    assert params["real_origin_evidence"].default is None
+    abstain = dict({key: proposal[key] for key in cycle._CLOCK_KEYS}, action="NO_TRADE")
+    for choice in (proposal, abstain, dict(proposal, requested_shares="1"), dict(proposal, proof_level="REAL_PROVIDER")):
+        legacy = run(args, choice)
+        assert cycle.canonical_json_bytes(legacy) == base.canonical_json_bytes(
+            base.evaluate_once(**dict(args, choice=json.dumps(choice))))
+        assert run(args, choice, real_origin_evidence=None) == legacy
+    _, _, record, content = produce(tmp_path, args, proposal)
+    offline = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=record))
+    assert offline["status"] == "ELIGIBLE_PREVIEW" and cycle.canonical_json_bytes(offline) == base.canonical_json_bytes(
+        base.evaluate_once(**dict(args, choice=content, producer_evidence=record)))
+    # Real-intent evidence without an empirical witness: rejected before any store or native call.
+    calls = []
+    for name in ("load_strategy_lifecycle_store", "build_execution_intent", "assess_execution_feasibility"):
+        original = getattr(cycle, name)
+        monkeypatch.setattr(cycle, name, lambda *a, _fn=original, _name=name, **kw: calls.append(_name) or _fn(*a, **kw))
+    monkeypatch.setattr(gate, "evaluate_exploratory_gate_c", lambda *a, **kw: calls.append("gate_c"))
+    offline_origin = rp._origin_record(_real01_request(args), rp.VALID_OUTPUT, {}, content.encode(), 1, 2)
+    forged = dict(offline_origin, proof_class="REAL_PROVIDER_VERIFIED", model_identity="MODEL_IDENTITY_VERIFIED",
+                  provider_invocation="REAL_PROVIDER_OBSERVED", real_origin="REAL_ORIGIN_VERIFIED")
+    stores = [Path(args[k]).read_bytes() for k in ("lifecycle_store_path", "hermes_manager_store_path", "alpha_registry_path")]
+    for evidence in (offline_origin, forged, record, {"proof_level": "REAL_PROVIDER"}, "REAL_PROVIDER_OBSERVED"):
+        for choice in (content, json.dumps(abstain)):
+            receipt = cycle.evaluate_once(**dict(args, choice=choice, real_origin_evidence=evidence))
+            closed(receipt)
+            assert receipt["status"] == "REJECTED" and receipt["reason_codes"] == ["REAL_ORIGIN_UNVERIFIED"]
+            assert receipt["proof_level"] == receipt["real_origin_status"] == "REAL_ORIGIN_UNVERIFIED"
+            assert receipt["real_provider"] == "REAL_PROVIDER_NOT_INVOKED" and receipt["model_origin_proof"] == "UNVERIFIED"
+            assert receipt["lifecycle_head"] is receipt["execution_intent"] is receipt["gate_c_decision_id"] is None
+        both = cycle.evaluate_once(**dict(args, choice=content, real_origin_evidence=evidence, producer_evidence=record))
+        assert both["reason_codes"] == ["PRODUCER_EVIDENCE_CONFLICT"] and both["preview_permit"] is None
+    # Strict choice validation still runs first; a stale or out-of-cutoff choice keeps its native code.
+    stale = cycle.evaluate_once(**dict(args, choice=json.dumps(dict(proposal, information_cutoff_ns=args["information_cutoff_ns"] - 1)),
+                                       real_origin_evidence=forged))
+    assert stale["reason_codes"] == ["CHOICE_STALE_OR_CUTOFF_CONFLICT"]
+    # Routing helper: a (forged) VALID REAL-01 result still ends as a non-executable rejection.
+    real = rp.Real01Result("real01:sha256:" + "0" * 64, rp.VALID_OUTPUT, forged, content.encode())
+    routed = fb.admit_real01_choice(real, **{k: v for k, v in args.items() if k != "choice"})
+    closed(routed)
+    assert routed["reason_codes"] == ["REAL_ORIGIN_UNVERIFIED"]
+    for bad in (dataclasses_replace(real, status="TOOL_CALL_ATTEMPT_INVALID"), dataclasses_replace(real, output_bytes=None), forged):
+        with pytest.raises(fb.FeedbackRejected, match="REAL01_RESULT_INVALID"):
+            fb.admit_real01_choice(bad, **{k: v for k, v in args.items() if k != "choice"})
+    assert calls == [] and stores == [Path(args[k]).read_bytes() for k in
+                                      ("lifecycle_store_path", "hermes_manager_store_path", "alpha_registry_path")]
+
+
+def dataclasses_replace(value, **changes):
+    import dataclasses
+    return dataclasses.replace(value, **changes)
+
+
+def _real01_request(args):
+    from src.research_runtime.hermes_controlled_runtime import autonomous_feedback as fb
+    from src.research_runtime.hermes_controlled_runtime import real_provider_stage_b as rp
+    from tests.research_runtime.hermes_controlled_runtime.test_tool_free_stage_b import RECORDED_REPORT
+    stage = fb.cycle_request(surface_report=RECORDED_REPORT, candidate_menu=args["candidate_menu"],
+        information_cutoff_ns=args["information_cutoff_ns"], issued_at_ns=args["information_cutoff_ns"],
+        deadline_ns=args["deadline_ns"], model_label=rp.ROUTE["model"])
+    return rp.build_real01_request(stage, model_input=rp.real01_model_input(args["candidate_menu"],
+                                                                            args["information_cutoff_ns"]))

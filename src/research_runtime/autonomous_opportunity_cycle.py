@@ -52,7 +52,7 @@ def evaluate_once(
     *, lifecycle_store_path, hermes_manager_store_path, alpha_registry_path,
     candidate_menu, choice, venue_snapshots, evaluated_at_ns, information_cutoff_ns,
     deadline_ns, max_public_data_age_ns=5_000_000_000, max_hermes_age_ns=300_000_000_000,
-    venue_proof_level="SYNTHETIC_ONLY", producer_evidence=None,
+    venue_proof_level="SYNTHETIC_ONLY", producer_evidence=None, real_origin_evidence=None,
 ) -> dict:
     """Read verified stores, validate untrusted JSON bytes/text and return one receipt.
 
@@ -62,6 +62,9 @@ def evaluate_once(
     ``producer_evidence`` (S10-HERMES-AUTO-02, optional) is a record from the trusted
     autonomous_feedback verifier binding this exact choice to an OFFLINE producer; it
     relabels proof_level only and never grants live, permit or model-origin authority.
+    ``real_origin_evidence`` (S10-HERMES-AUTO-02-REAL-01, optional) is the dormant
+    real-producer seam: it always rejects with ``REAL_ORIGIN_UNVERIFIED`` before any
+    store is read, until a separately PROTECTED activation observes a real provider call.
     """
     receipt = dict(
         schema_id="hermes-autonomous-opportunity-cycle", schema_version="1.0.0",
@@ -85,6 +88,9 @@ def evaluate_once(
     if producer_evidence is not None:
         receipt.update(proof_level="OFFLINE_PRODUCER_BOUND", choice_provenance_id=None, choice_transport_mode=None,
                        producer_witness_class=None, real_provider="REAL_PROVIDER_NOT_INVOKED")
+    if real_origin_evidence is not None:
+        receipt.update(proof_level="REAL_ORIGIN_UNVERIFIED", real_origin_status="REAL_ORIGIN_UNVERIFIED",
+                       real_provider="REAL_PROVIDER_NOT_INVOKED")
     record = None
     try:
         _require(all(_time(t) for t in (evaluated_at_ns, information_cutoff_ns, deadline_ns,
@@ -127,6 +133,13 @@ def evaluate_once(
                  information_cutoff_ns <= proposal["produced_at_ns"] <= evaluated_at_ns <
                  proposal["expires_at_ns"] <= deadline_ns, "CHOICE_STALE_OR_CUTOFF_CONFLICT")
         receipt.update(choice_produced_at_ns=proposal["produced_at_ns"], choice_expires_at_ns=proposal["expires_at_ns"])
+        if real_origin_evidence is not None:
+            from src.research_runtime.hermes_controlled_runtime.autonomous_feedback import verify_real_origin_evidence
+            _require(producer_evidence is None, "PRODUCER_EVIDENCE_CONFLICT")
+            try:
+                verify_real_origin_evidence(real_origin_evidence)
+            except ValueError as error:
+                raise _Rejected(str(error)) from None
         if producer_evidence is not None:
             from src.research_runtime.hermes_controlled_runtime.autonomous_feedback import verify_choice_provenance
             try:

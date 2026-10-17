@@ -424,6 +424,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+                # S10-HERMES-AUTO-02-REAL-01: exact dormant offline-wire source/test only.
+                "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
             }
     findings = []
     for path in tracked:
@@ -433,6 +436,10 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         if any(pattern.search(normalized) for pattern in forbidden_patterns):
             findings.append(normalized)
     assert findings == []
+    # S10-HERMES-AUTO-02-REAL-01: unregistered siblings of the new module/test stay rejected.
+    for hostile in ("src/research_runtime/hermes_controlled_runtime/real_provider_stage_b_shadow.py",
+                    "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b_shadow.py"):
+        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)
 
 
 def test_s10_hermes_context_contract_records_blind_and_telemetry_boundaries():
