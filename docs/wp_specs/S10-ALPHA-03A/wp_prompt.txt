@@ -1,0 +1,97 @@
+WP ID: S10-ALPHA-03A
+Title: Finite Discovery → Hermes Decision → Research-Paper Evidence Proof
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: FINITE_OFFLINE_DISCOVERY_LEARNING_PROOF
+Package size: M — EXACTLY SIX tracked paths; risk level 3
+Governance track expected: RUNTIME
+Frozen base: main @ 79bb186a70e1fe51ee9c7f631324eec72079fdf8 (PR #243 merged)
+Required predecessor: PR #243 head 9c6d4e76041b1321439aace69f77768977b0c568; merged 79bb186a70e1fe51ee9c7f631324eec72079fdf8
+Suggested branch: claude/s10-alpha03a-foreground-discovery-proof
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: true
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE / KARL'S FULL EXPLICIT BOUNDED AUTHORIZATION
+I, Karl, authorize the complete S10-ALPHA-03A finite, LOCAL/OFFLINE research proof, including inspection of the repository and allowed preexisting research sources, one zero-provider-call/zero-market-network no-code feasibility probe on an isolated scratch directory, and—ONLY IF the probe proves a repeatability, denominator, lineage or cold-verification gap—implementation of the smallest six-path foreground adapter described below. I authorize creation of explicitly synthetic scratch-only Alpha/strategy/research-paper test data and finite offline FakeHermesBackend assessments, focused and one stable-head full-repository tests, local commit, single branch push, one PR publication and its normal hosted CI once all gates pass, without recurring general approval requests. I retain exclusive manual GitHub merge authority. The executor may stop without changes if native functionality already meets the complete need.
+
+This authority does NOT permit any new real OpenAI OAuth / Codex / ChatGPT/Firecrawl inference, provider or account sign-in, credential/token read, model catalogue probe, Gamma/CLOB/product network, cloud host, trading, live/paper order derived from a model choice, capital movement, scheduler/daemon, qualification promotion, Gate C/portfolio/risk change or live activation. PR #243's previously consumed real-call permit is NOT renewable here. Workflow-only git/GitHub PR/CI network is authorized, not product or provider network. No raw/private stores are to be modified. Local simulated WP173 paper and Hermes fake-manager stores can be created ONLY in disposable scratch with explicit research-only bindings; never mutate production/personal/canonical stores. The historic PR #243 NO_TRADE is a distinct consumed historical occurrence, not a candidate selection or performance result.
+
+Use Side19 priority Value → Reuse → Efficiency → Implementation → Improvement → Verification. One-shot complete specification, lean not over-hardened. Favor native reuse and factual outputs over large scaffolding.
+
+# 2. BASE, REPO SKILLS, GOVERNANCE PREFLIGHT
+A. Read AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md if present, actual native interfaces and installed CC skills (use meaningful relevant skills and Ponytail only when useful). Confirm main exact {BASE}, PR #243 merged at this SHA with head {HEAD}, clean independent checkout, no conflicting S10-ALPHA-03A branch/PR. If main advanced, STOP for independent scope reconciliation; do not silently rebase or overwrite.
+B. Consult docs/ai/codex/WP_DRAFTING_STANDARD.md, WP_SPEC_STANDARD.md and WP_EXECUTION_STATE_MACHINE.md. This is RUNTIME (risk 3; no credential, execution or live). A PROTECTED independent certificate is NOT required for these exact authority booleans; the native deterministic spec/readiness checks ARE required. Do not invent or self-issue a certificate.
+C. Before substantive code changes run repo-native deterministic WP spec and readiness checks with:
+   python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/{WP}/wp_prompt.txt --spec docs/wp_specs/{WP}/wp_spec.json --repo-root .
+   For final stable head add --check-diff --base {BASE} --head <exact commit>. Readiness failures are STOP conditions, not invitations to weaken tests.
+D. Simulate *all six named changed paths including the status fragment* in a throwaway checkout and run existing exact changed-file/status guards before implementing. Include the four cross-WP scope guards identified in the REAL-01-ACTIVATION independent-review failure, both Hermes exact-file guards if applicable, docs/status rules, generated-artifact guard, diff scope. No historical guard modifications are authorized. If any requires a seventh file, return BOUNDARY_SCOPE_BLOCKED with exact proof rather than growing this WP by stealth.
+
+# 3. MANDATORY PHASE ZERO — FINITE NO-CODE FEASIBILITY PROOF
+Perform FIRST in isolated scratch, without writing repo files or calling providers/markets. Use only genuinely available locally verified source stores, or clearly labeled synthetic fixtures already in repo if real stores are absent. No source/canonical store writes. Bound: at most TWO valid local PIT observed snapshots (or one plus no-comparison), one policy, max EIGHT explicit already-verified candidate/version memberships, at most THREE offline decision occurrences, and at most ONE independently initialized synthetic research-paper store/session. Do not synthesize real identities or assert current venue freshness from historical fixture clocks. Prefer native test fixtures to bespoke new datasets.
+
+A. `build_alpha_universe_snapshot` → optional `compare_alpha_universes` → `build_pre_allocation_triage_bases` → `allocate_and_finalize_research_queue`, using correct `HISTORICAL_REPLAY/HISTORICAL_AVAILABILITY_UNPROVEN` or current-build posture and native store head. Capture full observed-universe counts, deferred/skipped/selected lanes, no false full-market coverage.
+B. Cross to canonical `OpportunityCandidate`, StrategyVersion and latest compatible Hermes assessment only with verified, exact subject/mapping lineage; Gamma/condition/token ids are not inferred from text. Unknown market↔strategy matching produces `RESEARCH_NEEDED`/`NO_ELIGIBLE_STRATEGY`, not synthetic TRADE candidates. Menu <=8 unique deterministic entries; overflow/deferred still counted, never first-eight silent truncation.
+C. Exercise existing offline AUTO-01/02 Stage B only through its native approved fake transport and any already-recorded fixtures; no second provider call. If pin/native tool probe unavailable, record exact BLOCKED, never bypass it or assert a genuine model identity. Track NO_TRADE, PAUSE, REASSESS, rejects, previews, interruptions separately. STARTED recorded before each occurrence; replay never creates a second attempt.
+D. If verified *separate* research-only WP173 scratch session is available, read native snapshot and, for exact matching eligible preview only, native FakeHermesBackend PERFORMANCE_UPDATE. `DECISION_LINKED` is an identity relation, never a claim preview caused the paper performance; require suitable observation timing and matched manager/lifecycle heads. NO_TRADE gets `NOT_APPLICABLE_FEEDBACK` not zero PnL.
+E. Cold independently re-read source/journal evidence and reconcile denominators. Return a Phase-0 decision: `NATIVE_COMPOSITION_SUFFICIENT`, `FINITE_MANIFEST_GAP_PROVEN`, or `BLOCKED_MISSING_PREREQUISITE` with reason + attempts, with no invented success. A no-code pass that already cold-verifies every required metric must STOP with a no-change evidence ZIP; do not manufacture a software need. An inability to obtain real data alone does NOT license false synthetic real evidence.
+
+# 4. CONDITIONAL MINIMUM IMPLEMENTATION — SIX FILES EXACT
+If Phase Zero exhibits a concrete absence of a repeatable, cold-verifiable *cross-system* attempt/denominator/lineage manifest, implement only this missing adapter as a finite foreground operator in tools/alpha. Do NOT copy native engines or redesign registries. Freeze exactly these six paths in the branch:
+1. `tools/alpha/run_discovery_learning_proof.py` — bounded explicit operator `prepare`/`run`/`verify` or equivalently minimal three-phase CLI using explicit `--case` and `--scratch-dir`; no automatic working-directory or account probes. Native method calls only; all runtime scratch inputs/outputs outside repo and no execution authority.
+2. `tests/tools/alpha/test_discovery_learning_proof.py` — 7 named tests R001–R007, including cold replay, audit counts and negative controls. Use public/synthetic fixtures, never real credentials.
+3. `docs/discovery_learning_foreground_proof_contract.md` — short operator usage, exact stage/type/terminal/denominator contract, timestamp and identity caveats; no duplicate architecture.
+4. `docs/status_entries/{WP}.md` — mandatory non-self-referential status fragment; also permits historical changed-file scope helpers to recognize this WP.
+5. `docs/wp_specs/{WP}/wp_prompt.txt` — this byte-exact prompt.
+6. `docs/wp_specs/{WP}/wp_spec.json` — this byte-exact spec.
+
+Scope: exactly six tracked files; allowed == required. No dependencies, lockfiles, .github workflows, status index/broad roadmap, src/ edits, historic Hermes guards or new data schemas. If needs any extra file STOP with `BOUNDARY_SCOPE_BLOCKED` and evidence. Prefer compact stdlib CLI and reuse existing native persisted objects. RUNTIME runtime rights are local offline finite, not an external Hermes invocation. Scratch artifacts are generated and must not be committed; use outside-repo operator path. Preserve absolute source paths only in private operator-only input and never in sanitized manifest; verify with explicitly supplied local paths. No new authoritative registry or false persistent project source.
+
+# 5. SEVEN NON-NEGOTIABLE ACCEPTANCE REQUIREMENTS
+R001 Source/coverage: verified native PIT observed universe; every observed market accounted once across selected/deferred/skipped, exact cutoff, gaps and historical limitations; no global Polymarket completeness claim.
+R002 Canonical menu: exact verified market/event/condition/token→Alpha candidate→strategy version→latest Hermes assessment/heads; <=8 unique; unmatched `RESEARCH_NEEDED` and over-capacity remain counted. No guessing or silent truncation.
+R003 Denominators: each separate finite occurrence STARTED before work, then completed/abstained/rejected/inconclusive/interrupted exactly once. `attempted = completed + interrupted_or_unknown`; explicit NO_TRADE/PAUSE/REASSESS and no false zero-return. Same immutable choice on two explicitly distinct occurrences counts two attempts; verifier replay counts zero fresh attempts.
+R004 Paper: separately valid research-only WP173 binding/session, original journal/event/state head, distinct orders/fills/zero-fill/missing marks/fees/PnL, correct cumulative-vs-window-delta and pending-markout treatment; never a real venue/qualified paper claim.
+R005 Feedback: only exact eligible preview identity and same candidate/version/lifecycle/manager with verified non-lookahead outcome may attach FakeHermesBackend PERFORMANCE_UPDATE. `DECISION_LINKED` is non-causal. No feedback assignment for NO_TRADE or disjoint stores, no policy/risk/qualification promotion.
+R006 Fail closed: corrupt/missing stores, stale/future or historical-current mixups, mismatches, duplicate candidate ids, partial/crash/replay, zero observations, secrets or danger paths produce typed sanitized terminal, no provider/product activity and source store bytes unchanged.
+R007 Cold evidence: one immutable sanitized manifest/checksum (SHA-256 + bounded canonical JSON), replay-verified from named original native sources under identical snapshots, complete denominators and one honest conclusion: `PLUMBING_ONLY`, `VERIFIED_OUTCOME_FEEDBACK_OBSERVED`, or `BLOCKED`. No trading/alpha claims, no changing native IDs.
+
+The tool must expose no implicit provider/OAuth, network or executable paths. Tests must prove that mocking any forbidden network/provider/submit or unexpected canonical mutation fails the run. A missing research-paper session is NOT an instruction to create a real-money trade or attribute old model decisions to fake returns.
+
+# 6. NEGATIVE TEST MATRIX AND ADEQUATE NOT EXCESSIVE VERIFICATION
+Run named R001–R007 cases, plus time/lookahead crossing, stale head, no-match, selected/skipped/deferred partition, empty/missing input, conflicting duplicates, unknown historical alpha memory, NO_TRADE feedback prohibition, crash after STARTED, replay, tampering and cold verification. Source exact 7 node commands live in wp_spec.json.
+Then run changed-path/status historical scope tests, native readiness --check-diff, `git diff --check`, generated artifact guard, available gitleaks/secret scan, one **final** stable-head `python -B -m pytest -q -p no:cacheprovider`. Do not repeat the expensive full suite on identical head. If a named mandatory test is not available yet at preimplementation, implement it in the named in-scope test file, not in a new file. Keep UNKNOWN unknown; never fill missingness with zero.
+
+# 7. HARD STOPS / REPORT-BACK / CONDITIONAL PUBLICATION
+Hard stops: frozen base changed; native governance/changed-path guard not feasible in 6 paths; no permission to use a needed store; forbidden product/provider/account/credential network; need to modify src/, SDK, WP173 engine, AUTO-01/02, canonical registry, scope or safety gate; requirement to fake current market / confirmed alpha; no material gap found. Do not sneak fixes across file boundaries, run another real OAuth invocation, reuse PR #243 consumed real request, or merge.
+If NATIVE_COMPOSITION_SUFFICIENT, report NO_CODE_NEEDED and attach Phase-0 evidence only; no PR. If BLOCKED, return exact prerequisites and no source edits. If a proven gap is implemented and tests pass, commit on approved branch, publish ONE PR to main, monitor one hosted CI run, update truthful READY FOR REVIEW only after green, and return ONE verified ZIP (private scrubbed proof records, Phase-0 gap demonstration, actual file diff, native receipts, focused/full suite, exact head/base, SHA-256 and CRC manifest, PR/hosted details). No further permission for routine in-scope actions is needed; Karl alone merges after SIDE20 review.
+
+# 8. EVIDENCE PLAN, SUCCESSOR BOUNDARY AND REQUIRED STRUCTURAL ANCHORS
+Objective: §1. Authority/Non-authority: §§1 and 4; canonical mirror. Changed-file scope: §4. Evidence plan: §§5–7 and seven R-IDs. Hard stops: §7. Report-back: §7 single ZIP. Negative test matrix: §6. Successor boundary: next S10-ALPHA-03 recurring research campaigns only under separately explicit network/credential/budget/scheduling authority; ALPHA-04 learning optimization is later. No enabled recurring research, provider/model inference, trading, capital, execution, risk override, new paper orders, qualification or Gate C authority here.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|source_coverage|observed_universe|pit_verified|REQUIRE|exact_observed_partition|foreground_proof.source|R001
+NR002|canonical_menu|verified_membership|exact_ids|REQUIRE|no_fabricated_strategy|foreground_proof.menu|R002
+NR003|attempt_denominator|offline_decisions|one_record_per_occurrence|REQUIRE|no_unattributed_outcomes|foreground_proof.attempts|R003
+NR004|research_paper|native_snapshot|exact_store_and_binding|REQUIRE|missingness_preserved|foreground_proof.paper|R004
+NR005|feedback|later_paper_evidence|exact_noncausal_linkage|REQUIRE|no_no_trade_credit|foreground_proof.feedback|R005
+NR006|rejections|unsafe_input|fail_closed|REQUIRE|no_source_mutation|foreground_proof.queue|R006
+NR007|cold_receipt|all_inputs_and_outcomes|verified_digest|REQUIRE|sanitized_cold_replay|foreground_proof.receipt|R007
+END_NORMATIVE_RULE_MATRIX_V1

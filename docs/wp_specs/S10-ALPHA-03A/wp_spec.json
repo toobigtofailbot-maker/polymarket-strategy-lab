@@ -1,0 +1,454 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-03A",
+    "title": "Finite Discovery-to-Decision-to-Research-Paper Evidence Proof",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "FINITE_OFFLINE_DISCOVERY_LEARNING_PROOF",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-alpha03a-foreground-discovery-proof",
+    "required_predecessor": {
+      "pr_number": 243,
+      "head_sha": "9c6d4e76041b1321439aace69f77768977b0c568",
+      "merge_sha": "79bb186a70e1fe51ee9c7f631324eec72079fdf8"
+    },
+    "objective": "Prove native discovery-to-offline-Hermes-decision-to-research-paper evidence composition with complete denominators and strict lineage in one bounded foreground no-network proof, implementing only the demonstrated missing finite manifest/adapter; no provider calls or trade authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/alpha/run_discovery_learning_proof.py",
+      "tests/tools/alpha/test_discovery_learning_proof.py",
+      "docs/discovery_learning_foreground_proof_contract.md",
+      "docs/status_entries/S10-ALPHA-03A.md",
+      "docs/wp_specs/S10-ALPHA-03A/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-03A/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "tools/alpha/run_discovery_learning_proof.py",
+      "tests/tools/alpha/test_discovery_learning_proof.py",
+      "docs/discovery_learning_foreground_proof_contract.md",
+      "docs/status_entries/S10-ALPHA-03A.md",
+      "docs/wp_specs/S10-ALPHA-03A/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-03A/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "src/",
+      "config/",
+      "secrets/",
+      "credentials/",
+      "local_data/",
+      "agent_memory/",
+      "agent_runtime/",
+      "tools/hermes/",
+      "tools/deployment/",
+      "tools/execution/",
+      "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01-ACTIVATION/"
+    ],
+    "max_changed_files": 6,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Remove only the six named committed files; retain all native ALPHA-02, Alpha, WP173, AUTO-01/02/OAuth, lifecycle and Hermes manager code unchanged. Local scratch fixture/manifest state remains noncanonical and separately operator-controlled.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": true,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One additive foreground tool and sanitized evidence contract. Existing native contracts, formats and APIs remain unchanged.",
+    "items": [
+      {
+        "surface": "Foreground proof CLI with explicit scratch and input",
+        "before": "No single finite operator proof and cold-verifiable decision-denominator output.",
+        "after": "Operator supplies an explicit bounded case and scratch destination; prepare/run/verify are finite, deterministic and offline.",
+        "change_authorized": true,
+        "compatibility_requirement": "No default paths, implicit real calls, daemon, schedule, repo canonical writes or changes to native contracts. A no-code proof may legitimately stop if APIs already compose or prerequisites are absent.",
+        "authority": "LOCAL_OFFLINE_OPERATOR_ONLY"
+      },
+      {
+        "surface": "Canonical discovery / Alpha / lifecycle / Hermes fake / WP173 APIs",
+        "before": "Existing validators, schemas, registries, AUTO-02 FakeHermesBackend and paper snapshot own their domains.",
+        "after": "Call and verify the same public APIs without copying engines or writing their source; do not infer strategy from market.",
+        "change_authorized": false,
+        "compatibility_requirement": "All real/project stores read-only; only explicitly synthetic research-paper and fake manager scratch stores may be written. Keep historical/current scope distinct.",
+        "authority": "EXISTING_NATIVE_CONTRACT_ONLY"
+      },
+      {
+        "surface": "Sanitized immutable evidence output",
+        "before": "No cross-system cold-verifiable manifest of attempted, rejected, abstained and attributed vs unlinked feedback.",
+        "after": "One explicit scratch-root manifest with bound source refs, all attempts and exact closed terminal classification, plus deterministic verify mode.",
+        "change_authorized": true,
+        "compatibility_requirement": "No raw prompts, tokens, private positions, account ids, full local paths or personal data in export; replay is verification, never second inference.",
+        "authority": "RESEARCH_EVIDENCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Seven concrete bounded offline proof stages and honest evidence outcomes.",
+    "items": [
+      {
+        "path": "foreground_proof.source",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verified PIT observed scope and evidence temporal mode; distinguish synthetic vs current; do not claim external completeness",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verified PIT observed scope and evidence temporal mode; distinguish synthetic vs current; do not claim external completeness",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OBSERVED_UNIVERSE_ONLY or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "foreground_proof.queue",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Every observed market accounted in exactly one triage/skip/defer/selection disposition and category/lane counts reconcile",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Every observed market accounted in exactly one triage/skip/defer/selection disposition and category/lane counts reconcile",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "COVERAGE_RECONCILED or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "foreground_proof.menu",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Include <=8 unique, explicitly verified canonical candidate/version/assessment memberships; never invent mapping or silently truncate",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Include <=8 unique, explicitly verified canonical candidate/version/assessment memberships; never invent mapping or silently truncate",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "VERIFIED_MENU or NO_ELIGIBLE_STRATEGY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "foreground_proof.attempts",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "STARTED before native offline decision, immutable occurrence id and complete attempted/completed/interrupted/abstain/reject denominators",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "STARTED before native offline decision, immutable occurrence id and complete attempted/completed/interrupted/abstain/reject denominators",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "DECISION_DENOMINATORS or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "foreground_proof.paper",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Read native WP173 verified research-only journal and snapshot with cumulative/delta, missing marks, fees, fills and exact binding",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Read native WP173 verified research-only journal and snapshot with cumulative/delta, missing marks, fees, fills and exact binding",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_PAPER_OBSERVED or UNAVAILABLE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "foreground_proof.feedback",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only eligible-preview exact bound matching can reach native FakeHermesBackend PERFORMANCE_UPDATE; no-trade has no attributed PnL; no lookahead or causality",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only eligible-preview exact bound matching can reach native FakeHermesBackend PERFORMANCE_UPDATE; no-trade has no attributed PnL; no lookahead or causality",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "DECISION_LINKED_NONCAUSAL or DEFERRED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "foreground_proof.receipt",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Cold-verifiable sanitized immutable manifest over source/queue/menu/occurrence/outcome refs, all terminal states and authority zero",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Cold-verifiable sanitized immutable manifest over source/queue/menu/occurrence/outcome refs, all terminal states and authority zero",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PLUMBING_ONLY or VERIFIED_OUTCOME_FEEDBACK_OBSERVED or BLOCKED",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The WP introduces no new authoritative domain identities; source IDs remain native, and the noncanonical scratch manifest uses a locally checked SHA-256 checksum only.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Use exact required repository governance transition chain.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME prompt/spec/readiness passes on exact six-path frozen scope and fully simulated changed-path/allowlist guards, with no unresolved source contradictions.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly authorizes this exact offline finite feasibility proof, isolated local scratch and conditional minimum six-file implementation/publication; never authorizes provider/model/network/trading.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Mandatory no-code feasibility probe first. If needed and possible with only six paths, bounded foreground adapter plus 7 concrete tests, cold evidence and stable-head full suite; otherwise clean truthful NOT_NEEDED/BLOCKED stop without commit or PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new domain validation schema introduced; seven named focused negative-control tests cover required semantics and adversarial cases.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Seven observable requirements mapped to named isolated tests, plus native readiness, security guard, changed-path regressions and one stable-head full suite.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_observed_universe_scope_and_complete_queue",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_observed_universe_scope_and_complete_queue",
+        "expected_result": "Cold verified observed PIT and native ALPHA-02 queue preserve universe denominator, all disposition counts and UNKNOWN coverage; no external completeness claim."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_canonical_menu_requires_exact_verified_lineage",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_canonical_menu_requires_exact_verified_lineage",
+        "expected_result": "No guessed market/condition/token/candidate/version/assessment linkage, <=8 unique deterministic menu, and explicit unmatched/overflow status."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_decision_attempt_denominators_crash_replay_and_no_trade",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_decision_attempt_denominators_crash_replay_and_no_trade",
+        "expected_result": "Persist STARTED first; one occurrence one terminal or interrupted, NO_TRADE/PAUSE/REASSESS separate; replay no new occurrence and no extra provider calls."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_paper_snapshot_exact_binding_and_missingness",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_paper_snapshot_exact_binding_and_missingness",
+        "expected_result": "Only cold native WP173 research paper store, exact binding/head/window, separate fills/orders, cumulative/delta, missing mark/no-fill/loss preservation."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_feedback_identity_and_time_no_causality",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_feedback_identity_and_time_no_causality",
+        "expected_result": "Only eligible preview with exact candidate/version/lifecycle head/manager store; FakeHermesBackend clearly labelled; stale/future outcomes and NO_TRADE cannot get attributed paper credit."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_failclosed_input_scope_and_no_external_side_effects",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_failclosed_input_scope_and_no_external_side_effects",
+        "expected_result": "Corrupt/missing stores, historical/current confusion, duplicate paths/ids, private material, forbidden provider/network/live operations fail closed without mutation of source stores."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_cold_reverify_denominators_and_sanitized_manifest",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_discovery_learning_proof.py::test_cold_reverify_denominators_and_sanitized_manifest",
+        "expected_result": "Exact replay from immutable manifest and frozen inputs yields identical digest and denominations; tamper/unknown outcome impossible, 3 classifications and no secrets."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-03",
+    "next_title": "Separately Authorized Bounded Recurring Autonomous Discovery And Research Campaigns",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-03A",
+    "forbidden_in_this_wp": [
+      "Any real OAuth/Codex/ChatGPT/Firecrawl inference or model-list/credential access, OpenAI API keys, account data or purchased credits, including reuse of consumed PR243 call.",
+      "Any external Gamma/CLOB/product-market HTTP, internet research, new data ingestion, live venue state, hosted platform or SSH/VPS access.",
+      "Any automatic recurring campaign, scheduler, Prefect service, background daemon, multi-user host, persistent polling or retries creating extra attempts.",
+      "Any paper intent or order created from a Hermes choice, real order, wallet/account operation, signing, money movement, capital or risk/portfolio change.",
+      "Any claim of ex ante alpha, prospective OOS performance, causal paper profit, whole-market completeness, strategy qualification or Gate C eligibility.",
+      "Any native code edit under src/, dependency/workflow change, tests waived for scope bypass, extra path, hidden canonical registry mutation or user-unauthorized merge."
+    ]
+  }
+}
