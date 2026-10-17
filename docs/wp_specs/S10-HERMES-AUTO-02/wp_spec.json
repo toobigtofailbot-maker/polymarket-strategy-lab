@@ -1,0 +1,449 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-AUTO-02",
+    "title": "Hermes Tool-Free Producer / Provenance-Bound Choice / Verified Paper Feedback",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_PROVENANCE_BOUND_AUTONOMOUS_FEEDBACK_VERTICAL",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-hermes-auto-02-provider-feedback",
+    "required_predecessor": {
+      "pr_number": 240,
+      "head_sha": "50ea1654d2640e5f8fd74e508c7d6faeee8d31ba",
+      "merge_sha": "9ffbdb438226216aa59aa7a532bfb0899247a7f4"
+    },
+    "objective": "Implement local/offline pinned Hermes-native tool-free Stage B compatibility, producer-bound strict choice evidence, backward-compatible AUTO-01 admission and verified WP173 research-paper-to-Hermes PERFORMANCE_UPDATE feedback; no real provider call, credentials, account, scheduler, execution or live trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/tool_free_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+      "src/research_runtime/autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "docs/hermes_autonomous_provider_feedback_contract.md",
+      "docs/status_entries/S10-HERMES-AUTO-02.md",
+      "docs/wp_specs/S10-HERMES-AUTO-02/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-AUTO-02/wp_spec.json",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/tool_free_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+      "src/research_runtime/autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "docs/hermes_autonomous_provider_feedback_contract.md",
+      "docs/status_entries/S10-HERMES-AUTO-02.md",
+      "docs/wp_specs/S10-HERMES-AUTO-02/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-AUTO-02/wp_spec.json",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "config/",
+      "local_data/",
+      "tools/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 12,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "rollback_surface": "Revert exactly the twelve named changed paths. Restore prior AUTO-01 module/tests and remove only the two exact new Hermes allowlist literals; TS01/TS02/web-only Hermes, paper engine, manager stores, policy, native feasibility/Gate C and all original scientific evidence are untouched. No real provider/account/capital state exists.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": true,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One default-off model-choice-provenance/paper-feedback vertical composition, preserving existing native APIs and transport security boundaries.",
+    "items": [
+      {
+        "surface": "Pinned Hermes v0.21.3 AIAgent internal tool selection",
+        "before": "One-shot CLI cannot express reliable empty --toolsets; existing H1 web-only frozen.",
+        "after": "New isolated offline-native zero-tools compatibility plan and mock-serialized proof; any real provider call still separately gated.",
+        "change_authorized": false,
+        "compatibility_requirement": "Use exact pin; enabled_toolsets=[] proves zero only when post-init/model-facing schemas empty; never use CLI empty/none/unknown workaround.",
+        "authority": "LOCAL_OFFLINE_ONLY"
+      },
+      {
+        "surface": "AUTO-01 evaluate_once",
+        "before": "SYNTHETIC_ONLY caller choice and native mechanics, no model provenance.",
+        "after": "Optional canonical offline producer-bound proof path; original no-proof call unchanged.",
+        "change_authorized": true,
+        "compatibility_requirement": "All six preexisting tests remain byte-equivalent for no-proof calls; native EXEC-FEAS/Gate C identical; no live permit.",
+        "authority": "OFFLINE_PROVENANCE_ONLY"
+      },
+      {
+        "surface": "Paper performance bridge and native Hermes strategy manager",
+        "before": "Verified research-paper snapshots/context items plus existing manager PERFORMANCE_UPDATE capability.",
+        "after": "Reused and orchestrated with injected FakeHermesBackend, no paper order or live execution.",
+        "change_authorized": false,
+        "compatibility_requirement": "Verified research-only store/cutoff and exact strategy/candidate/subject/scope; no policy mutation or synthetic-to-real promotion.",
+        "authority": "LOCAL_OFFLINE_PAPER_EVIDENCE"
+      },
+      {
+        "surface": "Existing H1 controller/policy/runner and TS02 synthetic journal",
+        "before": "Frozen web-only session and synthetic two-stage offline receipts.",
+        "after": "Byte-unchanged; new separately named mode never mutates or relabels prior evidence.",
+        "change_authorized": false,
+        "compatibility_requirement": "No configuration broadening or auth/credential path; prior regressions remain green.",
+        "authority": "NO_RUNTIME_ACTIVATION"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Separate native Hermes internal tool surface, local producer truth, AUTO-01 preview and WP173 feedback without accidental authority promotion.",
+    "items": [
+      {
+        "path": "auto02.tool_free_adapter",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exact pinned native empty-tool schema compatibility through isolated offline mock only; real model call disabled.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Require post-init/model-facing empty tools, no plugin/memory/LCM/MCP leak; no fake actual provider receipt.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_NATIVE_TOOL_SURFACE_CHECKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auto02.choice_provenance",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Immutable producer-owned choice record binds request/menu/schema/clock/source/backend and optional paper outcome ID.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No model-self-attestation, replay double dispatch, changed IDs or real producer proof fabricated.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized canonical choice source ID",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auto02.auto01_admission",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Optional strictly validated offline producer record; legacy synthetic mode unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No new model authority, no stale store/clock, never use as execution permit.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Native receipt + proof classification",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auto02.paper_feedback",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verified WP173 research paper snapshot and context evidence used as native PERFORMANCE_UPDATE input.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No new PaperEngine transactions or raw callback, wrong scope/cutoff/state reject.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Existing verified paper snapshot ID and manager receipt",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "auto02.cycle_receipt",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Bounded deterministic decision/no-trade/rejected/replayed provider-paper feedback chain.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No untrusted prose/raw credentials/secret/file path, no wrong real model provenance.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Content-addressed sanitized finite-cycle receipts",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Reuse native SHA256/canonical JSON and source content hashes; do not define new cross-system canonical identity or rewrite source journal.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Implementation remains local-only with empirical provider call and publication separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native risk-3/RUNTIME exact twelve-file readiness and preflight pinned zero-tool provenance + both exact historical guard negatives pass.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl forwards full prompt and machine spec for local-only Claude Code implementation; no provider, credential, publish or live permission.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly twelve tracked changes and local-only native tool-free + provenance + native WP173 performance bridge pass focused, guard, one full suite with verified evidence.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest nodes explicitly cover positive and negative cases; avoid duplicate behavior spec language.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Six bounded verification requirements, explicit pinned-native feasibility first, focused tests then exactly one final local full suite; no paid provider activation.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_exact_pin_native_toolfree_request_has_zero_effective_tools",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py::test_exact_pin_native_toolfree_request_has_zero_effective_tools",
+        "expected_result": "Exact-pin actual selector/tool-injection/serialized fake provider contract produces no effective model-facing tools or callers; defaults/invalid CLI and plugin/LCM/memory injections reject; no real network."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_provenance_rejects_model_self_attestation_and_tampering",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_provenance_rejects_model_self_attestation_and_tampering",
+        "expected_result": "True producer-owned offline identity and hash/cutoff/menu/source validation; real origin forged/mismatch/replay/altered usage rejects."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_auto02_optional_producer_witness_preserves_legacy_synthetic",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_autonomous_opportunity_cycle.py::test_auto02_optional_producer_witness_preserves_legacy_synthetic",
+        "expected_result": "Existing six AUTO-01 tests unchanged; strict optional producer evidence authenticates offline source only and native Gate C preview unchanged."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_verified_wp173_paper_snapshot_drives_native_performance_update",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_verified_wp173_paper_snapshot_drives_native_performance_update",
+        "expected_result": "Verified ResearchPaperStrategyBinding and snapshot/context item drive native PERFORMANCE_UPDATE with FakeHermesBackend; negative/zero outcome and wrong cutoff/scope/corruption fail."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_one_cycle_evidence_denominator_and_replay",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_one_cycle_evidence_denominator_and_replay",
+        "expected_result": "No trade/rejected/no fills/failed provider/replay produces deterministic bound receipts; zero redispatch or secret leaks."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative",
+        "expected_result": "Exact two new source file allowlist literal compatibility plus separate sister historical guard tests and hostile sibling-negative check, all focused and one stable-head full suite."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-AUTO-02-REAL-01",
+    "next_title": "One explicitly authorized bounded genuine Hermes provider empirical tool-free/choice proof",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-AUTO-02",
+    "forbidden_in_this_wp": [
+      "Any actual model/provider/Firecrawl/network invocation or paid usage, real credential loading, provider home access, authenticated API, env key handling or runtime activation",
+      "Any order, capital, live trading, wallet/account, gateway, signing, cancelling or risk-engine change",
+      "Any unattended loop, daemon, cron, scheduler, retry-after-timeout or model self-approval",
+      "Any upstream Hermes source copy, new SDK/dependency or modification to existing pinned H1 Hermes web-only policy/controller/runner",
+      "Any fabricated real-model provenance by merely changing SYNTHETIC_ONLY to REAL or trusting model generated receipt/cost",
+      "Any paper engine/fill/order modification, data backfill, OOS study, weather DATA-03 plan or dashboard expansion",
+      "Any push, PR, hosted CI, merge or deployment without later explicit Karl authorization"
+    ]
+  }
+}
