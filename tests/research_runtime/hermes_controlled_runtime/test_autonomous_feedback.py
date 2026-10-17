@@ -329,6 +329,24 @@ def test_cycle_paper_feedback_bound_to_native_selection(tmp_path):
         assert fb.run_one_cycle(**again) == bundle and other.dispatch_count == 1 and quiet.call_count == 0
 
 
+REAL01_GUARD_ADDITIONS = {
+    "tests/test_hermes_advisory_foundation_architecture_docs.py": (
+        "                # S10-HERMES-AUTO-02-REAL-01: exact dormant offline-wire source only.\n"
+        '                "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",\n',
+        "    # S10-HERMES-AUTO-02-REAL-01: an unregistered sibling of the new module stays rejected.\n"
+        '    hostile = "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b_shadow.py"\n'
+        "    assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n"),
+    "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py": (
+        "                # S10-HERMES-AUTO-02-REAL-01: exact dormant offline-wire source/test only.\n"
+        '                "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",\n'
+        '                "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",\n',
+        "    # S10-HERMES-AUTO-02-REAL-01: unregistered siblings of the new module/test stay rejected.\n"
+        '    for hostile in ("src/research_runtime/hermes_controlled_runtime/real_provider_stage_b_shadow.py",\n'
+        '                    "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b_shadow.py"):\n'
+        "        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n"),
+}
+
+
 def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
     scope = json.loads((ROOT / "docs/wp_specs/S10-HERMES-AUTO-02/wp_spec.json").read_text(encoding="utf-8"))
     paths = scope["scope"]["required_changed_files"]
@@ -350,6 +368,9 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
         base = subprocess.run(["git", "show", f"{BASE_SHA}:{guard_path}"], cwd=ROOT, capture_output=True,
                               text=True, check=True).stdout
         current = (ROOT / guard_path).read_text(encoding="utf-8")
+        for real01 in REAL01_GUARD_ADDITIONS[guard_path]:  # S10-HERMES-AUTO-02-REAL-01 exact additions
+            assert current.count(real01) == 1
+            current = current.replace(real01, "", 1)
         assert current.count(addition) == 1 and current.replace(addition, "", 1) == base
         guard = runpy.run_path(str(ROOT / guard_path))["test_no_actual_hermes_implementation_artifacts_added"]
         guard()  # real tracked tree

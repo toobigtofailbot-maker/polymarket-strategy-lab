@@ -13,6 +13,10 @@ Three finite offline helpers composing EXISTING native components only:
 * :func:`run_one_cycle` -- one journaled cycle: Stage B -> provenance -> AUTO-01
   ``evaluate_once`` -> optional paper feedback. Replays return the stored bundle and
   never redispatch. No scheduler, retry, live permit or order.
+
+S10-HERMES-AUTO-02-REAL-01 adds :func:`verify_real_origin_evidence` /
+:func:`admit_real01_choice`: a dormant real-origin seam that fails closed with
+``REAL_ORIGIN_UNVERIFIED`` until a separately PROTECTED activation observes a real call.
 """
 from __future__ import annotations
 
@@ -114,6 +118,33 @@ def verify_choice_provenance(record: object, *, raw_choice: bytes, candidate_men
     _require(all(stage_b._time(t) for t in times) and record["information_cutoff_ns"] == information_cutoff_ns and
              times[0] <= times[1] <= times[2] <= evaluated_at_ns < times[3], "PROVENANCE_CLOCK_INVALID")
     return dict(record)
+
+
+# --------------------------------------------------------------------- REAL-01 seam
+
+
+REAL_ORIGIN_UNVERIFIED = "REAL_ORIGIN_UNVERIFIED"
+
+
+def verify_real_origin_evidence(evidence: object) -> dict:
+    """Fail-closed real-origin admission seam (S10-HERMES-AUTO-02-REAL-01).
+
+    Only first-party evidence observed on a genuinely invoked provider transport may ever
+    pass, and no such transport exists: ``real_provider_stage_b`` is offline fake-wire only
+    and its records are ``OFFLINE_WIRE_SIMULATED`` / ``MODEL_IDENTITY_UNVERIFIED``. Every
+    input (offline record, relabelled string, recomputed digest, forged dict) is rejected
+    here; admitting a real witness is reserved for the separately PROTECTED activation WP.
+    """
+    raise FeedbackRejected(REAL_ORIGIN_UNVERIFIED)
+
+
+def admit_real01_choice(result: object, **evaluate_once_kwargs) -> dict:
+    """Route one REAL-01 Stage B result through AUTO-01; always a non-executable rejection today."""
+    from src.research_runtime import autonomous_opportunity_cycle as cycle
+    from src.research_runtime.hermes_controlled_runtime import real_provider_stage_b as real
+    _require(type(result) is real.Real01Result and result.status == real.VALID_OUTPUT and
+             type(result.output_bytes) is bytes, "REAL01_RESULT_INVALID")
+    return cycle.evaluate_once(choice=result.output_bytes, real_origin_evidence=result.origin, **evaluate_once_kwargs)
 
 
 # --------------------------------------------------------------------- paper feedback
