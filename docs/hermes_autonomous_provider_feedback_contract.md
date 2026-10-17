@@ -108,6 +108,40 @@ no paths, prompts, raw output or secrets. An exact replay returns the stored bun
 zero redispatch. An existing reservation without a terminal blocks permanently and
 never overwrites a journal. The TS02 journal is untouched.
 
+**Decision-to-performance linkage (SIDE20 correction).** Inside `run_one_cycle`,
+`paper_feedback` reaches the manager only when **all** of these hold:
+
+- AUTO-01 returned `ELIGIBLE_PREVIEW`;
+- the feedback `strategy_version_id` equals the receipt's natively validated
+  `strategy_version_id`;
+- `expected_binding.candidate_id` equals the receipt's `candidate_id`;
+- the supplied lifecycle snapshot head equals the receipt's `lifecycle_head`;
+- the Hermes manager store is the cycle's own store.
+
+Any mismatch is `REJECTED` / `FEEDBACK_LINEAGE_MISMATCH` (`decision_linkage=MISMATCH`), with
+no manager invocation and no assessment write. A linked update records
+`decision_linkage=DECISION_LINKED` plus the linked AUTO-01 receipt id, candidate and strategy.
+
+`DECISION_LINKED` means the update concerns the identical verified candidate, strategy, lifecycle
+head and manager store. It does not mean the paper outcome was caused by this preview: this WP
+places no paper order, and linkage is identity-based, not decision-relative in time.
+
+Malformed feedback arguments return `FEEDBACK_INPUT_INVALID`, and the cycle is still journaled.
+
+Non-trade, rejected, inconclusive or invalid decisions stay denominator records. Their feedback
+is `DEFERRED_NOT_DECISION_LINKED`, so an unrelated outcome is never credited to that decision.
+The standalone `run_paper_performance_update` remains available for earlier verified paper
+sessions; it carries no decision-linkage claim.
+
+**Prior paper reference.** A cold-verified prior-paper input does not exist yet, so
+`prior_paper_snapshot_id` must be `None`. Otherwise:
+
+- the cycle returns `PRIOR_PAPER_SNAPSHOT_UNVERIFIED` before any dispatch or journal write;
+- `build_choice_provenance` and `verify_choice_provenance` reject any non-`None`
+  `paper_snapshot_id`.
+
+The record field is reserved for a future verified input.
+
 ## Non-authority
 
 No real provider/model/Firecrawl call, credential or home access, product network,

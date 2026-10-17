@@ -213,6 +213,11 @@ def test_one_cycle_evidence_denominator_and_replay(tmp_path):
         model_label="example-model", clock=lambda: native.FIXED_CLOCK))
     assert first["outcome"] == "ELIGIBLE_PREVIEW" and first["stage_b_status"] == "VALID_OUTPUT", first
     assert first["paper_feedback"]["status"] == "ASSESSED" and first["choice_provenance_id"].startswith(fb.PROVENANCE_PREFIX)
+    # (b) Matching native selection: feedback is decision-linked to this exact receipt.
+    assert first["paper_feedback"]["decision_linkage"] == "DECISION_LINKED"
+    assert first["paper_feedback"]["linked_auto01_receipt_id"] == first["auto01_receipt_id"]
+    assert (first["paper_feedback"]["linked_candidate_id"], first["paper_feedback"]["linked_strategy_version_id"]) == (
+        binding.candidate_id, w.version.strategy_version_id)
     assert first["auto01_receipt_id"].startswith("decisioncycle:sha256:") and first["no_order"] and first["no_live"]
     assert first["real_provider"] == "REAL_PROVIDER_NOT_INVOKED" and first["model_origin_proof"] == "MODEL_ORIGIN_UNVERIFIED"
     body = {k: v for k, v in first.items() if k != "bundle_id"}
@@ -256,6 +261,72 @@ def test_one_cycle_evidence_denominator_and_replay(tmp_path):
                                  report=mutated(("explicit_empty", "request_tools"), ["memory"]))
     assert surface["outcome"] == "TOOL_SURFACE_OR_REQUEST_REJECTED" and surface["stage_b_status"] == "EFFECTIVE_TOOLS_PRESENT"
     assert idle.dispatch_count == 0 and not (tmp_path / "surface").exists()
+
+
+def paper_args(w, path, binding, manager, version):
+    return dict(paper_store_path=path, expected_binding=binding, lifecycle_snapshot=w.snapshot(),
+                strategy_version_id=version.strategy_version_id, information_cutoff=CUTOFF,
+                decision_time_ns=native.T0, backend=manager, hermes_manager_store_path=w.hermes,
+                provider_label="example-provider", model_label="example-model", clock=lambda: native.FIXED_CLOCK)
+
+
+def test_cycle_paper_feedback_bound_to_native_selection(tmp_path):
+    """SIDE20 correction: decision -> PERFORMANCE_UPDATE linkage uses native verified identities."""
+    w, args, proposal, _ = world(tmp_path / "w")
+    # (a) A real, correctly formed research-paper session for the OTHER strategy/candidate.
+    unrelated_path = tmp_path / "unrelated.sqlite3"
+    unrelated = paper_store(unrelated_path, candidate_of(w.other_version))
+    manager = native.StrategyBackend(native.judgment())
+    head = sm.load_hermes_strategy_manager_store(w.hermes).store_head_entry_hash
+    mismatch, backend, values = cycle_run(tmp_path, args, proposal, journal="mismatch",
+                                          paper_feedback=paper_args(w, unrelated_path, unrelated, manager, w.other_version))
+    assert mismatch["outcome"] == "ELIGIBLE_PREVIEW" and backend.dispatch_count == 1
+    assert mismatch["paper_feedback"]["reason_code"] == "FEEDBACK_LINEAGE_MISMATCH"
+    assert mismatch["paper_feedback"]["decision_linkage"] == "MISMATCH" and manager.call_count == 0
+    assert sm.load_hermes_strategy_manager_store(w.hermes).store_head_entry_hash == head  # no assessment write
+    assert fb.run_one_cycle(**values) == mismatch and backend.dispatch_count == 1 and manager.call_count == 0
+    # Each identity leg alone breaks linkage: candidate, strategy, lifecycle head, manager store.
+    own_path = tmp_path / "own.sqlite3"
+    own = paper_store(own_path, candidate_of(w.version))
+    foreign, _, _, _ = world(tmp_path / "foreign", policy=native._policy(label="Foreign envelope"))
+    assert foreign.snapshot().store_head_entry_hash != w.snapshot().store_head_entry_hash
+    for name, changes in (("candidate", dict(expected_binding=unrelated)),
+                          ("strategy", dict(strategy_version_id=w.other_version.strategy_version_id)),
+                          ("lifecycle", dict(lifecycle_snapshot=foreign.snapshot())),
+                          ("store", dict(hermes_manager_store_path=foreign.hermes)),
+                          ("malformed", dict(expected_binding=None))):
+        feedback_args = dict(paper_args(w, own_path, own, manager, w.version), **changes)
+        bundle, _, _ = cycle_run(tmp_path, args, proposal, journal=f"leg-{name}", paper_feedback=feedback_args)
+        assert bundle["outcome"] == "ELIGIBLE_PREVIEW", name
+        assert bundle["paper_feedback"]["reason_code"] == "FEEDBACK_LINEAGE_MISMATCH", name
+    typo = dict(paper_args(w, own_path, own, manager, w.version), informaton_cutoff=CUTOFF)
+    bundle, _, again = cycle_run(tmp_path, args, proposal, journal="typo", paper_feedback=typo)
+    assert bundle["paper_feedback"]["reason_code"] == "FEEDBACK_INPUT_INVALID" and fb.run_one_cycle(**again) == bundle
+    assert manager.call_count == 0
+    assert sm.load_hermes_strategy_manager_store(w.hermes).store_head_entry_hash == head
+    # The unrelated session is itself valid: the standalone helper assesses it for its own strategy.
+    standalone = fb.run_paper_performance_update(**paper_args(w, unrelated_path, unrelated, manager, w.other_version))
+    assert standalone["status"] == "ASSESSED" and manager.call_count == 1
+    # (c) An unverified prior paper snapshot reference is refused before dispatch or journaling.
+    forged_prior = "researchpapersnapshot:sha256:" + "1" * 64
+    refused, idle, _ = cycle_run(tmp_path, args, proposal, journal="prior", prior_paper_snapshot_id=forged_prior)
+    assert refused["outcome"] == "PRIOR_PAPER_SNAPSHOT_UNVERIFIED" and idle.dispatch_count == 0
+    assert not (tmp_path / "prior").exists()
+    request, result, record, content = produce(tmp_path, args, proposal, journal="prior-record")
+    with pytest.raises(fb.FeedbackRejected, match="PRIOR_PAPER_SNAPSHOT_UNVERIFIED"):
+        fb.build_choice_provenance(result, request=request, strategy_version_id=None, hermes_assessment_id=None,
+                                   lifecycle_head="0" * 64, hermes_head="0" * 64, paper_snapshot_id=forged_prior)
+    forged = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=reid(record, paper_snapshot_id=forged_prior)))
+    assert forged["reason_codes"] == ["PRIOR_PAPER_SNAPSHOT_UNVERIFIED"] and forged["preview_permit"] is None
+    # (d) Non-trade / rejected denominators are recorded, never credited with feedback, and replay.
+    abstain = {key: proposal[key] for key in cycle._CLOCK_KEYS}
+    for name, choice, outcome in (("no-trade", dict(abstain, action="NO_TRADE"), "NO_TRADE"),
+                                  ("rejected", dict(proposal, requested_shares="1"), "REJECTED")):
+        quiet = native.StrategyBackend(native.judgment())
+        bundle, other, again = cycle_run(tmp_path, args, choice, journal=f"deferred-{name}",
+                                         paper_feedback=paper_args(w, own_path, own, quiet, w.version))
+        assert bundle["outcome"] == outcome and bundle["paper_feedback"]["status"] == "DEFERRED_NOT_DECISION_LINKED"
+        assert fb.run_one_cycle(**again) == bundle and other.dispatch_count == 1 and quiet.call_count == 0
 
 
 def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():

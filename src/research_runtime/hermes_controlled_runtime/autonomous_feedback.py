@@ -72,7 +72,9 @@ def build_choice_provenance(result: object, *, request: object, strategy_version
     """Producer-side record. Heads/ids are caller-verified store values, never model text."""
     _require(stage_b.is_producer_result(result) and stage_b.request_is_bound(request) and
              result.request_id == request.request_id, "PRODUCER_RESULT_INVALID")
-    _require(all(_optional_id(v) for v in (strategy_version_id, hermes_assessment_id, paper_snapshot_id)) and
+    # No cold-verified prior-paper input exists yet: any non-None reference is unverified.
+    _require(paper_snapshot_id is None, "PRIOR_PAPER_SNAPSHOT_UNVERIFIED")
+    _require(all(_optional_id(v) for v in (strategy_version_id, hermes_assessment_id)) and
              all(type(h) is str and stage_b._HEX64.fullmatch(h) for h in (lifecycle_head, hermes_head)),
              "PROVENANCE_BINDING_INVALID")
     record = dict(
@@ -103,6 +105,7 @@ def verify_choice_provenance(record: object, *, raw_choice: bytes, candidate_men
              and record["real_provider"] == stage_b.REAL_PROVIDER_NOT_INVOKED
              and record["promotion_gate"] == PROMOTION_GATE
              and record["hermes_commit"] == stage_b.PINNED_HERMES_COMMIT, "PROVENANCE_ORIGIN_FORGED")
+    _require(record["paper_snapshot_id"] is None, "PRIOR_PAPER_SNAPSHOT_UNVERIFIED")
     _require(record["output_schema_sha256"] == choice_output_schema_sha256(), "PROVENANCE_SCHEMA_MISMATCH")
     _require(type(raw_choice) is bytes and hashlib.sha256(raw_choice).hexdigest() == record["raw_output_sha256"],
              "PROVENANCE_OUTPUT_MISMATCH")
@@ -261,6 +264,10 @@ def run_one_cycle(*, journal_dir, surface_report, backend, model_label, candidat
                       stage_b_status=str(error) if isinstance(error, ValueError) else "REQUEST_INVALID")
         bundle["bundle_id"] = CYCLE_PREFIX + _digest(bundle)
         return bundle
+    if prior_paper_snapshot_id is not None:
+        bundle.update(outcome="PRIOR_PAPER_SNAPSHOT_UNVERIFIED", request_id=request.request_id)
+        bundle["bundle_id"] = CYCLE_PREFIX + _digest(bundle)
+        return bundle
     root = Path(journal_dir).absolute()
     terminal = root / ("cycle-" + request.request_id.rsplit(":", 1)[1] + ".json")
     if terminal.exists():
@@ -279,24 +286,60 @@ def run_one_cycle(*, journal_dir, surface_report, backend, model_label, candidat
         bundle["outcome"] = "INTERRUPTED_BLOCKED"
         bundle["bundle_id"] = CYCLE_PREFIX + _digest(bundle)
         return bundle
+    receipt = None
     if result.status != stage_b.VALID_OUTPUT:
         bundle["outcome"] = result.status
     else:
         try:
-            bundle.update(_admit(cycle, request, result, menu, lifecycle_store_path, hermes_manager_store_path,
-                                 alpha_registry_path, venue_snapshots, information_cutoff_ns, evaluated_at_ns,
-                                 deadline_ns, prior_paper_snapshot_id))
+            receipt = _admit(cycle, request, result, menu, lifecycle_store_path, hermes_manager_store_path,
+                             alpha_registry_path, venue_snapshots, information_cutoff_ns, evaluated_at_ns, deadline_ns)
+            bundle.update(choice_provenance_id=receipt["choice_provenance_id"], auto01_receipt_id=receipt["receipt_id"],
+                          auto01_status=receipt["status"], auto01_reason_codes=list(receipt["reason_codes"]),
+                          auto01_native_reasons=receipt["native_reasons"],
+                          outcome=receipt["reason_codes"][0] if receipt["status"] == "NO_TRADE" else receipt["status"])
         except Exception:
             bundle["outcome"] = "PROVENANCE_OR_STORE_INVALID"
-        if paper_feedback is not None:
-            bundle["paper_feedback"] = run_paper_performance_update(**paper_feedback)
+    if paper_feedback is not None:
+        bundle["paper_feedback"] = _linked_feedback(paper_feedback, receipt, hermes_manager_store_path)
     bundle["bundle_id"] = CYCLE_PREFIX + _digest(bundle)
     _write_once(terminal, bundle)
     return bundle
 
 
+def _linked_feedback(paper_feedback: dict, receipt: dict | None, hermes_manager_store_path) -> dict:
+    """PERFORMANCE_UPDATE only for the native selection this cycle actually previewed.
+
+    Non-trade, rejected, inconclusive or invalid decisions defer feedback (the standalone
+    helper stays available); a mismatched strategy/candidate/store never reaches the manager.
+    """
+    linkage = dict(decision_linkage=None, linked_auto01_receipt_id=None, linked_candidate_id=None,
+                   linked_strategy_version_id=None)
+    if receipt is None or receipt["status"] != "ELIGIBLE_PREVIEW":
+        return dict(schema_id="hermes-auto02-paper-feedback", status="DEFERRED_NOT_DECISION_LINKED",
+                    reason_code="NO_PREVIEWED_SELECTION", **dict(linkage, decision_linkage="DEFERRED"))
+    try:
+        binding, lifecycle = paper_feedback["expected_binding"], paper_feedback["lifecycle_snapshot"]
+        linked = (paper_feedback["strategy_version_id"] == receipt["strategy_version_id"] and
+                  getattr(binding, "candidate_id", None) == receipt["candidate_id"] and
+                  getattr(lifecycle, "store_head_entry_hash", None) == receipt["lifecycle_head"] and
+                  Path(paper_feedback["hermes_manager_store_path"]).resolve() == Path(hermes_manager_store_path).resolve())
+    except Exception:
+        linked = False
+    if not linked:
+        return dict(schema_id="hermes-auto02-paper-feedback", status="REJECTED", reason_code="FEEDBACK_LINEAGE_MISMATCH",
+                    **dict(linkage, decision_linkage="MISMATCH"))
+    try:
+        feedback = run_paper_performance_update(**paper_feedback)
+    except TypeError:  # malformed caller arguments must not lose an already-dispatched cycle
+        return dict(schema_id="hermes-auto02-paper-feedback", status="REJECTED", reason_code="FEEDBACK_INPUT_INVALID",
+                    **dict(linkage, decision_linkage="MISMATCH"))
+    feedback.update(decision_linkage="DECISION_LINKED", linked_auto01_receipt_id=receipt["receipt_id"],
+                    linked_candidate_id=receipt["candidate_id"], linked_strategy_version_id=receipt["strategy_version_id"])
+    return feedback
+
+
 def _admit(cycle, request, result, menu, lifecycle_store_path, hermes_manager_store_path, alpha_registry_path,
-           venue_snapshots, information_cutoff_ns, evaluated_at_ns, deadline_ns, prior_paper_snapshot_id) -> dict:
+           venue_snapshots, information_cutoff_ns, evaluated_at_ns, deadline_ns) -> dict:
     from src.strategy_lifecycle import load_strategy_lifecycle_store
     from src.research_runtime.hermes_controlled_runtime.strategy_manager import load_hermes_strategy_manager_store
     from src.strategy_lifecycle.models import strict_json_loads
@@ -309,13 +352,10 @@ def _admit(cycle, request, result, menu, lifecycle_store_path, hermes_manager_st
         strategy_version_id=proposal.get("strategy_version_id") if claimed and _optional_id(proposal.get("strategy_version_id")) else None,
         hermes_assessment_id=proposal.get("hermes_assessment_id") if claimed and _optional_id(proposal.get("hermes_assessment_id")) else None,
         lifecycle_head=lifecycle.store_head_entry_hash if lifecycle else None,
-        hermes_head=hermes.store_head_entry_hash, paper_snapshot_id=prior_paper_snapshot_id)
+        hermes_head=hermes.store_head_entry_hash)
     receipt = cycle.evaluate_once(
         lifecycle_store_path=lifecycle_store_path, hermes_manager_store_path=hermes_manager_store_path,
         alpha_registry_path=alpha_registry_path, candidate_menu=menu, choice=result.output_bytes,
         venue_snapshots=venue_snapshots, evaluated_at_ns=evaluated_at_ns,
         information_cutoff_ns=information_cutoff_ns, deadline_ns=deadline_ns, producer_evidence=record)
-    return dict(choice_provenance_id=record["provenance_id"], auto01_receipt_id=receipt["receipt_id"],
-                auto01_status=receipt["status"], auto01_reason_codes=list(receipt["reason_codes"]),
-                auto01_native_reasons=receipt["native_reasons"],
-                outcome=receipt["reason_codes"][0] if receipt["status"] == "NO_TRADE" else receipt["status"])
+    return dict(receipt, choice_provenance_id=record["provenance_id"])

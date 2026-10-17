@@ -41,6 +41,12 @@ EXEC-FEAS / Gate C preview. A verified simulated research-paper snapshot drives 
 native PERFORMANCE_UPDATE assessment through a FakeHermesBackend. Every denial is a
 journaled denominator outcome, and replays never redispatch. All fixtures are SYNTHETIC.
 
+SIDE20 in-scope correction (Karl-authorized, same twelve paths): one-cycle paper feedback is now
+bound to AUTO-01's natively validated candidate, strategy and lifecycle head and to the cycle's
+own manager store. A mismatch is `FEEDBACK_LINEAGE_MISMATCH`, with no manager dispatch. Non-preview
+decisions defer feedback, so their denominators stay unattributed. Unverified prior
+paper-snapshot ids are rejected before dispatch.
+
 The external evidence ZIP records the final SHA, the focused and full-suite counts, and
 the skills ledger. This fragment does not anticipate them.
 
