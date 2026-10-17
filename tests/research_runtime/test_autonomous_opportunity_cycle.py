@@ -453,3 +453,91 @@ def _real01_request(args):
         deadline_ns=args["deadline_ns"], model_label=rp.ROUTE["model"])
     return rp.build_real01_request(stage, model_input=rp.real01_model_input(args["candidate_menu"],
                                                                             args["information_cutoff_ns"]))
+
+
+# --- S10-HERMES-AUTO-02-REAL-01-ACTIVATION additive: witnessed OAuth origin admission -----
+
+
+def _oauth_world(tmp_path, monkeypatch, proposal, *, mode="real", **report_changes):
+    """One witnessed (or not) OAuth result over the native world; the child runner is patched."""
+    from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as op
+    from tests.research_runtime.hermes_controlled_runtime import test_oauth_plan_stage_b as fixture
+    from tests.research_runtime.hermes_controlled_runtime.test_tool_free_stage_b import PIN_ROOT, RECORDED_REPORT
+    w, args, trade, assessments = world(tmp_path)
+    lineage = [dict(candidate_id=m["candidate_id"], hermes_assessment_id=a.assessment_id,
+                    context_sha256=a.strategy_lifecycle_context_sha256, active_policy_id=trade["active_policy_id"])
+               for m, a in zip(args["candidate_menu"], assessments)]
+    request = op.build_oauth_request(surface_report=RECORDED_REPORT, candidate_menu=args["candidate_menu"],
+                                     lineage=lineage, information_cutoff_ns=args["information_cutoff_ns"],
+                                     issued_at_ns=args["information_cutoff_ns"], deadline_ns=args["deadline_ns"])
+    choice = json.dumps(dict(proposal(trade), produced_at_ns=request.issued_at_ns, expires_at_ns=request.deadline_ns))
+    report = fixture.dispatch(request, text=choice, mode=mode, **report_changes)
+    monkeypatch.setattr(op.OAuthPlanTransport, "_run_child", lambda self, phase, extra, timeout_s: copy.deepcopy(report))
+    transport = op.OAuthPlanTransport(PIN_ROOT, tmp_path / "creds", mode=mode,
+                                      mock=None if mode == "real" else {"responses": {}})
+    eligibility = op.evaluate_preflight(fixture.preflight(), attestation=dict(fixture.ATTEST),
+                                        checked_at_ns=args["information_cutoff_ns"])
+    ticks = iter(range(args["information_cutoff_ns"] + 1, args["information_cutoff_ns"] + 100))
+    result = op.run_oauth_attempt(request, eligibility=eligibility, transport=transport, journal_dir=tmp_path / "oauth",
+                                  clock_ns=lambda: next(ticks))
+    return args, choice, result
+
+
+def test_oauth_native_auto01_admission_nonexecutable(tmp_path, monkeypatch):
+    from src.research_runtime.hermes_controlled_runtime import autonomous_feedback as fb
+    from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as op
+    rest = lambda args: {k: v for k, v in args.items() if k != "choice"}
+    args, choice, result = _oauth_world(tmp_path / "trade", monkeypatch, lambda trade: trade)
+    assert op.is_witnessed_result(result) and result.origin["real_origin"] == "REAL_ORIGIN_VERIFIED"
+    calls = []
+    for name in ("build_execution_intent", "assess_execution_feasibility"):
+        original = getattr(cycle, name)
+        monkeypatch.setattr(cycle, name, lambda *a, _fn=original, _name=name, **kw: calls.append(_name) or _fn(*a, **kw))
+    receipt = fb.admit_oauth_choice(result, **rest(args))
+    legacy = cycle.evaluate_once(**dict(args, choice=choice))
+    # The same native EXEC-FEAS / Gate C mechanics run; the result is still only a preview.
+    assert receipt["status"] == legacy["status"] == "ELIGIBLE_PREVIEW" and calls == ["build_execution_intent",
+        "assess_execution_feasibility"] * 2
+    same = {k: v for k, v in legacy.items() if k not in ("proof_level", "model_origin_proof", "receipt_id")}
+    assert {k: receipt[k] for k in same} == same
+    assert receipt["proof_level"] == "REAL_OAUTH_ORIGIN_BOUND" and receipt["real_origin_status"] == "REAL_ORIGIN_VERIFIED"
+    assert receipt["real_provider"] == "OAUTH_AUTHENTICATED_HTTP" and receipt["real_origin_record_id"] == result.origin["record_id"]
+    assert receipt["model_origin_proof"] == "PROVIDER_REPORTED_NOT_CRYPTOGRAPHIC"
+    assert receipt["preview_authority"] == "NON_EXECUTABLE_WITHOUT_SEPARATE_LIVE_AUTHORITY" and receipt["no_order"] and receipt["no_live"]
+    assert receipt["exposure_posture"] == "NO_NEW_EXPOSURE" and result.origin["execution_authority"] == "NONE"
+    # NO_TRADE from a real model is a valid non-economic result.
+    abstain = lambda trade: {k: trade[k] for k in cycle._CLOCK_KEYS} | {"action": "NO_TRADE"}
+    args2, _, quiet = _oauth_world(tmp_path / "quiet", monkeypatch, abstain)
+    no_trade = fb.admit_oauth_choice(quiet, **rest(args2))
+    closed(no_trade)
+    assert no_trade["status"] == "NO_TRADE" and no_trade["proof_level"] == "REAL_OAUTH_ORIGIN_BOUND"
+    # Binding: a different menu, evaluation before the observed finish, or edited bytes never admit.
+    menu = list(reversed(args["candidate_menu"]))
+    for changes, code in ((dict(candidate_menu=menu), "REAL_ORIGIN_BINDING_MISMATCH"),
+                          (dict(evaluated_at_ns=args["information_cutoff_ns"] + 1), "REAL_ORIGIN_CLOCK_CONFLICT")):
+        bad = cycle.evaluate_once(**dict(args, choice=result.output_bytes, real_origin_evidence=result, **changes))
+        closed(bad)
+        assert bad["reason_codes"] == [code], (changes, bad["reason_codes"])
+    edited = dataclasses_replace(result, output_bytes=json.dumps(dict(json.loads(choice), requested_shares="11")).encode())
+    rejected = cycle.evaluate_once(**dict(args, choice=edited.output_bytes, real_origin_evidence=edited))
+    assert rejected["reason_codes"] == ["REAL_ORIGIN_UNVERIFIED"] and rejected["preview_permit"] is None
+    # Model text cannot raise its own label: a REAL proof_level claim is still rejected natively.
+    args3, _, claimed = _oauth_world(tmp_path / "claim", monkeypatch, lambda trade: dict(trade, proof_level="REAL_PROVIDER"))
+    closed(fb.admit_oauth_choice(claimed, **rest(args3)))
+    # Unverified sources stay rejected before any store read: usage gap, mock transport, replay, forged result.
+    for name, kwargs in (("nousage", dict(usage=None)), ("mock", dict(mode="mock")),
+                         ("model", dict(server_model="gpt-6.1-sol-2026-09-30"))):
+        args4, choice4, unverified = _oauth_world(tmp_path / name, monkeypatch, lambda trade: trade, **kwargs)
+        assert unverified.status == op.VALID_OUTPUT and not op.is_witnessed_result(unverified)
+        receipt4 = fb.admit_oauth_choice(unverified, **rest(args4))
+        closed(receipt4)
+        assert receipt4["reason_codes"] == ["REAL_ORIGIN_UNVERIFIED"] and receipt4["lifecycle_head"] is None
+    replayed = dataclasses_replace(result, replayed=True)
+    forged = op.OAuthPlanResult(result.request_id, result.status, dict(result.origin), result.output_bytes)
+    for evidence in (replayed, forged, result.origin):
+        bad = cycle.evaluate_once(**dict(args, choice=result.output_bytes, real_origin_evidence=evidence))
+        assert bad["reason_codes"] == ["REAL_ORIGIN_UNVERIFIED"] and bad["model_origin_proof"] == "UNVERIFIED"
+    with pytest.raises(fb.FeedbackRejected, match="OAUTH_RESULT_INVALID"):
+        fb.admit_oauth_choice(dataclasses_replace(result, status="MODEL_MISMATCH"), **rest(args))
+    # Legacy synthetic and offline-producer calls are untouched by the activation.
+    assert run(args, json.loads(choice)) == run(args, json.loads(choice), real_origin_evidence=None)

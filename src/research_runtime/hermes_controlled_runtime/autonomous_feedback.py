@@ -15,8 +15,9 @@ Three finite offline helpers composing EXISTING native components only:
   never redispatch. No scheduler, retry, live permit or order.
 
 S10-HERMES-AUTO-02-REAL-01 adds :func:`verify_real_origin_evidence` /
-:func:`admit_real01_choice`: a dormant real-origin seam that fails closed with
-``REAL_ORIGIN_UNVERIFIED`` until a separately PROTECTED activation observes a real call.
+:func:`admit_real01_choice`: a real-origin seam that fails closed with
+``REAL_ORIGIN_UNVERIFIED``. S10-HERMES-AUTO-02-REAL-01-ACTIVATION admits exactly one source
+class through it, a witnessed official ChatGPT-plan OAuth result (:func:`admit_oauth_choice`).
 """
 from __future__ import annotations
 
@@ -127,15 +128,19 @@ REAL_ORIGIN_UNVERIFIED = "REAL_ORIGIN_UNVERIFIED"
 
 
 def verify_real_origin_evidence(evidence: object) -> dict:
-    """Fail-closed real-origin admission seam (S10-HERMES-AUTO-02-REAL-01).
+    """Fail-closed real-origin admission seam (S10-HERMES-AUTO-02-REAL-01 / -ACTIVATION).
 
-    Only first-party evidence observed on a genuinely invoked provider transport may ever
-    pass, and no such transport exists: ``real_provider_stage_b`` is offline fake-wire only
-    and its records are ``OFFLINE_WIRE_SIMULATED`` / ``MODEL_IDENTITY_UNVERIFIED``. Every
-    input (offline record, relabelled string, recomputed digest, forged dict) is rejected
-    here; admitting a real witness is reserved for the separately PROTECTED activation WP.
+    Only first-party evidence observed on a genuinely invoked provider transport may pass:
+    the live, non-replayed ``oauth_plan_stage_b.OAuthPlanResult`` witnessed by that module
+    (real mode, plan eligibility established, provider-reported response id, exact model and
+    usage). Its verified origin record is returned. Every other input -- REAL-01 offline
+    records, mock-transport or replayed results, relabelled strings, recomputed digests or
+    forged dicts -- is rejected with ``REAL_ORIGIN_UNVERIFIED``.
     """
-    raise FeedbackRejected(REAL_ORIGIN_UNVERIFIED)
+    from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as oauth
+    if not oauth.is_witnessed_result(evidence):
+        raise FeedbackRejected(REAL_ORIGIN_UNVERIFIED)
+    return dict(evidence.origin)
 
 
 def admit_real01_choice(result: object, **evaluate_once_kwargs) -> dict:
@@ -145,6 +150,15 @@ def admit_real01_choice(result: object, **evaluate_once_kwargs) -> dict:
     _require(type(result) is real.Real01Result and result.status == real.VALID_OUTPUT and
              type(result.output_bytes) is bytes, "REAL01_RESULT_INVALID")
     return cycle.evaluate_once(choice=result.output_bytes, real_origin_evidence=result.origin, **evaluate_once_kwargs)
+
+
+def admit_oauth_choice(result: object, **evaluate_once_kwargs) -> dict:
+    """Route one ACTIVATION OAuth result through AUTO-01; at best a non-executable preview."""
+    from src.research_runtime import autonomous_opportunity_cycle as cycle
+    from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as oauth
+    _require(type(result) is oauth.OAuthPlanResult and result.status == oauth.VALID_OUTPUT and
+             type(result.output_bytes) is bytes, "OAUTH_RESULT_INVALID")
+    return cycle.evaluate_once(choice=result.output_bytes, real_origin_evidence=result, **evaluate_once_kwargs)
 
 
 # --------------------------------------------------------------------- paper feedback
