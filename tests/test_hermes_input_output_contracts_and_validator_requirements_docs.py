@@ -419,6 +419,11 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 # S10-HERMES-TS02
                 "src/research_runtime/hermes_controlled_runtime/two_stage.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_two_stage.py",
+                # S10-HERMES-AUTO-02: exact offline tool-free Stage B and feedback sources/tests only.
+                "src/research_runtime/hermes_controlled_runtime/tool_free_stage_b.py",
+                "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
             }
     findings = []
     for path in tracked:

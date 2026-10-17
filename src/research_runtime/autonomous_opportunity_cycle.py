@@ -52,13 +52,16 @@ def evaluate_once(
     *, lifecycle_store_path, hermes_manager_store_path, alpha_registry_path,
     candidate_menu, choice, venue_snapshots, evaluated_at_ns, information_cutoff_ns,
     deadline_ns, max_public_data_age_ns=5_000_000_000, max_hermes_age_ns=300_000_000_000,
-    venue_proof_level="SYNTHETIC_ONLY",
+    venue_proof_level="SYNTHETIC_ONLY", producer_evidence=None,
 ) -> dict:
     """Read verified stores, validate untrusted JSON bytes/text and return one receipt.
 
     Times are caller-supplied Unix nanoseconds, never sampled from the host clock.
     The bounded deadline is an evidence-time admission bound, not a background timer.
     Only explicitly synthetic injection is admitted until a real producer is authorized.
+    ``producer_evidence`` (S10-HERMES-AUTO-02, optional) is a record from the trusted
+    autonomous_feedback verifier binding this exact choice to an OFFLINE producer; it
+    relabels proof_level only and never grants live, permit or model-origin authority.
     """
     receipt = dict(
         schema_id="hermes-autonomous-opportunity-cycle", schema_version="1.0.0",
@@ -79,6 +82,10 @@ def evaluate_once(
         preview_authority="NON_EXECUTABLE_WITHOUT_SEPARATE_LIVE_AUTHORITY",
         no_live=True, no_order=True,
     )
+    if producer_evidence is not None:
+        receipt.update(proof_level="OFFLINE_PRODUCER_BOUND", choice_provenance_id=None, choice_transport_mode=None,
+                       producer_witness_class=None, real_provider="REAL_PROVIDER_NOT_INVOKED")
+    record = None
     try:
         _require(all(_time(t) for t in (evaluated_at_ns, information_cutoff_ns, deadline_ns,
                                        max_public_data_age_ns, max_hermes_age_ns)), "TIME_INVALID")
@@ -120,6 +127,17 @@ def evaluate_once(
                  information_cutoff_ns <= proposal["produced_at_ns"] <= evaluated_at_ns <
                  proposal["expires_at_ns"] <= deadline_ns, "CHOICE_STALE_OR_CUTOFF_CONFLICT")
         receipt.update(choice_produced_at_ns=proposal["produced_at_ns"], choice_expires_at_ns=proposal["expires_at_ns"])
+        if producer_evidence is not None:
+            from src.research_runtime.hermes_controlled_runtime.autonomous_feedback import verify_choice_provenance
+            try:
+                record = verify_choice_provenance(producer_evidence, raw_choice=raw,
+                    candidate_menu_sha256=receipt["candidate_menu_sha256"],
+                    information_cutoff_ns=information_cutoff_ns, evaluated_at_ns=evaluated_at_ns)
+            except ValueError as error:
+                raise _Rejected(str(error)) from None
+            # The model's own clock claim must fall inside the producer-observed dispatch window.
+            _require(record["issued_at_ns"] <= proposal["produced_at_ns"] <= record["response_completed_ns"] and
+                     record["deadline_ns"] == deadline_ns, "PRODUCER_CLOCK_CONFLICT")
 
         # Native Hermes/Gate-C imports transitively initialize analytical libraries.
         # Keep that work behind an explicit valid cycle, never module import.
@@ -147,6 +165,13 @@ def evaluate_once(
                      f'token:polymarket:{item["token_id"]}' in candidate.subject_refs, "ALPHA_STRATEGY_LINEAGE_INVALID")
         receipt.update(lifecycle_head=lifecycle.store_head_entry_hash, hermes_head=hermes.store_head_entry_hash,
                        alpha_head=alpha.head_entry_hash, active_policy_id=lifecycle.active_policy_id)
+        if record is not None:
+            _require(record["lifecycle_head"] == lifecycle.store_head_entry_hash and
+                     record["hermes_head"] == hermes.store_head_entry_hash, "PRODUCER_STATE_CHANGED")
+            _require(action == "TRADE" or record["strategy_version_id"] is record["hermes_assessment_id"] is None,
+                     "PRODUCER_CLAIM_MISMATCH")
+            receipt.update(choice_provenance_id=record["provenance_id"], choice_transport_mode=record["transport_mode"],
+                           producer_witness_class=record["producer_witness_class"])
         if action != "TRADE":
             receipt.update(status="NO_TRADE", reason_codes=[action], exposure_posture="NO_NEW_EXPOSURE")
         else:
@@ -167,6 +192,8 @@ def evaluate_once(
                      proposal["context_sha256"] == latest.strategy_lifecycle_context_sha256 == context and
                      proposal["active_policy_id"] == latest.active_policy_id == lifecycle.active_policy_id,
                      "HERMES_LINEAGE_STALE_OR_FORGED")
+            _require(record is None or (record["strategy_version_id"], record["hermes_assessment_id"]) ==
+                     (version.strategy_version_id, latest.assessment_id), "PRODUCER_CLAIM_MISMATCH")
             _require(evaluated_at_ns - max_hermes_age_ns < latest.decision_time_ns <= information_cutoff_ns and
                      _utc_ns(latest.information_cutoff) <= information_cutoff_ns, "HERMES_ASSESSMENT_STALE")
             receipt.update(**item, hermes_assessment_id=latest.assessment_id, context_sha256=context,

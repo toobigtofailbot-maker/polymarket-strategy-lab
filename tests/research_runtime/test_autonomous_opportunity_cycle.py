@@ -296,3 +296,79 @@ def test_architecture_exact_approval_preserves_all_original_guards(tmp_path):
     modified = (ROOT / "tests/test_architecture_boundaries.py").read_text()
     addition = '    # S10-HERMES-AUTO-01: exact offline opportunity connector only.\n    "'+target+'",\n'
     assert modified.replace(addition, "", 1) == source
+
+
+# --- S10-HERMES-AUTO-02 additive: optional offline producer evidence ---------------
+BASE_SHA = "9ffbdb438226216aa59aa7a532bfb0899247a7f4"
+MODEL = "offline-injected-model"
+
+
+def produce(tmp_path, args, proposal, *, journal="stageb"):
+    """Producer-owned record for one injected offline Stage B output (no provider)."""
+    from src.research_runtime.hermes_controlled_runtime import autonomous_feedback as fb
+    from src.research_runtime.hermes_controlled_runtime import tool_free_stage_b as tf
+    from src.strategy_lifecycle import load_strategy_lifecycle_store
+    from tests.research_runtime.hermes_controlled_runtime.test_tool_free_stage_b import RECORDED_REPORT
+    request = fb.cycle_request(surface_report=RECORDED_REPORT, candidate_menu=args["candidate_menu"],
+        information_cutoff_ns=args["information_cutoff_ns"], issued_at_ns=args["information_cutoff_ns"],
+        deadline_ns=args["deadline_ns"], model_label=MODEL)
+    content = json.dumps(proposal)
+    backend = tf.OfflineStageBBackend({request.request_id: dict(
+        model=MODEL, content=content, completed_at_ns=args["information_cutoff_ns"] + 1000)})
+    result = tf.run_tool_free_stage_b(request, backend=backend, reservation_dir=tmp_path / journal)
+    trade = proposal.get("action") == "TRADE"
+    record = fb.build_choice_provenance(result, request=request,
+        strategy_version_id=proposal["strategy_version_id"] if trade else None,
+        hermes_assessment_id=proposal["hermes_assessment_id"] if trade else None,
+        lifecycle_head=load_strategy_lifecycle_store(args["lifecycle_store_path"]).snapshot.store_head_entry_hash,
+        hermes_head=native.sm.load_hermes_strategy_manager_store(args["hermes_manager_store_path"]).store_head_entry_hash)
+    return request, result, record, content
+
+
+def test_auto02_optional_producer_witness_preserves_legacy_synthetic(tmp_path, monkeypatch):
+    import inspect
+    import types
+    _, args, proposal, _ = world(tmp_path)
+    # The merged AUTO-01 implementation, loaded verbatim, is the byte-equality oracle.
+    source = subprocess.run(["git", "show", BASE_SHA + ":src/research_runtime/autonomous_opportunity_cycle.py"],
+                            cwd=ROOT, capture_output=True, text=True, check=True).stdout
+    base = types.ModuleType("auto01_base")
+    exec(compile(source, "auto01_base", "exec"), base.__dict__)
+    params = inspect.signature(cycle.evaluate_once).parameters
+    assert list(params) == [*inspect.signature(base.evaluate_once).parameters, "producer_evidence"]
+    assert params["producer_evidence"].default is None
+    abstain = {key: proposal[key] for key in cycle._CLOCK_KEYS}
+    abstain["action"] = "PAUSE"
+    for choice in (proposal, dict(proposal, requested_shares="1"), abstain, dict(proposal, proof_level="REAL_PROVIDER")):
+        legacy = run(args, choice)
+        assert cycle.canonical_json_bytes(legacy) == base.canonical_json_bytes(
+            base.evaluate_once(**dict(args, choice=json.dumps(choice))))
+        assert run(args, choice, producer_evidence=None) == legacy
+    calls = []
+    for name in ("build_execution_intent", "assess_execution_feasibility", "evaluate_exploratory_gate_c",
+                 "build_exploratory_gate_c_permit"):
+        owner = gate if name in ("evaluate_exploratory_gate_c", "build_exploratory_gate_c_permit") else cycle
+        original = getattr(owner, name)
+        def observed(*a, _fn=original, _name=name, **kw):
+            calls.append(_name)
+            return _fn(*a, **kw)
+        monkeypatch.setattr(owner, name, observed)
+    legacy = run(args)
+    legacy_calls, calls[:] = list(calls), []
+    _, _, record, content = produce(tmp_path, args, proposal)
+    bound = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=record))
+    assert calls == legacy_calls == ["build_execution_intent", "assess_execution_feasibility",
+                                     "evaluate_exploratory_gate_c", "build_exploratory_gate_c_permit"]
+    assert bound["status"] == legacy["status"] == "ELIGIBLE_PREVIEW"
+    # Identical native mechanics and permit; only the provenance label and new fields differ.
+    same = {k: v for k, v in legacy.items() if k not in ("proof_level", "receipt_id")}
+    assert {k: bound[k] for k in same} == same
+    assert bound["proof_level"] == "OFFLINE_PRODUCER_BOUND" and bound["model_origin_proof"] == "UNVERIFIED"
+    assert bound["choice_provenance_id"] == record["provenance_id"] and bound["receipt_id"] != legacy["receipt_id"]
+    assert bound["choice_transport_mode"] == "OFFLINE_INJECTED" and bound["real_provider"] == "REAL_PROVIDER_NOT_INVOKED"
+    assert bound["preview_authority"] == "NON_EXECUTABLE_WITHOUT_SEPARATE_LIVE_AUTHORITY" and bound["no_order"]
+    # Model text cannot raise its own label, and a record never binds a different choice.
+    for choice in (dict(proposal, proof_level="REAL_PROVIDER"), dict(proposal, requested_shares="11")):
+        rejected = cycle.evaluate_once(**dict(args, choice=json.dumps(choice), producer_evidence=record))
+        closed(rejected)
+        assert rejected["proof_level"] == "OFFLINE_PRODUCER_BOUND" and rejected["choice_provenance_id"] is None

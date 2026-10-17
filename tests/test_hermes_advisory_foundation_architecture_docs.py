@@ -354,6 +354,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 "src/research_runtime/hermes_controlled_runtime/strategy_manager.py",
                 # S10-HERMES-TS02: exact offline two-stage source only (no live provider authority).
                 "src/research_runtime/hermes_controlled_runtime/two_stage.py",
+                # S10-HERMES-AUTO-02: exact offline tool-free Stage B and feedback sources only.
+                "src/research_runtime/hermes_controlled_runtime/tool_free_stage_b.py",
+                "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
             }
     findings = []
     for path in tracked:
