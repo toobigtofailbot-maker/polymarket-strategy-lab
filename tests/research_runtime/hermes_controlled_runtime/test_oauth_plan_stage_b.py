@@ -443,6 +443,62 @@ def test_oauth_one_post_crash_replay_no_retry(tmp_path, monkeypatch):
         assert result.origin["real_origin"] == op.REAL_ORIGIN_UNVERIFIED
 
 
+def test_oauth_terminal_publication_is_atomic(tmp_path, monkeypatch):
+    """S10-HERMES-OAUTH-JOURNAL-01: no reader ever observes a partially written terminal."""
+    import os
+    spy = Spy(monkeypatch, dispatch())
+    wire = transport(tmp_path)
+    journal = tmp_path / "journal"
+    terminal = journal / "oauthplan-attempt.json"
+    # Freeze the writer after its bytes are written but before publication, deterministically.
+    written, release, seen = threading.Event(), threading.Event(), []
+    real_fsync = os.fsync
+
+    def paused_fsync(fd):
+        real_fsync(fd)
+        written.set()
+        assert release.wait(10)
+    monkeypatch.setattr(os, "fsync", paused_fsync)
+    writer_result = []
+    writer = threading.Thread(target=lambda: writer_result.append(op.run_oauth_attempt(
+        REQUEST, eligibility=eligible(), transport=wire, journal_dir=journal, clock_ns=clock())))
+    writer.start()
+    assert written.wait(10)
+    # Mid-write: the full record sits in a private temporary file; the terminal is not visible.
+    assert not terminal.exists() and [p.name for p in journal.glob(".oauthplan-attempt.*.tmp")]
+    for _ in range(3):
+        seen.append(op.run_oauth_attempt(REQUEST, eligibility=eligible(), transport=wire, journal_dir=journal,
+                                         clock_ns=clock()).status)
+    release.set()
+    writer.join(10)
+    monkeypatch.setattr(os, "fsync", real_fsync)
+    assert seen == ["ATTEMPT_ALREADY_RESERVED"] * 3  # never JOURNAL_INVALID from a torn read
+    assert writer_result[0].status == op.VALID_OUTPUT and wire.dispatch_count == 1 and spy.phases == ["dispatch"]
+    assert op.verify_origin_record(json.loads(terminal.read_bytes())) and not list(journal.glob("*.tmp"))
+    replay = op.run_oauth_attempt(REQUEST, eligibility=eligible(), transport=wire, journal_dir=journal, clock_ns=clock())
+    assert replay.replayed and replay.status == op.VALID_OUTPUT and wire.dispatch_count == 1
+    # Publication never overwrites: an existing terminal stays byte-identical.
+    before = terminal.read_bytes()
+    with pytest.raises(FileExistsError):
+        op._publish_terminal(terminal, b"{}")
+    assert terminal.read_bytes() == before and not list(journal.glob("*.tmp"))
+    # A crash before publication leaves only the reservation: no terminal, no second dispatch.
+    crashed = tmp_path / "crashed"
+    crash_wire = transport(tmp_path)
+
+    def crash_link(*_args):
+        raise OSError("crash before publication")
+    monkeypatch.setattr(os, "link", crash_link)
+    with pytest.raises(OSError):
+        op.run_oauth_attempt(REQUEST, eligibility=eligible(), transport=crash_wire, journal_dir=crashed, clock_ns=clock())
+    monkeypatch.undo()
+    spy = Spy(monkeypatch, dispatch())
+    assert not (crashed / "oauthplan-attempt.json").exists() and not list(crashed.glob("*.tmp"))
+    assert op.run_oauth_attempt(REQUEST, eligibility=eligible(), transport=crash_wire, journal_dir=crashed,
+                                clock_ns=clock()).status == "ATTEMPT_ALREADY_RESERVED"
+    assert crash_wire.dispatch_count == 1 and spy.phases == []
+
+
 # --------------------------------------------------------------------- R004
 
 

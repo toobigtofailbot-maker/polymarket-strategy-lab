@@ -1,0 +1,332 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-OAUTH-JOURNAL-01",
+    "title": "Atomic OAuth Stage B Terminal-Journal Publication Repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "TARGETED_RUNTIME_DEFECT_REPAIR",
+    "package_size_class": "S",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-hermes-oauth-journal-atomic-01",
+    "required_predecessor": {
+      "pr_number": 243,
+      "head_sha": "9c6d4e76041b1321439aace69f77768977b0c568",
+      "merge_sha": "79bb186a70e1fe51ee9c7f631324eec72079fdf8"
+    },
+    "objective": "Replace non-atomic OAuth Stage B terminal-journal publication with a complete fsynced same-directory temporary write and atomic no-overwrite publication, preserving single reservation, one dispatch maximum, no retry, replay verification and fail-closed interrupted writes; no provider call.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+      "docs/status_entries/S10-HERMES-OAUTH-JOURNAL-01.md",
+      "docs/wp_specs/S10-HERMES-OAUTH-JOURNAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-OAUTH-JOURNAL-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+      "docs/status_entries/S10-HERMES-OAUTH-JOURNAL-01.md",
+      "docs/wp_specs/S10-HERMES-OAUTH-JOURNAL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-OAUTH-JOURNAL-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "config/",
+      "secrets/",
+      "credentials/",
+      "local_data/",
+      "agent_memory/",
+      "agent_runtime/",
+      "tools/",
+      "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01-ACTIVATION/",
+      "docs/wp_specs/S10-ALPHA-03A/"
+    ],
+    "max_changed_files": 5,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert the single repair commit; the OAuth module returns to direct exclusive-create terminal publication. No journal, credential or store format changes.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One internal journal publication step changes; public API, record schema and statuses are unchanged.",
+    "items": [
+      {
+        "surface": "run_oauth_attempt terminal journal publication",
+        "before": "Terminal JSON created with exclusive open then written; a concurrent reader could parse an empty or partial file and return JOURNAL_INVALID.",
+        "after": "Terminal bytes are written and fsynced to a same-directory temporary file and hard-linked into place atomically without overwrite; readers see no terminal or the complete one.",
+        "change_authorized": true,
+        "compatibility_requirement": "Same terminal path, bytes, record identity and status values; reservation marker unchanged; an interrupted write leaves only the reservation and never allows a second dispatch.",
+        "authority": "EXISTING_NATIVE_CONTRACT_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Two concrete journal invariants.",
+    "items": [
+      {
+        "path": "oauth_journal.publication",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Terminal published complete or not at all; never overwritten; no torn read by concurrent callers",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Terminal published complete or not at all; never overwritten; no torn read by concurrent callers",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "COMPLETE_TERMINAL or NO_TERMINAL",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "oauth_journal.reservation",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exclusive reservation before dispatch; at most one dispatch; interrupted publication blocks further dispatch; corrupted completed journal stays JOURNAL_INVALID",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exclusive reservation before dispatch; at most one dispatch; interrupted publication blocks further dispatch; corrupted completed journal stays JOURNAL_INVALID",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ATTEMPT_ALREADY_RESERVED or JOURNAL_INVALID",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The WP introduces no new authoritative domain identities; source IDs remain native, and the noncanonical scratch manifest uses a locally checked SHA-256 checksum only.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Use exact required repository governance transition chain.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME prompt/spec/readiness passes on the exact five-path scope with no unresolved source contradictions.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly authorizes this targeted repair WP/PR; never provider, OAuth, credential, network or trading activity.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Atomic publication fix plus deterministic concurrency regression, focused tests, native readiness, stable-head full suite and hosted CI on one PR; no merge.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new domain validation schema introduced; seven named focused negative-control tests cover required semantics and adversarial cases.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Two observable requirements mapped to named tests, plus readiness, guards, one stable-head full suite and hosted CI.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_oauth_terminal_publication_is_atomic",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_oauth_terminal_publication_is_atomic",
+        "expected_result": "A reader concurrent with a writer paused after fsync sees no terminal and gets ATTEMPT_ALREADY_RESERVED, never JOURNAL_INVALID; publication never overwrites; a crash before publication leaves no terminal and blocks redispatch; exactly one dispatch."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_oauth_one_post_crash_replay_no_retry",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_oauth_one_post_crash_replay_no_retry",
+        "expected_result": "Existing matrix still holds: one dispatch per journal, cold replay with zero redispatch, interrupted reservation blocked, tampered terminal JOURNAL_INVALID, six concurrent callers produce exactly one dispatch and only VALID_OUTPUT or ATTEMPT_ALREADY_RESERVED."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-LIVE-BRIDGE",
+    "next_title": "Separately Authorized Hermes Live Bridge",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-OAUTH-JOURNAL-01",
+    "forbidden_in_this_wp": [
+      "Any real OAuth, ChatGPT, Codex or provider call, credential or token read, or reuse of the PR243 consumed journal.",
+      "Any change to reservation semantics, dispatch count, retry, fallback, record schema, statuses or AUTO-01 admission.",
+      "Any market, account or product network, order, capital, scheduler or live activation.",
+      "Any edit outside the five named paths, including PR #244 files, dependencies, workflows or historical guards."
+    ]
+  }
+}

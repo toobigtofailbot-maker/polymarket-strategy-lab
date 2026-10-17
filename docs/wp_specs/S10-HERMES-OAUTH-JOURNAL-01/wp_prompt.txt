@@ -1,0 +1,104 @@
+WP ID: S10-HERMES-OAUTH-JOURNAL-01
+Title: Atomic OAuth Stage B Terminal-Journal Publication Repair
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: TARGETED_RUNTIME_DEFECT_REPAIR
+Package size: S — EXACTLY FIVE tracked paths; risk level 3
+Governance track expected: RUNTIME
+Base branch: main @ 79bb186a70e1fe51ee9c7f631324eec72079fdf8 (PR #243 merged)
+Required predecessor: PR #243 head 9c6d4e76041b1321439aace69f77768977b0c568; merged 79bb186a70e1fe51ee9c7f631324eec72079fdf8
+Suggested branch: claude/s10-hermes-oauth-journal-atomic-01
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE / KARL'S AUTHORIZATION
+Objective: hosted CI run 39048125375 (PR #244, compat ubuntu-24.04 / py3.14) failed in test_oauth_one_post_crash_replay_no_retry. In its six-thread step, one losing caller returned JOURNAL_INVALID. The cause is a pre-existing race in merged src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py. run_oauth_attempt published the terminal journal with open("xb") and then wrote it. A concurrent caller could see the file exist while it was still empty or partial, fail to parse it and fail closed. Exactly one dispatch still occurred.
+
+On 2026-10-17 Karl authorized the smallest governed, separate WP/PR to repair this from clean main:
+- write the terminal completely to a same-directory temporary file, flush and fsync it, and publish it atomically;
+- add a deterministic concurrency regression;
+- run focused tests, native readiness and the required hosted CI;
+- publish one PR, and do not merge. Karl alone merges.
+
+# 2. AUTHORITY / NON-AUTHORITY
+The authority covers the one source function's publication step, its existing test file, and the mandatory status fragment, prompt and spec.
+
+It does NOT cover:
+- any real OAuth, ChatGPT, Codex or provider call, credential or token read, or model probe;
+- reuse or touching of the PR #243 consumed journal;
+- market, account or product network;
+- orders, capital or schedulers;
+- changes to reservation semantics, the one-dispatch maximum, retry or fallback, the record schema, statuses, replay identity verification or AUTO-01 admission.
+
+Workflow-only git/GitHub PR and CI network is authorized.
+
+# 3. CHANGED-FILE SCOPE (EXACTLY FIVE)
+1. src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py — add _publish_terminal and call it in place of the direct exclusive-create write.
+   - Write to tempfile.mkstemp in the journal directory, flush, os.fsync, then os.link into the terminal path. The link is atomic and never overwrites, so FileExistsError keeps an existing terminal immutable.
+   - Always unlink the temporary file.
+   - A crash before the link leaves only the reservation. ATTEMPT_ALREADY_RESERVED then blocks any further dispatch.
+2. tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py — add test_oauth_terminal_publication_is_atomic. Every existing test stays unchanged.
+3. docs/status_entries/S10-HERMES-OAUTH-JOURNAL-01.md — the stable status fragment.
+4. docs/wp_specs/S10-HERMES-OAUTH-JOURNAL-01/wp_prompt.txt — this prompt.
+5. docs/wp_specs/S10-HERMES-OAUTH-JOURNAL-01/wp_spec.json — the spec.
+Nothing else may change: no other src/ file, guards, dependencies, workflows, contract docs or PR #244 files.
+
+# 4. ACCEPTANCE AND EVIDENCE PLAN
+R001: test_oauth_terminal_publication_is_atomic.
+- The writer pauses deterministically after fsync and before publication.
+- While it is paused, the terminal is invisible and three concurrent callers each get ATTEMPT_ALREADY_RESERVED, never JOURNAL_INVALID.
+- After release the terminal is complete and verifies, replay redispatches nothing, and exactly one dispatch occurs.
+- Publication onto an existing terminal raises and leaves its bytes unchanged.
+- A crash before publication leaves no terminal and no temporary file, and the next call is ATTEMPT_ALREADY_RESERVED with zero dispatch.
+
+R002: test_oauth_one_post_crash_replay_no_retry passes unchanged. That covers one dispatch per outcome, cold replay, interrupted reservation, a tampered terminal giving JOURNAL_INVALID, and six concurrent callers giving one dispatch.
+
+Then run: native readiness with --check-diff, the full OAuth test file, the historical Hermes guards, git diff --check, the generated artifact guard, a gitleaks scan, one stable-head full suite and hosted CI.
+
+# 5. NEGATIVE TEST MATRIX
+Covered cases:
+- torn concurrent read (mutation probe: the pre-fix publication must fail R001);
+- overwrite attempt;
+- crash before publication;
+- tampered completed journal;
+- concurrent callers;
+- interrupted reservation;
+- expired window.
+
+# 6. HARD STOPS / REPORT-BACK
+Hard stops:
+- main moved;
+- any need for a sixth path or a changed record or status;
+- any provider, credential or network need;
+- a readiness failure.
+
+Report back with:
+- the PR link, changed files, test evidence and exact CI results;
+- one SHA-256/CRC-verified evidence ZIP for SIDE20.
+Do not merge.
+
+# 7. SUCCESSOR BOUNDARY
+After Karl merges, PR #244 (S10-ALPHA-03A) is refreshed onto the repaired main with its six-file scope unchanged and gets new hosted CI. HERMES-LIVE-BRIDGE stays separately gated.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|oauth_journal|terminal_publication|concurrent_reader|REQUIRE|no_torn_terminal|oauth_journal.publication|R001
+NR002|oauth_journal|attempt_reservation|interrupted_or_concurrent|REQUIRE|single_dispatch_fail_closed|oauth_journal.reservation|R002
+END_NORMATIVE_RULE_MATRIX_V1

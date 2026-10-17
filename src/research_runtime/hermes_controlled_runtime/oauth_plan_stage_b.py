@@ -905,6 +905,27 @@ def is_witnessed_result(result: object) -> bool:
             and result.origin["raw_output_sha256"] == _sha(result.output_bytes))
 
 
+def _publish_terminal(terminal: Path, body: bytes) -> None:
+    """Publish the immutable terminal complete or not at all (S10-HERMES-OAUTH-JOURNAL-01).
+
+    The bytes are written and fsynced to a private same-directory temporary file, then
+    hard-linked into place: the link is atomic and never overwrites, so a reader sees no
+    terminal or the whole one. A crash before the link leaves only the reservation, which
+    blocks any further dispatch.
+    """
+    import os
+    import tempfile
+    fd, tmp = tempfile.mkstemp(prefix=".oauthplan-attempt.", suffix=".tmp", dir=terminal.parent)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(body)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.link(tmp, terminal)  # FileExistsError keeps an existing terminal immutable
+    finally:
+        os.unlink(tmp)
+
+
 def run_oauth_attempt(request: object, *, eligibility: object, transport: object, journal_dir: object,
                       clock_ns=None) -> OAuthPlanResult:
     """Reserve the journal's single attempt, dispatch at most once, journal one terminal.
@@ -956,8 +977,7 @@ def run_oauth_attempt(request: object, *, eligibility: object, transport: object
     except Exception:
         status, facts, finished = "ATTEMPT_TRANSPORT_FAILED_CONSUMED", dict(mode=transport.mode, generation_requests=1), clock()
     record = _origin_record(request, status, facts, raw, eligibility, dispatched, finished)
-    with terminal.open("xb") as stream:
-        stream.write(stage_b._canonical(record))
+    _publish_terminal(terminal, stage_b._canonical(record))
     witnessed = real and status == VALID_OUTPUT and record["real_origin"] == REAL_ORIGIN_VERIFIED
     return OAuthPlanResult(request_id, status, record, raw if status == VALID_OUTPUT else None, False,
                            _OBSERVED if witnessed else None)
