@@ -359,6 +359,8 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
                 # S10-HERMES-AUTO-02-REAL-01: exact dormant offline-wire source only.
                 "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",
+                # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: exact official OAuth plan-usage source only.
+                "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
             }
     findings = []
     for path in tracked:
@@ -370,6 +372,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
     assert findings == []
     # S10-HERMES-AUTO-02-REAL-01: an unregistered sibling of the new module stays rejected.
     hostile = "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b_shadow.py"
+    assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)
+    # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: an unregistered sibling of the OAuth module stays rejected.
+    hostile = "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b_shadow.py"
     assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)
 
 

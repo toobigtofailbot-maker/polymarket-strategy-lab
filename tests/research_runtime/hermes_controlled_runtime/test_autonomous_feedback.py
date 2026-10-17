@@ -347,6 +347,24 @@ REAL01_GUARD_ADDITIONS = {
 }
 
 
+ACTIVATION_GUARD_ADDITIONS = {
+    "tests/test_hermes_advisory_foundation_architecture_docs.py": (
+        "                # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: exact official OAuth plan-usage source only.\n"
+        '                "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",\n',
+        "    # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: an unregistered sibling of the OAuth module stays rejected.\n"
+        '    hostile = "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b_shadow.py"\n'
+        "    assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n"),
+    "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py": (
+        "                # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: exact official OAuth plan-usage source/test only.\n"
+        '                "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",\n'
+        '                "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",\n',
+        "    # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: unregistered siblings of the OAuth module/test stay rejected.\n"
+        '    for hostile in ("src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b_shadow.py",\n'
+        '                    "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b_shadow.py"):\n'
+        "        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n"),
+}
+
+
 def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
     scope = json.loads((ROOT / "docs/wp_specs/S10-HERMES-AUTO-02/wp_spec.json").read_text(encoding="utf-8"))
     paths = scope["scope"]["required_changed_files"]
@@ -368,7 +386,8 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
         base = subprocess.run(["git", "show", f"{BASE_SHA}:{guard_path}"], cwd=ROOT, capture_output=True,
                               text=True, check=True).stdout
         current = (ROOT / guard_path).read_text(encoding="utf-8")
-        for real01 in REAL01_GUARD_ADDITIONS[guard_path]:  # S10-HERMES-AUTO-02-REAL-01 exact additions
+        # S10-HERMES-AUTO-02-REAL-01 and -ACTIVATION exact additions
+        for real01 in ACTIVATION_GUARD_ADDITIONS[guard_path] + REAL01_GUARD_ADDITIONS[guard_path]:
             assert current.count(real01) == 1
             current = current.replace(real01, "", 1)
         assert current.count(addition) == 1 and current.replace(addition, "", 1) == base
@@ -388,3 +407,51 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
                           cwd=ROOT).returncode == 0
     scopes = runpy.run_path(str(ROOT / "tests/test_architecture_boundaries.py"))["APPROVED_SRC_SCOPES"]
     assert "src/research_runtime/hermes_controlled_runtime" in scopes
+
+
+def test_activation_real_origin_source_class_spoof_replay_and_guards(tmp_path, monkeypatch):
+    """S10-HERMES-AUTO-02-REAL-01-ACTIVATION: one admitted source class; offline/spoofed/replayed never."""
+    import dataclasses
+    from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as op
+    from src.research_runtime.hermes_controlled_runtime import real_provider_stage_b as rp
+    from tests.research_runtime.hermes_controlled_runtime import test_oauth_plan_stage_b as fx
+    fx.Spy(monkeypatch, fx.dispatch())
+    eligibility = op.evaluate_preflight(fx.preflight(), attestation=dict(fx.ATTEST), checked_at_ns=fx.T0)
+    wire = op.OAuthPlanTransport(fx.PIN_ROOT, tmp_path / "creds")
+    result = op.run_oauth_attempt(fx.REQUEST, eligibility=eligibility, transport=wire, journal_dir=tmp_path / "j",
+                                  clock_ns=fx.clock())
+    record = fb.verify_real_origin_evidence(result)
+    assert record == result.origin and record["real_origin"] == op.REAL_ORIGIN_VERIFIED
+    replay = op.run_oauth_attempt(fx.REQUEST, eligibility=eligibility, transport=wire, journal_dir=tmp_path / "j",
+                                  clock_ns=fx.clock())
+    assert replay.replayed and wire.dispatch_count == 1
+    relabelled = dict(record, transport_mode=op.TRANSPORT_MOCK)
+    relabelled["record_id"] = op.RECORD_ID_PREFIX + tf._digest({k: v for k, v in relabelled.items() if k != "record_id"})
+    real01 = rp.Real01Result("real01:sha256:" + "0" * 64, rp.VALID_OUTPUT, dict(record), result.output_bytes)
+    spoofs = (replay, dataclasses.replace(result, _witness=None), dataclasses.replace(result, origin=relabelled),
+              op.OAuthPlanResult(result.request_id, result.status, dict(record), result.output_bytes),
+              dataclasses.replace(result, output_bytes=b'{"action":"PAUSE"}'), real01, record, json.dumps(record),
+              "REAL_ORIGIN_VERIFIED", None, {})
+    for evidence in spoofs:
+        with pytest.raises(fb.FeedbackRejected, match="REAL_ORIGIN_UNVERIFIED"):
+            fb.verify_real_origin_evidence(evidence)
+    # The REAL-01 offline route still never admits, and its seam keeps rejecting.
+    with pytest.raises(fb.FeedbackRejected, match="REAL01_RESULT_INVALID"):
+        fb.admit_real01_choice(result)
+    with pytest.raises(fb.FeedbackRejected, match="OAUTH_RESULT_INVALID"):
+        fb.admit_oauth_choice(real01)
+    # Historical guards: the exact 13-path ACTIVATION scope passes; unknown siblings stay rejected.
+    scope = json.loads((ROOT / "docs/wp_specs/S10-HERMES-AUTO-02-REAL-01-ACTIVATION/wp_spec.json").read_text(encoding="utf-8"))
+    listing = "\n".join(scope["scope"]["required_changed_files"]) + "\n"
+    assert len(scope["scope"]["required_changed_files"]) == 13
+    for guard_path in ACTIVATION_GUARD_ADDITIONS:
+        guard = runpy.run_path(str(ROOT / guard_path))["test_no_actual_hermes_implementation_artifacts_added"]
+        with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0, listing, "")):
+            guard()
+        siblings = ["src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b_v2.py"]
+        if "input_output" in guard_path:
+            siblings.append("tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b_extra.py")
+        for extra in siblings:
+            with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0, listing + extra + "\n", "")):
+                with pytest.raises(AssertionError):
+                    guard()

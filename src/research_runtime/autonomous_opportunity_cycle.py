@@ -62,9 +62,11 @@ def evaluate_once(
     ``producer_evidence`` (S10-HERMES-AUTO-02, optional) is a record from the trusted
     autonomous_feedback verifier binding this exact choice to an OFFLINE producer; it
     relabels proof_level only and never grants live, permit or model-origin authority.
-    ``real_origin_evidence`` (S10-HERMES-AUTO-02-REAL-01, optional) is the dormant
-    real-producer seam: it always rejects with ``REAL_ORIGIN_UNVERIFIED`` before any
-    store is read, until a separately PROTECTED activation observes a real provider call.
+    ``real_origin_evidence`` (S10-HERMES-AUTO-02-REAL-01, optional) is the real-producer
+    seam: anything but a witnessed official OAuth result (S10-HERMES-AUTO-02-REAL-01-ACTIVATION)
+    rejects with ``REAL_ORIGIN_UNVERIFIED`` before any store is read. A witnessed result is
+    bound to this exact choice, menu and clocks, then runs the same native mechanics: at
+    best a non-executable preview, never live, permit or portfolio authority.
     """
     receipt = dict(
         schema_id="hermes-autonomous-opportunity-cycle", schema_version="1.0.0",
@@ -137,9 +139,18 @@ def evaluate_once(
             from src.research_runtime.hermes_controlled_runtime.autonomous_feedback import verify_real_origin_evidence
             _require(producer_evidence is None, "PRODUCER_EVIDENCE_CONFLICT")
             try:
-                verify_real_origin_evidence(real_origin_evidence)
+                origin = verify_real_origin_evidence(real_origin_evidence)
             except ValueError as error:
                 raise _Rejected(str(error)) from None
+            # ACTIVATION: a witnessed OAuth origin binds this exact choice, menu and observed window.
+            _require(origin["raw_output_sha256"] == receipt["requested_choice_sha256"] and
+                     origin["candidate_menu_sha256"] == receipt["candidate_menu_sha256"], "REAL_ORIGIN_BINDING_MISMATCH")
+            _require(origin["information_cutoff_ns"] == information_cutoff_ns and origin["deadline_ns"] == deadline_ns
+                     and origin["issued_at_ns"] <= proposal["produced_at_ns"] and
+                     origin["finished_at_ns"] <= evaluated_at_ns, "REAL_ORIGIN_CLOCK_CONFLICT")
+            receipt.update(proof_level="REAL_OAUTH_ORIGIN_BOUND", real_origin_status=origin["real_origin"],
+                           real_provider=origin["provider_invocation"], real_origin_record_id=origin["record_id"],
+                           model_origin_proof="PROVIDER_REPORTED_NOT_CRYPTOGRAPHIC")
         if producer_evidence is not None:
             from src.research_runtime.hermes_controlled_runtime.autonomous_feedback import verify_choice_provenance
             try:

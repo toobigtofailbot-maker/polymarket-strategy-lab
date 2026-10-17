@@ -134,3 +134,132 @@ independently authenticated model identity in this capture, so the expected outc
 `MODEL_IDENTITY_UNVERIFIED` unless a server-attested field is actually observed. A direct
 API route may be chosen at that gate without rebuilding this core. A failed or
 inconclusive paid call is never re-sent.
+
+## ACTIVATION: official ChatGPT-plan OAuth route (S10-HERMES-AUTO-02-REAL-01-ACTIVATION)
+
+Governing package: `docs/wp_specs/S10-HERMES-AUTO-02-REAL-01-ACTIVATION/` (PROTECTED, with an
+independent certificate). Module: `oauth_plan_stage_b.py`. This module is the only approved real
+route. The REAL-01 offline Codex seam above stays unchanged and can never be admitted.
+
+### Route
+
+The route is the official Sign in with ChatGPT plan-usage flow for a locally run personal app:
+
+- The user's OAuth access token is sent as a bearer to `POST https://api.openai.com/v1/responses`.
+- The model is pinned to `gpt-6.1-sol` and is used only if the account catalogue
+  `GET /v1/models` lists it.
+- There is no API key, no ChatGPT `backend-api` endpoint, no purchased credits and no fallback
+  provider or model.
+- The pinned Hermes agent is built with `provider=custom`, `api_mode=codex_responses` and
+  `base_url=https://api.openai.com/v1`.
+
+### Child phases
+
+Each phase runs in one pinned Hermes v0.21.3 child with a sterile home and stripped environment.
+The parent never reads a token.
+
+- `login` (attended): runs the official flow. It sends `client_id=dynamic_agent_client` with an
+  `agent_name_hint` and a persisted `ext_agent_host_id` (`urn:uuid:`), or the saved issued
+  `client_id` on later sign-ins. It uses PKCE S256, state, nonce and the `resource` parameter,
+  with the scopes `openid profile email offline_access resource.invoke
+  chatgpt.tokens.use.direct`. The callback goes to a loopback listener at
+  `http://127.0.0.1:<port>/auth/callback`; this is the flow's callback listener, not an OAuth
+  server. The user consents in their own browser. The child then exchanges the code at
+  `https://auth.openai.com/api/accounts/oauth/token` and validates the ID token against the
+  published JWKS (issuer, audience = issued client id, expiry, nonce) using PyJWT inside the pin
+  venv; no repository dependency is added. Credentials are stored atomically in a user-scoped
+  directory outside the repository, and the transport refuses any repository path.
+- `preflight`: performs at most one counted pre-inference token refresh, then checks granted
+  scopes and the access-token audience, issuer and client. It then runs the catalogue
+  `GET /v1/models`, which is discovery and not entitlement proof.
+- `dispatch`: builds `AIAgent(enabled_toolsets=[])` with every socket denied. A pre-send httpx
+  hook re-checks the final post-SDK body. Exactly one POST then goes out under an
+  `api.openai.com:443`-only socket allowlist, with SDK `max_retries=0`, `trust_env=False` and
+  TLS verification on. There is no refresh, retry or fallback.
+
+### R001 eligibility
+
+`evaluate_preflight` requires all of the following:
+
+- the pin;
+- no `*API_KEY*` environment variable;
+- only official control-plane calls (the catalogue, plus at most one refresh);
+- the full scope set, including `chatgpt.tokens.use.direct`;
+- the access-token audience, issuer and client binding;
+- a fresh token;
+- catalogue HTTP 200 with the exact slug listed;
+- real mode;
+- the operator's attestation
+  `{purchased_credits_disabled: true, model_visible_in_chatgpt: true, source: OPERATOR_ATTESTATION}`.
+
+Purchased-credit state has no API, so operator attestation is the only evidence for it. Any gap
+gives `PLAN_USAGE_UNVERIFIED` and zero dispatch. The eligibility must be at most 15 minutes old
+at dispatch.
+
+### R002 final wire
+
+The body keys must lie between `{input, instructions, model, store, stream}` and that set plus
+`{include, prompt_cache_key, reasoning}`.
+
+- `store=false` and `stream=true`.
+- `input` is one `user` item; instructions go in `instructions`, never a system item.
+- There are no `tools`, `tool_choice` or `parallel_tool_calls`.
+- None of the preview-unsupported fields are sent: `background`, `conversation`,
+  `max_output_tokens`, `max_tool_calls`, `metadata`, `moderation`, `multi_agent`, `prompt`,
+  `prompt_cache_retention`, `safety_identifier`, `temperature`, `top_logprobs`, `top_p`,
+  `truncation`, `user`, `previous_response_id`, `service_tier`.
+- The instruction and input digests must be exact.
+
+The Responses `input` (the model input) is at most 2,048 UTF-8 bytes. The instructions are a
+fixed constant bound by their digest.
+
+### R003 one attempt
+
+A journal namespace admits one dispatch ever. `oauthplan-attempt.reserved` is created
+exclusively before the child starts. Each outcome is handled as follows:
+
+| Outcome | Result |
+|---|---|
+| Any 429, 5xx, timeout, crash, `response.failed`, tool item or invalid output | Consumes the attempt |
+| Replay | Returns the stored terminal, never a witness |
+| A different request on the same journal | `JOURNAL_ALREADY_CONSUMED` |
+| Reservation without a terminal | `ATTEMPT_ALREADY_RESERVED` |
+
+Control-plane calls (login, refresh, catalogue) are counted separately from the single
+generation request.
+
+### R004 provenance
+
+Every classification fails closed:
+
+- Non-`message`/`reasoning` items are `TOOL_CALL_ATTEMPT_INVALID`.
+- Reasoning-only or multiple messages are `RESPONSE_SHAPE_INVALID`.
+- Only `response.completed` is accepted.
+- 401/403 is `PROVIDER_AUTH_OR_ENTITLEMENT_DENIED`, and `response.failed` (for example
+  `subscription_sharing_usage_limit_exceeded`) is `PROVIDER_RESPONSE_FAILED`.
+- The client stops at 16,384 output bytes or 45 s. These are client limits, not provider
+  quotas. No provider output-token cap exists on this route, so `USAGE_CAP_EXCEEDED` does not
+  apply here.
+- The output must be strict JSON.
+
+A result is `REAL_ORIGIN_VERIFIED` / `OAUTH_AUTHENTICATED_HTTP` only when all of these hold:
+real mode, witnessed eligibility, one answered generation request, a provider response id, the
+exact server model slug and provider-reported usage. A dated snapshot slug, missing usage or a
+missing id is `REAL_TRANSPORT_OBSERVED_MODEL_OR_USAGE_UNVERIFIED`. Every record carries:
+
+- `PROVIDER_REPORTED_NOT_CRYPTOGRAPHIC`;
+- `INCLUDED_PLAN_USAGE_NO_DOLLAR_AMOUNT_INFERRED`, with no dollar amount;
+- execution authority `NONE`.
+
+Response and request ids are stored hashed.
+
+### R005 AUTO-01
+
+`autonomous_feedback.verify_real_origin_evidence` admits only a live, non-replayed result
+witnessed by `oauth_plan_stage_b`. `evaluate_once(real_origin_evidence=...)` then binds the exact
+choice bytes, the menu digest, the cutoff and deadline, and the observed issue/finish window. It
+runs the unchanged native EXEC-FEAS / Gate C mechanics and labels the receipt
+`REAL_OAUTH_ORIGIN_BOUND`. The result is at best `ELIGIBLE_PREVIEW`
+(`NON_EXECUTABLE_WITHOUT_SEPARATE_LIVE_AUTHORITY`), and `NO_TRADE` is valid. Offline REAL-01
+records, mock-transport, replayed, relabelled or forged results still reject with
+`REAL_ORIGIN_UNVERIFIED` before any store read. Legacy and offline-producer calls are unchanged.
