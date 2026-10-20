@@ -1,7 +1,7 @@
 # S10-CI-SEC-02: exact gitleaks fingerprints (commit:path:rule:line) for historical synthetic
-# test fixtures and prose false positives, each classified manually. No real credential is
-# listed here. Never add path, directory, rule or wildcard entries; a new finding must be
-# fixed or individually classified.
+# test fixtures and prose false positives (including the WP14-D002 deferred-log line), each
+# classified manually. No real credential is listed here. Never add path, directory, rule or
+# wildcard entries; a new finding must be fixed or individually classified.
 1588f3114b6dd9bb8ee7f372352d721b1fbdb86a:tests/execution_gateway/test_gate_b.py:generic-api-key:28
 1f3be1fe7c77c5d17aebcc380461c38662376b1b:docs/repo_truth_index.md:generic-api-key:528
 2d53af9b3a51f8f9a27334e8bc3b2c40efe6864a:tests/data_layer/wallet_intelligence/test_profile.py:generic-api-key:270
@@ -13,6 +13,7 @@
 4db1cb8e4ffa9cb6122f064faab82d379c74ad44:tools/alpha/run_s10_alpha_real_01.py:generic-api-key:181
 4db1cb8e4ffa9cb6122f064faab82d379c74ad44:tools/alpha/run_s10_alpha_real_01.py:generic-api-key:249
 4db1cb8e4ffa9cb6122f064faab82d379c74ad44:tools/alpha/run_s10_alpha_real_01.py:generic-api-key:253
+70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49
 87445c128776deafcfe43796c9a2e7230edd5f51:tests/research_runtime/hermes_controlled_runtime/test_runner.py:jwt:674
 8a547d9eb36c31e94bd0f2eb7bb7d2d503bdadd6:tests/research_runtime/hermes_controlled_runtime/test_models.py:generic-api-key:107
 8d51a54ab2a7a2907c3e3b23104cb16a3ea72c4f:tests/research_runtime/hermes_controlled_runtime/test_models.py:generic-api-key:1255

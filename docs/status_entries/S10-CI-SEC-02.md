@@ -28,12 +28,12 @@ because legacy allowlist conditions match independently.
 ## Repair
 
 - `.gitleaks.toml`: `[extend] useDefault = true` (official mechanism) restores the embedded default
-  rules; the legacy allowlist keeps only the exact WP14-D002 regex, bound to its `| WP14-D002 |`
-  table cell and matched against the line (the same phrase in any other row is still scanned);
-  the whole-file path exclusion is removed.
-- `.gitleaksignore`: 19 exact `commit:path:rule:line` fingerprints, each manually classified as a
-  synthetic test fixture, constructed placeholder, public sample token or documentation prose. No
-  path, directory, rule or wildcard entry.
+  rules. There is no allowlist of any kind (SIDE20 correction: a line allowlist would also hide a
+  new secret appended to the WP14-D002 row).
+- `.gitleaksignore`: 20 exact `commit:path:rule:line` fingerprints, each manually classified as a
+  synthetic test fixture, constructed dummy value, public sample token or documentation prose,
+  including the WP14-D002 deferred-log finding `70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49`. No path, directory, rule or wildcard
+  entry.
 - `tools/wp/wp_spec_guard.py`: exactly `.gitleaks.toml` and `.gitleaksignore` now map to
   `local_offline_tooling`. Before this change the guard mapped no root non-dependency path, so no
   governed package could change them. `README.md`, look-alikes and nested copies remain
@@ -56,27 +56,34 @@ because legacy allowlist conditions match independently.
 ## Detection Evidence (local, gitleaks 8.27.2)
 
 - Runner-mode history scan (`gitleaks git`, whose default log options include `--all`, so the
-  commit count depends on the local refs present): 19 findings before `.gitleaksignore`, 0 after,
-  on 2026-10-20 in a clone holding the origin branches at `0c158e0` (541 non-merge commits) and
-  in this worktree's local refs (557-558 commits). Every one of the 19 is classified and
+  commit count depends on the local refs present): 20 findings before `.gitleaksignore`, 0 after,
+  on 2026-10-20 in this worktree's local refs (558 commits). Every one of the 20 is classified and
   fingerprinted.
-- All-refs merge-inclusive scan (788 commits; all branches and pull refs): 37 findings = 19
-  fingerprinted + 18 merge-diff re-occurrences whose matched values are byte-identical (SHA-256
+- All-refs merge-inclusive scan (791 commits; all branches and pull refs): 39 findings = 20
+  fingerprinted + 19 merge-diff re-occurrences whose matched values are byte-identical (SHA-256
   compared, never printed) to fingerprinted values. Zero unclassified findings.
+- Same-row proof in a scratch clone: a commit appending a runtime-assembled synthetic token to the
+  real WP14-D002 row of `docs/deferred_items_log.md` turns the runner gitleaks row to
+  FINDING_OR_ERROR; the earlier row-bound allowlist configuration returns PASS for it.
 - Runner proof in a scratch clone: gitleaks row PASS on clean history; FINDING_OR_ERROR after a
   scratch commit planting a runtime-assembled synthetic token; the pre-repair WP15 configuration
   returns PASS for that same planted commit (the defect).
-- `tests/test_gitleaks_secret_scan_gate.py`: configuration-shape test, 14-row configuration
-  negative matrix, fingerprint grammar and 7-row negative matrix, and three binary-backed detection
-  tests. These skip without a gitleaks binary that supports `dir` (hosted CI: see
-  S10-CI-SEC-02-D001).
+- `tests/test_gitleaks_secret_scan_gate.py`: configuration-shape test (no allowlist), 14-row
+  configuration negative matrix, exact fingerprint list including the WP14-D002 fingerprint,
+  7-row fingerprint negative matrix, and five binary-backed detection tests (a git-mode test
+  proves a secret added to the classified WP14-D002 row is detected; the WP15 and row-bound
+  allowlist shapes are both proven blind). These skip without a gitleaks binary that supports
+  `dir` (hosted CI: see S10-CI-SEC-02-D001).
 - `.gitleaksignore` fingerprints contain commit SHAs, so they apply to `gitleaks git` (the runner's
   mode) only; a `gitleaks dir` working-tree scan still reports the present fixtures, and a history
   rewrite would invalidate them.
 - Independent review (fresh-context reviewer) on head a0a1438: PASS_WITH_NOTES, no blockers; its
   in-scope notes (WP14 allowlist test made discriminating, row-bound regex, commit-count wording,
   git-mode fingerprint note, binary `dir` probe) are corrected in the following commit and D004
-  records the advisory scope-summary limitation.
+  records the advisory scope-summary limitation. Re-review of 84f907c: PASS_WITH_NOTES.
+- SIDE20 correction: the row-bound line allowlist was too broad (a new secret appended to the
+  WP14-D002 row was ignored). The allowlist is removed and the single historical WP14-D002
+  finding is suppressed by its exact fingerprint only, within the same ten-file scope.
 
 ## Authority / Non-Authority Posture
 

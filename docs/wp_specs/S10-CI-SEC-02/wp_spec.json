@@ -15,7 +15,7 @@
       "merge_sha": "0c158e061d3ab5039997c6b4e736da0da9507d37"
     },
     "suggested_branch": "claude/s10-ci-sec-02-gitleaks-default-rules",
-    "objective": "Restore real gitleaks detection: extend the embedded default rule set through the official [extend] useDefault = true mechanism, replace the whole-file deferred-log path exclusion with only the exact WP14-D002 line regex, list each manually classified historical fixture finding by exact fingerprint in .gitleaksignore, prove detection with a deterministic regression and negative matrix, and let the deterministic spec guard govern exactly the two repository-root secret-scan configuration paths as local offline tooling.",
+    "objective": "Restore real gitleaks detection: extend the embedded default rule set through the official [extend] useDefault = true mechanism, remove every allowlist including the whole-file deferred-log path exclusion, list each manually classified historical finding (including the WP14-D002 prose line) by exact fingerprint in .gitleaksignore, prove detection with a deterministic regression and negative matrix, and let the deterministic spec guard govern exactly the two repository-root secret-scan configuration paths as local offline tooling.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": false,
     "xl_authorization_basis": null
@@ -156,7 +156,7 @@
       {
         "surface": ".gitleaks.toml",
         "before": "legacy [allowlist] only; no [extend]; zero rules; whole deferred log excluded",
-        "after": "[extend] useDefault = true; legacy allowlist keeps only the exact WP14-D002 line regex",
+        "after": "[extend] useDefault = true only; no allowlist of any kind",
         "change_authorized": true,
         "compatibility_requirement": "gitleaks 8.27.2 git and dir scans execute the embedded default rules",
         "authority": "LOCAL_OFFLINE_SECURITY_TOOLING_ONLY"
@@ -164,7 +164,7 @@
       {
         "surface": ".gitleaksignore",
         "before": "absent",
-        "after": "exactly 19 manually classified commit:path:rule:line fingerprints",
+        "after": "exactly 20 manually classified commit:path:rule:line fingerprints including the WP14-D002 deferred-log finding",
         "change_authorized": true,
         "compatibility_requirement": "no path, directory, rule or wildcard entry",
         "authority": "LOCAL_OFFLINE_SECURITY_TOOLING_ONLY"
@@ -195,7 +195,7 @@
         "path": "secret_scan.default_rules",
         "source": "CONSTANT",
         "type": "official_default_rule_inheritance",
-        "required_rule": "[extend] contains exactly useDefault = true; no extend path/url/disabledRules, no [[rules]] or [[allowlists]]",
+        "required_rule": "[extend] contains exactly useDefault = true; no extend path/url/disabledRules, no [allowlist], [[allowlists]] or [[rules]]",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
@@ -207,12 +207,12 @@
       {
         "path": "secret_scan.allowlist",
         "source": "CONSTANT",
-        "type": "exact_line_regex_only",
-        "required_rule": "legacy allowlist has regexTarget line and exactly the WP14-D002 regex; no paths, commits or stopwords",
+        "type": "no_allowlist",
+        "required_rule": "no [allowlist] or [[allowlists]] of any kind; the WP14-D002 prose finding is suppressed only by its exact fingerprint, so a new secret on that row is detected",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
-        "validation_rule": "negative matrix rejects path, commit, stopword and broad regex additions",
+        "validation_rule": "negative matrix rejects every allowlist form including the earlier row-bound regex; binary tests prove a secret on the WP14-D002 row is detected in git and dir mode",
         "failure_category": "SEMANTIC_CONTRADICTION",
         "safe_output": "violation labels only",
         "derivation_rule_id": null
@@ -221,7 +221,7 @@
         "path": "secret_scan.fingerprints",
         "source": "CONSTANT",
         "type": "exact_fingerprint_list",
-        "required_rule": "exactly 19 unique 40-hex commit:path:rule:line entries for docs/tests/tools fixtures with rules generic-api-key, private-key or jwt",
+        "required_rule": "exactly 20 unique 40-hex commit:path:rule:line entries for docs/tests/tools findings with rules generic-api-key, private-key or jwt, including 70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
@@ -234,7 +234,7 @@
         "path": "secret_scan.detection_proof",
         "source": "CONSTANT",
         "type": "synthetic_detection_regression",
-        "required_rule": "a runtime-assembled synthetic token is detected, clean input and the WP14 sentence pass, a token in a deferred_items_log.md file is detected and the defective WP15 shape detects nothing",
+        "required_rule": "a runtime-assembled synthetic token is detected, clean input including the bare WP14-D002 row passes, a token appended to the WP14-D002 row is detected in dir and git mode, and the defective WP15 and row-bound allowlist shapes detect nothing",
         "mutable": false,
         "identity_role": "NONE",
         "exclusion_reason": null,
@@ -428,35 +428,35 @@
         "source": "pytest",
         "test": "test_gitleaks_config_extends_embedded_default_rules",
         "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
-        "expected_result": "repository .gitleaks.toml extends the embedded default rules and carries only the exact WP14-D002 line regex"
+        "expected_result": "repository .gitleaks.toml extends the embedded default rules and contains no allowlist of any kind"
       },
       {
         "requirement_id": "R003",
         "source": "pytest",
         "test": "test_gitleaks_config_negative_matrix",
         "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
-        "expected_result": "every disabling, overriding or broadening mutation and the defective WP15 shape yields its closed violation label"
+        "expected_result": "every disabling, overriding or allowlist-adding mutation, the defective WP15 shape and the row-bound WP14 allowlist yield their closed violation labels"
       },
       {
         "requirement_id": "R004",
         "source": "pytest",
         "test": "test_gitleaksignore_is_exact_fingerprints_only",
         "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
-        "expected_result": "exactly 19 unique fingerprints in commit:path:rule:line grammar and no path, rule or wildcard entry"
+        "expected_result": "exactly 20 unique fingerprints in commit:path:rule:line grammar including the WP14-D002 fingerprint and no path, rule or wildcard entry"
       },
       {
         "requirement_id": "R005",
         "source": "pytest",
         "test": "test_gitleaks_detects_synthetic_secret_and_accepts_clean_input",
         "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
-        "expected_result": "synthetic token detected (exit 9), clean input and WP14 sentence pass (exit 0), deferred-log token detected"
+        "expected_result": "synthetic token detected (exit 9), clean input and the bare WP14-D002 row pass (exit 0), a token appended to the WP14-D002 row is detected (exit 9)"
       },
       {
         "requirement_id": "R006",
         "source": "pytest",
         "test": "test_defective_wp15_config_shape_detects_nothing",
         "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
-        "expected_result": "the pre-repair WP15 configuration shape reports no finding for the same synthetic token, proving discrimination"
+        "expected_result": "the pre-repair WP15 shape and the row-bound WP14 allowlist both report no finding for a token on the WP14-D002 row, proving discrimination"
       },
       {
         "requirement_id": "R007",

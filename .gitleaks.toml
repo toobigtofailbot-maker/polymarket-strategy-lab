@@ -2,15 +2,8 @@ title = "polymarket-strategy-lab gitleaks configuration"
 
 # Inherit the full gitleaks embedded default rule set (official [extend] mechanism).
 # Without this table a project config defines zero rules and every scan passes vacuously.
+# No allowlist of any kind: every classified historical finding, including the WP14-D002
+# deferred-log prose, is suppressed only by its exact fingerprint in .gitleaksignore, so a
+# new secret on any line (even an already classified one) is a new finding.
 [extend]
 useDefault = true
-
-# Exactly one documented prose false positive (WP14-D002 deferred-log wording), bound to its
-# table cell and matched against the whole line. No path, commit, stopword or rule exclusions. Individual historical
-# test-fixture findings are listed by exact fingerprint in .gitleaksignore.
-[allowlist]
-description = "WP14-D002 deferred-log prose false positive only."
-regexTarget = "line"
-regexes = [
-  '''\| WP14-D002 \| Authenticated CLOB client integration remains blocked pending credential/key/security boundary WP \|''',
-]

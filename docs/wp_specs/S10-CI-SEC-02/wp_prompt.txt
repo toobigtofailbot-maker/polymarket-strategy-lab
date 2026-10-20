@@ -74,7 +74,8 @@ allowlist `paths` entry also excluded all of `docs/deferred_items_log.md`.
 Restore real detection with the smallest correction:
 
 1. extend the embedded default rules through the official `[extend] useDefault = true` mechanism;
-2. keep only the exact WP14-D002 line regex as a prose exclusion and drop the whole-file path;
+2. remove every allowlist, including the whole-file path, and suppress the WP14-D002 prose finding
+   only by its exact fingerprint;
 3. list each manually classified historical fixture finding by exact fingerprint in `.gitleaksignore`;
 4. prove detection with a deterministic regression and negative matrix;
 5. let the deterministic spec guard govern exactly the two repository-root secret-scan
@@ -90,10 +91,10 @@ The security runner, workflows and CI matrix stay unchanged. PR #246 is not modi
 - gitleaks 8.27.2 project-local binary (`tools/.bin/`, ignored, never committed).
 - With the new configuration, the runner-mode history scan (`--all` local refs; 541 non-merge
   commits in a clone of the origin branches at the base) reports exactly
-  19 findings. Each was classified manually as a synthetic test fixture, a constructed
+  20 findings (including WP14-D002). Each was classified manually as a synthetic test fixture, a constructed
   placeholder, a public sample token or documentation prose. No real credential exists.
-- All-refs merge-inclusive scan (788 commits, 24 branches and 246 pull refs): 37 findings = the 19
-  fingerprinted findings plus 18 merge-diff re-occurrences whose matched values are byte-identical
+- All-refs merge-inclusive scan (791 commits, all branches and 246 pull refs): 39 findings = the 20
+  fingerprinted findings plus 19 merge-diff re-occurrences whose matched values are byte-identical
   to a fingerprinted value (compared by SHA-256, never printed).
 
 If any implementation-changing fact differs at execution time, STOP under Section 8.
@@ -129,13 +130,14 @@ If a eleventh path is mechanically required, STOP with
 
 ### A. `.gitleaks.toml`
 
-Exactly: `title`; `[extend]` with only `useDefault = true`; legacy `[allowlist]` with
-`description`, `regexTarget = "line"` and `regexes` containing only the WP14-D002 phrase. No
-`paths`, `commits`, `stopwords`, `disabledRules`, `[[rules]]` or `[[allowlists]]`.
+Exactly: `title` and `[extend]` with only `useDefault = true`. No `[allowlist]` or
+`[[allowlists]]` of any kind (no regex, path, commit or stopword exclusion), no `disabledRules`
+and no `[[rules]]`.
 
 ### B. `.gitleaksignore`
 
-A comment header plus exactly the 19 runner-mode fingerprints (`commit:path:rule:line`). No path,
+A comment header plus exactly the 20 runner-mode fingerprints (`commit:path:rule:line`), including
+the WP14-D002 deferred-log finding. No path,
 directory, rule or wildcard entry. A future finding must be fixed or classified individually.
 
 ### C. Spec-guard mapping
@@ -180,7 +182,7 @@ or capital authority.**
 ```text
 .gitleaks.toml [extend] useDefault = true
 → gitleaks loads the embedded default rules from the repository root
-→ .gitleaksignore suppresses only 19 exact classified fingerprints
+→ .gitleaksignore suppresses only 20 exact classified fingerprints
 → run_available_security_checks.py gitleaks row PASS on real rules
 → a new synthetic secret commit turns the row FINDING_OR_ERROR
 ```
@@ -226,7 +228,7 @@ Hard stop if:
 | ID | Requirement | Minimum evidence |
 |---|---|---|
 | R001 | base/predecessor; PR #246 untouched | discovery + exact scope |
-| R002 | default rules extended, exact allowlist | `test_gitleaks_config_extends_embedded_default_rules` |
+| R002 | default rules extended, no allowlist | `test_gitleaks_config_extends_embedded_default_rules` |
 | R003 | disabling/broadening mutations rejected | `test_gitleaks_config_negative_matrix` |
 | R004 | exact fingerprint list | `test_gitleaksignore_is_exact_fingerprints_only` |
 | R005 | synthetic detected, clean accepted | `test_gitleaks_detects_synthetic_secret_and_accepts_clean_input` |
@@ -244,10 +246,10 @@ Hard stop if:
 |---|---|---|
 | N01 | `[extend]` removed or `useDefault = false` | FAIL |
 | N02 | `disabledRules` or extend `path` added | FAIL |
-| N03 | allowlist `paths` (deferred log or `tests/`) | FAIL |
-| N04 | allowlist `stopwords` or `commits` | FAIL |
-| N05 | broad allowlist regex | FAIL |
-| N06 | allowlist target other than `line` | FAIL |
+| N03 | any `[allowlist]` (regex, `paths`, `stopwords` or `commits`) | FAIL |
+| N04 | the earlier row-bound WP14-D002 line allowlist | FAIL; binary run proves it hides a new secret |
+| N05 | a secret appended to the classified WP14-D002 row | detected (git and dir mode) |
+| N06 | WP14-D002 fingerprint missing from `.gitleaksignore` | FAIL |
 | N07 | `[[rules]]` or `[[allowlists]]` added | FAIL |
 | N08 | invalid TOML | FAIL |
 | N09 | defective WP15 shape | FAIL; binary run detects nothing |
@@ -278,7 +280,7 @@ Governance track expected: FAST
 BEGIN_NORMATIVE_RULE_MATRIX_V1
 RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
 NR001|secret_scan|default_rules|repository_config|REQUIRE|embedded_default_rules_extended|secret_scan.default_rules|R002
-NR002|secret_scan|allowlist|repository_config|FORBID|path_commit_stopword_or_broad_exclusion|secret_scan.allowlist|R003
+NR002|secret_scan|allowlist|repository_config|FORBID|any_allowlist_exclusion|secret_scan.allowlist|R003
 NR003|secret_scan|fingerprints|gitleaksignore|REQUIRE|exact_classified_fingerprints_only|secret_scan.fingerprints|R004
 NR004|secret_scan|detection|synthetic_token|REQUIRE|detected_while_clean_input_passes|secret_scan.detection_proof|R005
 NR005|secret_scan|detection|defective_wp15_shape|REJECT|zero_rule_configuration|secret_scan.detection_proof|R006
@@ -300,3 +302,14 @@ security-detection proof, commit, push, one DRAFT pull request and independent r
 is not triggered while GitHub billing is blocked. No visibility change, PR #246 change, trading,
 ready transition or merge is authorized. Sections 0-12 are unchanged apart from the header
 authorization line.
+
+---
+
+## 14. SIDE20 Correction Record
+
+SIDE20 accepted the package for continued work and found one material issue: the row-bound
+WP14-D002 line allowlist also ignored a new secret appended to that documentation row. Within the
+same ten-file scope and without a new WP or certification cycle, the allowlist is removed and only
+the exact historical finding
+`70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49` is
+suppressed by fingerprint. Sections 1, 2, 4, 6, 9, 10 and 12 above are updated accordingly.
