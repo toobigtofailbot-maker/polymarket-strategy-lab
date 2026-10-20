@@ -198,6 +198,8 @@ APPROVED_SRC_SCOPES = (
     # authority, and it is not a parent src/ wildcard approval.
     # S10-HERMES-AUTO-01: exact offline opportunity connector only.
     "src/research_runtime/autonomous_opportunity_cycle.py",
+    # S10-HERMES-LIVE-BRIDGE-01: exact foreground read-only live-preflight composer only.
+    "src/research_runtime/live_preflight_bridge.py",
     "src/strategy_lifecycle",
     # S10-EXEC-FEAS-01 approves exactly the stdlib-only src/execution_feasibility family: the
     # current-public, read-only execution-feasibility evaluator (two fixed-host unauthenticated

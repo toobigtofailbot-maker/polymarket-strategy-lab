@@ -1,0 +1,113 @@
+WP ID: S10-HERMES-LIVE-BRIDGE-01
+Title: Authentic Opportunity Choice + Existing Canonical Strategy Assessment -> Read-Only Live Preflight
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Frozen main: 0c158e061d3ab5039997c6b4e736da0da9507d37 (PR #245 merged)
+Predecessor: PR #245 head e178c389f09feadd01956cc278ca045e35a49823
+Class: FOREGROUND_HERMES_TO_LIVE_PREFLIGHT_REUSE
+Size: M; exact eight tracked files; risk 4; governance PROTECTED
+Base branch: main
+Required predecessor: PR #245 merged at 0c158e061d3ab5039997c6b4e736da0da9507d37
+Governance track expected: PROTECTED
+Suggested branch: claude/s10-hermes-live-bridge-01
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. VALUE / OWNER AUTHORITY / NON-AUTHORITY
+Objective: One bounded foreground, read-only integration from an existing non-replayed witnessed OAuthPlanResult opportunity choice AND the latest current, native validated HermesStrategyAssessment of the exact StrategyVersion, through existing native ExecutionIntent, fresh public venue snapshot, execution feasibility, exploratory Gate C and the UNMODIFIED LiveOrchestrator.preflight(permit, intent). A valid NO_TRADE/PAUSE/REASSESS returns a no-exposure terminal without constructing or dispatching a permit. Emit one compact sanitized PASS/BLOCKED/ABSTAIN receipt with exact native IDs; never claim a trade occurred.
+
+Owner Karl requested the corrected draft only. Engineering must await Karl's explicit instruction forwarding this exact certified R3 package; the new independent PROTECTED certificate is mandatory before implementation. This WP DOES NOT authorize actual OAuth inference, sign-in, access to a model account, Polymarket private account/auth, wallet/signature, economic CREATE/CANCEL, capital activation, risk limit expansion or unattended trade cycles. Public Gamma/CLOB read-only acquisition and existing read-only host/geoblock validation may be used only in a future separately authorized operator invocation under existing provenance/location rules. The tests are offline with injected dependencies.
+
+Prior independent R1 FAIL is accepted. It found the OAuth strategy adapter would fabricate native web-source/cost/usage provenance to satisfy the existing Strategy Manager policy/controller. R2 uses option (a): REMOVE entirely the proposed OAuth strategy adapter and all edits to oauth_plan_stage_b.py, native strategy controller/policy/models and their tests. The Strategy Manager already has a legitimate native assessment route; R2 consumes validated records from that route, never synthesizes its run/receipt. If no actual current appropriate native assessment exists, report STRATEGY_ASSESSMENT_UNAVAILABLE, NOT a passing real-live preflight. An assessment's provider/model string alone is NOT proof of an authenticated underlying inference. Genuine strategy-origin proof remains an explicit independent canary prerequisite if not demonstrable; do not erase this gap.
+
+Side19 ordering: VALUE -> REUSE -> EFFICIENCY -> IMPLEMENTATION -> IMPROVEMENT -> VERIFICATION. Implement only the necessary adapter. One branch, one PR, one stable-head local suite and one final hosted CI plan. Karl manually merges.
+
+# 2. SOURCE-TRUTH / PROTECTED DRAFTABILITY GATE
+Before writing, refresh origin/main, PR state and clean worktree and compare frozen SHA. Read AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md, native WP drafting/governance files and this package. Inspect only directly relevant merged interfaces:
+- src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py (OAuthPlanResult, is_witnessed_result, verify_origin_record)
+- src/research_runtime/hermes_controlled_runtime/strategy_manager.py (canonical latest assessment, run record, validated store)
+- src/research_runtime/autonomous_opportunity_cycle.py (AUTO-01 exact choice/menu/time/intent semantics)
+- tools/alpha/run_discovery_learning_proof.py (ALPHA-03A menu semantics; SCRATCH ONLY, not a live daemon)
+- src/execution_feasibility/evaluator.py and public_market.py; src/exploratory_gate_c/evaluator.py;
+- src/execution_gateway/live_orch.py, especially preflight and verify_permit_authority;
+- src/strategy_lifecycle and relevant tests; architecture and status contracts.
+
+The independent PROTECTED certificate must be genuinely issued by a separate reviewer, bind the exact byte hashes of THIS R3 wp_prompt.txt and wp_spec.json, pass all 12 lenses with no unresolved decisions and support the EXACT EIGHT paths. The implementing Claude Code session MUST NOT produce or edit its own certificate. Mandatory native wp_spec_guard and wp_readiness_gate must pass, with certificate, before branch/code/network/credential work. The certificate path is tracked in scope and committed byte-for-byte unchanged. Earlier R1/R2 FAIL results or diagnostic certificates never apply to the R3 hashes. If main moved or new conflicting work exists, STOP and report the actual delta; never silently rebase this protected spec.
+
+# 3. EXACT EIGHT-FILE SCOPE (NO NINTH)
+1. src/research_runtime/live_preflight_bridge.py -- NEW small bounded foreground composer OUTSIDE hermes_controlled_runtime; uses native public interfaces only. P036 forbids execution_gateway imports inside hermes_controlled_runtime. No OAuth transport, retry, daemon or canonical store.
+2. tests/research_runtime/test_live_preflight_bridge.py -- NEW focused protocol/negative tests, all offline.
+3. docs/hermes_live_bridge_contract.md -- NEW concise interface/no-authority contract.
+4. tests/test_architecture_boundaries.py -- add exactly src/research_runtime/live_preflight_bridge.py to APPROVED_SRC_SCOPES immediately after autonomous_opportunity_cycle.py and BEFORE src/strategy_lifecycle; keep src/execution_feasibility and src/exploratory_gate_c as the last two entries. No wildcard or unrelated guard edits.
+5. docs/status_entries/S10-HERMES-LIVE-BRIDGE-01.md -- stable truthful fragment.
+6. docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/draftability_certificate.json -- independent certificate unchanged.
+7. docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_prompt.txt -- controlling prompt, unchanged.
+8. docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_spec.json -- controlling machine spec, unchanged.
+NO edits to oauth_plan_stage_b.py, Strategy Manager, controller.py, models.py, policy.py, AUTO-01/02, ALPHA-03A, EXEC-FEAS, Gate C, LIVE-ORCH, gateway, risk engine, portfolio authority, workflows, dependencies, credential files, test fixtures or broader roadmap. The two old Hermes historical-guard files remain unchanged: neither guard matches the relocated src/test path. P036 remains unchanged and enforced. The architecture allowlist edit is a single exact-file addition; no wildcard relaxation. If native compatibility requires additional changed files, STOP with one precise scope amendment instead of smuggling work in.
+
+# 4. P0 COMPATIBILITY AND COMPOSITION (REUSE BEFORE CODE)
+A. Verify old/native Strategy Manager's receipt and web-source policy remain unchanged; do not try to feed tool-free OAuth Stage B data into strategy_mode=True. Accept only an ACTUAL canonical HermesStrategyAssessment that passes the existing store's full replay validation, matches the exact latest record for the chosen StrategyVersion and binds current strategy-local context/active policy/validity. Where supported, inspect the associated native run/receipt for provenance; NEVER describe a fake/native-only receipt as authenticated model inference. If no valid native record, BLOCK before live preflight. Existing native strategy backend setup is a separately owned operator prerequisite, not in this WP.
+B. Accept one already-produced OAuthPlanResult IN MEMORY; require is_witnessed_result(result), non-replayed real origin, raw choice bytes matching origin record and matching exact ordered menu/time. Do not reconstruct a private witness from journal JSON, spoof _witness or repurpose old PR243 consumed NO_TRADE. Importing this bridge must not trigger OAuth/credential access. The bridge NEVER initiates provider calls; its caller remains responsible for separately authorized prior production.
+C. ALPHA-03A's derive_menu uses a scratch copy and requires a latest native assessment; DO NOT convert the scratch proof into live scanning. For one known candidate require an explicitly supplied exact menu derived/validated from existing canonical stores, with the same typed matching, exclusion, max-8 and point-in-time semantics. Native values are not guessed or overwritten.
+D. The existing authenticated Stage B/OAuth choice contains proof_level="SYNTHETIC_ONLY" by FROZEN schema and describes a synthetic research menu. Preserve that exact value as an explicit evidence label, NOT a live-trading recommendation or authenticated market freshness. The separate is_witnessed_result proof establishes only that the frozen choice bytes came from a real OAuth call; it does not upgrade the synthetic market assertions, menu or venue. Distinguish this clearly in every receipt. Parse TRADE selection through existing strict AUTO-01 choice fields; enforce BUY-only first canary, identity, size/price/exact market/strategy binding and deadline. NO_TRADE, PAUSE, REASSESS -> ABSTAIN, 0 permits, 0 preflight; invalid output -> BLOCKED. When AUTO-01 receipts are reused, note real-source receipt remains NON_EXECUTABLE; NEVER promote its preview_permit. The bridge must recompute one current native ExecutionIntent, fetch/publicly validate real Gamma/CLOB evidence at permitted invocation, call native feasibility then evaluate_exploratory_gate_c and build_exploratory_gate_c_permit ONLY from an eligible native decision.
+E. Invoke ONLY LiveOrchestrator.preflight() with that exact fresh native permit/intent and supplied configured read-only dependencies. Do not call canary/reconcile/private session/account methods; no signing or trading credentials. Native preflight checks exact host currentness, physical-location geoblock, refreshed public book/fee and ledger health; preflight PASS is not full account readiness. A blocked real host/venue/geoblock is a correct BLOCKED result, never an invitation to substitute simulated positive evidence.
+F. Input/source cutoffs, time order, current store heads, native revalidation, venue freshness and exact permit expiry must hold at every boundary; no stale/2027 simulated clock, fake wallet or synthetic venue may be reported as genuine. If requirements imply an unauthorized mutation, expanded path or unproved model origin, return typed BLOCKED, not a fabricated success.
+
+# 5. SEMANTIC/FALSE-CLAIM SAFETY
+- Keep three claims independent: source witness for the opportunity choice; canonical native Manager assessment validity; native Gate C + host preflight. Never conflate a valid assessment with PROVEN provider-origin; label origin limitations explicitly.
+- No _OBSERVED witness construction, synthetic/wire/fixture/replayed choices or journal-only data can produce a REAL_OAUTH_ORIGIN_BOUND live-facing receipt. Test doubles may exercise logic but MUST be marked OFFLINE_TEST_ONLY and never be used as economic authorization.
+- No external API-key fallback, internal chatgpt.com endpoint, duplicate OAuth call or acquired token/account detail. No retry or provider spend from the bridge; default provider call count ZERO.
+- Runtime outputs are sanitized, bounded to status and IDs/digests, never tokens, hidden user paths, personally identifying profile fields, raw invalid input or secret-rich provider bodies.
+- The existing LiveOrchCapitalEnvelope and first canary $100/$5/$30/$70 constraints are untouched. No new live authority, no kill-switch relaxation, no scheduler, no order, no capital.
+
+# 6. REQUIREMENT / TEST / NEGATIVE MATRIX
+R001 test_live_bridge_witness_binding: rejects absent/replayed/offline/spoofed/mismatched OAuth opportunity origin, menu or clocks; preserves the required SYNTHETIC_ONLY source-choice label without promoting it to live venue evidence; test-double success is PROTOCOL_ONLY, never a real inference claim.
+R002 test_live_bridge_native_strategy_currentness: only actual replay-verified latest canonical Strategy Manager assessment, exact context, active human policy/allocation; rejects stale, missing, noncanonical or false provenance. No native cost/web-source receipt fabrication.
+R003 test_live_bridge_abstains_without_preflight: NO_TRADE/PAUSE/REASSESS return no permit, no network/preflight, zero exposure; malformed output stops. A SYNTHETIC_ONLY claim never means real-market freshness.
+R004 test_live_bridge_rederives_native_gate_c: native intent, public venue snapshot, feasibility, fresh Gate C permit rebuilt; AUTO-01 synthetic/preview permit explicitly rejected; BUY-only.
+R005 test_live_bridge_preflight_fail_closed: host stale, geoblock denial, venue mismatch/staleness, bad fee, ledger fail, invalid permit/currentness return clean BLOCKED using native output; no account/private access.
+R006 test_live_bridge_no_side_effects_or_claim_inflation: denied OAuth invoke/provider/account/sign/create/cancel/reconcile/daemon, no changes to canonical stores; records distinguish OFFLINE_TEST_ONLY protocol proof from actual independently witnessed observations.
+
+Use the exact SIX test names as evidence plan requirements. Treat fixture success as protocol verification, never a real-world live PASS. Each Rxxx must have both positive/negative assertions and an explicit expected result. Include source/guard allowlist tests, protected readiness/--check-diff, whitespace, generated-artifact guard, gitleaks, ALPHA03A/OAuth regressions and ONE stable-source local full test suite. Test in offline fake/test-double conditions only. Hosted CI: one FINAL exact-head 11-job plan; if head changes after green, fresh exact-head CI needed. PR body must contain Rxxx evidence table, correct private-repo evidence mode, true posted-source re-fetch and truthful final readiness state. Karl merges manually after SIDE20 assessment.
+
+# 7. HARD STOPS / REPORT-BACK / SUCCESSOR
+STOP if certificate unavailable or mismatched; protected implementation authority absent.
+STOP if base no longer matches or the native source contracts contradict scope; wrong-head implementation is invalid.
+STOP if a real strategy model run would require adapter changes to native Strategy Manager policy/controller/models; those files are forbidden, and a synthetic receipt is not acceptable.
+STOP if genuine up-to-date HermesStrategyAssessment cannot be verified for a real preflight; correctly report that prerequisite missing rather than forge it. Offline protocol tests may finish without a real live-capable assessment.
+STOP if required public venue/host/geoblock tests would place an order, touch account credentials or require changing risk limits; no economic authority.
+STOP if the only passing result needs unsupported synthetic/2027 fixture as real, multiple OAuth dispatch, private account access or fabricated origin.
+STOP if P036 would require any import from execution_gateway inside hermes_controlled_runtime or any bypass of that rule. The composer is intentionally in src/research_runtime/; update only the exact entry in APPROVED_SRC_SCOPES. Do not touch either historical Hermes guard.
+STOP if source changes would exceed exactly eight files or require dependency/workflow/risk/port policy edits; one precise blocker, no scope creep.
+STOP if any mandatory test, posted evidence verification, or final CI fails; do not mark Ready for review YES.
+
+Return: one short PR URL and head/base, exact eight changed files, native readiness, six requirements and negatives, true call counts (default 0), sanitized provenance limitations, local/hosted CI, and one SHA-256/CRC verified evidence ZIP. No verbose raw logs. Do not merge.
+Successor boundary: separately authorized S10-LIVE-CANARY-01, requiring fresh deployed host, eligible venue/location, real current strategy provenance, exact Gate C/intent/permitted BUY, verified wallet/account/ledger and Karl's explicit capital/envelope approval. This WP does NOT amend docs/live_trading_authorization.md, which remains DISABLED. Repeated autonomous trade cycles are later and separately authorized.
+
+# 8. NORMATIVE RULE MATRIX
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|bridge|oauth_choice|nonreplayed_exact_witness|REQUIRE|reject_spoof_or_replay|bridge.authenticated_choice|R001
+NR002|bridge|native_strategy|actual_latest_canonical_assessment|REQUIRE|no_fabricated_receipt_or_assessment|bridge.native_strategy|R002
+NR003|bridge|abstention|no_trade_pause_reassess|REJECT|zero_permit_and_preflight|bridge.authenticated_choice|R003
+NR004|bridge|gate_c|fresh_current_exact_intent|REQUIRE|native_permit_only|bridge.native_permit|R004
+NR005|bridge|preflight|host_geoblock_venue_ledger|REQUIRE|native_pass_or_block|bridge.preflight|R005
+NR006|bridge|non_authority|no_order_no_private_access|REQUIRE|no_side_effects_or_false_claims|bridge.audit|R006
+END_NORMATIVE_RULE_MATRIX_V1
