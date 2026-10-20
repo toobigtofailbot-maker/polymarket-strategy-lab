@@ -223,6 +223,7 @@ WP14_PROSE_ALLOWLIST = (
     "Authenticated CLOB client integration remains blocked pending "
     "credential/key/security boundary WP"
 )
+WP14_ROW_ALLOWLIST_REGEX = r"\| WP14-D002 \| " + WP14_PROSE_ALLOWLIST + r" \|"
 EXPECTED_FINGERPRINT_COUNT = 19
 FINGERPRINT_RE = re.compile(
     r"[0-9a-f]{40}:(?:docs|tests|tools)/[A-Za-z0-9_./-]+:"
@@ -256,7 +257,7 @@ def gitleaks_config_violations(text: str) -> list[str]:
         violations.append("BROAD_ALLOWLIST_FIELD")
     if allowlist.get("regexTarget") != "line":
         violations.append("ALLOWLIST_TARGET_NOT_LINE")
-    if allowlist.get("regexes") != [WP14_PROSE_ALLOWLIST]:
+    if allowlist.get("regexes") != [WP14_ROW_ALLOWLIST_REGEX]:
         violations.append("ALLOWLIST_REGEXES_NOT_EXACT")
     return violations
 
@@ -269,9 +270,15 @@ def gitleaksignore_entries() -> list[str]:
 def gitleaks_binary() -> str | None:
     suffix = ".exe" if sys.platform.startswith("win") else ""
     local = ROOT / "tools" / ".bin" / f"gitleaks{suffix}"
-    if local.is_file():
-        return str(local)
-    return shutil.which("gitleaks")
+    candidate = str(local) if local.is_file() else shutil.which("gitleaks")
+    if candidate is None:
+        return None
+    # The `dir` subcommand arrived in gitleaks 8.19; older binaries cannot run these proofs.
+    probe = subprocess.run(
+        [candidate, "dir", "--help"], capture_output=True, text=True,
+        encoding="utf-8", errors="replace", timeout=60, check=False,
+    )
+    return candidate if probe.returncode == 0 else None
 
 
 def synthetic_github_token() -> str:
@@ -360,8 +367,21 @@ def test_gitleaks_detects_synthetic_secret_and_accepts_clean_input(tmp_path):
     clean = tmp_path / "clean"
     clean.mkdir()
     (clean / "module.py").write_text("def add(a, b):\n    return a + b\n", encoding="utf-8")
-    (clean / "notes.md").write_text(f"| WP14-D002 | {WP14_PROSE_ALLOWLIST} | BLOCKED |\n", encoding="utf-8")
     assert run_gitleaks_dir(binary, clean, config) == 0
+
+    # The WP14-D002 allowlist must be effective and bound to its own table row.
+    wp14 = tmp_path / "wp14"
+    wp14.mkdir()
+    row = f"| WP14-D002 | {WP14_PROSE_ALLOWLIST} | token {synthetic_github_token()} |\n"
+    (wp14 / "notes.md").write_text(row, encoding="utf-8")
+    assert run_gitleaks_dir(binary, wp14, config) == 0
+    extend_only = tmp_path / "extend_only.toml"
+    extend_only.write_text("[extend]\nuseDefault = true\n", encoding="utf-8")
+    assert run_gitleaks_dir(binary, wp14, extend_only) == 9
+    other = tmp_path / "other_row"
+    other.mkdir()
+    (other / "notes.md").write_text(row.replace("WP14-D002", "WP99-D001"), encoding="utf-8")
+    assert run_gitleaks_dir(binary, other, config) == 9
 
     deferred = tmp_path / "deferred" / "docs"
     deferred.mkdir(parents=True)

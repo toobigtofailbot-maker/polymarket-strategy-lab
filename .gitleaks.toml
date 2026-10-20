@@ -5,12 +5,12 @@ title = "polymarket-strategy-lab gitleaks configuration"
 [extend]
 useDefault = true
 
-# Exactly one documented prose false positive (WP14-D002 deferred-log wording), matched
-# against the whole line. No path, commit, stopword or rule exclusions. Individual historical
+# Exactly one documented prose false positive (WP14-D002 deferred-log wording), bound to its
+# table cell and matched against the whole line. No path, commit, stopword or rule exclusions. Individual historical
 # test-fixture findings are listed by exact fingerprint in .gitleaksignore.
 [allowlist]
 description = "WP14-D002 deferred-log prose false positive only."
 regexTarget = "line"
 regexes = [
-  '''Authenticated CLOB client integration remains blocked pending credential/key/security boundary WP''',
+  '''\| WP14-D002 \| Authenticated CLOB client integration remains blocked pending credential/key/security boundary WP \|''',
 ]

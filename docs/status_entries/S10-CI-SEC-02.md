@@ -28,8 +28,9 @@ because legacy allowlist conditions match independently.
 ## Repair
 
 - `.gitleaks.toml`: `[extend] useDefault = true` (official mechanism) restores the embedded default
-  rules; the legacy allowlist keeps only the exact WP14-D002 line regex; the whole-file path
-  exclusion is removed.
+  rules; the legacy allowlist keeps only the exact WP14-D002 regex, bound to its `| WP14-D002 |`
+  table cell and matched against the line (the same phrase in any other row is still scanned);
+  the whole-file path exclusion is removed.
 - `.gitleaksignore`: 19 exact `commit:path:rule:line` fingerprints, each manually classified as a
   synthetic test fixture, constructed placeholder, public sample token or documentation prose. No
   path, directory, rule or wildcard entry.
@@ -54,8 +55,11 @@ because legacy allowlist conditions match independently.
 
 ## Detection Evidence (local, gitleaks 8.27.2)
 
-- Runner-mode history scan (541 non-merge commits, default log options): 19 findings before
-  `.gitleaksignore`, 0 after; every one of the 19 is classified and fingerprinted.
+- Runner-mode history scan (`gitleaks git`, whose default log options include `--all`, so the
+  commit count depends on the local refs present): 19 findings before `.gitleaksignore`, 0 after,
+  on 2026-10-20 in a clone holding the origin branches at `0c158e0` (541 non-merge commits) and
+  in this worktree's local refs (557-558 commits). Every one of the 19 is classified and
+  fingerprinted.
 - All-refs merge-inclusive scan (788 commits; all branches and pull refs): 37 findings = 19
   fingerprinted + 18 merge-diff re-occurrences whose matched values are byte-identical (SHA-256
   compared, never printed) to fingerprinted values. Zero unclassified findings.
@@ -64,7 +68,15 @@ because legacy allowlist conditions match independently.
   returns PASS for that same planted commit (the defect).
 - `tests/test_gitleaks_secret_scan_gate.py`: configuration-shape test, 14-row configuration
   negative matrix, fingerprint grammar and 7-row negative matrix, and three binary-backed detection
-  tests. These skip without a gitleaks binary (hosted CI: see S10-CI-SEC-02-D001).
+  tests. These skip without a gitleaks binary that supports `dir` (hosted CI: see
+  S10-CI-SEC-02-D001).
+- `.gitleaksignore` fingerprints contain commit SHAs, so they apply to `gitleaks git` (the runner's
+  mode) only; a `gitleaks dir` working-tree scan still reports the present fixtures, and a history
+  rewrite would invalidate them.
+- Independent review (fresh-context reviewer) on head a0a1438: PASS_WITH_NOTES, no blockers; its
+  in-scope notes (WP14 allowlist test made discriminating, row-bound regex, commit-count wording,
+  git-mode fingerprint note, binary `dir` probe) are corrected in the following commit and D004
+  records the advisory scope-summary limitation.
 
 ## Authority / Non-Authority Posture
 

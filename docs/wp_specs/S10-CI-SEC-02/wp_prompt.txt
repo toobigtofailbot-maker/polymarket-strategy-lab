@@ -88,7 +88,8 @@ The security runner, workflows and CI matrix stay unchanged. PR #246 is not modi
 ## 2. Frozen Tool Truth (2026-10-20)
 
 - gitleaks 8.27.2 project-local binary (`tools/.bin/`, ignored, never committed).
-- With the new configuration, the runner-mode history scan (541 non-merge commits) reports exactly
+- With the new configuration, the runner-mode history scan (`--all` local refs; 541 non-merge
+  commits in a clone of the origin branches at the base) reports exactly
   19 findings. Each was classified manually as a synthetic test fixture, a constructed
   placeholder, a public sample token or documentation prose. No real credential exists.
 - All-refs merge-inclusive scan (788 commits, 24 branches and 246 pull refs): 37 findings = the 19

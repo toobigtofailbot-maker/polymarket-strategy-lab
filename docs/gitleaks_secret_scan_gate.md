@@ -116,9 +116,12 @@ excluded the whole of `docs/deferred_items_log.md` rather than one phrase in it.
 
 S10-CI-SEC-02 restores the embedded default rule set through the official `[extend] useDefault =
 true` mechanism, removes the whole-file path exclusion and keeps only the exact WP14-D002 prose
-regex (line target). Historical synthetic test fixtures and prose false positives are listed
-individually by exact fingerprint (`commit:path:rule:line`) in `.gitleaksignore`; no path,
-directory, rule, stopword or wildcard exclusion exists. No broad suppressions added.
+regex, bound to its `| WP14-D002 |` table cell (line target). Historical synthetic test fixtures
+and prose false positives are listed individually by exact fingerprint (`commit:path:rule:line`)
+in `.gitleaksignore`; no path, directory, rule, stopword or wildcard exclusion exists. No broad
+suppressions added. The fingerprints contain commit SHAs, so they apply to `gitleaks git` (the
+runner's mode) only: a `gitleaks dir` working-tree scan still reports the fixtures that remain in
+the tree, and any history rewrite would invalidate the fingerprints.
 `tests/test_gitleaks_secret_scan_gate.py` enforces the configuration shape with a negative matrix
 and, when a gitleaks binary is available, proves a runtime-assembled synthetic token is detected,
 clean input passes and the defective WP15 shape detects nothing.
