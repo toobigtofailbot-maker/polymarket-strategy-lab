@@ -1,5 +1,6 @@
 """Tests for the WP7 gitleaks secret scan gate."""
 
+import os
 import re
 import shutil
 import string
@@ -288,13 +289,15 @@ def synthetic_github_token() -> str:
     return "ghp" + "_" + (string.ascii_letters + string.digits)[7:43]
 
 
-def run_gitleaks(binary: str, mode: str, source: Path, config: Path | None) -> int:
+def run_gitleaks(
+    binary: str, mode: str, source: Path, config: Path | None, env: dict[str, str] | None = None
+) -> int:
     command = [binary, mode, str(source), "--no-banner", "--redact", "--exit-code", "9"]
     if config is not None:
         command += ["--config", str(config)]
     completed = subprocess.run(
         command, capture_output=True, text=True, encoding="utf-8",
-        errors="replace", timeout=120, check=False,
+        errors="replace", timeout=120, check=False, env=env,
     )
     assert completed.returncode in (0, 9), "gitleaks did not complete a scan"
     return completed.returncode
@@ -395,18 +398,31 @@ def test_gitleaks_git_mode_detects_secret_added_to_classified_wp14_row(tmp_path)
     (repo / ".gitleaks.toml").write_text(GITLEAKS_CONFIG.read_text(encoding="utf-8"), encoding="utf-8")
     (repo / ".gitleaksignore").write_text(GITLEAKS_IGNORE.read_text(encoding="utf-8"), encoding="utf-8")
     log = repo / "docs" / "deferred_items_log.md"
+    # Isolate the throwaway repository (and the gitleaks git scan of it) from the caller's git
+    # environment, config and hooks, so the test never touches the real repository and cannot
+    # pass by scanning the wrong one (e.g. when run from a git hook with GIT_DIR set).
+    empty_config = tmp_path / "empty.gitconfig"
+    empty_config.write_text("", encoding="utf-8")
+    env = {k: v for k, v in os.environ.items()
+           if k not in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY",
+                        "GIT_COMMON_DIR", "GIT_CEILING_DIRECTORIES")}
+    env.update(GIT_CONFIG_GLOBAL=str(empty_config), GIT_CONFIG_NOSYSTEM="1")
+    isolation = ["-c", "core.hooksPath=", "-c", "init.templateDir=", "-c", "commit.gpgsign=false",
+                 "-c", "user.name=t", "-c", "user.email=t@example.invalid"]
+
+    def git_run(*args: str) -> None:
+        subprocess.run([git, *isolation, *args], check=True, capture_output=True, env=env)
 
     def commit(text: str) -> None:
         log.write_text(text, encoding="utf-8")
-        for args in (["add", "-A"], ["-c", "user.name=t", "-c", "user.email=t@example.invalid",
-                                     "-c", "commit.gpgsign=false", "commit", "-q", "-m", "c"]):
-            subprocess.run([git, "-C", str(repo), *args], check=True, capture_output=True)
+        git_run("-C", str(repo), "add", "-A")
+        git_run("-C", str(repo), "commit", "-q", "-m", "c")
 
-    subprocess.run([git, "init", "-q", str(repo)], check=True, capture_output=True)
+    git_run("init", "-q", str(repo))
     commit(f"| WP14-D002 | {WP14_PROSE} | BLOCKED |\n")
-    assert run_gitleaks(binary, "git", repo, None) == 0
+    assert run_gitleaks(binary, "git", repo, None, env) == 0
     commit(f"| WP14-D002 | {WP14_PROSE} | BLOCKED | token {synthetic_github_token()} |\n")
-    assert run_gitleaks(binary, "git", repo, None) == 9
+    assert run_gitleaks(binary, "git", repo, None, env) == 9
 
 
 def test_gitleaks_repo_config_autoloads_and_detects(tmp_path):
