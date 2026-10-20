@@ -104,6 +104,25 @@ WP15 note: a later gitleaks git scan reported a documentation false positive in 
 
 WP15 observed one documentation false positive and added a minimal `.gitleaks.toml` allowlist rule scoped to one file and one exact phrase. No broad suppressions added.
 
+## S10-CI-SEC-02 Default-Rule Correction
+
+The WP15 `.gitleaks.toml` contained only a legacy `[allowlist]` table and no `[extend]` table.
+A project configuration without `[extend] useDefault = true` defines zero rules, and gitleaks
+auto-loads `.gitleaks.toml` from the scanned source root, so every `gitleaks git --redact` run by
+`tools/security/run_available_security_checks.py` from WP15 onward passed without executing any
+detection rule. Legacy allowlist conditions also match independently, so the WP15 `paths` entry
+excluded the whole of `docs/deferred_items_log.md` rather than one phrase in it. Earlier
+"no leaks found" results from WP15 onward are therefore not detection evidence.
+
+S10-CI-SEC-02 restores the embedded default rule set through the official `[extend] useDefault =
+true` mechanism, removes the whole-file path exclusion and keeps only the exact WP14-D002 prose
+regex (line target). Historical synthetic test fixtures and prose false positives are listed
+individually by exact fingerprint (`commit:path:rule:line`) in `.gitleaksignore`; no path,
+directory, rule, stopword or wildcard exclusion exists. No broad suppressions added.
+`tests/test_gitleaks_secret_scan_gate.py` enforces the configuration shape with a negative matrix
+and, when a gitleaks binary is available, proves a runtime-assembled synthetic token is detected,
+clean input passes and the defective WP15 shape detects nothing.
+
 ## Deferred Item Impact
 
 - **WP3-D001** (`gitleaks`): Updated from DEFERRED to **READY_FOR_WP**.

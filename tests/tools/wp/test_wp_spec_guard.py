@@ -857,3 +857,34 @@ def test_source_has_no_network_subprocess_environment_or_product_imports():
         "import src",
     ):
         assert forbidden not in source
+
+
+def _authority_errors_at(document: dict, field_path: str) -> list[str]:
+    _, errors = guard.validate_spec_document(document)
+    return [
+        error["code"]
+        for error in errors
+        if error["field_path"] == field_path and error["code"] == "AUTHORITY_CONTRADICTION"
+    ]
+
+
+@pytest.mark.parametrize("path", [".gitleaks.toml", ".gitleaksignore"])
+def test_secret_scan_config_paths_require_local_offline_tooling(path):
+    document = _spec()
+    document["scope"]["allowed_changed_files"].append(path)
+    field_path = f"spec.scope.allowed_changed_files[{len(document['scope']['allowed_changed_files']) - 1}]"
+    assert document["authority"]["local_offline_tooling"] is True
+    assert _authority_errors_at(document, field_path) == []
+    document["authority"]["local_offline_tooling"] = False
+    assert _authority_errors_at(document, field_path) == ["AUTHORITY_CONTRADICTION"]
+
+
+@pytest.mark.parametrize(
+    "path",
+    ["README.md", ".gitleaks.toml.bak", "docs2/.gitleaks.toml", ".gitleaks", "gitleaks.toml", ".gitignore"],
+)
+def test_unmapped_root_and_lookalike_paths_remain_authority_contradictions(path):
+    document = _spec()
+    document["scope"]["allowed_changed_files"].append(path)
+    field_path = f"spec.scope.allowed_changed_files[{len(document['scope']['allowed_changed_files']) - 1}]"
+    assert _authority_errors_at(document, field_path) == ["AUTHORITY_CONTRADICTION"]

@@ -1,0 +1,23 @@
+# S10-CI-SEC-02: exact gitleaks fingerprints (commit:path:rule:line) for historical synthetic
+# test fixtures and prose false positives, each classified manually. No real credential is
+# listed here. Never add path, directory, rule or wildcard entries; a new finding must be
+# fixed or individually classified.
+1588f3114b6dd9bb8ee7f372352d721b1fbdb86a:tests/execution_gateway/test_gate_b.py:generic-api-key:28
+1f3be1fe7c77c5d17aebcc380461c38662376b1b:docs/repo_truth_index.md:generic-api-key:528
+2d53af9b3a51f8f9a27334e8bc3b2c40efe6864a:tests/data_layer/wallet_intelligence/test_profile.py:generic-api-key:270
+2f223825fdca049357ca6755b215e952ba4a6069:tests/tools/git/test_status_snapshot.py:private-key:725
+418dcfddbf5f53b8ae12be87b3ee12d2c6277418:tests/data_layer/polymarket/test_public_client.py:generic-api-key:382
+45b2abd52df6e851ed9a16834dce5d77d3bb5908:tests/tools/validation/test_validation_output_summary.py:private-key:445
+4db1cb8e4ffa9cb6122f064faab82d379c74ad44:docs/wp_specs/S10-ALPHA-REAL-01/wp_prompt.txt:generic-api-key:446
+4db1cb8e4ffa9cb6122f064faab82d379c74ad44:docs/wp_specs/S10-ALPHA-REAL-01/wp_prompt.txt:generic-api-key:471
+4db1cb8e4ffa9cb6122f064faab82d379c74ad44:tools/alpha/run_s10_alpha_real_01.py:generic-api-key:181
+4db1cb8e4ffa9cb6122f064faab82d379c74ad44:tools/alpha/run_s10_alpha_real_01.py:generic-api-key:249
+4db1cb8e4ffa9cb6122f064faab82d379c74ad44:tools/alpha/run_s10_alpha_real_01.py:generic-api-key:253
+87445c128776deafcfe43796c9a2e7230edd5f51:tests/research_runtime/hermes_controlled_runtime/test_runner.py:jwt:674
+8a547d9eb36c31e94bd0f2eb7bb7d2d503bdadd6:tests/research_runtime/hermes_controlled_runtime/test_models.py:generic-api-key:107
+8d51a54ab2a7a2907c3e3b23104cb16a3ea72c4f:tests/research_runtime/hermes_controlled_runtime/test_models.py:generic-api-key:1255
+9f8c06b4378d7c4b77ab8bcc914b4a9cbe01129e:tests/data_layer/agent_context/test_agent_context_exporter.py:generic-api-key:179
+c2acdd607b6695be1de3aed1050f73cc0fe72c1c:docs/long_term_bot_completion_roadmap.md:generic-api-key:366
+dddacb7c0b0c9a72756a13ed93f9092e42411ddb:tests/tools/validation/test_validation_output_summary.py:private-key:553
+f5b2dee31e7b6b0aeb1441252b4ef20b58625439:tests/tools/advisory/test_local_advisory_consumer.py:generic-api-key:294
+f5b2dee31e7b6b0aeb1441252b4ef20b58625439:tests/tools/advisory/test_local_advisory_consumer.py:generic-api-key:309

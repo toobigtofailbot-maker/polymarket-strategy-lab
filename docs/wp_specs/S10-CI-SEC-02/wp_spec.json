@@ -1,0 +1,510 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CI-SEC-02",
+    "title": "Gitleaks Default-Rule Restoration",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SECURITY_TOOLING_SECRET_SCAN_RULE_RESTORATION",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 245,
+      "head_sha": "e178c389f09feadd01956cc278ca045e35a49823",
+      "merge_sha": "0c158e061d3ab5039997c6b4e736da0da9507d37"
+    },
+    "suggested_branch": "claude/s10-ci-sec-02-gitleaks-default-rules",
+    "objective": "Restore real gitleaks detection: extend the embedded default rule set through the official [extend] useDefault = true mechanism, replace the whole-file deferred-log path exclusion with only the exact WP14-D002 line regex, list each manually classified historical fixture finding by exact fingerprint in .gitleaksignore, prove detection with a deterministic regression and negative matrix, and let the deterministic spec guard govern exactly the two repository-root secret-scan configuration paths as local offline tooling.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      ".gitleaks.toml",
+      ".gitleaksignore",
+      "tools/wp/wp_spec_guard.py",
+      "tests/tools/wp/test_wp_spec_guard.py",
+      "tests/test_gitleaks_secret_scan_gate.py",
+      "docs/gitleaks_secret_scan_gate.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-CI-SEC-02.md",
+      "docs/wp_specs/S10-CI-SEC-02/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-02/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      ".gitleaks.toml",
+      ".gitleaksignore",
+      "tools/wp/wp_spec_guard.py",
+      "tests/tools/wp/test_wp_spec_guard.py",
+      "tests/test_gitleaks_secret_scan_gate.py",
+      "docs/gitleaks_secret_scan_gate.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-CI-SEC-02.md",
+      "docs/wp_specs/S10-CI-SEC-02/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-02/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "src/",
+      "tools/security/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/advisory/",
+      "tools/agent/",
+      "tools/validation/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/"
+    ],
+    "max_changed_files": 10,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/gitleaks_secret_scan_gate.md",
+      "docs/deferred_items_log.md"
+    ],
+    "rollback_surface": "Revert S10-CI-SEC-02. .gitleaks.toml returns to the WP15 allowlist-only shape (zero rules, scans pass vacuously), .gitleaksignore is removed and the spec guard again rejects the two root secret-scan paths. No product source, workflow, dependency, credential, runtime, execution, live, capital or persistent state is changed or migrated.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only secret-scan configuration semantics and one exact spec-guard path mapping change; product/runtime APIs are unchanged.",
+    "items": [
+      {
+        "surface": ".gitleaks.toml",
+        "before": "legacy [allowlist] only; no [extend]; zero rules; whole deferred log excluded",
+        "after": "[extend] useDefault = true; legacy allowlist keeps only the exact WP14-D002 line regex",
+        "change_authorized": true,
+        "compatibility_requirement": "gitleaks 8.27.2 git and dir scans execute the embedded default rules",
+        "authority": "LOCAL_OFFLINE_SECURITY_TOOLING_ONLY"
+      },
+      {
+        "surface": ".gitleaksignore",
+        "before": "absent",
+        "after": "exactly 19 manually classified commit:path:rule:line fingerprints",
+        "change_authorized": true,
+        "compatibility_requirement": "no path, directory, rule or wildcard entry",
+        "authority": "LOCAL_OFFLINE_SECURITY_TOOLING_ONLY"
+      },
+      {
+        "surface": "tools/wp/wp_spec_guard.py _authority_requirements",
+        "before": "repository-root non-dependency paths are unmapped (AUTHORITY_CONTRADICTION)",
+        "after": "exactly .gitleaks.toml and .gitleaksignore require local_offline_tooling; every other unmapped root path still contradicts",
+        "change_authorized": true,
+        "compatibility_requirement": "existing README.md negative case and all historical package tests unchanged",
+        "authority": "WORKFLOW_GOVERNANCE_ONLY"
+      },
+      {
+        "surface": "tools/security/run_available_security_checks.py and product runtime",
+        "before": "merged main 0c158e0",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "runner byte-unchanged; no src, workflow, dependency, credential, network or live change",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Default-rule inheritance, exclusion narrowness, fingerprint exactness, guard mapping exactness, detection proof, history classification and closed authority are deterministic package semantics.",
+    "items": [
+      {
+        "path": "secret_scan.default_rules",
+        "source": "CONSTANT",
+        "type": "official_default_rule_inheritance",
+        "required_rule": "[extend] contains exactly useDefault = true; no extend path/url/disabledRules, no [[rules]] or [[allowlists]]",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused structural test plus negative matrix",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "violation labels only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "secret_scan.allowlist",
+        "source": "CONSTANT",
+        "type": "exact_line_regex_only",
+        "required_rule": "legacy allowlist has regexTarget line and exactly the WP14-D002 regex; no paths, commits or stopwords",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "negative matrix rejects path, commit, stopword and broad regex additions",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "violation labels only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "secret_scan.fingerprints",
+        "source": "CONSTANT",
+        "type": "exact_fingerprint_list",
+        "required_rule": "exactly 19 unique 40-hex commit:path:rule:line entries for docs/tests/tools fixtures with rules generic-api-key, private-key or jwt",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused test asserts count, uniqueness and grammar; fingerprint negative matrix",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "fingerprints only, never values",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "secret_scan.detection_proof",
+        "source": "CONSTANT",
+        "type": "synthetic_detection_regression",
+        "required_rule": "a runtime-assembled synthetic token is detected, clean input and the WP14 sentence pass, a token in a deferred_items_log.md file is detected and the defective WP15 shape detects nothing",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "binary-backed focused tests when gitleaks is available; skips are reported, never PASS",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "exit codes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.spec_guard_mapping",
+        "source": "CONSTANT",
+        "type": "exact_root_path_mapping",
+        "required_rule": "only .gitleaks.toml and .gitleaksignore map to local_offline_tooling; README.md, look-alikes and nested copies remain AUTHORITY_CONTRADICTION",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused guard tests through real validate_spec_document",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "codes and field paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "secret_scan.history",
+        "source": "CONSTANT",
+        "type": "full_history_classification",
+        "required_rule": "gitleaks with the new config over all refs including merges reports no finding outside the fingerprint list except merge re-occurrences byte-identical to a fingerprinted value",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "local scan counts recorded in the status entry; no secret value printed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "counts and classifications only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the ten package paths change; no eleventh path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "readiness --check-diff reports exact ten-path equality",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.product_authority",
+        "source": "CONSTANT",
+        "type": "closed_authority",
+        "required_rule": "no src, workflow, dependency, runner, credential, network, Hermes, strategy, execution, live or capital authority; PR 246 untouched; no hosted Actions",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "authority object and exact scope; network, credentials and live remain false",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NONE",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "This security/tooling package adds no product identity or content-addressed runtime record.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical governed-WP lifecycle applies; Karl authorizes implementation of this exact package only after deterministic FAST readiness.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST prompt/spec/readiness checks pass with no unresolved decisions and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorizes implementation of this exact ten-path package including the spec-guard mapping",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Claude Code changes only the exact ten paths and completes local-first validation for Side19 assessment",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed package-guard failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Configuration cases are covered by focused deterministic tests rather than machine-spec examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R010 mirror Section 9 of the prompt.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "exact base predecessor and PR 246 separation",
+        "command": "git rev-parse origin/main && gh pr view 245 && gh pr view 246 && git diff --name-only origin/main HEAD",
+        "expected_result": "base equals 0c158e061d3ab5039997c6b4e736da0da9507d37, PR 245 merged, PR 246 head 78d941b unchanged and none of its paths in this diff"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_gitleaks_config_extends_embedded_default_rules",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
+        "expected_result": "repository .gitleaks.toml extends the embedded default rules and carries only the exact WP14-D002 line regex"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_gitleaks_config_negative_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
+        "expected_result": "every disabling, overriding or broadening mutation and the defective WP15 shape yields its closed violation label"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_gitleaksignore_is_exact_fingerprints_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
+        "expected_result": "exactly 19 unique fingerprints in commit:path:rule:line grammar and no path, rule or wildcard entry"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_gitleaks_detects_synthetic_secret_and_accepts_clean_input",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
+        "expected_result": "synthetic token detected (exit 9), clean input and WP14 sentence pass (exit 0), deferred-log token detected"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_defective_wp15_config_shape_detects_nothing",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py",
+        "expected_result": "the pre-repair WP15 configuration shape reports no finding for the same synthetic token, proving discrimination"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_secret_scan_config_paths_require_local_offline_tooling",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/wp/test_wp_spec_guard.py",
+        "expected_result": "both root secret-scan paths validate only with local_offline_tooling and contradict without it"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_unmapped_root_and_lookalike_paths_remain_authority_contradictions",
+        "command": "python -m pytest -q -p no:cacheprovider tests/tools/wp/test_wp_spec_guard.py",
+        "expected_result": "README.md, look-alike and nested gitleaks paths remain AUTHORITY_CONTRADICTION"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "validation",
+        "test": "deterministic FAST readiness exact scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-SEC-02/wp_prompt.txt --spec docs/wp_specs/S10-CI-SEC-02/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY on FAST deterministic readiness with exact ten-path diff and no certificate required"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "validation",
+        "test": "runner proof full-history scan and local suite",
+        "command": "python tools/security/run_available_security_checks.py && python -m pytest -q -p no:cacheprovider",
+        "expected_result": "runner gitleaks row PASS on real rules and FINDING_OR_ERROR on a scratch planted synthetic commit; all-refs merge-inclusive scan fully classified; local full suite passes"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-PUBLIC-REPO-01",
+    "next_title": "Public-repository exposure decisions (hosting details, strategy IP, personal identifiers, settings hardening)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-PUBLIC-REPO-01",
+    "forbidden_in_this_wp": [
+      "PR 246 modification",
+      "repository visibility or settings change",
+      "hosted Actions trigger",
+      "workflow or CI matrix change",
+      "security runner change",
+      "product or runtime source change",
+      "dependency change",
+      "history rewrite",
+      "credentials or authenticated account access",
+      "deployment Hermes strategy execution order live or capital action",
+      "merge"
+    ]
+  }
+}

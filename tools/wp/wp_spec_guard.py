@@ -344,6 +344,8 @@ PROTECTED_PREFIXES_BUILTIN = (
 )
 PROTECTED_EXACT_BUILTIN = (".env",)
 PROTECTED_STARTSWITH_BUILTIN = (".env.",)
+# Exact repository-root secret-scan configuration, governed as local offline security tooling.
+SECURITY_SCAN_CONFIG_PATHS = (".gitleaks.toml", ".gitleaksignore")
 CREDENTIAL_LIKE_PATTERNS = tuple(
     re.compile(pattern, re.IGNORECASE)
     for pattern in (
@@ -1033,7 +1035,7 @@ def _authority_requirements(path: str, wp_id: str) -> tuple[str, ...] | None:
         requirements.append("source_runtime")
     elif path.startswith(".github/workflows/"):
         requirements.append("workflow_files")
-    elif path.startswith("tools/"):
+    elif path.startswith("tools/") or path in SECURITY_SCAN_CONFIG_PATHS:
         requirements.append("local_offline_tooling")
     else:
         if _is_dependency_or_lock(path):

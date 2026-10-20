@@ -1,8 +1,14 @@
 """Tests for the WP7 gitleaks secret scan gate."""
 
+import re
+import shutil
+import string
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -207,3 +213,178 @@ def test_gitleaks_gate_doc_no_broad_suppressions():
             "docs/gitleaks_secret_scan_gate.md mentions broad suppressions "
             "but does not negate them — confirm no broad suppressions were added"
         )
+
+
+# --- S10-CI-SEC-02: embedded default rules restored and proven by detection ---
+
+GITLEAKS_CONFIG = ROOT / ".gitleaks.toml"
+GITLEAKS_IGNORE = ROOT / ".gitleaksignore"
+WP14_PROSE_ALLOWLIST = (
+    "Authenticated CLOB client integration remains blocked pending "
+    "credential/key/security boundary WP"
+)
+EXPECTED_FINGERPRINT_COUNT = 19
+FINGERPRINT_RE = re.compile(
+    r"[0-9a-f]{40}:(?:docs|tests|tools)/[A-Za-z0-9_./-]+:"
+    r"(?:generic-api-key|private-key|jwt):[1-9][0-9]*"
+)
+DEFECTIVE_WP15_CONFIG = (
+    "[allowlist]\n"
+    'description = "Repository documentation false positives only."\n'
+    'regexTarget = "line"\n'
+    "paths = [\n  '''docs/deferred_items_log\\.md''',\n]\n"
+    f"regexes = [\n  '''{WP14_PROSE_ALLOWLIST}''',\n]\n"
+)
+
+
+def gitleaks_config_violations(text: str) -> list[str]:
+    """Return closed violation labels for a gitleaks config; empty means compliant."""
+    try:
+        config = tomllib.loads(text)
+    except tomllib.TOMLDecodeError:
+        return ["TOML_INVALID"]
+    violations = []
+    extend = config.get("extend")
+    if not isinstance(extend, dict) or extend.get("useDefault") is not True:
+        violations.append("DEFAULT_RULES_NOT_EXTENDED")
+    elif set(extend) != {"useDefault"}:
+        violations.append("EXTEND_OVERRIDE_PRESENT")
+    if set(config) - {"title", "extend", "allowlist"}:
+        violations.append("UNEXPECTED_TOP_LEVEL_KEY")
+    allowlist = config.get("allowlist", {})
+    if set(allowlist) - {"description", "regexTarget", "regexes"}:
+        violations.append("BROAD_ALLOWLIST_FIELD")
+    if allowlist.get("regexTarget") != "line":
+        violations.append("ALLOWLIST_TARGET_NOT_LINE")
+    if allowlist.get("regexes") != [WP14_PROSE_ALLOWLIST]:
+        violations.append("ALLOWLIST_REGEXES_NOT_EXACT")
+    return violations
+
+
+def gitleaksignore_entries() -> list[str]:
+    lines = GITLEAKS_IGNORE.read_text(encoding="utf-8").splitlines()
+    return [line.strip() for line in lines if line.strip() and not line.startswith("#")]
+
+
+def gitleaks_binary() -> str | None:
+    suffix = ".exe" if sys.platform.startswith("win") else ""
+    local = ROOT / "tools" / ".bin" / f"gitleaks{suffix}"
+    if local.is_file():
+        return str(local)
+    return shutil.which("gitleaks")
+
+
+def synthetic_github_token() -> str:
+    # Assembled at runtime so this source file never contains a detectable literal.
+    return "ghp" + "_" + (string.ascii_letters + string.digits)[7:43]
+
+
+def run_gitleaks_dir(binary: str, source: Path, config: Path | None) -> int:
+    command = [binary, "dir", str(source), "--no-banner", "--redact", "--exit-code", "9"]
+    if config is not None:
+        command += ["--config", str(config)]
+    completed = subprocess.run(
+        command, capture_output=True, text=True, encoding="utf-8",
+        errors="replace", timeout=120, check=False,
+    )
+    assert completed.returncode in (0, 9), "gitleaks did not complete a scan"
+    return completed.returncode
+
+
+def test_gitleaks_config_extends_embedded_default_rules():
+    assert gitleaks_config_violations(GITLEAKS_CONFIG.read_text(encoding="utf-8")) == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "label"),
+    [
+        (lambda t: t.replace("useDefault = true", "useDefault = false"), "DEFAULT_RULES_NOT_EXTENDED"),
+        (lambda t: t.replace("[extend]\nuseDefault = true\n", ""), "DEFAULT_RULES_NOT_EXTENDED"),
+        (lambda t: t.replace("useDefault = true", 'useDefault = true\ndisabledRules = ["generic-api-key"]'), "EXTEND_OVERRIDE_PRESENT"),
+        (lambda t: t.replace("useDefault = true", 'useDefault = true\npath = "other.toml"'), "EXTEND_OVERRIDE_PRESENT"),
+        (lambda t: t.replace('regexTarget = "line"', "regexTarget = \"line\"\npaths = ['''docs/deferred_items_log\\.md''']"), "BROAD_ALLOWLIST_FIELD"),
+        (lambda t: t.replace('regexTarget = "line"', "regexTarget = \"line\"\npaths = ['''tests/''']"), "BROAD_ALLOWLIST_FIELD"),
+        (lambda t: t.replace('regexTarget = "line"', 'regexTarget = "line"\nstopwords = ["secret"]'), "BROAD_ALLOWLIST_FIELD"),
+        (lambda t: t.replace('regexTarget = "line"', 'regexTarget = "line"\ncommits = ["0c158e0"]'), "BROAD_ALLOWLIST_FIELD"),
+        (lambda t: t.replace("regexes = [", "regexes = [\n  '''.*''',"), "ALLOWLIST_REGEXES_NOT_EXACT"),
+        (lambda t: t.replace('regexTarget = "line"', 'regexTarget = "match"'), "ALLOWLIST_TARGET_NOT_LINE"),
+        (lambda t: t + '\n[[rules]]\nid = "x"\nregex = "x"\n', "UNEXPECTED_TOP_LEVEL_KEY"),
+        (lambda t: t + "\n[[allowlists]]\npaths = ['''.*''']\n", "UNEXPECTED_TOP_LEVEL_KEY"),
+        (lambda t: "[extend\n" + t, "TOML_INVALID"),
+        (lambda t: DEFECTIVE_WP15_CONFIG, "DEFAULT_RULES_NOT_EXTENDED"),
+    ],
+)
+def test_gitleaks_config_negative_matrix(mutation, label):
+    original = GITLEAKS_CONFIG.read_text(encoding="utf-8").replace("\r\n", "\n")
+    mutated = mutation(original)
+    assert mutated != original
+    assert label in gitleaks_config_violations(mutated)
+
+
+def test_gitleaksignore_is_exact_fingerprints_only():
+    entries = gitleaksignore_entries()
+    assert len(entries) == EXPECTED_FINGERPRINT_COUNT
+    assert len(set(entries)) == len(entries)
+    for entry in entries:
+        assert FINGERPRINT_RE.fullmatch(entry), "non-fingerprint .gitleaksignore entry"
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        "tests/test_x.py:generic-api-key:1",
+        "0c158e0:tests/test_x.py:generic-api-key:1",
+        f"{'a' * 40}:tests/:generic-api-key:1",
+        f"{'a' * 40}:tests/test_x.py:*:1",
+        f"{'a' * 40}:tests/test_x.py:github-pat:1",
+        f"{'a' * 40}:src/x.py:generic-api-key:1",
+        f"{'a' * 40}:tests/test_x.py:generic-api-key:0",
+    ],
+)
+def test_gitleaksignore_fingerprint_negative_matrix(entry):
+    assert not FINGERPRINT_RE.fullmatch(entry)
+
+
+def test_gitleaks_detects_synthetic_secret_and_accepts_clean_input(tmp_path):
+    binary = gitleaks_binary()
+    if binary is None:
+        pytest.skip("gitleaks binary not available (tools/.bin or PATH)")
+    config = tmp_path / "config.toml"
+    config.write_text(GITLEAKS_CONFIG.read_text(encoding="utf-8"), encoding="utf-8")
+
+    leaky = tmp_path / "leaky"
+    leaky.mkdir()
+    (leaky / "settings.py").write_text(f'token = "{synthetic_github_token()}"\n', encoding="utf-8")
+    assert run_gitleaks_dir(binary, leaky, config) == 9
+
+    clean = tmp_path / "clean"
+    clean.mkdir()
+    (clean / "module.py").write_text("def add(a, b):\n    return a + b\n", encoding="utf-8")
+    (clean / "notes.md").write_text(f"| WP14-D002 | {WP14_PROSE_ALLOWLIST} | BLOCKED |\n", encoding="utf-8")
+    assert run_gitleaks_dir(binary, clean, config) == 0
+
+    deferred = tmp_path / "deferred" / "docs"
+    deferred.mkdir(parents=True)
+    (deferred / "deferred_items_log.md").write_text(f"token {synthetic_github_token()}\n", encoding="utf-8")
+    assert run_gitleaks_dir(binary, deferred.parent, config) == 9
+
+
+def test_gitleaks_repo_config_autoloads_and_detects(tmp_path):
+    binary = gitleaks_binary()
+    if binary is None:
+        pytest.skip("gitleaks binary not available (tools/.bin or PATH)")
+    (tmp_path / ".gitleaks.toml").write_text(GITLEAKS_CONFIG.read_text(encoding="utf-8"), encoding="utf-8")
+    (tmp_path / "settings.py").write_text(f'token = "{synthetic_github_token()}"\n', encoding="utf-8")
+    assert run_gitleaks_dir(binary, tmp_path, None) == 9
+
+
+def test_defective_wp15_config_shape_detects_nothing(tmp_path):
+    binary = gitleaks_binary()
+    if binary is None:
+        pytest.skip("gitleaks binary not available (tools/.bin or PATH)")
+    config = tmp_path / "defective.toml"
+    config.write_text(DEFECTIVE_WP15_CONFIG, encoding="utf-8")
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "settings.py").write_text(f'token = "{synthetic_github_token()}"\n', encoding="utf-8")
+    assert run_gitleaks_dir(binary, source, config) == 0
