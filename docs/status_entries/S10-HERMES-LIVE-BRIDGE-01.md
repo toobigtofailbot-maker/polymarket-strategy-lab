@@ -1,34 +1,41 @@
 # S10-HERMES-LIVE-BRIDGE-01 — witnessed OAuth choice + canonical assessment -> read-only live preflight
 
-**Authority:** Karl's explicit instruction of 2026-10-19 to implement the certified R3 package within its scope.
+**Authority:** Karl explicitly authorized the certified R3 implementation on 2026-10-19. He then authorized the complete R4 ten-path package the same day, covering implementation, commit, push, PR and hosted CI.
 **Executor:** Claude Code.
 **Branch:** `claude/s10-hermes-live-bridge-01`.
 **Frozen main:** `0c158e061d3ab5039997c6b4e736da0da9507d37`.
 **Predecessor:** PR #245, merged at frozen main.
 
-**Governance:** PROTECTED, risk 4. The independent certificate (sha256 `56ee9f6a…bdf5`) binds prompt `00353511…6136` and spec `0508b324…e033`. Before any edit, native `wp_spec_guard` returned PASS and `wp_readiness_gate --certificate` returned `IMPLEMENTATION_READY`.
+**Governance:** PROTECTED, risk 4. An independent R4 certificate (sha256 `846d6207…6d27`) binds prompt `bb39a3a3…cf85` and spec `0417a337…e03f`. With that certificate, native `wp_spec_guard` returns PASS and `wp_readiness_gate` returns `IMPLEMENTATION_READY` for 10 files. The R3 certificate no longer applies.
 
-**State:** BLOCKED_NOT_READY (scope contradiction). Merge ready: NO. This fragment is stable and non-self-referential.
+**State:** IMPLEMENTED_LOCAL. Merge ready: NO; Karl merges manually after the SIDE20 assessment. This fragment is stable and non-self-referential. The live PR head, CI and full-suite counts are in the PR body and the external evidence ZIP.
 
-## Blocker
+## Revisions
 
-The certified eight-path scope cannot pass the existing suite:
+- **R3:** the eight certified paths were implemented first.
+- **Blocker:** the full suite then showed that two existing tests pin `tests/test_architecture_boundaries.py` byte-for-byte to older commits. They reject the required exact `APPROVED_SRC_SCOPES` entry, and without that entry the architecture guard rejects the new source file.
+- **R4:** adds exactly those two test paths. Each now requires the two-line bridge entry exactly once and removes only that entry before its original historical comparison:
+  - `test_autonomous_opportunity_cycle.py`: AUTO-01 equality against `7d1e817`;
+  - `test_autonomous_feedback.py`: AUTO-02 byte equality against `9ffbdb4`.
 
-- **Without the allowlist entry:** the architecture guard `test_no_executable_files_exist_under_src_except_approved_scope` rejects the new `src/research_runtime/live_preflight_bridge.py`.
-- **With the entry:** two existing tests pin `tests/test_architecture_boundaries.py` byte-for-byte to older commits, and both fail:
-  - `tests/research_runtime/test_autonomous_opportunity_cycle.py::test_architecture_exact_approval_preserves_all_original_guards` allows only the AUTO-01 addition relative to `7d1e817`;
-  - `tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative` requires a zero `git diff` against `9ffbdb4`. Its folder is a forbidden prefix in this WP.
+  All original sibling, ordering and named-guard negatives are unchanged. A duplicated entry, a sibling, a parent wildcard or any other byte change still fails both tests.
 
-No legitimate existing approved scope can hold the composer: P036 forbids `hermes_controlled_runtime`, and every other approved scope is unrelated. The smallest correction is a two-path amendment, for ten paths in total. Each of those two tests also strips the exact two-line bridge entry before its historical comparison. This was proven locally: with both edits applied, 59 of 59 relevant tests passed, and the edits were then reverted.
+## Design
 
-## Implemented (in-scope, local)
-
-- **Composer:** `live_preflight_bridge.run_live_preflight_bridge` runs the witness check, AUTO-01 `admit_oauth_choice`, the native strategy check (latest assessment plus matching run record), the fresh venue, intent, feasibility and Gate C permit, and then only `LiveOrchestrator.preflight`.
-- **Abstention:** NO_TRADE, PAUSE and REASSESS give ABSTAIN with zero permit, venue read and preflight.
-- **Labels:** `SYNTHETIC_ONLY` is preserved as a label. Assessment provenance is reported as labels only. Any injected seam gives OFFLINE_TEST_ONLY / PROTOCOL_ONLY.
-- **Tests:** R001–R006 are in `tests/research_runtime/test_live_preflight_bridge.py`, offline only, with 8 cases passing.
-- **Regressions:** 321 regression tests pass across AUTO-01/02, OAuth Stage B, LIVE-ORCH, Gate C, P036, the official-client banned-term guards and the architecture guard. The only failures are the two pinned tests named above.
+- **Composer:** `live_preflight_bridge.run_live_preflight_bridge` runs these steps in order:
+  - witness check;
+  - AUTO-01 `admit_oauth_choice`;
+  - native strategy check (latest canonical assessment and its matching run record);
+  - fresh venue, then native intent, feasibility and Gate C permit;
+  - `LiveOrchestrator.preflight` only.
+- **Refused seams:** secret-provider, client and pause.
+- **Abstention:** NO_TRADE, PAUSE and REASSESS return ABSTAIN with zero permit, venue read and preflight.
+- **Labels:**
+  - `SYNTHETIC_ONLY` stays a label only.
+  - Assessment provenance is reported as labels, never as proof.
+  - Any injected seam gives OFFLINE_TEST_ONLY / PROTOCOL_ONLY.
+- **Tests:** R001–R006 are in `tests/research_runtime/test_live_preflight_bridge.py`, offline only.
 
 ## Call counts
 
-Provider 0, OAuth dispatch 0, credential 0, account/private session 0, order 0, capital 0. No real network was used by the implementation or the tests.
+Provider 0, OAuth dispatch 0, credential 0, account/private session 0, order 0, capital 0. Neither the implementation nor the tests used runtime or product network.

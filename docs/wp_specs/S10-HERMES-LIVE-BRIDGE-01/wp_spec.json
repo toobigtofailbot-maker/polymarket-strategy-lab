@@ -26,6 +26,8 @@
       "tests/research_runtime/test_live_preflight_bridge.py",
       "docs/hermes_live_bridge_contract.md",
       "tests/test_architecture_boundaries.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
       "docs/status_entries/S10-HERMES-LIVE-BRIDGE-01.md",
       "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/draftability_certificate.json",
       "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_prompt.txt",
@@ -36,6 +38,8 @@
       "tests/research_runtime/test_live_preflight_bridge.py",
       "docs/hermes_live_bridge_contract.md",
       "tests/test_architecture_boundaries.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
       "docs/status_entries/S10-HERMES-LIVE-BRIDGE-01.md",
       "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/draftability_certificate.json",
       "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_prompt.txt",
@@ -57,15 +61,16 @@
       "src/risk_engine/",
       "src/paper_trading/",
       "src/data_layer/",
-      "src/research_runtime/hermes_controlled_runtime/",
-      "tests/research_runtime/hermes_controlled_runtime/"
+      "src/research_runtime/hermes_controlled_runtime/"
     ],
-    "max_changed_files": 8,
+    "max_changed_files": 10,
     "exact_scope_required": true,
     "historical_compatibility_edits": [
-      "tests/test_architecture_boundaries.py"
+      "tests/test_architecture_boundaries.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py"
     ],
-    "rollback_surface": "Revert only the eight R3 bridge paths; native Hermes, OAuth PR243/245, Strategy Manager, Gate C, LIVE-ORCH, global policy, all historical Hermes guards and P036 remain unchanged; zero inference/trades initiated.",
+    "rollback_surface": "Revert only the ten R4 bridge paths. The only R4 additions beyond the pre-existing eight-file local implementation are two strictly surgical historical test-consistency updates; preserve prior negative/sibling guards and native risk/execution semantics. No OAuth inference, account or order was invoked.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -272,19 +277,19 @@
       {
         "from_state": "LOCAL_DRAFT",
         "to_state": "DRAFTABILITY_PASS",
-        "condition": "Independent twelve-lens PROTECTED PASS certificate over these exact R3 prompt/spec hashes and all eight paths; native spec/readiness passes.",
+        "condition": "Independent twelve-lens PROTECTED PASS certificate over these exact R4 prompt/spec hashes and all ten paths; native spec/readiness passes.",
         "failure_category": "DRAFTABILITY_INCOMPLETE"
       },
       {
         "from_state": "DRAFTABILITY_PASS",
         "to_state": "AUTHORIZED",
-        "condition": "Karl expressly instructs executor to implement the certified R3 foreground read-only bridge. The drafting request alone authorizes no code, provider call, private account or economic activity.",
+        "condition": "Karl expressly instructs executor to implement the certified R4 foreground read-only bridge. The drafting request alone authorizes no code, provider call, private account or economic activity.",
         "failure_category": "AUTHORITY_CONTRADICTION"
       },
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Exactly eight changes; one native read-only bridge, focused tests, one exact architecture guard entry, no provider/auth/order; one authoritative local full suite and final hosted CI, no merge.",
+        "condition": "Exactly ten changes; one native read-only bridge, focused tests, one exact architecture guard entry, no provider/auth/order; one authoritative local full suite and final hosted CI, no merge.",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
