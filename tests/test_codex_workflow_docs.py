@@ -2097,7 +2097,7 @@ def test_ci_sec_01_frontend_lock_patches_source_map_js_only() -> None:
     assert node["integrity"] == (
         "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==")
     assert node["dev"] is True
-    assert lock["packages"]["node_modules/postcss"]["dependencies"]["source-map-js"] == "^1.2.1"
+    assert lock["packages"]["node_modules/postcss"]["dependencies"]["source-map-js"] == "^1.2.2"
     package = json.loads(_read(CI_SEC_01_FRONTEND / "package.json"))
     for section in ("dependencies", "devDependencies", "optionalDependencies", "overrides"):
         assert "source-map-js" not in package.get(section, {}), section
