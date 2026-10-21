@@ -1,0 +1,300 @@
+# S10-CI-SEC-03 — Frontend Security Advisory Closure
+
+**Status:** Side21-drafted package, materialized by the executor in canonical form
+**Implementation authorization:** YES — Karl's 2026-10-21 dispatch of the Side21 S10-CI-SEC-03 package (Section 12)
+**Merge authority:** NO — Karl only
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+
+---
+
+## 0. Package Identity
+
+| Field | Frozen value |
+|---|---|
+| WP ID | `S10-CI-SEC-03` |
+| Title | Frontend Security Advisory Closure |
+| Base branch | `main` |
+| Frozen base / current main SHA | `0c158e061d3ab5039997c6b4e736da0da9507d37` |
+| Required predecessor | PR #245 / `S10-HERMES-OAUTH-JOURNAL-01` |
+| Required predecessor head | `e178c389f09feadd01956cc278ca045e35a49823` |
+| Required predecessor merge SHA | `0c158e061d3ab5039997c6b4e736da0da9507d37` |
+| Suggested branch | `claude/s10-ci-sec-03-frontend-advisory` |
+| Package class | `SECURITY_FRONTEND_DEV_DEPENDENCY_PATCH` |
+| Package size class | `M` |
+| Risk level | `2` |
+| Governance track expected | `FAST` |
+| Evidence mode expected | `PRIVATE_REPO_MANUAL_VERIFIED` evidence fields in the PR body (public repository; posted-evidence guard) |
+| Runtime impact | `NO_PRODUCT_RUNTIME_CHANGE` |
+| Product network impact | `NONE` |
+| Credential impact | `NONE` |
+| Dependency impact | `THREE_FRONTEND_DEV_PINS_AND_LOCK_ONLY; NO_PYTHON_DEPENDENCY_CHANGE` |
+| Trading impact | `NONE` |
+| Capital at risk | `USD 0` |
+| Exact changed-file count | `7` (Side21 seventh-path amendment, Section 14) |
+
+### Governance authority mirror
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: true
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+Risk-2 security/tooling dependency patch. `source_runtime: true` exists solely because the frontend
+package files live under `src/`; no product or runtime logic changes. The crossed protected group is
+`dependency/lock changes` in `docs/ai/codex/PROTECTED_PATHS.md`. It grants no product-network,
+scheduler, Hermes-runtime, paper, credential, execution or live authority, so the minimum governance
+track is `FAST` and no independent draftability certificate is required.
+
+---
+
+## 1. Objective
+
+Hosted run 39655818346 (PR #247 exact head) showed every Python, NDFD and audit job green, while
+`cockpit-frontend` failed `npm audit --audit-level=high` and `ci-final-gate` failed closed. The
+findings are advisories published after the last green `main`-based run, against exact-pinned
+frontend devDependencies that no open PR touches:
+
+- `storybook` 10.6.1 — critical, GHSA-f2ph-cmg5-wxc8 (fixed 10.6.3);
+- `vite` 8.3.0 — high, GHSA-9jrq-w75r-8gcw, GHSA-rq7h-c2jc-7f22, GHSA-vfpm-58rq-9qcg and
+  launch-editor GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, GHSA-587h-7wmj-h5pm (fixed 8.3.5).
+
+Every pull request against current `main` therefore fails the required `ci-final-gate`. Close them
+by moving exactly three frontend devDependency pins, with a reproducible lock update and the
+matching existing pinned-dependency test, without weakening any audit or check. PR #247 and PR #246
+are not modified.
+
+---
+
+## 2. Frozen Tool Truth (2026-10-21)
+
+- Node 24.18.0 / npm 11.16.0 locally, matching the hosted `cockpit-frontend` toolchain.
+- npm registry metadata: `storybook` 10.6.3, `@storybook/react-vite` 10.6.3 and `vite` 8.3.5
+  exist. `@storybook/react-vite` 10.6.3 declares peers `storybook ^10.6.3` and
+  `vite ^5 || ^6 || ^7 || ^8`, so the two Storybook pins move together. `msw-storybook-addon`
+  3.0.3 accepts `storybook ^9 || ^10 || ^11.0.0-0` and stays unchanged.
+- `tests/test_operator_cockpit.py::test_dependency_pins_security_and_historical_guards` asserts the
+  exact devDependencies object and lock-root equality; `tests/test_codex_workflow_docs.py` asserts
+  the S10-CI-SEC-01 `source-map-js` 1.2.2 lock state, which must keep passing unchanged.
+
+If any implementation-changing fact differs at execution time, STOP under Section 8.
+
+---
+
+## 3. Exact Scope — 7 Paths
+
+`required_changed_files == allowed_changed_files ==` exactly:
+
+1. `src/operator_cockpit_frontend/package.json`
+2. `src/operator_cockpit_frontend/package-lock.json`
+3. `tests/test_operator_cockpit.py`
+4. `tests/test_codex_workflow_docs.py` (one assertion only; Section 14)
+5. `docs/status_entries/S10-CI-SEC-03.md`
+6. `docs/wp_specs/S10-CI-SEC-03/wp_prompt.txt`
+7. `docs/wp_specs/S10-CI-SEC-03/wp_spec.json`
+
+No eighth path. Historical WP171 text in `docs/interactive_operator_cockpit_contract.md` and
+`docs/repo_truth_index.md` stays historical and is not edited. Explicitly unchanged: `.github/**`,
+`tools/**`, all other `src/**`, all other tests (and every other assertion in the two touched test files), Python dependency files, `.gitleaks*`, the deferred
+log, and all PR #246 / PR #247 paths.
+
+If an eighth path is mechanically required, STOP with
+`S10_CI_SEC_03_SCOPE_AMENDMENT_REQUIRED:<path>:<reason>`.
+
+---
+
+## 4. Frozen Implementation Design
+
+### A. Pins
+
+In `src/operator_cockpit_frontend/package.json` `devDependencies` only: `storybook` 10.6.1 → 10.6.3,
+`@storybook/react-vite` 10.6.1 → 10.6.3, `vite` 8.3.0 → 8.3.5. Every other field and pin stays
+byte-identical.
+
+### B. Lock
+
+From `src/operator_cockpit_frontend/` on Node 24.18.0 / npm 11.16.0:
+
+```bash
+npm install --save-dev --save-exact --package-lock-only --ignore-scripts storybook@10.6.3 @storybook/react-vite@10.6.3 vite@8.3.5
+```
+
+Review the lock diff: only the three packages and transitive changes attributable to them;
+`source-map-js` stays 1.2.2. No `npm audit fix`, broad `npm update` or re-resolution.
+
+### C. Regression owner
+
+Update only the exact devDependencies object in
+`tests/test_operator_cockpit.py::test_dependency_pins_security_and_historical_guards`; all other
+assertions (runtime dependencies, engines, lock-root equality) stay.
+
+### D. Status entry
+
+`docs/status_entries/S10-CI-SEC-03.md` records the advisories, the exact pins, validation and the
+unmerged status. Live hosted results belong in the PR body.
+
+---
+
+## 5. Authority / Non-Authority
+
+Authorized by Karl's dispatches: the seven-path change, npm registry metadata/package resolution for the
+three pins, local validation, commit, push, one new draft PR, one Ready transition triggering one
+exact-head hosted run on standard free public runners, and evidence collection.
+
+Not authorized: PR #246 or PR #247 changes; workflow, audit threshold or risk-tier changes;
+`npm audit fix --force`, `--omit=dev`, ignores, `|| true` or skips; other dependency or source
+changes; Python dependency changes; D001 work; billing or runner settings; paid usage; reruns;
+credentials or account access; product network; deployment; Hermes; strategy, paper, execution,
+order, live or capital action; merge.
+
+**This WP grants zero Hermes, strategy, deployment, account, credential, execution, order, live
+or capital authority.**
+
+---
+
+## 6. Vertical Trace
+
+```text
+three exact devDependency pins
+→ reproducible lock resolution (Node 24.18.0 / npm 11.16.0, --ignore-scripts)
+→ npm ci → typecheck → production build → Storybook build
+→ npm audit --audit-level=high exits 0
+→ hosted cockpit-frontend success → ci-final-gate success on the exact head
+```
+
+---
+
+## 7. Validation
+
+Focused:
+
+```bash
+cd src/operator_cockpit_frontend && npm ci && npm run typecheck && npm run build && npm run build-storybook && npm audit --audit-level=high
+cd src/operator_cockpit_frontend && npm ls storybook @storybook/react-vite vite
+python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py tests/test_codex_workflow_docs.py
+```
+
+Stable candidate: readiness `--check-diff` (exact 7 paths), `git diff --check`, the generated
+artifact guard, and one authoritative local full suite. Then one draft PR, one Ready transition and
+one exact-head hosted run.
+
+---
+
+## 8. Same-Run Corrections vs Hard Stops
+
+Same run: wrong focused assertion, status wording, a lock retry after restoring the frozen lockfile,
+ordinary test or evidence defects inside the seven paths.
+
+Hard stop if:
+
+1. `main` differs from the frozen base before implementation;
+2. a target version is missing or a peer conflict appears;
+3. the lock update changes packages not attributable to the three pins, or moves `source-map-js`;
+4. `npm audit --audit-level=high` still reports a high or critical finding;
+5. an eighth path is required;
+6. deterministic FAST readiness is not `IMPLEMENTATION_READY`;
+7. paid runners, a billing block or an unavailable required check appears;
+8. any credential, network, workflow, deployment, Hermes, strategy, execution, live or capital
+   boundary would move.
+
+---
+
+## 9. Evidence Plan (requirement mapping)
+
+| ID | Requirement | Minimum evidence |
+|---|---|---|
+| R001 | base/predecessor; PR #246 / #247 untouched | discovery + exact scope |
+| R002 | exact pins and lock-root sync | `test_dependency_pins_security_and_historical_guards` |
+| R003 | install, build and audit pass | native npm commands |
+| R004 | coherent resolved graph | `npm ls` |
+| R005 | CI-SEC-01 lock state preserved (parent range `^1.2.1` → `^1.2.2` only) | `test_ci_sec_01_frontend_lock_patches_source_map_js_only` |
+| R006 | exact seven-path FAST readiness | readiness `--check-diff` |
+| R007 | stable-candidate integrity | one local full suite |
+| R008 | hosted closure | one exact-head run with executed, successful `ci-final-gate` |
+
+---
+
+## 10. Negative-Test Matrix and Report-Back
+
+| ID | Mutation / condition | Required result |
+|---|---|---|
+| N01 | any of the three pins left at the vulnerable version | test FAIL and npm audit FAIL |
+| N02 | any other devDependency or dependency pin changed | test FAIL |
+| N03 | lock root not equal to package.json | test FAIL |
+| N04 | `source-map-js` moved off 1.2.2 | CI-SEC-01 test FAIL |
+| N05 | audit masked (`--omit=dev`, ignore, `|| true`, skip) | forbidden; workflow out of scope |
+| N06 | changed-file scope differs from the exact seven paths | readiness FAIL |
+| N07 | any product/runtime/credential/live/capital boundary moves | authority violation |
+
+Report back exactly `READY_FOR_SIDE21_FRONTEND_ADVISORY_REVIEW` with the PR URL and head, the exact
+7/7 changed-file set, the pins and lock result, npm audit result, focused and full-suite results,
+readiness `--check-diff`, the hosted run ID and all job conclusions, PR #246 / #247 untouched, zero
+protected/economic authority and `Merge authorized: NO`. On a hard stop, report the Section 8 stop.
+
+---
+
+## 11. Successor Boundary
+
+After Side21 acceptance and Karl's separate merge: refresh PR #247 (S10-CI-SEC-02) onto the new
+`main` with one fresh exact-head run (separately approved), then D001 (mandatory hosted gitleaks
+scan), then PR #246. Nothing here authorizes them.
+
+Governance track expected: FAST
+
+---
+
+## 12. Authorization Record
+
+On 2026-10-21 Karl dispatched the Side21-drafted S10-CI-SEC-03 package to this executor. Per its
+Section 0 that dispatch is Karl's express execution approval for the complete exact scope: inspect,
+branch from verified `main`, materialize this canonical prompt/spec, implement the six paths (seven after the Section 14 amendment),
+resolve ordinary same-scope issues, install only the three pinned development dependencies, run
+focused and one stable-candidate broad local validation, publish one PR, trigger one exact-head
+hosted run on standard free public runners, and report. No spending, billing or runner change,
+merge, or PR #246 / PR #247 change is authorized.
+
+---
+
+## 13. Normative Rule Matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|dependency|frontend_pins|implementation|REQUIRE|three_exact_patched_dev_pins_only|dependency.frontend_pins|R002
+NR002|dependency|frontend_lock|implementation|REQUIRE|reproducible_attributable_lock_changes_only|dependency.frontend_lock|R004
+NR003|ci|audit_integrity|all_audit_steps|FORBID|audit_masking_or_threshold_change|ci.audit_integrity|R003
+NR004|frontend|behavior|stable_candidate|REQUIRE|typecheck_build_and_storybook_build_pass|frontend.behavior|R003
+NR005|dependency|source_map_js|lock_update|PRESERVE_EXACT|ci_sec_01_patched_version|dependency.frontend_lock|R005
+NR006|scope|changed_files|stable_candidate|REQUIRE|exact_seven_paths|scope.exact_paths|R006
+NR007|validation|stable_candidate|before_ready|REQUIRE|one_local_full_suite|frontend.behavior|R007
+NR008|validation|hosted_ci|ready_exact_head|REQUIRE|executed_successful_ci_final_gate|ci.audit_integrity|R008
+NR009|authority|product_runtime|this_wp|FORBID|product_credential_execution_live_or_capital_authority|governance.product_authority|R001
+END_NORMATIVE_RULE_MATRIX_V1
+
+---
+
+## 14. Seventh-Path Amendment Record
+
+Execution stopped before publication because every postcss version that vite 8.3.5 accepts
+(`^8.5.30`) declares `source-map-js: ^1.2.2`, while
+`tests/test_codex_workflow_docs.py::test_ci_sec_01_frontend_lock_patches_source_map_js_only`
+asserted the historical parent range `^1.2.1`. On 2026-10-21 Side21 reviewed the stop and Karl
+dispatched the amendment adding exactly `tests/test_codex_workflow_docs.py` as path 7, changing only
+that one assertion from `^1.2.1` to `^1.2.2`. The assertions on the actual `source-map-js` 1.2.2
+resolution, tarball URL, integrity, `dev: true` and absence as a direct dependency are unchanged.
+Risk 2, FAST, size M, the authority mirror and every other limit are unchanged.

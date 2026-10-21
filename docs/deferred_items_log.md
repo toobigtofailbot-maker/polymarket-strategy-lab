@@ -2795,6 +2795,15 @@ the same entry's real authorization/acquisition requirement is carried by SEED02
 SOURCE_ROUTE_VERIFIED_FOR_DRAFT records independent verifier source binding only,
 not fresh current RPC finality or real study origin. No DATA03/ALPHA03/04 policy changes.
 
+## S10-CI-SEC-02 Gitleaks default-rule restoration
+
+| ID | Item | State | Priority | Owner | Notes |
+|---|---|---|---|---|---|
+| S10-CI-SEC-02-D001 | Hosted CI does not install or run gitleaks | IMPLEMENTED_ON_BRANCH_PENDING_HOSTED_VALIDATION_AND_MERGE | P2 | Karl (S10-CI-SEC-04 merge decision) | S10-CI-SEC-04 adds mandatory steps inside the required `ci-final-gate` job: the pinned gitleaks 8.27.2 Linux x64 release is installed only after strict SHA-256 verification (pinned archive and manifest hashes, exactly one manifest entry), a redacted full-history `gitleaks git` scan runs with the committed configuration, and the five binary-backed detection cases must pass with zero skips before `CI_FINAL_GATE_PASS`. Not resolved until the PR is accepted and merged; compatibility legs may still skip the binary-backed cases, and the final gate is the hosted detection evidence. |
+| S10-CI-SEC-02-D002 | gitleaks results from WP15 until this correction were not detection evidence | RECORDED_EVIDENCE_LIMITATION | P1 | None | The WP15 `.gitleaks.toml` defined zero rules; earlier "no leaks found" outputs are vacuous. The 2026-10-20 audit and this package re-scanned all reachable history with the default rules and classified every finding; no real credential was found. |
+| S10-CI-SEC-02-D003 | Public-repository exposure decisions from the 2026-10-20 audit (hosting details, strategy IP, personal identifiers, `main` ruleset, allowed actions, fork-PR approval) | DEFERRED_TO_S10_PUBLIC_REPO_01 | P1 | Karl | Not secret-scan work; separately gated. |
+| S10-CI-SEC-02-D004 | `tools/git/diff_scope_summary.py` duplicates the spec-guard authority map without the two root secret-scan paths | DEFERRED_SEPARATE_TOOLING_WP | P3 | Karl (future tooling WP) | For this package the advisory summary reports one authority warning (`Exact scope pass: false`) for `.gitleaks.toml` and `.gitleaksignore`. The binding readiness gate `--check-diff` passes with exact ten-path equality. Aligning the duplicate map is an eleventh path, outside this exact scope. |
+
 ## Wallet-Intelligence Roadmap Anchor (durable)
 
 Objective: prove when PUBLIC wallet behavior deserves strategic use; do not assume

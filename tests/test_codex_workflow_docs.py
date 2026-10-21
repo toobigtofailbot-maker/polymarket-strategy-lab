@@ -2097,7 +2097,7 @@ def test_ci_sec_01_frontend_lock_patches_source_map_js_only() -> None:
     assert node["integrity"] == (
         "sha512-KGj/8Y43x35aZVDtt+J4mK1hoLGHULMYfSkODJNQjNDC3oW1PqPoxMwo0pLUsWM/UEGzON/NxeHywEfNXNP3Vw==")
     assert node["dev"] is True
-    assert lock["packages"]["node_modules/postcss"]["dependencies"]["source-map-js"] == "^1.2.1"
+    assert lock["packages"]["node_modules/postcss"]["dependencies"]["source-map-js"] == "^1.2.2"
     package = json.loads(_read(CI_SEC_01_FRONTEND / "package.json"))
     for section in ("dependencies", "devDependencies", "optionalDependencies", "overrides"):
         assert "source-map-js" not in package.get(section, {}), section
@@ -2169,3 +2169,182 @@ def test_ci_opt_02_workflow_policy_and_bootstrap() -> None:
     assert len(spec["scope"]["required_changed_files"]) == 13
     assert hashlib.sha256(spec_path.read_bytes()).hexdigest() == "6842c4673c3c47a7d6618210f2ab42cc9340e4b9aad9c8b3e1d98ad7ec824367"
     assert hashlib.sha256((spec_path.parent / "wp_prompt.txt").read_bytes()).hexdigest() == "1263a6471d5ab1e8c16366452a925dfd5d479c7e87f699e56dda9a955dce5f69"
+
+
+# --- S10-CI-SEC-04: mandatory hosted gitleaks enforcement inside ci-final-gate ---
+
+CI_SEC_04_FINAL_STEP = "      - name: Verify exact plan and required job results"
+CI_SEC_04_STEPS = (
+    "      - name: Verify exact PR head and full history for the secret scan",
+    "      - name: Install pinned gitleaks 8.27.2 (strict SHA-256 verification)",
+    "      - name: Gitleaks full-history scan (redacted, fail-closed)",
+    "      - name: Binary-backed gitleaks detection tests (5 required, 0 skipped)",
+)
+CI_SEC_04_ARCHIVE_SHA256 = "141c3b2dede46d8b3a53b47116da756bd223decc0374797559a6b50ecba5590c"
+CI_SEC_04_CHECKSUMS_SHA256 = "37c3277907a277499370e980d13d8497215d49c69809668dc8841dbabd574dc0"
+CI_SEC_04_DETECTION_NODES = (
+    "test_gitleaks_detects_synthetic_secret_and_accepts_clean_input",
+    "test_gitleaks_git_mode_detects_secret_added_to_classified_wp14_row",
+    "test_gitleaks_repo_config_autoloads_and_detects",
+    "test_defective_wp15_config_shape_detects_nothing",
+)
+CI_SEC_04_JUNIT_CHECKS = ('tests="5"', 'skipped="0"', 'failures="0"', 'errors="0"')
+
+
+def _ci_sec_04_gate_steps(gate: str) -> dict[str, str]:
+    """Split the ci-final-gate body into its named steps (text between step headers)."""
+    lines = gate.splitlines()
+    starts = [i for i, line in enumerate(lines) if line.startswith("      - ")]
+    steps: dict[str, str] = {}
+    for index, start in enumerate(starts):
+        end = starts[index + 1] if index + 1 < len(starts) else len(lines)
+        steps[lines[start]] = "\n".join(lines[start:end])
+    return steps
+
+
+def _ci_sec_04_violations(text: str) -> list[str]:
+    gate = _ci_jobs(text).get("ci-final-gate", "")
+    violations: list[str] = []
+    steps = _ci_sec_04_gate_steps(gate)
+    headers = list(steps)
+    for header in CI_SEC_04_STEPS:
+        if header not in steps:
+            violations.append(f"G01 gate step missing: {header.strip()}")
+    if not headers or headers[-1] != CI_SEC_04_FINAL_STEP:
+        violations.append("G02 final verification is not the last step")
+    elif all(h in headers for h in CI_SEC_04_STEPS):
+        positions = [headers.index(h) for h in CI_SEC_04_STEPS]
+        if positions != sorted(positions) or positions[-1] >= headers.index(CI_SEC_04_FINAL_STEP):
+            violations.append("G02 gate steps not ordered before the final verification")
+    new_steps = "\n".join(steps.get(h, "") for h in CI_SEC_04_STEPS)
+    for masked in ("continue-on-error", "|| true", "\n        if:", "latest",
+                   "setup_project_gitleaks", "sudo", "/usr/local/bin"):
+        if masked in new_steps:
+            violations.append(f"G03 masking or unsafe acquisition: {masked.strip()}")
+    if re.search(r"\|\s*(sh|bash)\b", new_steps):
+        violations.append("G03 masking or unsafe acquisition: pipe to shell")
+    head = steps.get(CI_SEC_04_STEPS[0], "")
+    for needle in ('test "$(git rev-parse HEAD)" = "$HEAD_SHA"',
+                   'test "$(git rev-parse --is-shallow-repository)" = "false"',
+                   'git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"'):
+        if needle not in head:
+            violations.append(f"G04 exact-head/full-history check missing: {needle}")
+    if "fetch-depth: 0" not in gate or "persist-credentials: false" not in gate:
+        violations.append("G04 full-history checkout changed")
+    install = steps.get(CI_SEC_04_STEPS[1], "")
+    if 'GITLEAKS_VERSION: "8.27.2"' not in install or "GITLEAKS_ARCHIVE: gitleaks_8.27.2_linux_x64.tar.gz" not in install:
+        violations.append("G05 pinned version or asset changed")
+    archive_pin = re.search(r"GITLEAKS_ARCHIVE_SHA256: ([0-9a-f]{64})\n", install)
+    manifest_pin = re.search(r"GITLEAKS_CHECKSUMS_SHA256: ([0-9a-f]{64})\n", install)
+    if not archive_pin or archive_pin.group(1) != CI_SEC_04_ARCHIVE_SHA256:
+        violations.append("G06 archive SHA-256 pin missing or changed")
+    if not manifest_pin or manifest_pin.group(1) != CI_SEC_04_CHECKSUMS_SHA256:
+        violations.append("G06 manifest SHA-256 pin missing or changed")
+    archive_check = '"$GITLEAKS_ARCHIVE_SHA256  $dl/$GITLEAKS_ARCHIVE" | sha256sum --check --strict -'
+    manifest_check = '"$GITLEAKS_CHECKSUMS_SHA256  $dl/checksums.txt" | sha256sum --check --strict -'
+    extract = 'tar -xzf "$dl/$GITLEAKS_ARCHIVE" -C "$bin" gitleaks'
+    if archive_check not in install or extract not in install or install.index(archive_check) > install.index(extract):
+        violations.append("G07 archive not verified before extraction")
+    if manifest_check not in install:
+        violations.append("G07 checksum manifest not verified")
+    if "grep -c '[^[:space:]]')\" -eq 1" not in install or 'test "$manifest_sha" = "$GITLEAKS_ARCHIVE_SHA256"' not in install:
+        violations.append("G08 single manifest entry match missing")
+    for needle in ("set -euo pipefail", "curl -fsSL --proto '=https' --tlsv1.2",
+                   'test "$("$bin/gitleaks" version)" = "$GITLEAKS_VERSION"', 'echo "$bin" >> "$GITHUB_PATH"',
+                   'bin="$RUNNER_TEMP/gitleaks-bin"'):
+        if needle not in install:
+            violations.append(f"G09 install requirement missing: {needle}")
+    scan = steps.get(CI_SEC_04_STEPS[2], "")
+    if 'gitleaks git --redact --no-banner --exit-code 1 --log-opts="--all" .' not in scan:
+        violations.append("G10 redacted full-history git scan missing")
+    if "gitleaks dir" in gate:
+        violations.append("G10 working-tree dir scan substitute")
+    if "test -f .gitleaks.toml" not in scan or "test -f .gitleaksignore" not in scan:
+        violations.append("G10 committed scanner configuration not required")
+    detect = steps.get(CI_SEC_04_STEPS[3], "")
+    for node in CI_SEC_04_DETECTION_NODES:
+        if f"tests/test_gitleaks_secret_scan_gate.py::{node}" not in detect:
+            violations.append(f"G11 detection case not selected: {node}")
+    for check in CI_SEC_04_JUNIT_CHECKS:
+        if f"grep -Eq '<testsuite [^>]*{check}' \"$report\"" not in detect:
+            violations.append(f"G12 junit requirement missing: {check}")
+    return violations
+
+
+def test_ci_sec_04_gitleaks_gate_acquisition_is_pinned_and_strict() -> None:
+    """R002: pinned 8.27.2 linux x64 asset, both SHA-256 pins, single manifest entry, verify before extract."""
+    text = _read(CI_WORKFLOW)
+    assert _ci_sec_04_violations(text) == []
+    install = _ci_sec_04_gate_steps(_ci_jobs(text)["ci-final-gate"])[CI_SEC_04_STEPS[1]]
+    assert install.index("sha256sum --check --strict") < install.index("tar -xzf")
+    assert "$RUNNER_TEMP" in install and "GITHUB_PATH" in install
+
+
+def test_ci_sec_04_gitleaks_gate_scans_full_history() -> None:
+    """R003: exact PR head, non-shallow history, redacted git scan with the committed configuration."""
+    text = _read(CI_WORKFLOW)
+    steps = _ci_sec_04_gate_steps(_ci_jobs(text)["ci-final-gate"])
+    assert 'gitleaks git --redact --no-banner --exit-code 1 --log-opts="--all" .' in steps[CI_SEC_04_STEPS[2]]
+    assert 'test "$(git rev-parse HEAD)" = "$HEAD_SHA"' in steps[CI_SEC_04_STEPS[0]]
+    assert "${{ github.event.pull_request.head.sha }}" in steps[CI_SEC_04_STEPS[0]]
+
+
+def test_ci_sec_04_gitleaks_gate_requires_five_unskipped_cases() -> None:
+    """R004: the four binary-backed functions (five cases) run and the JUnit report must be 5/0/0/0."""
+    text = _read(CI_WORKFLOW)
+    detect = _ci_sec_04_gate_steps(_ci_jobs(text)["ci-final-gate"])[CI_SEC_04_STEPS[3]]
+    assert all(f"::{node}" in detect for node in CI_SEC_04_DETECTION_NODES)
+    assert all(check in detect for check in CI_SEC_04_JUNIT_CHECKS)
+    gate_tests = _read(ROOT / "tests" / "test_gitleaks_secret_scan_gate.py")
+    for node in CI_SEC_04_DETECTION_NODES:
+        assert f"def {node}(" in gate_tests, node
+    assert '@pytest.mark.parametrize("config_text", [DEFECTIVE_WP15_CONFIG, ROW_BOUND_ALLOWLIST_CONFIG])' in gate_tests
+
+
+def test_ci_sec_04_gitleaks_gate_negative_matrix() -> None:
+    """R005 / N01-N12: weakening, masking, reordering or skipping the gate is rejected."""
+    text = _read(CI_WORKFLOW)
+    assert _ci_sec_04_violations(text) == [] and not _ci_policy_violations(text)
+    gate_start = text.index("  ci-final-gate:")
+    install_header = CI_SEC_04_STEPS[1] + "\n"
+    scan_block = text[text.index(CI_SEC_04_STEPS[2]):text.index(CI_SEC_04_STEPS[3])]
+    archive_check = 'echo "$GITLEAKS_ARCHIVE_SHA256  $dl/$GITLEAKS_ARCHIVE" | sha256sum --check --strict -\n'
+    mutations = {
+        "N01 install step removed": text.replace(text[text.index(install_header):text.index(CI_SEC_04_STEPS[2])], ""),
+        "N02 archive check removed": text.replace("          " + archive_check, ""),
+        "N02 archive check after extraction": text.replace("          " + archive_check, "").replace(
+            "          test -x \"$bin/gitleaks\"\n", "          " + archive_check + "          test -x \"$bin/gitleaks\"\n"),
+        "N03 archive pin missing": text.replace(CI_SEC_04_ARCHIVE_SHA256, "not-a-sha256"),
+        "N03 manifest pin short": text.replace(CI_SEC_04_CHECKSUMS_SHA256, CI_SEC_04_CHECKSUMS_SHA256[:40]),
+        "N04 wrong version": text.replace('GITLEAKS_VERSION: "8.27.2"', 'GITLEAKS_VERSION: "8.18.0"'),
+        "N04 wrong asset": text.replace("GITLEAKS_ARCHIVE: gitleaks_8.27.2_linux_x64.tar.gz", "GITLEAKS_ARCHIVE: gitleaks_8.27.2_darwin_x64.tar.gz"),
+        "N05 single-entry check removed": text.replace("grep -c '[^[:space:]]')\" -eq 1", "grep -c '[^[:space:]]')\" -ge 1"),
+        "N06 dir replaces git": text.replace('gitleaks git --redact --no-banner', 'gitleaks dir --redact --no-banner'),
+        "N07 redact dropped": text.replace("gitleaks git --redact --no-banner", "gitleaks git --no-banner"),
+        "N08 detection case dropped": text.replace(
+            '            "tests/test_gitleaks_secret_scan_gate.py::test_gitleaks_repo_config_autoloads_and_detects" \\\n', ""),
+        "N09 zero-skip check removed": text.replace("          grep -Eq '<testsuite [^>]*skipped=\"0\"' \"$report\"\n", ""),
+        "N10 masked scan": text.replace('--log-opts="--all" .\n', '--log-opts="--all" . || true\n'),
+        "N10 continue-on-error": text.replace(install_header, install_header + "        continue-on-error: true\n"),
+        "N10 step condition": text.replace(install_header, install_header + "        if: always()\n"),
+        "N11 scanner after final pass": text.replace(scan_block, "") + scan_block,
+        "N12 exact-head check removed": text.replace('          test "$(git rev-parse HEAD)" = "$HEAD_SHA"\n', ""),
+        "N12 shallow checkout": text[:gate_start] + text[gate_start:].replace("fetch-depth: 0", "fetch-depth: 1", 1),
+        "N12 latest version": text.replace("releases/download/v${GITLEAKS_VERSION}", "releases/latest/download"),
+    }
+    for label, mutated in mutations.items():
+        assert mutated != text, label
+        assert _ci_sec_04_violations(mutated), label
+
+
+def test_ci_sec_04_deferred_status_and_doc_record_hosted_enforcement() -> None:
+    """D001 moves to implemented-on-branch only; the gate doc and status entry record limits truthfully."""
+    deferred = _read(ROOT / "docs" / "deferred_items_log.md")
+    row = next(line for line in deferred.splitlines() if line.startswith("| S10-CI-SEC-02-D001 |"))
+    assert "IMPLEMENTED_ON_BRANCH_PENDING_HOSTED_VALIDATION_AND_MERGE" in row and "S10-CI-SEC-04" in row
+    for other in ("S10-CI-SEC-02-D002", "S10-CI-SEC-02-D003", "S10-CI-SEC-02-D004"):
+        assert any(line.startswith(f"| {other} |") for line in deferred.splitlines()), other
+    doc = _read(ROOT / "docs" / "gitleaks_secret_scan_gate.md")
+    assert "S10-CI-SEC-04" in doc and CI_SEC_04_ARCHIVE_SHA256 in doc and "ci-final-gate" in doc
+    status = _read(ROOT / "docs" / "status_entries" / "S10-CI-SEC-04.md")
+    assert "Merge authorized: NO" in status and "live values in the PR body" in status

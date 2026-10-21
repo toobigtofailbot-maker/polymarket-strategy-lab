@@ -1028,14 +1028,14 @@ def test_dependency_pins_security_and_historical_guards() -> None:
         "react-router": "8.4.0",
     }
     assert package["devDependencies"] == {
-        "@storybook/react-vite": "10.6.1",
+        "@storybook/react-vite": "10.6.3",
         "@types/react": "19.3.0",
         "@types/react-dom": "19.3.0",
         "msw": "2.15.0",
         "msw-storybook-addon": "3.0.3",
-        "storybook": "10.6.1",
+        "storybook": "10.6.3",
         "typescript": "7.0.2",
-        "vite": "8.3.0",
+        "vite": "8.3.5",
     }
     lock = json.loads(
         (ROOT / "src/operator_cockpit_frontend/package-lock.json").read_text(
