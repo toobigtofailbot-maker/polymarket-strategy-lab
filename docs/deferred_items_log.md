@@ -2795,6 +2795,15 @@ the same entry's real authorization/acquisition requirement is carried by SEED02
 SOURCE_ROUTE_VERIFIED_FOR_DRAFT records independent verifier source binding only,
 not fresh current RPC finality or real study origin. No DATA03/ALPHA03/04 policy changes.
 
+## S10-CI-SEC-02 Gitleaks default-rule restoration
+
+| ID | Item | State | Priority | Owner | Notes |
+|---|---|---|---|---|---|
+| S10-CI-SEC-02-D001 | Hosted CI does not install or run gitleaks | DEFERRED_SEPARATE_WORKFLOW_DECISION | P2 | Karl (future workflow WP) | Detection proof is local only: the three binary-backed tests in `tests/test_gitleaks_secret_scan_gate.py` skip on hosted runners and a skip is never detection evidence. The configuration-shape tests and negative matrix do run in hosted CI. Adding a gitleaks job is a workflow change outside this package. |
+| S10-CI-SEC-02-D002 | gitleaks results from WP15 until this correction were not detection evidence | RECORDED_EVIDENCE_LIMITATION | P1 | None | The WP15 `.gitleaks.toml` defined zero rules; earlier "no leaks found" outputs are vacuous. The 2026-10-20 audit and this package re-scanned all reachable history with the default rules and classified every finding; no real credential was found. |
+| S10-CI-SEC-02-D003 | Public-repository exposure decisions from the 2026-10-20 audit (hosting details, strategy IP, personal identifiers, `main` ruleset, allowed actions, fork-PR approval) | DEFERRED_TO_S10_PUBLIC_REPO_01 | P1 | Karl | Not secret-scan work; separately gated. |
+| S10-CI-SEC-02-D004 | `tools/git/diff_scope_summary.py` duplicates the spec-guard authority map without the two root secret-scan paths | DEFERRED_SEPARATE_TOOLING_WP | P3 | Karl (future tooling WP) | For this package the advisory summary reports one authority warning (`Exact scope pass: false`) for `.gitleaks.toml` and `.gitleaksignore`. The binding readiness gate `--check-diff` passes with exact ten-path equality. Aligning the duplicate map is an eleventh path, outside this exact scope. |
+
 ## Wallet-Intelligence Roadmap Anchor (durable)
 
 Objective: prove when PUBLIC wallet behavior deserves strategic use; do not assume

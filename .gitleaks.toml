@@ -1,9 +1,9 @@
-[allowlist]
-description = "Repository documentation false positives only."
-regexTarget = "line"
-paths = [
-  '''docs/deferred_items_log\.md''',
-]
-regexes = [
-  '''Authenticated CLOB client integration remains blocked pending credential/key/security boundary WP''',
-]
+title = "polymarket-strategy-lab gitleaks configuration"
+
+# Inherit the full gitleaks embedded default rule set (official [extend] mechanism).
+# Without this table a project config defines zero rules and every scan passes vacuously.
+# No allowlist of any kind: every classified historical finding, including the WP14-D002
+# deferred-log prose, is suppressed only by its exact fingerprint in .gitleaksignore, so a
+# new secret on any line (even an already classified one) is a new finding.
+[extend]
+useDefault = true

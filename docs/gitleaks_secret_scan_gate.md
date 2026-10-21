@@ -104,6 +104,29 @@ WP15 note: a later gitleaks git scan reported a documentation false positive in 
 
 WP15 observed one documentation false positive and added a minimal `.gitleaks.toml` allowlist rule scoped to one file and one exact phrase. No broad suppressions added.
 
+## S10-CI-SEC-02 Default-Rule Correction
+
+The WP15 `.gitleaks.toml` contained only a legacy `[allowlist]` table and no `[extend]` table.
+A project configuration without `[extend] useDefault = true` defines zero rules, and gitleaks
+auto-loads `.gitleaks.toml` from the scanned source root, so every `gitleaks git --redact` run by
+`tools/security/run_available_security_checks.py` from WP15 onward passed without executing any
+detection rule. Legacy allowlist conditions also match independently, so the WP15 `paths` entry
+excluded the whole of `docs/deferred_items_log.md` rather than one phrase in it. Earlier
+"no leaks found" results from WP15 onward are therefore not detection evidence.
+
+S10-CI-SEC-02 restores the embedded default rule set through the official `[extend] useDefault =
+true` mechanism and removes every allowlist: `.gitleaks.toml` contains only `[extend]`. All
+classified historical findings, synthetic test fixtures and prose false positives including the
+WP14-D002 deferred-log line (`70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49`), are listed individually by exact fingerprint
+(`commit:path:rule:line`) in `.gitleaksignore`; no path, directory, rule, regex, stopword or
+wildcard exclusion exists. A secret later added to any line, including the WP14-D002 row, is a new
+commit and therefore a new finding. No broad suppressions added. The fingerprints contain commit SHAs, so they apply to `gitleaks git` (the
+runner's mode) only: a `gitleaks dir` working-tree scan still reports the fixtures that remain in
+the tree, and any history rewrite would invalidate the fingerprints.
+`tests/test_gitleaks_secret_scan_gate.py` enforces the configuration shape with a negative matrix
+and, when a gitleaks binary is available, proves a runtime-assembled synthetic token is detected,
+clean input passes and the defective WP15 shape detects nothing.
+
 ## Deferred Item Impact
 
 - **WP3-D001** (`gitleaks`): Updated from DEFERRED to **READY_FOR_WP**.

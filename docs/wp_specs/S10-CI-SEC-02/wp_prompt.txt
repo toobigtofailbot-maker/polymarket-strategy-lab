@@ -1,0 +1,315 @@
+# S10-CI-SEC-02 — Gitleaks Default-Rule Restoration
+
+**Status:** FINAL DRAFT FOR KARL AUTHORIZATION AND SIDE19 ASSESSMENT
+**Implementation authorization:** YES — Karl, 2026-10-20 (Section 13)
+**Merge authority:** NO — Karl only
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+
+---
+
+## 0. Package Identity
+
+| Field | Frozen value |
+|---|---|
+| WP ID | `S10-CI-SEC-02` |
+| Title | Gitleaks Default-Rule Restoration |
+| Base branch | `main` |
+| Frozen base / current main SHA | `0c158e061d3ab5039997c6b4e736da0da9507d37` |
+| Required predecessor | PR #245 / `S10-HERMES-OAUTH-JOURNAL-01` |
+| Required predecessor head | `e178c389f09feadd01956cc278ca045e35a49823` |
+| Required predecessor merge SHA | `0c158e061d3ab5039997c6b4e736da0da9507d37` |
+| Suggested branch | `claude/s10-ci-sec-02-gitleaks-default-rules` |
+| Package class | `SECURITY_TOOLING_SECRET_SCAN_RULE_RESTORATION` |
+| Package size class | `M` |
+| Risk level | `2` |
+| Governance track expected | `FAST` |
+| Evidence mode expected | `BLOCKED_NOT_READY` until hosted CI and Side19 acceptance exist |
+| Runtime impact | `NO_PRODUCT_RUNTIME_CHANGE` |
+| Product network impact | `NONE` |
+| Credential impact | `NONE` |
+| Dependency impact | `NONE` |
+| Trading impact | `NONE` |
+| Capital at risk | `USD 0` |
+| Exact changed-file count | `10` |
+
+### Governance authority mirror
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+Risk-2 security/tooling package. It grants no product-network, scheduler, Hermes-runtime, paper,
+credential, execution or live authority, so the minimum governance track is `FAST` and no
+independent draftability certificate is required.
+
+---
+
+## 1. Objective
+
+The 2026-10-20 read-only pre-publication audit (finding H1) proved that the committed
+`.gitleaks.toml` defines zero detection rules: it holds only a legacy `[allowlist]` table and no
+`[extend]` table, and gitleaks auto-loads it from the scanned source root. Every
+`gitleaks git --redact` run by `tools/security/run_available_security_checks.py` since WP15
+therefore passed vacuously. A synthetic token was detected only with the file removed. The legacy
+allowlist `paths` entry also excluded all of `docs/deferred_items_log.md`.
+
+Restore real detection with the smallest correction:
+
+1. extend the embedded default rules through the official `[extend] useDefault = true` mechanism;
+2. remove every allowlist, including the whole-file path, and suppress the WP14-D002 prose finding
+   only by its exact fingerprint;
+3. list each manually classified historical fixture finding by exact fingerprint in `.gitleaksignore`;
+4. prove detection with a deterministic regression and negative matrix;
+5. let the deterministic spec guard govern exactly the two repository-root secret-scan
+   configuration paths as `local_offline_tooling` — today it maps no root non-dependency path and
+   rejects any package containing them with `AUTHORITY_CONTRADICTION`.
+
+The security runner, workflows and CI matrix stay unchanged. PR #246 is not modified.
+
+---
+
+## 2. Frozen Tool Truth (2026-10-20)
+
+- gitleaks 8.27.2 project-local binary (`tools/.bin/`, ignored, never committed).
+- With the new configuration, the runner-mode history scan (`--all` local refs; 541 non-merge
+  commits in a clone of the origin branches at the base) reports exactly
+  20 findings (including WP14-D002). Each was classified manually as a synthetic test fixture, a constructed
+  placeholder, a public sample token or documentation prose. No real credential exists.
+- All-refs merge-inclusive scan (791 commits, all branches and 246 pull refs): 39 findings = the 20
+  fingerprinted findings plus 19 merge-diff re-occurrences whose matched values are byte-identical
+  to a fingerprinted value (compared by SHA-256, never printed).
+
+If any implementation-changing fact differs at execution time, STOP under Section 8.
+
+---
+
+## 3. Exact Scope — 10 Paths
+
+`required_changed_files == allowed_changed_files ==` exactly:
+
+1. `.gitleaks.toml`
+2. `.gitleaksignore`
+3. `tools/wp/wp_spec_guard.py`
+4. `tests/tools/wp/test_wp_spec_guard.py`
+5. `tests/test_gitleaks_secret_scan_gate.py`
+6. `docs/gitleaks_secret_scan_gate.md`
+7. `docs/deferred_items_log.md`
+8. `docs/status_entries/S10-CI-SEC-02.md`
+9. `docs/wp_specs/S10-CI-SEC-02/wp_prompt.txt`
+10. `docs/wp_specs/S10-CI-SEC-02/wp_spec.json`
+
+No eleventh path. `docs/project_status.md` and `docs/repo_truth_index.md` are unchanged, following
+the PR #245 precedent; the status entry is the stable committed record. Explicitly unchanged: `.github/**`, `tools/security/**` (the runner already
+executes `gitleaks git --redact` from the repository root), all `src/**`, dependency files, PR #246
+paths, credentials, configs, deployment, Hermes, strategy, execution and live surfaces.
+
+If a eleventh path is mechanically required, STOP with
+`S10_CI_SEC_02_SCOPE_AMENDMENT_REQUIRED:<path>:<reason>`.
+
+---
+
+## 4. Frozen Implementation Design
+
+### A. `.gitleaks.toml`
+
+Exactly: `title` and `[extend]` with only `useDefault = true`. No `[allowlist]` or
+`[[allowlists]]` of any kind (no regex, path, commit or stopword exclusion), no `disabledRules`
+and no `[[rules]]`.
+
+### B. `.gitleaksignore`
+
+A comment header plus exactly the 20 runner-mode fingerprints (`commit:path:rule:line`), including
+the WP14-D002 deferred-log finding. No path,
+directory, rule or wildcard entry. A future finding must be fixed or classified individually.
+
+### C. Spec-guard mapping
+
+In `tools/wp/wp_spec_guard.py`, add `SECURITY_SCAN_CONFIG_PATHS = (".gitleaks.toml",
+".gitleaksignore")` and map exactly those paths to `local_offline_tooling`. `README.md`,
+look-alikes (`.gitleaks.toml.bak`, `gitleaks.toml`, `.gitleaks`), nested copies and every other
+unmapped root path remain `AUTHORITY_CONTRADICTION`.
+
+### D. Regression owners
+
+Extend only `tests/test_gitleaks_secret_scan_gate.py` and `tests/tools/wp/test_wp_spec_guard.py`.
+The gitleaks tests assemble the synthetic token at runtime, so no source file contains a detectable
+literal. Binary-backed tests skip when no gitleaks binary is available. A skip is reported, never
+counted as detection evidence.
+
+### E. Documents
+
+The gate doc records the defect, the correction and that earlier WP15-onward "no leaks found"
+results are not detection evidence. The deferred log records that hosted CI does not install
+gitleaks, so detection proof is local-only. The status entry is the stable record.
+
+---
+
+## 5. Authority / Non-Authority
+
+Authorized only after Karl explicitly authorizes this exact package: the ten-path change, local
+validation, a local commit and Side19 assessment.
+
+Not authorized: hosted Actions; ready transition; merge; repository visibility or settings
+changes; PR #246 modification; workflow, CI matrix or runner change; any `src/**` change;
+dependency change; history rewrite; credential or account access; product network; deployment;
+Hermes/provider calls; strategy, paper, execution, order, live or capital action.
+
+**This WP grants zero Hermes, strategy, deployment, account, credential, execution, order, live
+or capital authority.**
+
+---
+
+## 6. Vertical Trace
+
+```text
+.gitleaks.toml [extend] useDefault = true
+→ gitleaks loads the embedded default rules from the repository root
+→ .gitleaksignore suppresses only 20 exact classified fingerprints
+→ run_available_security_checks.py gitleaks row PASS on real rules
+→ a new synthetic secret commit turns the row FINDING_OR_ERROR
+```
+
+---
+
+## 7. Validation
+
+Focused:
+
+```bash
+python -m pytest -q -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py
+python -m pytest -q -p no:cacheprovider tests/tools/wp/test_wp_spec_guard.py tests/tools/wp/test_wp_readiness_gate.py
+```
+
+Stable candidate: readiness `--check-diff` (exact 10 paths), `git diff --check`, the generated
+artifact guard, `tools/security/run_available_security_checks.py` (unavailable tools reported as
+unavailable), a scratch-clone planted-synthetic runner proof, the all-refs merge-inclusive history
+scan with classification, and one authoritative local full suite. No hosted Actions.
+
+---
+
+## 8. Same-Run Corrections vs Hard Stops
+
+Same run: wrong focused assertion, status wording, fingerprint list regenerated from the same
+classified findings, ordinary test or evidence defects inside the ten paths.
+
+Hard stop if:
+
+1. `main` differs from the frozen base before implementation;
+2. a history finding cannot be classified as a non-credential fixture or prose (possible real
+   secret) — stop, report only the fingerprint and do not suppress it;
+3. the runner must change to execute detection;
+4. a eleventh path is required;
+5. deterministic FAST readiness is not `IMPLEMENTATION_READY`;
+6. any credential, network, workflow, deployment, Hermes, strategy, execution, live or capital
+   boundary would move.
+
+---
+
+## 9. Evidence Plan (requirement mapping)
+
+| ID | Requirement | Minimum evidence |
+|---|---|---|
+| R001 | base/predecessor; PR #246 untouched | discovery + exact scope |
+| R002 | default rules extended, no allowlist | `test_gitleaks_config_extends_embedded_default_rules` |
+| R003 | disabling/broadening mutations rejected | `test_gitleaks_config_negative_matrix` |
+| R004 | exact fingerprint list | `test_gitleaksignore_is_exact_fingerprints_only` |
+| R005 | synthetic detected, clean accepted | `test_gitleaks_detects_synthetic_secret_and_accepts_clean_input` |
+| R006 | defective WP15 shape proven blind | `test_defective_wp15_config_shape_detects_nothing` |
+| R007 | root paths need local_offline_tooling | `test_secret_scan_config_paths_require_local_offline_tooling` |
+| R008 | other root paths still rejected | `test_unmapped_root_and_lookalike_paths_remain_authority_contradictions` |
+| R009 | exact ten-path FAST readiness | readiness `--check-diff` |
+| R010 | runner proof, history classification, full suite | local commands |
+
+---
+
+## 10. Negative-Test Matrix and Report-Back
+
+| ID | Mutation / condition | Required result |
+|---|---|---|
+| N01 | `[extend]` removed or `useDefault = false` | FAIL |
+| N02 | `disabledRules` or extend `path` added | FAIL |
+| N03 | any `[allowlist]` (regex, `paths`, `stopwords` or `commits`) | FAIL |
+| N04 | the earlier row-bound WP14-D002 line allowlist | FAIL; binary run proves it hides a new secret |
+| N05 | a secret appended to the classified WP14-D002 row | detected (git and dir mode) |
+| N06 | WP14-D002 fingerprint missing from `.gitleaksignore` | FAIL |
+| N07 | `[[rules]]` or `[[allowlists]]` added | FAIL |
+| N08 | invalid TOML | FAIL |
+| N09 | defective WP15 shape | FAIL; binary run detects nothing |
+| N10 | non-fingerprint, short-commit, path, wildcard, foreign-rule, `src/` or line-0 ignore entry | FAIL |
+| N11 | `.gitleaks.toml` path without local_offline_tooling | AUTHORITY_CONTRADICTION |
+| N12 | `README.md`, look-alike or nested gitleaks path | AUTHORITY_CONTRADICTION |
+| N13 | changed-file scope differs from the exact ten paths | readiness FAIL |
+
+Report back exactly `READY_FOR_SIDE19_SECRET_SCAN_ASSESSMENT` with the local commit, the exact
+10/10 changed-file set, focused and full-suite results, readiness `--check-diff`, runner proof,
+history classification counts, PR #246 untouched, zero protected/economic authority and
+`Merge authorized: NO`. On a hard stop, report the Section 8 stop instead.
+
+---
+
+## 11. Successor Boundary
+
+`S10-PUBLIC-REPO-01` (separately gated): hosting-detail redaction, strategy-IP decision, personal
+identifiers, `main` ruleset, allowed-actions restriction and post-visibility fork-PR approval. A
+hosted gitleaks CI job is a separate future workflow decision. Nothing here authorizes them.
+
+Governance track expected: FAST
+
+---
+
+## 12. Normative Rule Matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|secret_scan|default_rules|repository_config|REQUIRE|embedded_default_rules_extended|secret_scan.default_rules|R002
+NR002|secret_scan|allowlist|repository_config|FORBID|any_allowlist_exclusion|secret_scan.allowlist|R003
+NR003|secret_scan|fingerprints|gitleaksignore|REQUIRE|exact_classified_fingerprints_only|secret_scan.fingerprints|R004
+NR004|secret_scan|detection|synthetic_token|REQUIRE|detected_while_clean_input_passes|secret_scan.detection_proof|R005
+NR005|secret_scan|detection|defective_wp15_shape|REJECT|zero_rule_configuration|secret_scan.detection_proof|R006
+NR006|governance|spec_guard|root_secret_scan_paths|REQUIRE|local_offline_tooling_authority|governance.spec_guard_mapping|R007
+NR007|governance|spec_guard|other_root_paths|FORBID|new_unmapped_root_authority|governance.spec_guard_mapping|R008
+NR008|scope|changed_files|stable_candidate|REQUIRE|exact_ten_paths|scope.exact_paths|R009
+NR009|secret_scan|history|all_refs_with_merges|REQUIRE|every_finding_classified|secret_scan.history|R010
+NR010|authority|product_runtime|this_wp|FORBID|product_credential_execution_live_or_capital_authority|governance.product_authority|R001
+END_NORMATIVE_RULE_MATRIX_V1
+
+---
+
+## 13. Authorization Record
+
+On 2026-10-20 Karl explicitly authorized S10-CI-SEC-02 as packaged, including the exact two-path
+root-file mapping in `tools/wp/wp_spec_guard.py` and all ten scoped files, through applying the
+verified scratch patch to a clean branch from `0c158e0`, native readiness, focused tests,
+security-detection proof, commit, push, one DRAFT pull request and independent review. Hosted CI
+is not triggered while GitHub billing is blocked. No visibility change, PR #246 change, trading,
+ready transition or merge is authorized. Sections 0-12 are unchanged apart from the header
+authorization line.
+
+---
+
+## 14. SIDE20 Correction Record
+
+SIDE20 accepted the package for continued work and found one material issue: the row-bound
+WP14-D002 line allowlist also ignored a new secret appended to that documentation row. Within the
+same ten-file scope and without a new WP or certification cycle, the allowlist is removed and only
+the exact historical finding
+`70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49` is
+suppressed by fingerprint. Sections 1, 2, 4, 6, 9, 10 and 12 above are updated accordingly.
