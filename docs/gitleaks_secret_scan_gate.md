@@ -127,6 +127,38 @@ the tree, and any history rewrite would invalidate the fingerprints.
 and, when a gitleaks binary is available, proves a runtime-assembled synthetic token is detected,
 clean input passes and the defective WP15 shape detects nothing.
 
+## S10-CI-SEC-04 Hosted Enforcement in ci-final-gate
+
+Hosted CI now runs real secret detection inside the existing required `ci-final-gate` job (ruleset
+`main-protection` requires that check), before its final plan verification:
+
+1. The checkout must be the exact pull-request head with full, non-shallow history, and the base
+   commit must be an ancestor of the head.
+2. The official gitleaks 8.27.2 release asset `gitleaks_8.27.2_linux_x64.tar.gz` and its checksum
+   manifest are downloaded over HTTPS (fail on any HTTP error). The manifest must match its pinned
+   SHA-256 `37c3277907a277499370e980d13d8497215d49c69809668dc8841dbabd574dc0`; it must contain exactly
+   one entry for the asset, equal to the pinned archive SHA-256
+   `141c3b2dede46d8b3a53b47116da756bd223decc0374797559a6b50ecba5590c`; and the archive is verified
+   with `sha256sum --check --strict` before only the `gitleaks` binary is extracted into
+   `$RUNNER_TEMP`. The binary must report version 8.27.2. The best-effort
+   `tools/security/setup_project_gitleaks.py` is not used for hosted proof.
+3. `gitleaks git --redact --exit-code 1 --log-opts="--all"` scans the full fetched history with the
+   committed `.gitleaks.toml` (embedded default rules, no allowlist) and the 20 exact fingerprints in
+   `.gitleaksignore`. The log states the actual denominator; `refs/pull/*` are not fetched by the
+   checkout and are not covered.
+4. The five binary-backed cases in `tests/test_gitleaks_secret_scan_gate.py` run with the verified
+   binary and the JUnit report must show 5 tests, 0 skipped, 0 failures and 0 errors.
+
+Any download, checksum, version, scan, finding, skip or test failure fails the job, so
+`CI_FINAL_GATE_PASS` is printed only after all four succeed. No broad suppressions added.
+
+Limits: the pinned hashes prove consistency with the official release as published (the asset
+digest, the manifest and a direct computation agreed when pinned); they are not an independent
+maintainer signature. A pull request can modify `.github/workflows/ci.yml` itself, so this gate is
+enforced in unchanged workflow runs, with workflow changes subject to human review and the ruleset;
+it is not an independent, unbypassable policy control. Compatibility legs still skip the
+binary-backed cases; the final gate is the hosted detection evidence.
+
 ## Deferred Item Impact
 
 - **WP3-D001** (`gitleaks`): Updated from DEFERRED to **READY_FOR_WP**.

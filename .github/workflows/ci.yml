@@ -425,6 +425,71 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # S10-CI-SEC-04 (closes S10-CI-SEC-02-D001): mandatory hosted secret detection. These steps run
+      # before the final verification below, so CI_FINAL_GATE_PASS is printed only after the pinned
+      # gitleaks release is verified, the full git history scans clean and the five binary-backed
+      # detection cases pass with no skip. No step condition, error masking or skip is allowed.
+      - name: Verify exact PR head and full history for the secret scan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          test "$(git rev-parse --is-shallow-repository)" = "false"
+          git cat-file -e "$BASE_SHA^{commit}"
+          git merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
+
+      - name: Install pinned gitleaks 8.27.2 (strict SHA-256 verification)
+        env:
+          GITLEAKS_VERSION: "8.27.2"
+          GITLEAKS_ARCHIVE: gitleaks_8.27.2_linux_x64.tar.gz
+          GITLEAKS_ARCHIVE_SHA256: 141c3b2dede46d8b3a53b47116da756bd223decc0374797559a6b50ecba5590c
+          GITLEAKS_CHECKSUMS_SHA256: 37c3277907a277499370e980d13d8497215d49c69809668dc8841dbabd574dc0
+        run: |
+          set -euo pipefail
+          dl="$RUNNER_TEMP/gitleaks-download"
+          bin="$RUNNER_TEMP/gitleaks-bin"
+          mkdir -p "$dl" "$bin"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --max-time 300 -o "$dl/$GITLEAKS_ARCHIVE" "$base/$GITLEAKS_ARCHIVE"
+          curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --max-time 120 -o "$dl/checksums.txt" "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          echo "$GITLEAKS_CHECKSUMS_SHA256  $dl/checksums.txt" | sha256sum --check --strict -
+          matches="$(awk -v f="$GITLEAKS_ARCHIVE" '$2 == f' "$dl/checksums.txt")"
+          test "$(printf '%s\n' "$matches" | grep -c '[^[:space:]]')" -eq 1
+          manifest_sha="$(printf '%s\n' "$matches" | awk '{print $1}')"
+          [[ "$manifest_sha" =~ ^[0-9a-f]{64}$ ]]
+          test "$manifest_sha" = "$GITLEAKS_ARCHIVE_SHA256"
+          echo "$GITLEAKS_ARCHIVE_SHA256  $dl/$GITLEAKS_ARCHIVE" | sha256sum --check --strict -
+          tar -xzf "$dl/$GITLEAKS_ARCHIVE" -C "$bin" gitleaks
+          test -x "$bin/gitleaks"
+          test "$("$bin/gitleaks" version)" = "$GITLEAKS_VERSION"
+          echo "$bin" >> "$GITHUB_PATH"
+
+      - name: Gitleaks full-history scan (redacted, fail-closed)
+        run: |
+          set -euo pipefail
+          test -f .gitleaks.toml
+          test -f .gitleaksignore
+          echo "Fetched refs: $(git for-each-ref --format='%(refname)' | wc -l) (refs/pull/* are not fetched)"
+          echo "Non-merge commits reachable from fetched refs: $(git rev-list --all --no-merges --count)"
+          gitleaks git --redact --no-banner --exit-code 1 --log-opts="--all" .
+
+      - name: Binary-backed gitleaks detection tests (5 required, 0 skipped)
+        run: |
+          set -euo pipefail
+          python -m pip install "pytest>=8.0"
+          report="$RUNNER_TEMP/gitleaks-detection.xml"
+          python -m pytest -q -rA -p no:cacheprovider --junitxml="$report" \
+            "tests/test_gitleaks_secret_scan_gate.py::test_gitleaks_detects_synthetic_secret_and_accepts_clean_input" \
+            "tests/test_gitleaks_secret_scan_gate.py::test_gitleaks_git_mode_detects_secret_added_to_classified_wp14_row" \
+            "tests/test_gitleaks_secret_scan_gate.py::test_gitleaks_repo_config_autoloads_and_detects" \
+            "tests/test_gitleaks_secret_scan_gate.py::test_defective_wp15_config_shape_detects_nothing"
+          grep -Eq '<testsuite [^>]*tests="5"' "$report"
+          grep -Eq '<testsuite [^>]*skipped="0"' "$report"
+          grep -Eq '<testsuite [^>]*failures="0"' "$report"
+          grep -Eq '<testsuite [^>]*errors="0"' "$report"
+
       - name: Verify exact plan and required job results
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
