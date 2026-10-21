@@ -1,0 +1,456 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CI-SEC-03",
+    "title": "Frontend Security Advisory Closure",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SECURITY_FRONTEND_DEV_DEPENDENCY_PATCH",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 245,
+      "head_sha": "e178c389f09feadd01956cc278ca045e35a49823",
+      "merge_sha": "0c158e061d3ab5039997c6b4e736da0da9507d37"
+    },
+    "suggested_branch": "claude/s10-ci-sec-03-frontend-advisory",
+    "objective": "Close the critical storybook 10.6.1 (GHSA-f2ph-cmg5-wxc8) and high vite 8.3.0 (GHSA-9jrq-w75r-8gcw and related) npm advisories that fail the existing cockpit-frontend high-severity audit and therefore ci-final-gate on every pull request: move exactly three frontend devDependency pins (storybook and @storybook/react-vite 10.6.1 to 10.6.3, vite 8.3.0 to 8.3.5) with a reproducible lock update and the matching existing pinned-dependency test, without weakening any audit, workflow or check.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/operator_cockpit_frontend/package.json",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "tests/test_operator_cockpit.py",
+      "tests/test_codex_workflow_docs.py",
+      "docs/status_entries/S10-CI-SEC-03.md",
+      "docs/wp_specs/S10-CI-SEC-03/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-03/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/operator_cockpit_frontend/package.json",
+      "src/operator_cockpit_frontend/package-lock.json",
+      "tests/test_operator_cockpit.py",
+      "tests/test_codex_workflow_docs.py",
+      "docs/status_entries/S10-CI-SEC-03.md",
+      "docs/wp_specs/S10-CI-SEC-03/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-03/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "tools/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "src/execution_gateway/",
+      "src/execution_feasibility/",
+      "src/strategy_lifecycle/",
+      "src/research_runtime/",
+      "src/data_layer/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_operator_cockpit.py",
+      "tests/test_codex_workflow_docs.py"
+    ],
+    "rollback_surface": "Revert S10-CI-SEC-03. The three frontend devDependency pins and the lockfile return to storybook/@storybook/react-vite 10.6.1 and vite 8.3.0, which restores the two npm audit failures. No product runtime logic, Python dependency, workflow, credential, execution, live, capital or persistent state is changed or migrated.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": true,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only three frontend development dependency pins and their lock resolution change; product and runtime APIs are unchanged.",
+    "items": [
+      {
+        "surface": "src/operator_cockpit_frontend/package.json devDependencies",
+        "before": "storybook 10.6.1, @storybook/react-vite 10.6.1, vite 8.3.0 (critical and high npm advisories)",
+        "after": "storybook 10.6.3, @storybook/react-vite 10.6.3, vite 8.3.5; every other field and pin byte-unchanged",
+        "change_authorized": true,
+        "compatibility_requirement": "npm ci, typecheck, production build, Storybook build and npm audit --audit-level=high pass; peers consistent in npm ls",
+        "authority": "DEVELOPMENT_DEPENDENCY_PIN_PATCH_ONLY"
+      },
+      {
+        "surface": "src/operator_cockpit_frontend/package-lock.json",
+        "before": "resolves the three vulnerable versions",
+        "after": "resolves the three patched versions plus only transitive changes attributable to them; source-map-js stays 1.2.2",
+        "change_authorized": true,
+        "compatibility_requirement": "lockfileVersion 3; root dependency objects equal package.json; S10-CI-SEC-01 source-map-js assertions still pass",
+        "authority": "DEVELOPMENT_DEPENDENCY_LOCK_PATCH_ONLY"
+      },
+      {
+        "surface": "workflow, audit thresholds, Python dependencies and product runtime",
+        "before": "merged main 0c158e0",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "no .github, tools, other src, pyproject, credential, network, scheduler, strategy, paper, execution or live change",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "The three exact pins, coherent lock resolution, audit integrity, preserved build behavior, exact scope and closed authority are deterministic package semantics.",
+    "items": [
+      {
+        "path": "dependency.frontend_pins",
+        "source": "CONSTANT",
+        "type": "exact_dev_pin_patch",
+        "required_rule": "package.json devDependencies storybook == 10.6.3, @storybook/react-vite == 10.6.3, vite == 8.3.5; all other dependencies, devDependencies and fields unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "focused test asserts the exact devDependencies object and lock root equality",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "package names and versions only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "dependency.frontend_lock",
+        "source": "CONSTANT",
+        "type": "reproducible_lock_patch",
+        "required_rule": "lock updated on Node 24.18.0 / npm 11.16.0 with --ignore-scripts; only version moves forced by the declared ranges of the three pins (unforced npm re-resolutions restored); source-map-js remains 1.2.2",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "lock diff review, npm ci and npm ls; CI-SEC-01 lock tests pass",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "package names and versions only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ci.audit_integrity",
+        "source": "CONSTANT",
+        "type": "audit_masking_prohibition",
+        "required_rule": "npm audit --audit-level=high passes on the real lock; no audit fix --force, --omit=dev, ignore, || true, skip or workflow change",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "local npm audit exit 0 and exact-head hosted cockpit-frontend success",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "advisory ids and exit codes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "frontend.behavior",
+        "source": "CONSTANT",
+        "type": "build_preservation",
+        "required_rule": "typecheck, production build and Storybook build still succeed with no source change",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "local and hosted cockpit-frontend steps",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "command results only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the seven package paths change; no eighth path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "readiness --check-diff reports exact seven-path equality",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.product_authority",
+        "source": "CONSTANT",
+        "type": "closed_authority",
+        "required_rule": "source_runtime is true solely because the frontend package files live under src/; no product or runtime logic, workflow, credential, product network, Hermes, strategy, execution, live or capital authority; PR 246 and PR 247 untouched",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact scope and authority object",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NONE",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "This dependency patch adds no product identity or content-addressed runtime record.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical governed-WP lifecycle applies; Karl's 2026-10-21 dispatch of the Side21 S10-CI-SEC-03 package is the execution authorization for this exact scope.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST prompt/spec/readiness checks pass with no unresolved decisions and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's 2026-10-21 dispatches authorize this exact package and its seventh-path amendment once deterministic readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Claude Code changes only the exact seven paths (Side21 seventh-path amendment) and completes local-first validation",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed package-guard failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Dependency cases are covered by the focused pinned-dependency test and native npm commands rather than machine-spec examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R008 mirror Section 9 of the prompt.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "exact base predecessor and PR 246 / PR 247 separation",
+        "command": "git rev-parse origin/main && gh pr view 246 && gh pr view 247 && git diff --name-only origin/main HEAD",
+        "expected_result": "base equals 0c158e061d3ab5039997c6b4e736da0da9507d37; PR 246 head 78d941b and PR 247 head d154fec unchanged; none of their paths in this diff"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_dependency_pins_security_and_historical_guards",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_operator_cockpit.py",
+        "expected_result": "devDependencies equal the exact object with storybook and @storybook/react-vite 10.6.3 and vite 8.3.5, and the lock root matches package.json"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "validation",
+        "test": "frontend install, build and audit",
+        "command": "cd src/operator_cockpit_frontend && npm ci && npm run typecheck && npm run build && npm run build-storybook && npm audit --audit-level=high",
+        "expected_result": "npm ci, typecheck, production build and Storybook build succeed and npm audit --audit-level=high exits 0 with no high or critical finding"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "validation",
+        "test": "resolved dependency graph",
+        "command": "cd src/operator_cockpit_frontend && npm ls storybook @storybook/react-vite vite",
+        "expected_result": "exactly storybook 10.6.3, @storybook/react-vite 10.6.3 and vite 8.3.5 with no invalid or missing peer"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_ci_sec_01_frontend_lock_patches_source_map_js_only",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "the S10-CI-SEC-01 test still pins source-map-js resolved 1.2.2 with its exact URL, integrity and dev flag and no direct dependency; its postcss parent-range assertion is updated only from ^1.2.1 to ^1.2.2 (approved seventh path) because every vite-8.3.5-compatible postcss declares ^1.2.2"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "deterministic FAST readiness exact scope",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-SEC-03/wp_prompt.txt --spec docs/wp_specs/S10-CI-SEC-03/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD",
+        "expected_result": "IMPLEMENTATION_READY on FAST deterministic readiness with exact seven-path diff and no certificate required"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "stable candidate full suite",
+        "command": "python -m pytest -q -p no:cacheprovider",
+        "expected_result": "one authoritative local full suite passes on the stable candidate with explicit skips recorded"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "hosted_ci",
+        "test": "exact-head hosted matrix",
+        "command": "gh run view --json jobs",
+        "expected_result": "one exact-head run on standard free public runners with every required job including cockpit-frontend and ci-final-gate executed and successful"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CI-SEC-02",
+    "next_title": "PR 247 refresh onto the merged main and fresh exact-head CI (separately approved)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CI-SEC-02",
+    "forbidden_in_this_wp": [
+      "PR 247 or PR 246 modification",
+      "workflow or audit threshold change",
+      "npm audit fix --force",
+      "other dependency or runtime source change",
+      "Python dependency change",
+      "D001 hosted gitleaks work",
+      "billing or runner settings change",
+      "credentials or authenticated account access",
+      "deployment Hermes strategy execution order live or capital action",
+      "merge"
+    ]
+  }
+}
