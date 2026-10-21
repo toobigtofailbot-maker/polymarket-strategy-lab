@@ -1,0 +1,316 @@
+# S10-CI-SEC-04 — Hosted Gitleaks Enforcement
+
+**Status:** Side21-drafted package, materialized by the executor in canonical form
+**Implementation authorization:** YES — Karl's 2026-10-21 dispatch of the Side21 S10-CI-SEC-04 package (Section 12)
+**Merge authority:** NO — Karl only
+**Repository:** `toobigtofailbot-maker/polymarket-strategy-lab`
+
+---
+
+## 0. Package Identity
+
+| Field | Frozen value |
+|---|---|
+| WP ID | `S10-CI-SEC-04` |
+| Title | Hosted Gitleaks Enforcement |
+| Base branch | `main` |
+| Frozen base / current main SHA | `58193b50f550a451bff41333d2d21803039be943` |
+| Required predecessor | PR #247 / `S10-CI-SEC-02` |
+| Required predecessor head | `28b35d0c3f3de52644f44ba6113a72265401206e` |
+| Required predecessor merge SHA | `58193b50f550a451bff41333d2d21803039be943` |
+| Suggested branch | `claude/s10-ci-sec-04-hosted-gitleaks-gate` |
+| Package class | `SECURITY_TOOLING_HOSTED_GITLEAKS_GATE` |
+| Package size class | `M` |
+| Risk level | `2` |
+| Governance track expected | `FAST` |
+| Evidence mode expected | `PRIVATE_REPO_MANUAL_VERIFIED` legacy fallback fields in the PR body (public repository; the posted verifier is incompatible with post-WP91 rules) |
+| Runtime impact | `NO_PRODUCT_RUNTIME_CHANGE` |
+| Product network impact | `NONE` |
+| Credential impact | `NONE` |
+| Dependency impact | `NONE` (CI-only pinned release artifact) |
+| Trading impact | `NONE` |
+| Capital at risk | `USD 0` |
+| Exact changed-file count | `7` |
+
+### Governance authority mirror
+
+```text
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 2
+workflow_governance: true
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: true
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+```
+
+Risk-2 security/tooling CI gate. `network: false` is product/runtime network authority: the workflow
+fetches only the exact pinned public gitleaks release archive, its checksum manifest and standard
+Python test tooling over HTTPS, never a product, trading, provider or private-account endpoint. Of
+the `docs/ai/codex/PROTECTED_PATHS.md` boundary groups only the workflow file, docs, tests and
+governed evidence are crossed. It grants no product-network, scheduler, Hermes-runtime, paper,
+credential, execution or live authority, so the minimum governance track is `FAST` and no
+independent draftability certificate is required.
+
+---
+
+## 1. Objective
+
+`S10-CI-SEC-02-D001` is open: hosted CI installs no gitleaks binary, so the five binary-backed
+detection cases in `tests/test_gitleaks_secret_scan_gate.py` skip on hosted runners and no hosted
+secret scan runs. PR #247 restored real detection rules (`[extend] useDefault = true`, no allowlist,
+20 exact fingerprints) but enforcement stayed local.
+
+Make real secret detection mandatory and fail-closed inside the already-required `ci-final-gate`
+job (ruleset `main-protection` requires it): install the pinned official gitleaks 8.27.2 Linux x64
+release with strict SHA-256 verification before extraction, run a redacted full-history git scan
+with the committed configuration, and execute the five existing binary-backed cases with zero
+skips, all before the unchanged final plan verification. No new job or workflow, no routing,
+classifier, ruleset or scanner-configuration change. PR #246 is not modified.
+
+---
+
+## 2. Frozen Tool Truth (2026-10-21)
+
+- Release `v8.27.2` (matching `tools/security/setup_project_gitleaks.py`). Asset
+  `gitleaks_8.27.2_linux_x64.tar.gz`, 8209740 bytes, SHA-256
+  `141c3b2dede46d8b3a53b47116da756bd223decc0374797559a6b50ecba5590c`. The value is identical in the
+  release's `gitleaks_8.27.2_checksums.txt` (exactly one entry), in the GitHub release-asset digest,
+  and in the SHA-256 computed over the downloaded archive. The checksum manifest's own asset digest is
+  `37c3277907a277499370e980d13d8497215d49c69809668dc8841dbabd574dc0`. The archive contains
+  `LICENSE`, `README.md` and `gitleaks`.
+- `tools/security/setup_project_gitleaks.py` only warns when the checksum cannot be verified, so it
+  is not hosted proof and is not used.
+- `tests/tools/ci/test_risk_tier.py` extracts every `python - <<'PY'` heredoc in `ci.yml`, requires
+  exactly four and treats the last as the final-gate script. The new steps therefore use plain bash
+  (`sha256sum --check --strict`, `awk`, `grep`) and no new Python heredoc.
+- The binary-backed cases: `test_gitleaks_detects_synthetic_secret_and_accepts_clean_input`,
+  `test_gitleaks_git_mode_detects_secret_added_to_classified_wp14_row`,
+  `test_gitleaks_repo_config_autoloads_and_detects` and the two parametrized
+  `test_defective_wp15_config_shape_detects_nothing` cases (five in total).
+
+If any implementation-changing fact differs at execution time, STOP under Section 8.
+
+---
+
+## 3. Exact Scope — 7 Paths
+
+`required_changed_files == allowed_changed_files ==` exactly:
+
+1. `.github/workflows/ci.yml`
+2. `tests/test_codex_workflow_docs.py`
+3. `docs/gitleaks_secret_scan_gate.md`
+4. `docs/deferred_items_log.md` (only the `S10-CI-SEC-02-D001` row)
+5. `docs/status_entries/S10-CI-SEC-04.md`
+6. `docs/wp_specs/S10-CI-SEC-04/wp_prompt.txt`
+7. `docs/wp_specs/S10-CI-SEC-04/wp_spec.json`
+
+No eighth path. Explicitly unchanged: `.gitleaks.toml`, `.gitleaksignore`, `tools/**` (including
+`tools/security/**` and `tools/ci/risk_tier.py`), `tests/tools/**`, `src/**`, frontend dependencies,
+rulesets and permissions, and all PR #246 paths.
+
+If an eighth path is mechanically required, STOP with
+`S10_CI_SEC_04_SCOPE_AMENDMENT_REQUIRED:<path>:<reason>`.
+
+---
+
+## 4. Frozen Implementation Design
+
+### A. Exact head and full history
+
+Inside `ci-final-gate`, after checkout (unchanged `ref: head.sha`, `fetch-depth: 0`,
+`persist-credentials: false`): require `git rev-parse HEAD` equal to the event head SHA, a
+non-shallow repository, the base commit present and base an ancestor of head.
+
+### B. Pinned, strictly verified acquisition
+
+Under `set -euo pipefail`: download the archive and the checksum manifest with
+`curl -fsSL --proto '=https' --tlsv1.2 --retry 3 --max-time`; verify the manifest against its pinned
+SHA-256; require exactly one manifest entry for the archive name, a 64-hex value equal to the pinned
+archive SHA-256; verify the archive with `sha256sum --check --strict` before `tar` extracts only
+`gitleaks` into `$RUNNER_TEMP`; require `gitleaks version` to print `8.27.2`; add the directory to
+`$GITHUB_PATH`. No install script, `latest`, cache, global install, `sudo`, tracked binary,
+`continue-on-error`, `|| true` or step condition.
+
+### C. Real history scan
+
+`gitleaks git --redact --no-banner --exit-code 1 --log-opts="--all" .` with the committed
+`.gitleaks.toml` and `.gitleaksignore` (both must exist). The step logs the truthful denominator
+(non-merge commits reachable from fetched refs; `refs/pull/*` are not fetched). No `dir` substitute.
+
+### D. Five binary-backed cases, zero skips
+
+Install `pytest>=8.0` and run exactly the four test functions with `--junitxml` under
+`$RUNNER_TEMP`; require the JUnit testsuite to report `tests="5"`, `skipped="0"`, `failures="0"` and
+`errors="0"`.
+
+### E. Order
+
+A, B, C and D run before the existing `Verify exact plan and required job results` step, which stays
+the last step and alone prints `CI_FINAL_GATE_PASS`.
+
+### F. Regression owner
+
+Extend only `tests/test_codex_workflow_docs.py`, reusing `_ci_jobs`: a gate checker plus positive
+tests and a negative mutation matrix. Every existing workflow assertion stays.
+
+### G. Documents
+
+Gate doc: hosted enforcement, provenance, scope, limits and fail-closed semantics. Deferred log: only
+`S10-CI-SEC-02-D001` moves to an implemented-on-branch state (not resolved before merge). Status
+entry: stable, non-self-referential; live values in the PR body.
+
+---
+
+## 5. Authority / Non-Authority
+
+Authorized by Karl's dispatch: the seven-path change, the pinned release/checksum download checks,
+local validation (including a network-isolated container rehearsal), one new draft PR, one Ready
+transition triggering one exact-head hosted run on standard free public runners, and evidence.
+
+Not authorized: merge or auto-merge; paid runners, spending or billing changes; bypass of
+`main-protection` or `ci-final-gate`; new workflow or job; classifier, ruleset, secrets or permission
+changes; scanner configuration or fingerprint changes; credentials or account access; product
+network; deployment; Hermes; strategy, paper, execution, order, live or capital action; PR #246.
+
+**This WP grants zero Hermes, strategy, deployment, account, credential, execution, order, live
+or capital authority.**
+
+Known limit: a pull request can modify `.github/workflows/ci.yml` itself, so this gate is enforced in
+unchanged workflow runs; workflow changes remain subject to human review and the ruleset. It is not
+an independent, unbypassable policy control.
+
+---
+
+## 6. Vertical Trace
+
+```text
+exact PR head + full history
+→ pinned gitleaks 8.27.2 archive + manifest (HTTPS, fail on error)
+→ manifest SHA-256 pinned → single entry == pinned archive SHA-256 → archive verified → extract → version 8.27.2
+→ gitleaks git --redact --exit-code 1 over all fetched refs (committed config + 20 fingerprints)
+→ five binary-backed cases: tests 5, skipped 0, failures 0, errors 0
+→ existing plan verification → CI_FINAL_GATE_PASS → required check satisfied
+```
+
+---
+
+## 7. Validation
+
+Focused:
+
+```bash
+python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py tests/tools/ci/test_risk_tier.py tests/test_gitleaks_secret_scan_gate.py
+```
+
+Plus a YAML parse of `ci.yml`, a network-isolated Linux container rehearsal of the B/C/D shell logic
+on the downloaded release files, readiness `--check-diff` (exact 7 paths), `git diff --check`, the
+generated artifact guard, the security runner, and one authoritative local full suite. Then one draft
+PR, one Ready transition and one exact-head hosted run.
+
+---
+
+## 8. Same-Run Corrections vs Hard Stops
+
+Same run: wrong focused assertion, shell syntax, status wording, ordinary defects inside the seven
+paths before the Ready transition.
+
+Hard stop if:
+
+1. `main` differs from the frozen base before implementation;
+2. the release archive or manifest cannot be verified against the pinned values;
+3. the scanner reports a finding, errors, or a binary-backed case skips or fails;
+4. history cannot be fetched completely;
+5. an eighth path is required (for example `tests/tools/ci/test_risk_tier.py`);
+6. deterministic FAST readiness is not `IMPLEMENTATION_READY`;
+7. the local full suite fails;
+8. the exact-head hosted run fails, or paid runners or a billing block appear (no rerun);
+9. any credential, permission, ruleset, deployment, Hermes, strategy, execution, live or capital
+   boundary would move.
+
+---
+
+## 9. Evidence Plan (requirement mapping)
+
+| ID | Requirement | Minimum evidence |
+|---|---|---|
+| R001 | PR #247 merged; exact seven paths; PR #246 untouched | discovery + exact scope |
+| R002 | pinned, strictly verified acquisition | `test_ci_sec_04_gitleaks_gate_acquisition_is_pinned_and_strict` + hosted step log |
+| R003 | real full-history git scan | `test_ci_sec_04_gitleaks_gate_scans_full_history` + hosted step log |
+| R004 | five cases executed, zero skipped | `test_ci_sec_04_gitleaks_gate_requires_five_unskipped_cases` + hosted JUnit counts |
+| R005 | gate protected against weakening | `test_ci_sec_04_gitleaks_gate_negative_matrix` + existing workflow checks |
+| R006 | native governance and local correctness | spec guard, FAST readiness, focused tests, one local full suite |
+| R007 | exact-head hosted gate | one run with executed, successful new steps and `CI_FINAL_GATE_PASS` |
+
+---
+
+## 10. Negative-Test Matrix and Report-Back
+
+| ID | Mutation / condition | Required result |
+|---|---|---|
+| N01 | scanner install step removed | FAIL |
+| N02 | archive checksum check removed or moved after extraction | FAIL |
+| N03 | pinned SHA-256 missing or not 64 hex | FAIL |
+| N04 | wrong version or non-linux-x64 asset | FAIL |
+| N05 | single-entry manifest check removed | FAIL |
+| N06 | `gitleaks dir` replaces `gitleaks git` | FAIL |
+| N07 | `--redact` dropped | FAIL |
+| N08 | a binary-backed case dropped from selection | FAIL |
+| N09 | zero-skip JUnit check removed | FAIL |
+| N10 | `|| true` or `continue-on-error` added | FAIL |
+| N11 | scanner steps moved after the final PASS step | FAIL |
+| N12 | exact-head or full-history check removed | FAIL |
+| N13 | changed-file scope differs from the exact seven paths | readiness FAIL |
+| N14 | any credential/permission/ruleset/live/capital boundary moves | authority violation |
+
+Report back exactly `READY_FOR_SIDE21_D001_INDEPENDENT_REVIEW` (only with an executed successful
+binary-backed hosted gate and exact-head `ci-final-gate`) with the PR URL, exact head/base, the 7/7
+changed-file set, local and hosted evidence and `Merge authorized: NO`; otherwise
+`BLOCKED_NOT_MERGE_READY:<reason>` with the smallest fix.
+
+---
+
+## 11. Successor Boundary
+
+After Side21 acceptance and Karl's separate merge, D001 is resolved; then PR #246 resumes on the new
+`main`, followed by R12. Nothing here authorizes them.
+
+Governance track expected: FAST
+
+---
+
+## 12. Authorization Record
+
+On 2026-10-21 Karl dispatched the Side21-drafted S10-CI-SEC-04 package to this executor. Per its
+Section 0 that dispatch is Karl's express execution approval for the complete exact scope:
+inspection, canonical package materialization, the seven-path change, release/checksum download
+checks, local tests, one draft PR, one Ready transition and one exact-head hosted run on standard free
+public runners, evidence collection and reporting. No merge, spending, ruleset, permission, secret or
+PR #246 change is authorized.
+
+---
+
+## 13. Normative Rule Matrix
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|ci|gitleaks_acquisition|ci_final_gate|REQUIRE|pinned_release_verified_before_extraction|gate.acquisition|R002
+NR002|ci|gitleaks_scan|ci_final_gate|REQUIRE|redacted_full_history_git_scan_fail_closed|gate.history_scan|R003
+NR003|ci|detection_cases|ci_final_gate|REQUIRE|five_binary_cases_zero_skipped|gate.detection_cases|R004
+NR004|ci|gate_masking|ci_final_gate|FORBID|condition_mask_or_reorder_after_final_pass|gate.ordering_and_masking|R005
+NR005|scope|changed_files|stable_candidate|REQUIRE|exact_seven_paths|scope.exact_paths|R006
+NR006|validation|hosted_ci|ready_exact_head|REQUIRE|executed_successful_gate_with_scanner|gate.history_scan|R007
+NR007|authority|product_runtime|this_wp|FORBID|product_credential_execution_live_or_capital_authority|governance.product_authority|R001
+END_NORMATIVE_RULE_MATRIX_V1

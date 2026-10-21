@@ -1,0 +1,436 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CI-SEC-04",
+    "title": "Hosted Gitleaks Enforcement",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SECURITY_TOOLING_HOSTED_GITLEAKS_GATE",
+    "package_size_class": "M",
+    "risk_level": 2,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 247,
+      "head_sha": "28b35d0c3f3de52644f44ba6113a72265401206e",
+      "merge_sha": "58193b50f550a451bff41333d2d21803039be943"
+    },
+    "suggested_branch": "claude/s10-ci-sec-04-hosted-gitleaks-gate",
+    "objective": "Close S10-CI-SEC-02-D001: make real secret detection mandatory and fail-closed inside the already-required ci-final-gate job by installing the pinned official gitleaks 8.27.2 Linux x64 release with strict SHA-256 verification before extraction, running a redacted full-history git scan with the committed default-rule configuration and exact fingerprints, and executing the five existing binary-backed detection test cases with zero skips, all before the existing final plan verification; no new job, workflow, routing, ruleset or scanner-configuration change.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      ".github/workflows/ci.yml",
+      "tests/test_codex_workflow_docs.py",
+      "docs/gitleaks_secret_scan_gate.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-CI-SEC-04.md",
+      "docs/wp_specs/S10-CI-SEC-04/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-04/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      ".github/workflows/ci.yml",
+      "tests/test_codex_workflow_docs.py",
+      "docs/gitleaks_secret_scan_gate.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-CI-SEC-04.md",
+      "docs/wp_specs/S10-CI-SEC-04/wp_prompt.txt",
+      "docs/wp_specs/S10-CI-SEC-04/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      "tools/",
+      "src/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "tests/tools/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_codex_workflow_docs.py",
+      "docs/deferred_items_log.md",
+      "docs/gitleaks_secret_scan_gate.md"
+    ],
+    "rollback_surface": "Revert S10-CI-SEC-04. ci-final-gate returns to plan verification only and hosted CI again runs no secret scan (S10-CI-SEC-02-D001 reopens). No scanner configuration, routing classifier, ruleset, product source, dependency, credential, runtime, execution, live, capital or persistent state is changed or migrated.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": true
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": true
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": true,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": true,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only the steps of the existing required ci-final-gate job and its governance tests change; product and runtime APIs are unchanged.",
+    "items": [
+      {
+        "surface": ".github/workflows/ci.yml ci-final-gate steps",
+        "before": "checkout, setup-python, then plan and job-result verification only; no secret scan",
+        "after": "checkout, setup-python, exact-head/full-history check, pinned gitleaks 8.27.2 install with strict SHA-256 verification, redacted full-history git scan, five binary-backed detection cases with zero skips, then the unchanged final plan verification",
+        "change_authorized": true,
+        "compatibility_requirement": "job name, needs, condition, runner, permissions, triggers, matrix and the four existing python heredoc scripts unchanged; CI_FINAL_GATE_PASS printed only after all new steps succeed",
+        "authority": "WORKFLOW_FILES_SECURITY_GATE_ONLY"
+      },
+      {
+        "surface": ".gitleaks.toml, .gitleaksignore, tools/security, tools/ci/risk_tier.py, rulesets and product runtime",
+        "before": "merged main 58193b5",
+        "after": "UNCHANGED",
+        "change_authorized": false,
+        "compatibility_requirement": "no scanner configuration, helper, classifier, ruleset, src, dependency or credential change",
+        "authority": "NONE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Pinned acquisition, strict verification order, real history scanning, zero-skip detection, gate ordering, masking prohibition, exact scope and closed authority are deterministic package semantics.",
+    "items": [
+      {
+        "path": "gate.acquisition",
+        "source": "CONSTANT",
+        "type": "pinned_verified_artifact",
+        "required_rule": "gitleaks 8.27.2 linux x64 archive and checksum manifest over HTTPS fail-on-error; manifest SHA-256 pinned; exactly one manifest entry equal to the pinned archive SHA-256; archive SHA-256 verified before extraction; version check 8.27.2; binary only under RUNNER_TEMP",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "workflow governance test and negative matrix",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "step names and pinned values only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.history_scan",
+        "source": "CONSTANT",
+        "type": "redacted_full_history_scan",
+        "required_rule": "exact PR head and non-shallow history verified; gitleaks git --redact --exit-code 1 --log-opts=--all over the checkout with the committed configuration; no dir substitute",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "workflow governance test and negative matrix; hosted step log",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "commit counts and exit codes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.detection_cases",
+        "source": "CONSTANT",
+        "type": "zero_skip_binary_tests",
+        "required_rule": "the four existing binary-backed test functions (five cases) run with the installed binary and the JUnit report must show tests 5, skipped 0, failures 0, errors 0",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "workflow governance test and negative matrix; hosted step log",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "test counts only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "gate.ordering_and_masking",
+        "source": "CONSTANT",
+        "type": "fail_closed_order",
+        "required_rule": "all new steps run inside ci-final-gate before the unchanged final verification step, which stays last; no step condition, continue-on-error, || true, latest, pipe-to-shell or best-effort helper",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "negative matrix including moving the scanner after the final PASS",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "violation labels only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "scope.exact_paths",
+        "source": "CONSTANT",
+        "type": "exact_scope",
+        "required_rule": "exactly the seven package paths change; no eighth path",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "readiness --check-diff reports exact seven-path equality",
+        "failure_category": "SCOPE_POLICY_INVALID",
+        "safe_output": "paths only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "governance.product_authority",
+        "source": "CONSTANT",
+        "type": "closed_authority",
+        "required_rule": "network false means no product, trading, provider or account endpoint; only the pinned public release artifact, its checksum manifest and standard Python test tooling are fetched; no secrets, permissions, ruleset, credential, Hermes, strategy, execution, live or capital authority; PR 246 untouched",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "exact scope and authority object",
+        "failure_category": "AUTHORITY_CONTRADICTION",
+        "safe_output": "NONE",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "This CI security gate adds no product identity or content-addressed runtime record.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "The canonical governed-WP lifecycle applies; Karl's 2026-10-21 dispatch of the Side21 S10-CI-SEC-04 package is the execution authorization for this exact scope.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "deterministic FAST prompt/spec/readiness checks pass with no unresolved decisions and no certificate required",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's 2026-10-21 dispatch authorizes this exact seven-path package once deterministic readiness is IMPLEMENTATION_READY",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Claude Code changes only the exact seven paths and completes local-first validation",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Schema-1.0.0 fixed package-guard failure precedence is unchanged.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Workflow cases are covered by the focused text-based governance checker and its negative matrix rather than machine-spec examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R007 mirror Section 9 of the prompt.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "validation",
+        "test": "exact base predecessor and PR 246 separation",
+        "command": "git rev-parse origin/main && gh pr view 247 && gh pr view 246 && git diff --name-only origin/main HEAD",
+        "expected_result": "base equals 58193b50f550a451bff41333d2d21803039be943 (PR 247 merged), PR 246 head 78d941b unchanged and none of its paths in this diff"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ci_sec_04_gitleaks_gate_acquisition_is_pinned_and_strict",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "ci-final-gate pins gitleaks 8.27.2 linux x64, both SHA-256 values, single-entry manifest match and archive verification before extraction"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_ci_sec_04_gitleaks_gate_scans_full_history",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "ci-final-gate verifies the exact PR head and non-shallow history and runs gitleaks git --redact --exit-code 1 --log-opts=--all with no dir substitute"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_ci_sec_04_gitleaks_gate_requires_five_unskipped_cases",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "the four binary-backed test functions are selected and the JUnit report must show tests 5, skipped 0, failures 0, errors 0"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_ci_sec_04_gitleaks_gate_negative_matrix",
+        "command": "python -m pytest -q -p no:cacheprovider tests/test_codex_workflow_docs.py",
+        "expected_result": "removing, weakening, masking, reordering or skipping any gate element yields its closed violation label, while existing workflow policy checks still pass"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "validation",
+        "test": "native governance readiness and local suite",
+        "command": "python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CI-SEC-04/wp_prompt.txt --spec docs/wp_specs/S10-CI-SEC-04/wp_spec.json --repo-root . --check-diff --base origin/main --head HEAD && python -m pytest -q -p no:cacheprovider",
+        "expected_result": "IMPLEMENTATION_READY on FAST with exact seven-path diff and no certificate; one authoritative local full suite passes"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "hosted_ci",
+        "test": "exact-head hosted ci-final-gate with executed scanner",
+        "command": "gh run view --json jobs",
+        "expected_result": "one exact-head run on standard free public runners where the install, history scan and five-case detection steps executed and passed inside ci-final-gate, followed by CI_FINAL_GATE_PASS, with every required job successful"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-LIVE-BRIDGE-01",
+    "next_title": "Resume PR 246 on the new main (separately approved)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-LIVE-BRIDGE-01",
+    "forbidden_in_this_wp": [
+      "PR 246 modification",
+      "new workflow or job",
+      "risk_tier classifier or routing change",
+      "scanner configuration or fingerprint change",
+      "tools/security helper change",
+      "ruleset or permission change",
+      "billing or runner settings change",
+      "credentials or authenticated account access",
+      "deployment Hermes strategy execution order live or capital action",
+      "merge"
+    ]
+  }
+}
