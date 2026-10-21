@@ -7,13 +7,16 @@
 - Package class / size / risk: SECURITY_TOOLING_SECRET_SCAN_RULE_RESTORATION / M / 2
 - Governance track: FAST; readiness basis DETERMINISTIC (no certificate required)
 - Branch: claude/s10-ci-sec-02-gitleaks-default-rules
-- Frozen base: 0c158e061d3ab5039997c6b4e736da0da9507d37
+- Frozen implementation base (historical identity): 0c158e061d3ab5039997c6b4e736da0da9507d37
+- Validation / merge base: 22b4a6a6fa734144fbbb066baa870df3d8b537b6 (main after PR #248 /
+  S10-CI-SEC-03 merged; integrated into this branch by a merge commit, original commits kept)
 - Predecessor: PR #245 / S10-HERMES-OAUTH-JOURNAL-01, head e178c389f09feadd01956cc278ca045e35a49823, merged at the base
-- PR and current live head: see GitHub PR metadata and the PR body (draft)
-- Authorization: Karl, 2026-10-20 — exact ten-path package including the spec-guard root-path mapping; draft PR authorized; hosted CI not triggered while GitHub billing is blocked
-- Evidence mode: BLOCKED_NOT_READY
-- State: IMPLEMENTED_DRAFT_PR / SIDE19_REVIEW_PENDING / HOSTED_CI_NOT_RUN / NOT_MERGE_READY
-- Ready for review: NO
+- PR #247 and current live head, draft/Ready state, review state and hosted CI results: see
+  GitHub PR metadata and the PR body
+- Authorization: Karl, 2026-10-20 — exact ten-path package including the spec-guard root-path
+  mapping and draft PR; SIDE20 in-scope correction; Karl 2026-10-21 — one hosted attempt, then the
+  Side21 post-#248 main-sync continuation with one exact-head hosted run
+- Evidence mode and Ready for review: live values in the PR body
 - Merge authorized: NO
 
 ## Trigger
@@ -77,6 +80,14 @@ because legacy allowlist conditions match independently.
 - `.gitleaksignore` fingerprints contain commit SHAs, so they apply to `gitleaks git` (the runner's
   mode) only; a `gitleaks dir` working-tree scan still reports the present fixtures, and a history
   rewrite would invalidate them.
+- After integrating main 22b4a6a (2026-10-21): `.gitleaks.toml` still contains only `[extend]
+  useDefault = true` and `.gitleaksignore` the same 20 fingerprints; the runner-mode scan over
+  the local refs (561 non-merge commits) finds no leaks, and the #248 commit and every new
+  branch commit including merges (`-m`) contain no finding.
+- Hosted history: run 39655818346 on the pre-sync head d154fec (2026-10-21) failed only
+  `cockpit-frontend` (`npm audit` on storybook 10.6.1 / vite 8.3.0 advisories outside this scope)
+  and therefore `ci-final-gate`; every other job passed. PR #248 / S10-CI-SEC-03 closed those
+  advisories and is integrated here; the exact-head result after the sync is in the PR body.
 - Independent review (fresh-context reviewer) on head a0a1438: PASS_WITH_NOTES, no blockers; its
   in-scope notes (WP14 allowlist test made discriminating, row-bound regex, commit-count wording,
   git-mode fingerprint note, binary `dir` probe) are corrected in the following commit and D004
@@ -88,7 +99,8 @@ because legacy allowlist conditions match independently.
 ## Authority / Non-Authority Posture
 
 FAST, Risk 2. No `src/**`, workflow, dependency, runner, credential, product network, deployment,
-Hermes, strategy, paper, execution, order, live or capital authority. No hosted Actions, no
-visibility or settings change, no history rewrite. PR #246 untouched. Capital/orders: USD 0 / 0.
-Independent Side19 acceptance and exact-head hosted CI are pending; ready transition and merge are
-not authorized.
+Hermes, strategy, paper, execution, order, live or capital authority. Hosted Actions only as
+separately authorized single exact-head runs on free standard runners; no visibility or settings
+change, no history rewrite. PR #246 untouched. Capital/orders: USD 0 / 0. D001 (mandatory hosted
+gitleaks scan) remains separate; this PR's CI does not run a hosted secret scan. Merge is Karl's
+decision after independent acceptance.
