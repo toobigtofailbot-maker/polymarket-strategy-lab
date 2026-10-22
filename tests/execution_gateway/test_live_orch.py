@@ -1171,3 +1171,68 @@ def _fake_truth(*, orders=(), positions=()):
                                p[4] if len(p) > 4 else "0", p[5] if len(p) > 5 else "0", "OPEN")
               for p in positions),
     )
+
+
+# ---------------------------------------------------------------------------
+# S10-LIVE-CANARY-01 section 4F: seconds_delay post-only applicability (R008/R009)
+# ---------------------------------------------------------------------------
+
+
+def _gamma_without_delay(**changes) -> dict:
+    gamma = {key: value for key, value in GAMMA.items() if key != "secondsDelay"}
+    gamma.update(changes)
+    return gamma
+
+
+def test_live_orch_seconds_delay_post_only_applicability(harness, world) -> None:
+    passive, passive_intent = make_permit(world, **PASSIVE)
+    harness.gamma = _gamma_without_delay()
+    result = harness.orchestrator().preflight(passive, passive_intent)
+    assert result.status == "PREFLIGHT_PASS"
+    assert result.details["seconds_delay_applicability"] == "NOT_APPLICABLE_POST_ONLY"
+    # A known non-zero delay still blocks, also for the post-only intent.
+    harness.gamma = _gamma_without_delay(secondsDelay=3)
+    assert harness.orchestrator().preflight(passive, passive_intent).code == "SECONDS_DELAY_UNSUPPORTED"
+    # Marketable intents never treat an absent delay as zero.
+    harness.gamma = _gamma_without_delay()
+    for order_type in ("FOK", "FAK"):
+        permit, intent = make_permit(world, order_type=order_type)
+        result = harness.orchestrator().canary(permit, intent)
+        assert (result.code, result.create_transmits) == ("SECONDS_DELAY_UNSUPPORTED", 0)
+    harness.gamma = GAMMA
+    aggressive, aggressive_intent = make_permit(world)
+    result = harness.orchestrator().preflight(aggressive, aggressive_intent)
+    assert result.status == "PREFLIGHT_PASS"
+    assert result.details["seconds_delay_applicability"] == "CHECKED_ZERO"
+    # A post-only BUY at or above the fresh best ask stays rejected before CREATE (EXEC-FEAS
+    # POST_ONLY_WOULD_CROSS -> VENUE_NOT_FEASIBLE), with secondsDelay absent.
+    harness.gamma = _gamma_without_delay()
+    harness.book = X.book_doc(asks=[("0.51", "50"), ("0.55", "30")])
+    assert harness.orchestrator().preflight(passive, passive_intent).code == "VENUE_NOT_FEASIBLE"
+    crossing = harness.orchestrator().canary(passive, passive_intent)
+    assert (crossing.code, crossing.create_transmits) == ("VENUE_NOT_FEASIBLE", 0)
+    # A passive intent whose signed order lacks post-only is an encoding failure, never sent.
+    harness.book = X.book_doc()
+    unsigned, unsigned_intent = make_permit(world, requested_shares="7", **PASSIVE)
+    original = harness.venue.create_limit_order
+    harness.venue.create_limit_order = lambda **kw: original(**dict(kw, post_only=False))
+    result = harness.orchestrator().canary(unsigned, unsigned_intent)
+    assert (result.code, result.create_transmits) == ("ORDER_ENCODING_UNSUPPORTED", 0)
+    assert harness.venue.posts == []
+
+
+def test_live_orch_post_only_canary_without_gamma_delay(harness, world) -> None:
+    permit, intent = make_permit(world, **PASSIVE)
+    harness.gamma = _gamma_without_delay()
+    harness.venue.on_post = _rest
+    result = harness.orchestrator().canary(permit, intent)
+    assert (result.code, result.create_transmits) == ("ONE_CREATE_ATTEMPTED", 1)
+    assert len(harness.venue.posts) == 1 and harness.venue.posts[0].post_only is True
+    # A venue-side post-only rejection is a clean CREATE_REJECTED with zero fill.
+    second, second_intent = make_permit(world, requested_shares="7", **PASSIVE)
+    harness.venue.on_post = lambda venue, signed: RejectedOrder(
+        code="post_only_would_cross", message="x")
+    harness.now = X.AT + 2_000_000  # back inside the fresh permit window (fake clock only)
+    rejected = harness.orchestrator().canary(second, second_intent)
+    assert rejected.create_transmits == 1 and rejected.episode_state == "CREATE_REJECTED"
+    assert harness.venue.trades == [] and harness.venue.positions == []

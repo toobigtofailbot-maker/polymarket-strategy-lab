@@ -400,3 +400,49 @@ print("IMPORT_NO_IO_PASS")
 '''
     result = subprocess.run([sys.executable, "-B", "-c", script], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0 and "IMPORT_NO_IO_PASS" in result.stdout, result.stderr
+
+
+def test_canary_handoff_returns_records_only_on_native_pass(tmp_path, monkeypatch):
+    """S10-LIVE-CANARY-01 R001: exact native records only on PASS; receipt bytes unchanged."""
+    from src.execution_feasibility import ExecutionIntent
+    from src.exploratory_gate_c import ExploratoryGateCPermit
+    ctx = Ctx(tmp_path / "ok", monkeypatch)
+    kwargs = dict(live_config=ctx.config, alpha_registry_path=ctx.args["alpha_registry_path"],
+                  candidate_menu=ctx.args["candidate_menu"], menu_venue_snapshots=ctx.args["venue_snapshots"],
+                  evaluated_at_ns=ctx.args["evaluated_at_ns"], information_cutoff_ns=ctx.args["information_cutoff_ns"],
+                  deadline_ns=ctx.args["deadline_ns"], host_currentness=lambda _config: dict(ctx.host),
+                  geoblock=ctx.geoblock, venue_fetcher=ctx.fetch)
+    start = ctx.now
+    receipt, permit, intent = bridge.prepare_live_canary_handoff(ctx.result, clock_ns=ctx.clock, **kwargs)
+    passed(receipt)
+    assert type(permit) is ExploratoryGateCPermit and type(intent) is ExecutionIntent
+    assert (permit.permit_id, intent.execution_intent_id) == (receipt["permit_id"], receipt["execution_intent_id"])
+    assert permit.execution_intent_id == intent.execution_intent_id
+    # Offline seams still return the records; the receipt itself carries the OFFLINE_TEST_ONLY label.
+    assert receipt["evidence_class"] == "OFFLINE_TEST_ONLY" and receipt["claim"] == "PROTOCOL_ONLY"
+    # Identical inputs (same clock trace) give byte-identical receipts from both entry points.
+    ctx.now = start
+    plain = bridge.run_live_preflight_bridge(ctx.result, clock_ns=ctx.clock, **kwargs)
+    assert json.dumps(plain, sort_keys=True) == json.dumps(receipt, sort_keys=True)
+    # ABSTAIN, BLOCKED and a later state change return no records.
+    abstain = Ctx(tmp_path / "abstain", monkeypatch, lambda t: {k: t[k] for k in auto.cycle._CLOCK_KEYS} | {"action": "NO_TRADE"})
+    assert abstain.run()["status"] == "ABSTAIN"
+    handoff = bridge.prepare_live_canary_handoff(abstain.result, **dict(
+        kwargs, live_config=abstain.config, alpha_registry_path=abstain.args["alpha_registry_path"],
+        candidate_menu=abstain.args["candidate_menu"], menu_venue_snapshots=abstain.args["venue_snapshots"],
+        evaluated_at_ns=abstain.args["evaluated_at_ns"], information_cutoff_ns=abstain.args["information_cutoff_ns"],
+        deadline_ns=abstain.args["deadline_ns"], clock_ns=abstain.clock))
+    assert handoff[0]["status"] == "ABSTAIN" and handoff[1:] == (None, None)
+    replayed = bridge.prepare_live_canary_handoff(dataclasses.replace(ctx.result, replayed=True),
+                                                  clock_ns=ctx.clock, **kwargs)
+    assert replayed[0]["status"] == "BLOCKED" and replayed[1:] == (None, None)
+    moved = Ctx(tmp_path / "moved", monkeypatch)
+    moved.on_fetch = lambda c: (c.w.assess(t=X.T0 - 400_000), setattr(c, "on_fetch", None))
+    changed = bridge.prepare_live_canary_handoff(moved.result, **dict(
+        kwargs, live_config=moved.config, alpha_registry_path=moved.args["alpha_registry_path"],
+        candidate_menu=moved.args["candidate_menu"], menu_venue_snapshots=moved.args["venue_snapshots"],
+        evaluated_at_ns=moved.args["evaluated_at_ns"], information_cutoff_ns=moved.args["information_cutoff_ns"],
+        deadline_ns=moved.args["deadline_ns"], clock_ns=moved.clock, venue_fetcher=moved.fetch,
+        geoblock=moved.geoblock))
+    blocked(changed[0], "STORE_CHANGED")
+    assert changed[1:] == (None, None) and changed[0]["calls"]["canary"] == 0

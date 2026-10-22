@@ -1,0 +1,461 @@
+WP ID: S10-LIVE-CANARY-01
+Title: Attended One-Process Hermes Choice -> Native Permit -> LIVE-ORCH First BUY Canary Composer
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Frozen main: d41dbaaacd5833e229f5095ec689673b6544740d (the merge commit of PR #246; render before certification)
+Predecessor: PR #246 head 2bd85a3302b448370097b16a7aaf5136b293d502
+Class: ATTENDED_HERMES_TO_LIVE_ORCH_CANARY_COMPOSER
+Size: L; exact thirteen tracked files; risk 4; governance PROTECTED
+Base branch: main
+Required predecessor: PR #246 merged at d41dbaaacd5833e229f5095ec689673b6544740d
+Governance track expected: PROTECTED
+Suggested branch: claude/s10-live-canary-01-attended-composer
+Package size class: L
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+Runtime impact: one new dormant attended CLI module; no service, timer or daemon
+Product impact: none until a separately authorized attended run
+Network impact: implementation and tests none; dormant code reuses native public GETs, geoblock and the OAuth route
+Credential impact: none in implementation; the dormant run reaches only the native Gate-B no-echo prompt and the native OAuth credential directory
+Dependency impact: none
+Trading impact: dormant path to at most one BUY CREATE per attended run under the unchanged LIVE-ORCH envelope; zero orders in this WP
+Recommended mode: highest available reasoning; STOP rather than widen scope on any guard or native-contract conflict
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: true
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: true
+live: true
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. VALUE / OWNER AUTHORITY / NON-AUTHORITY
+Objective: the smallest missing code between the merged S10-HERMES-LIVE-BRIDGE-01 read-only preflight and the merged LIVE-ORCH canary. The chain is one attended foreground process on the bound execution host:
+- native fresh public menu venue snapshots;
+- one witnessed OAuth Stage B opportunity choice (one dispatch, fresh single-use journal);
+- the unchanged bridge, giving a fresh native Gate C permit and a read-only LIVE-ORCH preflight;
+- an exact order summary and the two-stage, ID-bound owner confirmation (section 4G);
+- exactly one LiveOrchestrator.canary(permit, intent), using production dependencies and the frozen USD 100/5/30/70 envelope.
+
+It also carries one bounded LIVE-ORCH compatibility correction (section 4F). Gamma no longer publishes `secondsDelay`, so `revalidate_venue` would otherwise block every market with SECONDS_DELAY_UNSUPPORTED.
+
+Every native freshness bound is kept. The permit's public-data window (at most 60 s) cannot be met by file handoff between processes, so the composer exists to make the handoff in memory.
+
+The module also adds a non-economic `check` command. It uses the same native interfaces and verifies every precondition without OAuth, key entry, a private session or any order.
+
+Owner authority: Karl authorized the read-only assessment and drafting only. Each of the following needs separate exact authority:
+- implementation;
+- any execution-host deployment or `check` run;
+- any OAuth use;
+- account access, funding or the economic `run`.
+
+The economic `run` additionally needs Karl's two-stage authorization (section 4G), defined by the section 3 item 13 clause in docs/live_trading_authorization.md:
+- Stage A is Karl's prior written capital authorization: a read-only strict-JSON artifact (section 4H) naming the host release and host binding, the LIVE-ORCH state root and its verified non-empty ledger head, the public signer and Deposit Wallet, the approved menu, BUY, at most one CREATE, the frozen envelope and a validity window. The composer reads it, checks its digest, checks every field against the actual run values and enforces single use. The code proves machine conformance only. It cannot detect a fully conformant artifact that Karl did not approve: Karl's authorship is attested only by his separate post-merge activation record naming the full Stage A digest (section 7(h)). A case-file value alone never counts as approval.
+- Stage B is the in-process owner confirmation. It binds the exact permit and intent IDs, which are minted seconds before admission and so cannot be named by any earlier document.
+Neither stage alone, a standing WP permission, the certificate nor a post-facto receipt is order authorization.
+
+This WP amends docs/live_trading_authorization.md only by appending that two-stage clause (section 3 item 13). LIVE TRADING STATUS stays DISABLED, every other paragraph and the authorization table stay unchanged, and nothing is activated. It adds no scheduler, no loop, no retry, no auto-scaling, no SELL and no new risk limit.
+
+Side19 order: VALUE -> REUSE -> EFFICIENCY -> IMPLEMENTATION -> IMPROVEMENT -> VERIFICATION. One branch, one PR, one stable-head local suite, one final hosted CI. Karl merges manually.
+
+Authority posture (code WP only):
+- Implementation authority: the thirteen paths only, after certification and Karl's explicit implementation instruction.
+- Report/export authority: the sanitized composer receipt to stdout only, with no new store.
+- Paper authority: none.
+- Execution and live authority: none exercised. Dormant code may call LiveOrchestrator.canary only in a separately authorized attended run.
+- Credential authority: none. No key, token or account read in implementation or tests.
+- Runtime/scheduler authority: none.
+- Canonical evidence authority: this WP's spec, status fragment and deferred entries only.
+- Network authority: git workflow, PR publication and one final hosted CI only.
+- Dependency-change authority: none.
+Not authorized: OAuth login, preflight or dispatch; Polymarket account, wallet or Gate-B session; funding; CREATE or CANCEL; host deployment or SSH; geoblock probes from real hosts; policy or allocation ACTIVATE; strategy assessment runs; edits to docs/live_trading_authorization.md beyond the section 3 item 13 clause; the protected boundary groups in docs/ai/codex/PROTECTED_PATHS.md beyond the exact scope.
+
+# 2. SOURCE-TRUTH / PROTECTED DRAFTABILITY GATE
+Before writing, refresh origin/main and confirm that PR #246 is merged. Render the merge-SHA placeholder in this prompt and the spec with the exact merge SHA (render_after_merge.py), and stop if any other commit landed after it. Read AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md and this package. Inspect only these merged interfaces:
+- src/research_runtime/live_preflight_bridge.py (run_live_preflight_bridge, receipt contract);
+- src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py (OAuthPlanTransport, evaluate_preflight, build_oauth_request, run_oauth_attempt, is_witnessed_result);
+- tool_free_stage_b.probe_native_tool_surface;
+- autonomous_opportunity_cycle (menu, clock and lineage semantics);
+- strategy_manager.load_hermes_strategy_manager_store and strategy_lifecycle_context_fingerprint;
+- the strategy_lifecycle loader and portfolio capacity;
+- the alpha_factory_registry verified loader;
+- execution_feasibility.fetch_public_venue_snapshot;
+- src/execution_gateway/live_orch.py (LiveOrchConfig, LiveOrchDependencies defaults, run_execution_host_currentness, validate_host_currentness, preflight, canary, reconcile, LIVE_ORCH_CONFIRMATION_PHRASE, the capital envelope);
+- gate_c.query_geoblock;
+- gate_b.InteractiveGateBSecretProvider.
+
+Hard merge gate (run exactly): `git fetch origin --prune`, `git checkout main`, `git pull --ff-only origin main`, `git rev-parse HEAD`, `git log -1 --oneline`, `git status --short --branch`. All of these must hold, or STOP:
+- PR #246 is merged and its head 2bd85a3302b448370097b16a7aaf5136b293d502 is an ancestor of main;
+- main equals the rendered merge SHA;
+- no branch or PR for this WP exists;
+- no doc claims this WP complete.
+
+Context budget:
+- Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md and this package.
+- Read for this WP: the interfaces listed above, plus tests/execution_gateway/test_live_orch.py, tests/research_runtime/test_autonomous_opportunity_cycle.py and tests/research_runtime/test_live_preflight_bridge.py for reusable fixtures.
+- Read only if blocked: the guard named by a failing test.
+- Do not read or touch: credentials, .env, local_data, secrets, tools/, workflows, dependency files, the Hermes runtime sources, and any file outside the thirteen paths.
+- Search terms: LiveOrchestrator, prepare_live_canary_handoff, run_oauth_attempt, LIVE_ORCH_CONFIRMATION_PHRASE.
+
+Compatibility / impossibility check:
+
+| Required behavior | Controlling mechanism | Files | Allowed | Compatible | Action |
+|---|---|---|---|---|---|
+| In-memory permit/intent handoff | merged bridge internals | live_preflight_bridge.py | YES | YES | additive handoff |
+| One canary call, native defaults | LiveOrchestrator.canary | live_canary.py | YES | YES | compose only |
+| No arch allowlist edit | approved src/execution_gateway family | none | YES | YES (simulated) | none |
+| Market admissible without Gamma secondsDelay | live_orch.revalidate_venue | live_orch.py, test_live_orch.py | YES | YES, post-only only | section 4F |
+| Two-stage ID-bound owner authorization | authorization clause + composer confirmation | live_canary.py, docs/live_trading_authorization.md | YES | YES | sections 3.13 and 4G |
+| Window <= 60 s incl. confirmation and key entry | Gate C deadline + LIVE-ORCH admission recheck | none | YES | YES, fail-closed PERMIT_EXPIRED | no extension |
+| Genuine assessment, geography, wallet, activation | external operations | none | NO | NO | deferred log + separate authority |
+
+The independent PROTECTED certificate must be issued by a separate reviewer. It must bind the exact rendered prompt and spec hashes, pass all 12 lenses with no unresolved decisions, record implementability_simulation PASS for the EXACT THIRTEEN paths, and bind reviewed_base_merge_sha to the PR #246 merge.
+
+The implementing session must not produce or edit its own certificate. Native wp_spec_guard and wp_readiness_gate (with --certificate, then --check-diff) must pass before any code. The certificate is committed byte-for-byte. If main moved past the merge, STOP and report the delta.
+
+# 3. EXACT THIRTEEN-FILE SCOPE (NO FOURTEENTH)
+1. src/execution_gateway/live_canary.py -- NEW attended composer and CLI (`python -m src.execution_gateway.live_canary check|run --case PATH`). It sits inside the already approved src/execution_gateway family, so no architecture allowlist edit is needed. Imports of Hermes, Alpha and bridge modules are lazy and inside functions only, and importing the module performs no I/O. It reads the Stage A artifact read-only (section 4H) and never writes it. It exposes two pure read-only helpers, `execution_host_binding_sha256(case)` and `read_ledger_head(path)`, which `check` uses and the section 7(i) bootstrap reuses; neither is a command. Its only lock is the native WalletSessionLock class in its own directory (section 4H).
+2. tests/execution_gateway/test_live_canary.py -- NEW offline tests R002-R007; R005 carries the Stage A binding and single-use negatives; R006 carries the canary-time fee-drift case.
+3. src/research_runtime/live_preflight_bridge.py -- BEHAVIOR-PRESERVING REFACTOR PLUS ONE ADDITIVE FUNCTION. Add `prepare_live_canary_handoff(...)` with the same keyword arguments as `run_live_preflight_bridge`. It returns `(receipt, permit, intent)`, where permit and intent are the exact native ExploratoryGateCPermit and ExecutionIntent objects already built, and only when receipt status is PASS; otherwise `(receipt, None, None)`. The refactor shares one internal body. The receipt bytes of `run_live_preflight_bridge` stay identical for identical inputs. The bridge itself still never calls canary.
+4. tests/research_runtime/test_live_preflight_bridge.py -- ADD only R001 `test_canary_handoff_returns_records_only_on_native_pass`. The existing S10-HERMES-LIVE-BRIDGE-01 R001-R006 test functions stay byte-unchanged and passing.
+5. docs/live_canary_runbook.md -- NEW concise operator sequence: preconditions, the separately authorized zero-economic native ledger initialization (section 7(i)), the exact section 7(i) bootstrap order (ledger initialization and binding inputs first, then Stage A, then `check`), Stage A artifact preparation from the bootstrap values only, the NO LIVE RUN rule without Karl's authentic activation record naming the digest, stale-lock handling after a crash (reconcile first, never delete the ledger), `check`, attended `run`, `live_orch reconcile` and stop codes.
+6. docs/deferred_items_log.md -- one S10-LIVE-CANARY-01 entry each for the external blockers in section 7 that this WP cannot resolve.
+7. docs/status_entries/S10-LIVE-CANARY-01.md -- stable truthful fragment. It states that code enforces Stage A machine conformance and single use only, never authorship or owner approval.
+8. docs/wp_specs/S10-LIVE-CANARY-01/draftability_certificate.json -- independent certificate, unchanged.
+9. docs/wp_specs/S10-LIVE-CANARY-01/wp_prompt.txt -- rendered controlling prompt, unchanged.
+10. docs/wp_specs/S10-LIVE-CANARY-01/wp_spec.json -- rendered controlling machine spec, unchanged.
+11. src/execution_gateway/live_orch.py -- ONE BOUNDED CHANGE, section 4F only. The `seconds_delay` check in `revalidate_venue` gains post-only applicability, and preflight `details` gain `seconds_delay_applicability`. Nothing else in the file changes.
+12. tests/execution_gateway/test_live_orch.py -- ADD the R008 and R009 test functions only. Existing test functions stay byte-unchanged and passing.
+13. docs/live_trading_authorization.md -- APPEND ONE PARAGRAPH only, directly after the S10-LIVE-ORCH-01 paragraph. It states:
+   - the first real canary's naming of the permit ID and intent ID is satisfied only by the two-stage form of section 4G;
+   - Stage A is Karl's prior written authorization of the host release and binding, LIVE-ORCH state root and verified non-empty ledger head, public signer and Deposit Wallet, approved menu, BUY, at most one CREATE, the frozen envelope (no tighter ceiling) and a validity window, as a hash-identified artifact;
+   - Stage A counts only when Karl's separate post-merge activation record names its full SHA-256; a digest that appears only in an operator case file is not approval, and without that record there is NO LIVE RUN;
+   - the composer is the only route for this canary; the native `live_orch canary` CLI is not an authorized route for it;
+   - Stage B is the in-process confirmation Karl types after the full permit and intent IDs and the Stage A digest are displayed; its suffixes are a human correlation check, not authentication;
+   - neither stage, green CI nor the merge authorizes a live run while this document says DISABLED;
+   - a standing WP permission, a certificate or a post-facto receipt is not order authorization;
+   - the paragraph grants no live authority, and capital/orders remain USD 0 / 0.
+   `LIVE TRADING STATUS: DISABLED`, every other paragraph and the table stay byte-unchanged.
+
+NO edits to:
+- live_orch.py beyond item 11; gate_b.py, gate_c.py, gateway.py or store.py;
+- oauth_plan_stage_b.py, the Strategy Manager, controller, policy or models;
+- AUTO-01/02, ALPHA-03A, EXEC-FEAS, Gate C;
+- portfolio, lifecycle or risk code;
+- workflows, dependencies, configs, credential files or fixtures;
+- docs/live_trading_authorization.md beyond item 13;
+- tests/test_architecture_boundaries.py or any historical guard.
+
+If a guard requires a fourteenth file, STOP with one exact amendment.
+
+# 4. P0 COMPATIBILITY AND COMPOSITION (REUSE BEFORE CODE)
+A. Case file. A closed strict-JSON case (`polymarket-live-canary-case` 1.0.0, unknown or duplicate keys rejected) supplies:
+- absolute paths for the lifecycle store, Hermes manager store, Alpha registry, LIVE-ORCH state root, OAuth pin root, OAuth credential directory and a NEW empty OAuth journal directory;
+- the public signer and Deposit Wallet addresses;
+- the LiveOrchConfig host fields and the expected release SHA;
+- the operator plan-usage attestation (the existing evaluate_preflight attestation shape);
+- an explicit reviewed candidate menu of 1-8 items with the AUTO-01 keys;
+- `oauth_deadline_s` (1-300, default 180);
+- `max_hermes_age_s` (1-86400);
+- `max_public_data_age_s` (1-60, default 60);
+- `stage_a_authorization_path` (absolute, read-only) and `stage_a_authorization_sha256` (64 lowercase hex). The composer reads the artifact's raw bytes and requires their SHA-256 to equal the digest (section 4H).
+
+Paths, addresses and attestation text are never echoed in receipts. Only status, reason codes, native IDs and digests are output.
+
+B. `check`, non-economic. It requires all of the following and returns PASS or BLOCKED with every failing reason code:
+1. Each store passes its native verified loader.
+2. An active PortfolioAuthorityPolicy exists, and each menu StrategyVersion has an EXPLORATORY_LIVE allocation that is active with budget > 0, with native portfolio capacity VALID.
+3. AUTO-01 Alpha lineage holds for every menu item.
+4. Each menu StrategyVersion's latest canonical HermesStrategyAssessment exists, matches the current context fingerprint and active policy, has an action compatible with new exposure, is within max_hermes_age_s, and its run record resolves. Otherwise the code is STRATEGY_ASSESSMENT_UNAVAILABLE.
+5. Native strict host currentness for the expected release passes.
+6. Native query_geoblock returns blocked=false. A blocked or unavailable result is BLOCKED, never retried through another route.
+7. One native fresh public venue snapshot per menu item shows active, not closed, accepting orders, an order book, neg-risk false and a known fee configuration. `seconds_delay` must be 0, or absent only for a post-only PASSIVE_MAKER GTC/GTD intent (the same rule as section 4F).
+8. The LIVE-ORCH ledger is healthy (the native read-only replay used by preflight).
+9. The OAuth pin root and the credential directory exist.
+10. Stage A binding (section 4H) passes against the current clock and the case, with every failing STAGE_A_* code. A missing, empty or replay-invalid canonical ledger gives STAGE_A_LEDGER_UNINITIALIZED, even when no Stage A exists yet; `check` never creates it. Without a valid Stage A, `check` is only a typed BLOCKED result (malformed case or STAGE_A_UNAVAILABLE plus any other failing codes). Its receipt never carries a ledger head or host binding value, so `check` is never the source of Stage A inputs (section 7(i)).
+
+`check` never reads token contents, never calls OAuth preflight or dispatch, never prompts for a key, never opens a Gate-B session and never writes any store.
+
+C. `run`, attended and economic only under separate authority. In order:
+1. Require an interactive TTY; otherwise refuse before any I/O. Then acquire the Stage A run lock (section 4H) and hold it until `.canary` returns or the run stops.
+2. Rerun `check` in the same process and stop on BLOCKED. Stage A binding therefore passes before any OAuth dispatch, account or economic step.
+3. Fetch fresh native menu snapshots. The cutoff is the latest acquisition_completed_ns.
+4. Run probe_native_tool_surface, OAuthPlanTransport(mode="real") preflight and evaluate_preflight with the case attestation.
+5. Run build_oauth_request, with lineage from the verified stores, issued_at=now and deadline=now+oauth_deadline_s.
+6. Run exactly one run_oauth_attempt into the fresh journal. A non-empty journal directory, a replayed or consumed result, or a non-witnessed result is BLOCKED. There is no retry or second dispatch.
+7. Call `prepare_live_canary_handoff` with production seams (no injection), max_public_data_age_ns=max_public_data_age_s, max_hermes_age_ns=max_hermes_age_s and the request deadline. ABSTAIN or BLOCKED ends the run with zero confirmation and zero canary.
+8. On PASS, recheck Stage A against the handoff (section 4H, pre-canary checks). Then print one sanitized order summary: the strategy version and market/condition/token IDs, BUY, shares, price limit, principal, fee reserve, the full permit ID, the full intent ID, the full Stage A digest, the Stage A valid_until and the seconds left in the permit window.
+9. Stage B, ID-bound confirmation (section 4G). Read one line once. It must equal exactly LIVE_ORCH_CONFIRMATION_PHRASE, one space, the last 12 hex characters of the displayed permit_id, one space, then the last 12 hex characters of the displayed Stage A digest. The suffixes are a human correlation check, not authentication.
+   - A wrong phrase, a wrong or missing suffix, extra text or EOF is BLOCKED (OWNER_CONFIRMATION_MISMATCH) with zero canary.
+   - On a match, emit and flush to stdout one sanitized confirmation record before calling canary: permit_id, intent_id, stage_a_authorization_sha256, displayed_at_ns, confirmed_at_ns.
+   - The record is evidence of Stage B, not authorization by itself. No new store is written.
+10. Under the still-held run lock, recheck the Stage A window and that the ledger exists with the approved non-empty head (section 4H, last boundary). Then construct LiveOrchestrator(config) with NO dependency or envelope override (production defaults, so the native Gate-B no-echo signer prompt and the frozen envelope apply), and call `.canary(permit, intent)` exactly once.
+11. Output the sanitized LiveOrchResult. If the episode is not clean-terminal, print the exact `python -m src.execution_gateway.live_orch reconcile ...` instruction. No automatic reconcile loop is added.
+
+D. Freshness. LIVE-ORCH rechecks permit expiry immediately before admission. A slow confirmation or key entry yields native PERMIT_EXPIRED with zero transmit, and that is a correct outcome. The composer never extends, re-mints or reuses a permit. A retry is a new `run` with a new journal, and so a new OAuth dispatch. It is admissible under the same Stage A only while that Stage A is unconsumed (section 4H).
+
+E. Labels and test seams. The frozen SYNTHETIC_ONLY choice label, the bridge evidence classes and the provenance limitations are copied verbatim.
+Test doubles enter only through explicit keyword seams of `check` and `run`, each defaulting to None, which means the native production function:
+- `clock_ns`;
+- `host_currentness`, `geoblock` and `venue_fetcher`, passed through to the merged bridge's own seams;
+- `oauth_attempt`, in place of the real OAuthPlanTransport dispatch;
+- `confirmation_reader`;
+- `orchestrator_factory`, in place of `LiveOrchestrator(config)` with production defaults.
+Rules:
+- Offline mode. If any seam is injected, the run is offline: the composer receipt is OFFLINE_TEST_ONLY / PROTOCOL_ONLY and never claims a real order. The merged bridge returns PASS with evidence class OFFLINE_TEST_ONLY when its own seams are injected (live_preflight_bridge.py:56-64), and `prepare_live_canary_handoff` then still returns the native permit and intent.
+- No fakes in the real economic path. Before any OAuth, account or orchestrator step, a run with any seam injected but no `orchestrator_factory` is BLOCKED (OFFLINE_SEAM_IN_ECONOMIC_PATH). Production LiveOrchestrator is never constructed, so no signer prompt and no account or order access occur.
+- A run with no seams uses only production functions, and `.canary` is reached only when the bridge receipt's evidence class is not OFFLINE_TEST_ONLY. Otherwise it is BLOCKED (OFFLINE_HANDOFF_IN_PRODUCTION) with zero canary.
+- An offline run calls `.canary` only on the injected orchestrator. In tests that is a LiveOrchestrator built with the LIVE-ORCH offline Harness dependencies: fake venue client, fake secret provider and fake account truth.
+
+F. seconds_delay correction (accepted by SIDE20 on 2026-10-20). Evidence, from N1 on market 567688:
+- Gamma by-id omits the `secondsDelay` key; 0 of 700 listing rows carry it, while the 2026-10-15 captures had 0.
+- The approved CLOB `/clob-markets/{condition_id}` carries no delay value. Its `itode` is a different 250 ms taker-delay flag.
+- The legacy CLOB `seconds_delay` is undocumented, so it is NOT treated as equivalent.
+
+Official docs define `secondsDelay` as the delay before a newly placed MARKETABLE order can match. A post-only order adds liquidity only and is rejected instead of taking. LIVE-ORCH already enforces signed `post_only` for PASSIVE_MAKER (gate_c.py signed-order inspection), and EXEC-FEAS already marks delay NOT_APPLICABLE for passive orders. Therefore, in `revalidate_venue`:
+- For PASSIVE_MAKER intents with `post_only` true and order type GTC/GTD: `seconds_delay` None gives NOT_APPLICABLE_POST_ONLY. A known non-zero value still gives SECONDS_DELAY_UNSUPPORTED. 0 gives CHECKED_ZERO.
+- For every other intent: None or non-zero gives SECONDS_DELAY_UNSUPPORTED (unchanged, fail-closed).
+
+Absent is never treated as zero. No CLOB, `itode` or other substitute source is used. The envelope, risk, ledger, episode schema, EXEC-FEAS and Gate C are unchanged.
+
+Marketable post-only orders stay rejected before CREATE:
+- The fresh EXEC-FEAS assessment that `revalidate_venue` uses flags a post-only BUY whose price limit is at or above the fresh best ask as POST_ONLY_WOULD_CROSS, giving NOT_FEASIBLE (src/execution_feasibility/evaluator.py:300-305).
+- `revalidate_venue` then raises VENUE_NOT_FEASIBLE (src/execution_gateway/live_orch.py:416-417) with zero transmit.
+- The 4F change must keep that check after the seconds_delay check, and R008 pins it. The venue-side post-only rejection (R009) remains a second, independent guard.
+
+G. Two-stage owner authorization. This removes the timing contradiction with docs/live_trading_authorization.md, whose S10-LIVE-ORCH-01 paragraph requires naming the permit and intent IDs.
+- Stage A, before any `run`: Karl's prior written capital authorization, as defined and enforced in section 4H. It names no permit or intent ID, because none exist yet.
+- Stage B, inside the run: after bridge PASS the composer displays the exact permit_id and intent_id (step C8). Karl then types the native phrase plus the last 12 hex characters of that permit_id and of the Stage A digest (step C9), so a confirmation meant for any other permit or Stage A cannot match. Native exact permit-to-intent validation stays mandatory.
+- LiveOrchestrator.canary itself takes no confirmation. The phrase prompt lives only in the native `live_orch` CLI, which this composer does not use and does not change.
+- Stage B happens inside the unextended permit window (section 4D). Neither stage alone, a standing WP permission, the certificate nor any post-facto receipt is order authorization.
+- docs/live_trading_authorization.md stays DISABLED during and after this WP. Neither stage, green CI nor the merge authorizes a live run. That needs Karl's separate post-merge activation decision, compliant with the live authorization record and the legal/location, funding, host, account, venue and strategy preconditions in section 7.
+
+H. Stage A artifact and binding. This is the only Stage A logic, and it lives in live_canary.py.
+Artifact: closed strict JSON `polymarket-live-canary-stage-a` 1.0.0. Unknown or duplicate keys are rejected and the size is bounded. Keys:
+- `release_sha` (40 hex);
+- `execution_host_binding_sha256`: the SHA-256 of native `store.canonical_json` over the case's LiveOrchConfig host fields, the fields that native strict host currentness verifies. It is computed by the pure helper `execution_host_binding_sha256(case)`;
+- `live_orch_state_root`: the exact absolute state root;
+- `ledger_head_at_approval`: the non-empty, replay-valid native GatewayStore head (last event hash) of `canonical_live_orch_store_path(state_root, wallet)`, read by the pure helper `read_ledger_head(path)`: native `GatewayStore(path)` in non-create mode, then `load()` and the native `_validate_replay` that LiveOrchestrator uses, with no write. It never uses `ProtectedExecutionGateway.open`, which appends a RESTARTED event (gateway.py:2553-2607). A missing, uninitialized or empty ledger is never approvable, and any literal such as "EMPTY" is STAGE_A_INVALID;
+- `public_signer_address` and `deposit_wallet_address`;
+- `approved_menu`: 1-8 items with the AUTO-01 menu keys;
+- `side` = "BUY" and `max_create_attempts` = 1;
+- `envelope`: the account, order, aggregate-commitment and free-collateral USD values;
+- `valid_from_utc` and `valid_until_utc`, with 0 < span <= 72 h.
+The artifact has no owner-identity field. A plain-text name or statement would authenticate nothing.
+
+Machine-verifiable checks inside `check` (and so before OAuth), each with zero OAuth, zero canary and zero transmit:
+- STAGE_A_UNAVAILABLE: the path is absent or unreadable.
+- STAGE_A_DIGEST_MISMATCH: the SHA-256 of the raw bytes differs from the case digest.
+- STAGE_A_INVALID: schema, type or bound violations.
+- STAGE_A_WINDOW_INVALID: the current clock is outside the validity window.
+- STAGE_A_SCOPE_MISMATCH, raised when:
+  - `release_sha` differs from the case expected release SHA that native strict host currentness verifies;
+  - `execution_host_binding_sha256` differs from the case host fields;
+  - `live_orch_state_root` differs from the case state root;
+  - the signer or wallet differs from the case;
+  - `approved_menu` differs from the case menu after canonical JSON;
+  - the side or attempt count differs;
+  - the envelope differs from the native frozen LIVE-ORCH constants (100/5/30/70).
+- STAGE_A_LEDGER_UNINITIALIZED: that native ledger is missing, has no events, or fails the native GatewayStore load and replay validation that LiveOrchestrator uses. The read opens no store in create mode and writes nothing; the composer never creates, recreates or clears the ledger.
+- STAGE_A_CONSUMED: the ledger exists and is replay-valid, but its head differs from `ledger_head_at_approval`.
+
+Single use (A). One Stage A allows at most one economic admission or CREATE attempt:
+- Run lock. `run` acquires the native O_EXCL `WalletSessionLock` class (gate_b.py:212-250) with directory `<live_orch_state_root>/live_canary`. This is a different file from the native Gate-B wallet lock under `<state_root>/live_orch`, which LIVE-ORCH never stops taking itself. The run holds it from step C1 until `.canary` returns or the run stops. A held lock gives STAGE_A_RUN_LOCKED with zero OAuth and zero canary. The lock is an exclusion file holding only the public wallet. It is not an economic store, and no native code ever acquires it, so it cannot deadlock the native wallet lock.
+- Last boundary. Under that lock, immediately before `.canary`, the composer re-reads the window and requires the ledger to exist, replay cleanly and carry exactly the approved head (otherwise STAGE_A_LEDGER_UNINITIALIZED or STAGE_A_CONSUMED). Any admission appends native ledger events, so a later run sees a changed head and stops with STAGE_A_CONSUMED.
+- Concurrent runs. Two runs with the same Stage A serialize on the lock. The second one sees the changed head.
+- Different state root. A run pointed at any other root fails STAGE_A_SCOPE_MISMATCH.
+- Same path, ledger removed or recreated. A deleted ledger is missing, so STAGE_A_LEDGER_UNINITIALIZED. A recreated ledger has a different head, because its INITIALIZED event hash covers a new event ID and time (gateway.py:2539-2550; store.py chain hash), so STAGE_A_CONSUMED. Either way it stops before OAuth in `check`, or at the last boundary before `.canary`. Native canary would otherwise create a missing ledger at session open (live_orch.py:990-994), so the last-boundary existence check is mandatory.
+- Crash after native admission. The episode is already durable in the native ledger, so the head has changed. A stale run lock fails closed (STAGE_A_RUN_LOCKED) until the operator runs native `live_orch reconcile`, which takes no composer lock and stays fully available, and removes the stale lock by hand.
+- Accepted cost. Any native ledger event after approval, including a reconcile, also consumes Stage A. Karl must then issue a new Stage A.
+- Residual, declared and not hidden: privileged rollback. Code cannot detect someone with host privileges deliberately restoring an old, otherwise valid copy of the ledger file that still carries the approved non-empty head. That is a trusted-host integrity assumption, the same one native PERMIT_ALREADY_CONSUMED relies on. Hashes alone do not prevent it.
+  - Native account truth still blocks a remaining resting order or position (ACCOUNT_UNKNOWN_OPEN_ORDER, ACCOUNT_POSITION_UNKNOWN). It does not block a cancelled, unfilled order.
+  - It is excluded by approved host access controls and backup handling (runbook, section 7(i)), not by code.
+  - The native `live_orch canary` CLI does not take the run lock. It is not an authorized route for this canary (item 13).
+
+Economics (B). Stage A approves no ceiling tighter than the frozen USD 5 single-order worst-case cap. That cap is enforced natively at final admission: `check_admission_risk` raises SINGLE_ORDER_LIMIT_EXCEEDED when principal + canary-time fee reserve > 5 (live_orch.py:837-842), and this runs after canary's own fresh venue snapshot and fee recomputation. The bridge-time principal and fee shown in the summary are informational only. No composer-side ceiling is claimed, and live_orch.py gains no ceiling parameter.
+
+Pre-canary checks, after bridge PASS and again under the run lock after Stage B:
+- STAGE_A_WINDOW_INVALID: the window is rechecked against the clock.
+- STAGE_A_LEDGER_UNINITIALIZED or STAGE_A_CONSUMED: the ledger's existence, replay validity and exact head are rechecked.
+- STAGE_A_SCOPE_MISMATCH: the intent's strategy version, condition and token are not in `approved_menu`, or the side is not BUY.
+- PERMIT_INTENT_MISMATCH: the permit and intent are not the native exact pair. Native LIVE-ORCH validation still runs as well.
+
+Authorship (C).
+- Code cannot detect a well-formed, fully conformant artifact that Karl never approved: the digest comes from the same operator case.
+- Owner approval is established only outside code, by Karl's authentic post-merge activation record naming the full Stage A SHA-256 (section 7(h)). Without that record there is NO LIVE RUN.
+- The full digest display and the typed Stage A suffix (step C9) are Karl's correlation against his own record, not authentication.
+- Receipts label the result `stage_a_binding: MACHINE_CONFORMANCE_ONLY_OWNER_APPROVAL_EXTERNAL` and never claim owner authentication.
+- The artifact holds no secret, and its path is never echoed.
+
+# 5. SEMANTIC/FALSE-CLAIM SAFETY
+- The canary is execution-mechanics validation only. It is not edge, profitability or strategy qualification. Native policy, Gate C and Hermes abstention (for example PAPER, ADAPT, or a stale or missing assessment) stay binding even when they prevent the trade, and the composer never overrides or works around them.
+- ONE_CREATE_ATTEMPTED is not a fill, a profit or strategy validation. Passive post-only orders may rest unfilled and are cancelled natively after the at most 60 s observation.
+- A valid canonical assessment's provider and model labels are not proof of authenticated inference. The OAuth witness proves only where the choice bytes came from.
+- The composer handles no secret. The signer key is entered only into the native Gate-B no-echo prompt inside canary. The OAuth credential directory is passed only to the native transport. Neither is printed, logged, copied or persisted.
+- No proxy, VPN, alternate host or geographic workaround is added or suggested. A blocked geoblock is terminal for that host and operator.
+- No scheduler, daemon, background thread, loop over markets, auto-retry, SELL, size scaling or envelope change.
+
+# 6. REQUIREMENT / EVIDENCE PLAN / NEGATIVE-TEST MATRIX
+R001 test_canary_handoff_returns_records_only_on_native_pass:
+- Positive: on PASS, prepare_live_canary_handoff returns the exact permit and intent whose IDs equal the receipt's, and the run_live_preflight_bridge receipt is byte-identical.
+- Offline: with the bridge's own seams injected, PASS returns the exact records together with a receipt whose evidence class is OFFLINE_TEST_ONLY. Withholding records depends on the receipt status, not on seams.
+- Negative: ABSTAIN, BLOCKED or a later state change give (receipt, None, None).
+
+R002 test_live_canary_check_is_non_economic:
+- Positive: all preconditions give PASS with zero OAuth, key prompt, session and order.
+- Negative, each with its exact code: missing or stale assessment, inactive policy, missing or expired allocation, broken Alpha lineage, neg-risk market, blocked geoblock, stale host, unhealthy ledger, malformed case.
+
+R003 test_live_canary_run_requires_attended_tty_and_single_oauth_dispatch:
+- Non-TTY refuses before any I/O.
+- One dispatch per run.
+- A reused journal, an ineligible OAuth preflight or a non-witnessed result gives BLOCKED with zero canary.
+
+R004 test_live_canary_abstain_or_blocked_never_reaches_canary: an ABSTAIN or BLOCKED bridge result gives zero confirmation prompt, zero key prompt and zero canary.
+
+R005 test_live_canary_confirmation_binds_exact_permit:
+- The summary shows the full permit ID, the full intent ID and the full Stage A digest.
+- Each of these gives OWNER_CONFIRMATION_MISMATCH (or a malformed case) with zero canary:
+  - a wrong phrase;
+  - the bare native phrase;
+  - a permit or Stage A suffix that is missing, foreign or swapped;
+  - extra text;
+  - EOF.
+- Each machine-verifiable section 4H failure gives its exact sanitized code, with zero OAuth dispatch where it fails in `check`, and always zero `.canary` and zero transmit:
+  - a nonexistent artifact;
+  - a wrong-hash or tampered artifact;
+  - not yet valid, expired, or expiring between bridge PASS and `.canary`;
+  - a different release, host binding, state root, signer, wallet, menu, side, attempt count or envelope;
+  - a chosen intent outside `approved_menu`;
+  - a permit/intent mismatch.
+- Single use, with at most one CREATE in total across each scenario (native reconcile and cancel still work):
+  - two concurrent attended runs with different permits under one Stage A: the second gets STAGE_A_RUN_LOCKED, or STAGE_A_CONSUMED once the first is admitted;
+  - a sequential rerun after an earlier admission: STAGE_A_CONSUMED;
+  - the same Stage A pointed at a distinct state root: STAGE_A_SCOPE_MISMATCH;
+  - the same approved state-root path after an initial admission, with the ledger deleted: STAGE_A_LEDGER_UNINITIALIZED; deleted and recreated through native create: STAGE_A_CONSUMED. Each is tested both in `check` and at the last boundary, with zero second `.canary`;
+  - a Stage A whose head is "EMPTY" or any non-head literal: STAGE_A_INVALID; a missing or empty ledger before any Stage A: STAGE_A_LEDGER_UNINITIALIZED, with the test asserting the ledger file is still absent afterwards;
+  - a ledger event appended before the run starts: STAGE_A_CONSUMED;
+  - a crash after native admission and a restart: STAGE_A_RUN_LOCKED while the stale lock remains, STAGE_A_CONSUMED after it is removed;
+  - a ledger event appended between Stage B and `.canary`: STAGE_A_CONSUMED at the last boundary.
+- Bootstrap and ordering, offline in a temporary directory:
+  - With a missing parent and a missing ledger, the section 7(i) steps 1-6 give a non-empty head, and reading it twice leaves the head unchanged.
+  - A second native create on the existing ledger is refused (STORE_PATH_INVALID).
+  - Native create without the parent directory is refused.
+  - A Stage A built from the bootstrap values then passes `check`.
+  - `check` before Stage A is only a typed BLOCKED result, with no head or binding value in its receipt.
+- Truthfulness: a conformant artifact with a self-consistent digest passes machine conformance, and the receipt says MACHINE_CONFORMANCE_ONLY_OWNER_APPROVAL_EXTERNAL. The test asserts that no receipt, log or status text claims owner authentication. Detecting an unapproved but conformant artifact is the external section 7(h) gate, not a code test.
+- The exact phrase plus both displayed suffixes, with a conformant Stage A, gives exactly one canary call with the identical objects and production defaults.
+- The confirmation record (permit_id, intent_id, stage_a_authorization_sha256, displayed_at_ns, confirmed_at_ns) is flushed to stdout before that call.
+
+R006 test_live_canary_end_to_end_offline_one_create:
+- Concrete wiring, all offline, with no network, real OAuth, real account, signer prompt or economic transmit:
+  - `oauth_attempt` returns the AUTO-01 `_oauth_world` witnessed result;
+  - `clock_ns`, `host_currentness`, `geoblock` and `venue_fetcher` are the LIVE-ORCH test fakes;
+  - `confirmation_reader` returns the typed line;
+  - `orchestrator_factory` builds a LiveOrchestrator on the LIVE-ORCH offline Harness dependencies.
+  The bridge PASS (OFFLINE_TEST_ONLY) returns the permit and intent, which reach the Harness `.canary`.
+- The full chain gives ONE_CREATE_ATTEMPTED with create_transmits 1.
+- A repeated run is BLOCKED (journal consumed or PERMIT_ALREADY_CONSUMED).
+- An expired window gives PERMIT_EXPIRED with zero transmit.
+- Clock-controlled freshness cases (injected clock only), each with zero transmit, oauth_dispatch exactly 1 (never 2) and no permit re-mint or window extension:
+  - (i) The OAuth result finishes after its request deadline, so AUTO-01 gives BLOCKED before any fresh venue read, with 0 permits.
+  - (ii) The fresh book is older than max_public_data_age at the fresh Gate C, so GATE_C_REJECTED with no re-fetch.
+  - (iii) The clock passes the permit valid_until (book timestamp + max_public_data_age ≤ 60 s) between bridge PASS and confirmation, so the composer stops CHOICE_WINDOW_EXPIRED or LIVE-ORCH returns PERMIT_EXPIRED.
+  - (iv) A case max_public_data_age_s above 60 is rejected as a malformed case.
+- Fee drift: the bridge's principal + fee is at most USD 5, but the canary-time snapshot raises the fee reserve so principal + fee > 5. The result is native SINGLE_ORDER_LIMIT_EXCEEDED, zero economic CREATE and zero transmit.
+- Every result is labelled OFFLINE_TEST_ONLY.
+
+R007 test_live_canary_receipt_sanitized_and_no_authority_inflation:
+- The receipt never contains a path, address, key, token or attestation text.
+- Importing the module does no I/O.
+- The official-client banned terms are absent.
+- There is no loop, retry, scheduler or SELL, and the envelope is unchanged.
+- Fake isolation, each case with zero production LiveOrchestrator construction, zero signer prompt, zero account read and zero transmit:
+  - any single seam injected without `orchestrator_factory`: OFFLINE_SEAM_IN_ECONOMIC_PATH before OAuth;
+  - no seams, but a handoff whose receipt is OFFLINE_TEST_ONLY: OFFLINE_HANDOFF_IN_PRODUCTION;
+  - every offline receipt is labelled OFFLINE_TEST_ONLY / PROTOCOL_ONLY and never claims a real order.
+
+R008 test_live_orch_seconds_delay_post_only_applicability, in tests/execution_gateway/test_live_orch.py:
+- PASSIVE_MAKER post-only GTC with `secondsDelay` absent gives PREFLIGHT_PASS with NOT_APPLICABLE_POST_ONLY.
+- PASSIVE with `secondsDelay` 3 gives SECONDS_DELAY_UNSUPPORTED.
+- AGGRESSIVE_TAKER FOK and FAK with it absent give SECONDS_DELAY_UNSUPPORTED with zero transmit.
+- AGGRESSIVE with 0 passes.
+- A PASSIVE intent whose signed order lacks post-only gives ORDER_ENCODING_UNSUPPORTED.
+- A post-only PASSIVE_MAKER BUY whose price limit is at or above the fresh best ask, with `secondsDelay` absent, gives VENUE_NOT_FEASIBLE (EXEC-FEAS POST_ONLY_WOULD_CROSS) in both preflight and canary, with zero transmit.
+
+R009 test_live_orch_post_only_canary_without_gamma_delay: the offline Harness canary with `secondsDelay` absent gives ONE_CREATE_ATTEMPTED with one transmit and signed post_only true. A venue `post_only_would_cross` gives a clean CREATE_REJECTED with zero fill.
+
+R002 and R006 also run with `secondsDelay` absent for the passive menu item.
+
+Every test is offline. Also run: the unchanged bridge R001-R006, the LIVE-ORCH, Gate C and OAuth regression families, protected readiness --check-diff, exact scope, whitespace, the generated-artifact guard, gitleaks and ONE stable-head local full suite. Hosted CI is ONE final exact-head plan. PR body: Rxxx table, private-repo evidence mode, posted-body re-fetch, truthful readiness.
+
+# 7. HARD STOPS / REPORT-BACK / SUCCESSOR
+STOP if:
+- the certificate is unavailable or mismatched, or protected implementation authority is absent;
+- PR #246 is not merged or main moved past its merge;
+- composition needs any edit to live_orch.py beyond section 4F, or to Gate-B/C, OAuth, Strategy Manager, bridge semantics, envelope or risk limits;
+- docs/live_trading_authorization.md would change beyond the item 13 paragraph, including any status change from DISABLED;
+- the code or any artifact would claim Stage A authorship or owner authentication, would accept a case-file digest without the section 4H artifact binding, would claim a composer-side ceiling tighter than the native USD 5 cap, or could admit more than one CREATE per Stage A through the composer;
+- the only passing path needs a secret outside the native prompt, an extended or re-minted permit, a second OAuth dispatch, a proxy or another geographic route, or a fabricated assessment;
+- source changes exceed exactly thirteen files or any guard needs a fourteenth;
+- any mandatory test, posted-evidence verification or final CI fails; then do not mark Ready for review YES.
+
+External blockers this code WP cannot resolve. Each is logged in docs/deferred_items_log.md and must be closed under separate authority before any `run`:
+- (a) Karl's legitimate eligibility: physical location at operation time per Polymarket's rules, account eligibility, and any identity verification Polymarket requires. This is still PENDING owner attestation.
+  The host side was observed read-only on 2026-10-20: one native geoblock GET from the bound host gave blocked=false (it was true on 2026-10-06).
+  That observation is necessary, not sufficient, and is point-in-time only: LIVE-ORCH re-queries geoblock before every admission. No circumvention.
+- (b) A fresh genuine canonical HermesStrategyAssessment of the NEW canary StrategyVersion, made after the policy/allocation ACTIVATE.
+  Native compatibility is PROVEN: on 2026-10-20 one authorized openai-codex/gpt-6.1-sol run recorded STRATEGY_ASSESSMENT_RECORDED (RESEARCH_DRAFT_VALIDATED). The 2026-10-15 OUTPUT_SCHEMA_INVALID cause was the model route, and no structured-output WP is needed.
+  That assessment covers the expired, neg-risk Run02 StrategyVersion ad4c0b90…, which recommended PAPER_ONLY. It CANNOT qualify the new market or any canary StrategyVersion.
+  Gate C admits only the canary version's own latest assessment, with a new-exposure-compatible action, inside max_hermes_age.
+- (c) Karl's fresh human ACTIVATE of a policy and EXPLORATORY_LIVE allocation, with the assessment produced after activation.
+- (d) Alpha candidate and StrategyVersion lineage for a non-neg-risk binary market with a live book, a gamma minimum notional within USD 5 and a known zero maker fee.
+- (e) A redeployed bound host at the merge SHA, with the pinned Hermes runtime and a usable OAuth credential directory on that host.
+  Native Stage B login is a PKCE loopback on 127.0.0.1:1455. It calls webbrowser.open and fails with BROWSER_OPEN_FAILED when there is no browser (oauth_plan_stage_b.py:263-266), and the bound host is headless.
+  Chosen path: credential-directory transfer. This is a PROPOSAL pending Karl's explicit approval and is not proven by this WP:
+  - Karl runs the pinned native Stage B login on his own browser-capable machine into a fresh, dedicated, empty credential directory used for nothing else.
+  - The directory is transferred once over SSH into a root-owned 0700 directory on the host, with 0600 files, outside the repo checkout and the release tree.
+  - The source copy is destroyed immediately, so exactly one live copy exists. Refresh tokens are single-use, so a second copy would be invalidated or would invalidate the host copy.
+  - Acceptance proof: one separately authorized non-dispatch OAuth preflight on the host reports PLAN_USAGE_ELIGIBLE. Until that proof passes, the files are not known to be portable between machines.
+  - On any failure the directory is destroyed and the login repeated. Credential bytes never enter the repo, logs, receipts, ZIPs or chat.
+  - Fallback, only if the transfer is refused or fails: a separate protected scope change adds a headless print-URL login (operator SSH local port-forward to 1455) to oauth_plan_stage_b.py, with tests. That change is NOT in this WP.
+- (f) A deployed and funded Polymarket Deposit Wallet and signer in an eligible account.
+- (g) Restored GitHub Actions billing for hosted CI.
+- (i) Bootstrap, in this exact order. It is one separately Karl-authorized, zero-economic operator action before any Stage A, documented in the runbook. It uses native functions and the item 1 pure helpers only, with no credential, network, account, order or new command.
+  1. Resolve `P = canonical_live_orch_store_path(state_root, wallet)`.
+  2. If `P.parent` is missing, create it, owned by the run user, mode 0700, with no symlink in the path. Native create requires an existing parent and rejects symlinks (store.py:260-270).
+  3. If `P` already exists, STOP. Re-initialization needs Karl's separate decision.
+  4. Call `ProtectedExecutionGateway.create(P, created_time_ns=now)` exactly once, then `.close()`. This writes only the INITIALIZED event and its non-empty head.
+  5. Read the head with `read_ledger_head(P)`, read-only. Never open the gateway, because that appends RESTARTED.
+  6. Compute `execution_host_binding_sha256(case)` offline from the case file.
+  7. Karl writes the Stage A artifact from these exact values and approves it externally (7(h)), and the case receives its path and digest.
+  8. Only now does `check` validate Stage A.
+  The bootstrap also requires approved host access controls and backup handling that never restore an older ledger. `check` and `run` never create, open or initialize the ledger.
+- (h) Stage A owner attestation. Karl writes the Stage A artifact and records its full SHA-256 in his separate post-merge activation decision, under docs/live_trading_authorization.md. Code checks machine conformance and single use only; it cannot detect an unapproved but conformant artifact. If no such authentic record exists: NO LIVE RUN. The operator must also keep the bound native ledger intact (never delete, recreate or restore it) and never use the native `live_orch canary` CLI for this canary. This is an operations blocker, not a code claim.
+
+Return: one short PR URL with head/base, the exact thirteen changed files, native readiness, R001-R009 with their negatives, true call counts (all 0), sanitized limitations, local and hosted CI, and one SHA-256/CRC-verified evidence ZIP. Do not merge.
+
+Successor boundary: S10-LIVE-CANARY-01 operations (host deploy and `check`, then one attended `run`) are separately authorized runtime actions on the merged SHA, not further code. Repeated or autonomous trade cycles, SELL, scaling, a structured-output assessment WP and any envelope change are later and separately authorized.
+
+# 8. NORMATIVE RULE MATRIX
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|canary|handoff|native_bridge_pass_only|REQUIRE|exact_native_records_or_none|canary.handoff|R001
+NR002|canary|check|all_preconditions_read_only|REQUIRE|no_oauth_key_session_or_order|canary.check|R002
+NR003|canary|oauth_choice|attended_single_dispatch|REQUIRE|one_witnessed_choice_or_blocked|canary.run|R003
+NR004|canary|abstention|bridge_not_pass|REJECT|zero_confirmation_and_canary|canary.run|R004
+NR005|canary|confirmation|bound_single_use_stage_a_then_phrase_plus_suffixes|REQUIRE|at_most_one_native_canary_call|canary.confirmation|R005
+NR006|canary|freshness|native_permit_window|REQUIRE|expired_means_zero_transmit|canary.confirmation|R006
+NR007|canary|audit|sanitized_no_secret_no_loop|REQUIRE|no_authority_inflation|canary.audit|R007
+NR008|liveorch|seconds_delay|absent_and_post_only_passive|REQUIRE|not_applicable_only_for_post_only|canary.seconds_delay|R008
+NR009|liveorch|seconds_delay_canary|absent_delay_post_only_create|REQUIRE|one_post_only_transmit_or_reject|canary.seconds_delay|R009
+END_NORMATIVE_RULE_MATRIX_V1

@@ -1,0 +1,497 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-LIVE-CANARY-01",
+    "title": "Attended One-Process Hermes Choice to Native Permit to LIVE-ORCH First BUY Canary Composer",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "ATTENDED_HERMES_TO_LIVE_ORCH_CANARY_COMPOSER",
+    "package_size_class": "L",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-live-canary-01-attended-composer",
+    "required_predecessor": {
+      "pr_number": 246,
+      "head_sha": "2bd85a3302b448370097b16a7aaf5136b293d502",
+      "merge_sha": "d41dbaaacd5833e229f5095ec689673b6544740d"
+    },
+    "objective": "Add one attended foreground composer inside src/execution_gateway: non-economic check of every native precondition, then one attended run that makes one witnessed OAuth Stage B choice, uses the merged bridge to mint one fresh native Gate C permit and pass read-only preflight, shows the exact order, takes the two-stage ID-bound owner confirmation and calls the unmodified LiveOrchestrator.canary once with production defaults, plus one bounded LIVE-ORCH seconds_delay post-only applicability correction and one appended two-stage authorization clause in docs/live_trading_authorization.md that keeps it DISABLED. No other LIVE-ORCH, Gate-B/C, OAuth, Strategy Manager, envelope or risk change; economic use stays separately authorized.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/execution_gateway/live_canary.py",
+      "tests/execution_gateway/test_live_canary.py",
+      "src/research_runtime/live_preflight_bridge.py",
+      "tests/research_runtime/test_live_preflight_bridge.py",
+      "docs/live_canary_runbook.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-LIVE-CANARY-01.md",
+      "docs/wp_specs/S10-LIVE-CANARY-01/draftability_certificate.json",
+      "docs/wp_specs/S10-LIVE-CANARY-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-CANARY-01/wp_spec.json",
+      "src/execution_gateway/live_orch.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "docs/live_trading_authorization.md"
+    ],
+    "allowed_changed_files": [
+      "src/execution_gateway/live_canary.py",
+      "tests/execution_gateway/test_live_canary.py",
+      "src/research_runtime/live_preflight_bridge.py",
+      "tests/research_runtime/test_live_preflight_bridge.py",
+      "docs/live_canary_runbook.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-LIVE-CANARY-01.md",
+      "docs/wp_specs/S10-LIVE-CANARY-01/draftability_certificate.json",
+      "docs/wp_specs/S10-LIVE-CANARY-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-CANARY-01/wp_spec.json",
+      "src/execution_gateway/live_orch.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "docs/live_trading_authorization.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "config/",
+      "secrets/",
+      "credentials/",
+      "local_data/",
+      "agent_memory/",
+      "agent_runtime/",
+      "tools/",
+      "src/exploratory_gate_c/",
+      "src/execution_feasibility/",
+      "src/strategy_lifecycle/",
+      "src/risk_engine/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/research_runtime/hermes_controlled_runtime/",
+      "tests/research_runtime/hermes_controlled_runtime/"
+    ],
+    "max_changed_files": 13,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only the thirteen S10-LIVE-CANARY-01 paths, restoring the strict LIVE-ORCH seconds_delay check and removing the appended two-stage authorization paragraph; the merged bridge receipt, Gate-B/C, OAuth, Strategy Manager, envelope, guards and the DISABLED live-trading status stay unchanged; zero OAuth calls, orders or capital are initiated by the change itself.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One new attended composer in the approved src/execution_gateway family and one additive bridge handoff function; every economic and safety decision stays in unchanged native code.",
+    "items": [
+      {
+        "surface": "live_preflight_bridge.prepare_live_canary_handoff",
+        "before": "run_live_preflight_bridge returns only a sanitized receipt; the native permit and intent stay internal.",
+        "after": "Additive sibling returns (receipt, permit, intent) only on PASS; run_live_preflight_bridge receipt bytes unchanged.",
+        "change_authorized": true,
+        "compatibility_requirement": "Identical receipt for identical inputs; never calls canary.",
+        "authority": "ADDITIVE_ONLY"
+      },
+      {
+        "surface": "src.execution_gateway.live_canary check/run",
+        "before": "No in-process path joins a witnessed choice, a fresh permit and LIVE-ORCH canary inside the native window.",
+        "after": "check is read-only and binds the Stage A artifact; run is attended, TTY-only, holds a Stage A run lock, one OAuth dispatch, ledger-head recheck at the last boundary, one ID-bound Stage B confirmation, at most one canary call.",
+        "change_authorized": true,
+        "compatibility_requirement": "Production LiveOrchDependencies and envelope defaults; no secret handling.",
+        "authority": "NEW_ATTENDED_COMPOSER"
+      },
+      {
+        "surface": "LiveOrchestrator.canary / preflight / reconcile",
+        "before": "Merged dormant LIVE-ORCH with frozen 100/5/30/70 envelope and native confirmation phrase.",
+        "after": "Unchanged except revalidate_venue seconds_delay applicability; called once with the exact bridge records.",
+        "change_authorized": false,
+        "compatibility_requirement": "No other edit, no dependency or envelope override.",
+        "authority": "REUSE_EXISTING_ONLY"
+      },
+      {
+        "surface": "live_orch.revalidate_venue seconds_delay check",
+        "before": "seconds_delay != 0 blocks; Gamma now omits secondsDelay, so every market blocks.",
+        "after": "Absent allowed only for post-only PASSIVE_MAKER GTC/GTD (NOT_APPLICABLE_POST_ONLY); known non-zero and all other intents unchanged.",
+        "change_authorized": true,
+        "compatibility_requirement": "Absent never equals zero; no substitute source; signed post_only enforcement unchanged.",
+        "authority": "BOUNDED_PROTECTED_CORRECTION"
+      },
+      {
+        "surface": "docs/live_trading_authorization.md two-stage canary clause",
+        "before": "The S10-LIVE-ORCH-01 paragraph requires naming permit and intent IDs that are minted seconds before admission.",
+        "after": "One appended paragraph defines hash-identified Stage A attested by Karl's activation record and Stage B in-process ID-bound confirmation; status stays DISABLED.",
+        "change_authorized": true,
+        "compatibility_requirement": "No other paragraph, status line or table row changes; grants no live authority.",
+        "authority": "AUTHORIZATION_CONTRACT_CLARIFICATION"
+      },
+      {
+        "surface": "oauth_plan_stage_b transport / preflight / request / run_oauth_attempt",
+        "before": "Merged single-dispatch witnessed OAuth Stage B.",
+        "after": "Unchanged; one fresh journal namespace per run.",
+        "change_authorized": false,
+        "compatibility_requirement": "No retry, no second dispatch, no credential read by the composer.",
+        "authority": "REUSE_EXISTING_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Six composition gates over native authority with one bounded LIVE-ORCH correction.",
+    "items": [
+      {
+        "path": "canary.handoff",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exact native permit and intent only when the merged bridge receipt is PASS; otherwise none.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact native permit and intent only when the merged bridge receipt is PASS; otherwise none.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RECORDS or NONE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "canary.check",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Every native precondition verified read-only with no OAuth, key prompt, session or order.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Every native precondition verified read-only with no OAuth, key prompt, session or order.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "CHECK_PASS or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "canary.run",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Attended TTY, one fresh OAuth journal, one witnessed choice, bridge PASS before any confirmation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Attended TTY, one fresh OAuth journal, one witnessed choice, bridge PASS before any confirmation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ABSTAIN or BLOCKED or CONFIRMATION_REQUIRED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "canary.confirmation",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Two-stage authorization: Stage A artifact read, raw-byte SHA-256 equal to the case digest, window, release, host binding, state root, signer, wallet, menu, side, attempt and envelope conformant before OAuth; single use via native WalletSessionLock-class run lock held through canary and native ledger existing, replay-valid and equal to the approved non-empty head at the last boundary; native USD 5 cap is the only ceiling; after full permit, intent and Stage A IDs, phrase plus suffixes, record flushed, then at most one canary call. Machine conformance only; owner approval is external.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Two-stage authorization: Stage A artifact read, raw-byte SHA-256 equal to the case digest, window, release, host binding, state root, signer, wallet, menu, side, attempt and envelope conformant before OAuth; single use via native WalletSessionLock-class run lock held through canary and native ledger existing, replay-valid and equal to the approved non-empty head at the last boundary; native USD 5 cap is the only ceiling; after full permit, intent and Stage A IDs, phrase plus suffixes, record flushed, then at most one canary call. Machine conformance only; owner approval is external.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ONE_CREATE_ATTEMPTED or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "canary.seconds_delay",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Absent seconds_delay is admissible only for a post-only PASSIVE_MAKER GTC/GTD intent; a known non-zero value or any non-post-only intent stays fail-closed; a crossing post-only BUY stays VENUE_NOT_FEASIBLE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Absent seconds_delay is admissible only for a post-only PASSIVE_MAKER GTC/GTD intent; a known non-zero value or any non-post-only intent stays fail-closed; a crossing post-only BUY stays VENUE_NOT_FEASIBLE.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "NOT_APPLICABLE_POST_ONLY or SECONDS_DELAY_UNSUPPORTED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "canary.audit",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Sanitized receipt, no secret, path or address, no loop, retry, scheduler, SELL or envelope change; injected seams are OFFLINE_TEST_ONLY.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Sanitized receipt, no secret, path or address, no loop, retry, scheduler, SELL or envelope change; injected seams are OFFLINE_TEST_ONLY.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "NO_AUTHORITY_INFLATION",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical identity or store; permit, intent, episode and OAuth record IDs come from unchanged native modules; the composer receipt digest is not authority.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "PROTECTED draftability certificate, explicit owner implementation authorization and independent live-usage sub-gate are separate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Independent twelve-lens PROTECTED PASS certificate over the exact rendered prompt/spec hashes, all thirteen paths and the PR 246 merge SHA; native spec/readiness pass.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly authorizes implementation of the certified code WP. This authorizes no deployment, OAuth, account, funding or economic run.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly thirteen changes, offline tests R001-R009, one stable-head local full suite and one final hosted CI; no merge, no real OAuth, account or order.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new external data schema beyond the closed case file, which R002 and R007 exercise with negative cases; no real order example is asserted.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Nine named offline test contracts with negative controls, native readiness, one stable-head full suite and one final hosted CI; no real OAuth, account or order.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_canary_handoff_returns_records_only_on_native_pass",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_canary_handoff_returns_records_only_on_native_pass",
+        "expected_result": "PASS returns exact permit and intent matching receipt IDs with byte-identical receipt, also offline with an OFFLINE_TEST_ONLY receipt; ABSTAIN, BLOCKED or later state change returns none."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_live_canary_check_is_non_economic",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_live_canary_check_is_non_economic",
+        "expected_result": "All preconditions PASS read-only; each missing precondition returns its exact code with zero OAuth, key, session or order."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_live_canary_run_requires_attended_tty_and_single_oauth_dispatch",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_live_canary_run_requires_attended_tty_and_single_oauth_dispatch",
+        "expected_result": "Non-TTY refuses before I/O; one dispatch per run; reused journal, ineligible or unwitnessed OAuth is BLOCKED with zero canary."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_live_canary_abstain_or_blocked_never_reaches_canary",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_live_canary_abstain_or_blocked_never_reaches_canary",
+        "expected_result": "ABSTAIN or BLOCKED bridge results produce zero confirmation prompt, zero key prompt and zero canary."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_live_canary_confirmation_binds_exact_permit",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_live_canary_confirmation_binds_exact_permit",
+        "expected_result": "Full IDs and Stage A digest shown; wrong phrase or suffix, extra text or EOF gives zero canary; nonexistent, wrong-hash, tampered, expired, scope-, host-, root- or menu-mismatched Stage A or permit/intent mismatch gives its code with zero canary; concurrent, sequential, root-substituted, same-path deleted or recreated ledger, EMPTY head, crash-restart and last-boundary ledger change allow at most one CREATE; offline bootstrap (missing parent and ledger) yields a non-empty head and check before Stage A is typed BLOCKED; receipts claim machine conformance only; conformant Stage A plus both suffixes gives one canary with identical objects and production defaults."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_live_canary_end_to_end_offline_one_create",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_live_canary_end_to_end_offline_one_create",
+        "expected_result": "Offline chain (oauth_attempt _oauth_world, LIVE-ORCH fakes, Harness orchestrator_factory) gives ONE_CREATE_ATTEMPTED with one Harness transmit; repeat is BLOCKED; expired window is PERMIT_EXPIRED; clock-controlled late OAuth, stale fresh book, window passed before admission and age above 60 s all fail closed with zero transmit and one OAuth dispatch; canary-time fee drift above USD 5 gives native SINGLE_ORDER_LIMIT_EXCEEDED with zero CREATE."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_live_canary_receipt_sanitized_and_no_authority_inflation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_live_canary_receipt_sanitized_and_no_authority_inflation",
+        "expected_result": "Receipt has no path, address, key, token or attestation; import does no I/O; banned terms, loops, retries, SELL absent; a seam without orchestrator_factory or an OFFLINE_TEST_ONLY handoff in production blocks with zero production orchestrator, signer prompt, account read or transmit."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_live_orch_seconds_delay_post_only_applicability",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_live_orch_seconds_delay_post_only_applicability",
+        "expected_result": "Absent delay passes only post-only PASSIVE_MAKER as NOT_APPLICABLE_POST_ONLY; non-zero or aggressive FOK/FAK absent block; unsigned post-only rejects; crossing post-only BUY with absent delay is VENUE_NOT_FEASIBLE with zero transmit."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_live_orch_post_only_canary_without_gamma_delay",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_live_orch_post_only_canary_without_gamma_delay",
+        "expected_result": "Harness canary with absent delay gives one post-only transmit; post_only_would_cross is a clean CREATE_REJECTED with zero fill."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-01-OPERATIONS",
+    "next_title": "Separately Authorized Host Deploy, Check and One Attended First BUY Run",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-CANARY-01",
+    "forbidden_in_this_wp": [
+      "Any real OAuth login, preflight or dispatch, account access, signer key entry, funding, order CREATE or CANCEL.",
+      "Any live_orch.py edit beyond the seconds_delay applicability correction, or any edit to gate_b.py, gate_c.py, gateway.py, OAuth, Strategy Manager, Gate C, EXEC-FEAS, envelope or risk limits.",
+      "Any execution-host deployment, geoblock probe from a real host, or change to docs/live_trading_authorization.md beyond the appended two-stage clause, including its DISABLED status.",
+      "Any proxy, VPN, alternate host or other geographic workaround, permit extension or re-mint, or second OAuth dispatch.",
+      "Any scheduler, loop, retry, SELL, size scaling or autonomous repeated trading.",
+      "Any fabricated, relabelled or hand-written strategy assessment, policy, allocation, Alpha lineage or OAuth witness."
+    ]
+  }
+}
