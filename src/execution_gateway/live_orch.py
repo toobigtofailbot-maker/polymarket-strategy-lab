@@ -365,6 +365,25 @@ def verify_permit_authority(
 # ---------------------------------------------------------------------------
 
 
+def seconds_delay_applicability(intent: object, snapshot: PublicExecutionVenueSnapshot) -> str:
+    """The marketable-order delay gate (S10-LIVE-CANARY-01 section 4F).
+
+    ``secondsDelay`` delays only MARKETABLE orders; a signed post-only order is rejected instead
+    of taking.  An absent value is admissible solely for a post-only PASSIVE_MAKER GTC/GTD
+    intent and is never read as zero; a known non-zero delay and every other intent fail closed.
+    """
+    if snapshot.seconds_delay == 0:
+        return "CHECKED_ZERO"
+    post_only_passive = (
+        intent.execution_style == "PASSIVE_MAKER"
+        and intent.post_only is True
+        and intent.order_type in ("GTC", "GTD")
+    )
+    if snapshot.seconds_delay is None and post_only_passive:
+        return "NOT_APPLICABLE_POST_ONLY"
+    raise GatewayError("SECONDS_DELAY_UNSUPPORTED")
+
+
 def revalidate_venue(
     authority: PermitAuthority,
     snapshot: PublicExecutionVenueSnapshot,
@@ -398,8 +417,7 @@ def revalidate_venue(
         raise GatewayError("MARKET_NOT_ELIGIBLE")
     if snapshot.gamma_neg_risk is not False or snapshot.book_neg_risk is not False:
         raise GatewayError("NEG_RISK_UNSUPPORTED")
-    if snapshot.seconds_delay != 0:
-        raise GatewayError("SECONDS_DELAY_UNSUPPORTED")
+    seconds_delay_applicability(intent, snapshot)
     if assessment.tick_dimension != "PASS" or snapshot.book_tick_size is None:
         raise GatewayError("TICK_INCOMPATIBLE")
     # LIVE-ORCH independently rechecks both minimum-order dimensions.
@@ -1176,6 +1194,9 @@ class LiveOrchestrator:
                     "principal_notional_usd": _text(authority.principal),
                     "worst_case_fee_reserve_usd": _text(fee),
                     "ledger_episodes": len(ledger["episodes"]),
+                    "seconds_delay_applicability": seconds_delay_applicability(
+                        authority.intent, snapshot
+                    ),
                 },
             )
         except GatewayError as exc:

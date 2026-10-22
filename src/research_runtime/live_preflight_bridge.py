@@ -39,12 +39,7 @@ def _digest(value: object) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def run_live_preflight_bridge(
-    oauth_result, *, live_config, alpha_registry_path, candidate_menu, menu_venue_snapshots,
-    evaluated_at_ns, information_cutoff_ns, deadline_ns, max_public_data_age_ns=5_000_000_000,
-    max_hermes_age_ns=300_000_000_000, clock_ns=None, host_currentness=None, geoblock=None,
-    venue_fetcher=None,
-) -> dict:
+def run_live_preflight_bridge(oauth_result, **kwargs) -> dict:
     """Return one sanitized PASS / BLOCKED / ABSTAIN receipt; never raises, never trades.
 
     ``oauth_result`` is an already produced, in-memory OAuthPlanResult; the caller owns its
@@ -53,6 +48,28 @@ def run_live_preflight_bridge(
     The four seams default to the native LIVE-ORCH read-only functions; supplying any of
     them classifies the run as OFFLINE_TEST_ONLY.
     """
+    return _bridge(oauth_result, **kwargs)[0]
+
+
+def prepare_live_canary_handoff(oauth_result, **kwargs):
+    """Same inputs as ``run_live_preflight_bridge``; return ``(receipt, permit, intent)``.
+
+    S10-LIVE-CANARY-01: the exact native ExploratoryGateCPermit and ExecutionIntent the bridge
+    built and preflighted, only when the receipt status is PASS (also an OFFLINE_TEST_ONLY
+    PASS, which the receipt labels); otherwise ``(receipt, None, None)``. It never calls canary.
+    """
+    receipt, permit, intent = _bridge(oauth_result, **kwargs)
+    if receipt["status"] != "PASS":
+        return receipt, None, None
+    return receipt, permit, intent
+
+
+def _bridge(
+    oauth_result, *, live_config, alpha_registry_path, candidate_menu, menu_venue_snapshots,
+    evaluated_at_ns, information_cutoff_ns, deadline_ns, max_public_data_age_ns=5_000_000_000,
+    max_hermes_age_ns=300_000_000_000, clock_ns=None, host_currentness=None, geoblock=None,
+    venue_fetcher=None,
+):
     seams = dict(clock_ns=clock_ns, host_currentness=host_currentness, geoblock=geoblock,
                  venue_fetcher=venue_fetcher)
     offline = any(seams[name] is not None for name in _SEAMS)
@@ -78,6 +95,7 @@ def run_live_preflight_bridge(
         calls=calls, exposure_posture="NO_NEW_EXPOSURE", account_readiness="NOT_EVALUATED",
         no_order=True, no_live_authority=True,
     )
+    permit = intent = None
     try:
         from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as oauth
         # A replayed, mock, forged or unwitnessed result stops before any store read.
@@ -100,7 +118,7 @@ def run_live_preflight_bridge(
             _require(admitted["proof_level"] == "REAL_OAUTH_ORIGIN_BOUND" and len(codes) == 1 and
                      codes[0] in _ABSTAIN, "CHOICE_INVALID")
             receipt.update(status="ABSTAIN", stage="COMPLETE", action=codes[0], reason_codes=codes)
-            return _finish(receipt)
+            return _finish(receipt), None, None
         # The native gate verdict is recomputed below on a fresh venue; every earlier
         # AUTO-01 check (witness, menu, clocks, lineage, latest assessment) must have passed.
         reached_gate = admitted["status"] == "ELIGIBLE_PREVIEW" or codes == ["NATIVE_GATE_REJECTED"]
@@ -218,7 +236,7 @@ def run_live_preflight_bridge(
             receipt["native_reasons"] = dict(receipt["native_reasons"], validation=[code])
     if receipt["status"] != "PASS":
         receipt.update(permit_id=None, permit_valid_until_ns=None)
-    return _finish(receipt)
+    return _finish(receipt), permit, intent
 
 
 def _finish(receipt: dict) -> dict:

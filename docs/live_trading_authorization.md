@@ -48,6 +48,19 @@ no real credential, account access, order or capital. Merge does not activate li
 first real canary (S10-LIVE-CANARY-01) requires a separate exact-merge Karl authorization naming the
 merge SHA, permit ID, intent ID and public canary wallet. Capital/orders remain USD 0 / 0.
 
+S10-LIVE-CANARY-01 (attended canary composer) defines the two-stage form required above and grants no
+live authority. The first real canary's naming of the permit ID and intent ID is satisfied only by that two-stage
+form. Stage A is Karl's prior written authorization of the host release and binding, the LIVE-ORCH state root and
+its verified non-empty ledger head, the public signer and Deposit Wallet, the approved menu, BUY, at most one
+CREATE, the frozen envelope (no tighter ceiling) and a validity window, as a hash-identified artifact. Stage A
+counts only when Karl's separate post-merge activation record names its full SHA-256; a digest that appears only
+in an operator case file is not approval, and without that record there is NO LIVE RUN. Stage B is the in-process
+confirmation Karl types after the full permit and intent IDs and the Stage A digest are displayed; its suffixes
+are a human correlation check, not authentication. The composer is the only route for this canary; the native
+`live_orch canary` CLI is not an authorized route for it. A standing WP permission, a certificate or a post-facto
+receipt is not order authorization, and neither stage, green CI nor the merge authorizes a live run while this
+document says DISABLED. Capital/orders remain USD 0 / 0.
+
 No live trading code exists in WP1. No strategy is live-authorized. No wallet or API credentials are configured. No external repo code is authorized for live execution.
 
 Live mode requires a future WP, explicit human approval, active risk gateway, kill-switch tests, dashboard visibility, and an updated authorization table.
