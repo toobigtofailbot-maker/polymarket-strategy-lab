@@ -547,7 +547,7 @@ def run(case_path: object, *, clock_ns=None, host_currentness=None, geoblock=Non
                    stage_a_authorization_sha256=case["stage_a_authorization_sha256"],
                    displayed_at_ns=displayed, confirmed_at_ns=clock(), authorization="EVIDENCE_ONLY_NOT_AUTHORIZATION"))
         # Last boundary, under the still-held run lock.
-        _recheck_stage_a(case, stage, now_ns=clock())
+        _recheck_stage_a(case, stage, now_ns=clock(), permit=permit, intent=intent)
         orchestrator = orchestrator_factory(facts["config"]) if offline else L.LiveOrchestrator(facts["config"])
         calls["canary"] += 1
         outcome = orchestrator.canary(permit, intent)
