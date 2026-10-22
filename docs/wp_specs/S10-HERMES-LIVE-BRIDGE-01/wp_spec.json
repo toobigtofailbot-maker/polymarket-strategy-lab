@@ -1,0 +1,445 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-LIVE-BRIDGE-01",
+    "title": "Authentic Opportunity Choice and Existing Canonical Strategy Assessment to Read-Only Live Preflight",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "FOREGROUND_HERMES_TO_LIVE_PREFLIGHT_REUSE",
+    "package_size_class": "M",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-hermes-live-bridge-01",
+    "required_predecessor": {
+      "pr_number": 245,
+      "head_sha": "e178c389f09feadd01956cc278ca045e35a49823",
+      "merge_sha": "0c158e061d3ab5039997c6b4e736da0da9507d37"
+    },
+    "objective": "Compose a non-replayed witnessed OAuth opportunity selection and independently existing current canonical HermesStrategyAssessment through native exact intent/feasibility/Exploratory Gate C into unmodified LIVE-ORCH preflight, without fabricating strategy receipt, generating OAuth calls or authorizing an economic order. Composer outside hermes_controlled_runtime (P036); frozen SYNTHETIC_ONLY choice is never promoted to current live venue evidence.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/live_preflight_bridge.py",
+      "tests/research_runtime/test_live_preflight_bridge.py",
+      "docs/hermes_live_bridge_contract.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "docs/status_entries/S10-HERMES-LIVE-BRIDGE-01.md",
+      "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/draftability_certificate.json",
+      "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/live_preflight_bridge.py",
+      "tests/research_runtime/test_live_preflight_bridge.py",
+      "docs/hermes_live_bridge_contract.md",
+      "tests/test_architecture_boundaries.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "docs/status_entries/S10-HERMES-LIVE-BRIDGE-01.md",
+      "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/draftability_certificate.json",
+      "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-LIVE-BRIDGE-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "config/",
+      "secrets/",
+      "credentials/",
+      "local_data/",
+      "agent_memory/",
+      "agent_runtime/",
+      "tools/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/execution_feasibility/",
+      "src/strategy_lifecycle/",
+      "src/risk_engine/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/research_runtime/hermes_controlled_runtime/"
+    ],
+    "max_changed_files": 10,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_architecture_boundaries.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py"
+    ],
+    "rollback_surface": "Revert only the ten R4 bridge paths. The only R4 additions beyond the pre-existing eight-file local implementation are two strictly surgical historical test-consistency updates; preserve prior negative/sibling guards and native risk/execution semantics. No OAuth inference, account or order was invoked.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One new read-only cross-domain composer under src/research_runtime/; P036 protects the native Hermes controlled-runtime package from execution_gateway imports. No native public interface replaced.",
+    "items": [
+      {
+        "surface": "oauth_plan_stage_b.is_witnessed_result and OAuthPlanResult",
+        "before": "Single-purpose witnessed Stage B result returned from existing owner-authorized provider call, with private in-memory witness.",
+        "after": "Unchanged. Bridge accepts the existing result by injection and refuses replay/forgery; never originates inference or creates witness.",
+        "change_authorized": false,
+        "compatibility_requirement": "No edit to OAuth transport, one-dispatch journal, provider request or account credential; historical consumed NO_TRADE is not reusable.",
+        "authority": "REUSE_EXISTING_ONLY"
+      },
+      {
+        "surface": "strategy_manager.load_hermes_strategy_manager_store + canonical HermesStrategyAssessment",
+        "before": "Native manager enforces web research policy, usage/receipt and strict strategy assessment projection.",
+        "after": "Unchanged. Bridge reads actual validated latest assessment, verifies current context/authority, never fabricates receipt.",
+        "change_authorized": false,
+        "compatibility_requirement": "No injection of tool-free OAuth output into strategy-mode controller; lack of suitable current assessment is BLOCKED.",
+        "authority": "REUSE_EXISTING_ONLY"
+      },
+      {
+        "surface": "assess_execution_feasibility / evaluate_exploratory_gate_c / build_exploratory_gate_c_permit",
+        "before": "Native public-market exact intent, feasibility and policy/assessment validation.",
+        "after": "Unchanged; bridge composes only, freshly recomputes one permit, never promotes AUTO-01 preview.",
+        "change_authorized": false,
+        "compatibility_requirement": "Current exact identity/cutoff/store heads/fee/BUY side and active human portfolio policy; native policy owns all admission.",
+        "authority": "REUSE_EXISTING_ONLY"
+      },
+      {
+        "surface": "LiveOrchestrator.preflight",
+        "before": "Existing read-only host, geoblock, fresh venue and ledger checks.",
+        "after": "Unchanged; bridge invokes only preflight and serializes its sanitized result.",
+        "change_authorized": false,
+        "compatibility_requirement": "No canary/reconcile/private account/session/signing, order or budget changes.",
+        "authority": "REUSE_EXISTING_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Five exact existing-authority-bound composition gates; no new canonical risks or model receipt.",
+    "items": [
+      {
+        "path": "bridge.authenticated_choice",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Existing nonreplayed witnessed OAuthPlanResult matches strict raw choice, menu and clock; abstain without preflight; retain frozen SYNTHETIC_ONLY label with separately witnessed origin, never claim live venue truth",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing nonreplayed witnessed OAuthPlanResult matches strict raw choice, menu and clock; abstain without preflight; retain frozen SYNTHETIC_ONLY label with separately witnessed origin, never claim live venue truth",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "REJECTED or ABSTAIN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bridge.native_strategy",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verified current replayed canonical HermesStrategyAssessment only; matching policy/allocation/latest and no fabricated model receipt",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verified current replayed canonical HermesStrategyAssessment only; matching policy/allocation/latest and no fabricated model receipt",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "STRATEGY_ASSESSMENT_UNAVAILABLE or VALIDATED_CANONICAL_ONLY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bridge.native_permit",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Current native fresh intent, public market feasibility and eligible Gate C permit; no AUTO-01 preview reuse",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Current native fresh intent, public market feasibility and eligible Gate C permit; no AUTO-01 preview reuse",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PERMIT_REJECTED or ELIGIBLE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bridge.preflight",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only native LiveOrchestrator.preflight with current host/geoblock/public venue and ledger; no private account/canary",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only native LiveOrchestrator.preflight with current host/geoblock/public venue and ledger; no private account/canary",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PREFLIGHT_PASS or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "bridge.audit",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No economic order, private account, credential use, scheduler or origin inflation; test fakes marked OFFLINE_TEST_ONLY",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No economic order, private account, credential use, scheduler or origin inflation; test fakes marked OFFLINE_TEST_ONLY",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "NO_ECONOMIC_AUTHORITY",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical identity or store. All strategy, choice, intent, venue, feasibility, Gate C and host ids are taken from their unchanged authoritative native modules. The optional sanitized summary is not a new permit.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "PROTECTED draftability certificate, explicit owner implementation authorization and independent live-usage sub-gate are separate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Independent twelve-lens PROTECTED PASS certificate over these exact R4 prompt/spec hashes and all ten paths; native spec/readiness passes.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly instructs executor to implement the certified R4 foreground read-only bridge. The drafting request alone authorizes no code, provider call, private account or economic activity.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly ten changes; one native read-only bridge, focused tests, one exact architecture guard entry, no provider/auth/order; one authoritative local full suite and final hosted CI, no merge.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new external-data domain schema; SIX named offline integration/negative tests R001-R006 enforce protocol safety and exact native reuse. The existing SYNTHETIC_ONLY Stage B choice label remains explicit; no real venue or trade claim.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Six named test contracts with offline negative controls, native readiness and one full/local and hosted suite; no real-provider calls or false live-readiness claims.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_live_bridge_witness_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_live_bridge_witness_binding",
+        "expected_result": "Refuse absent/replayed/forged/mismatched origin, menu and clocks; injected success is PROTOCOL_ONLY/OFFLINE_TEST_ONLY, not a real OAuth claim. Existing fixed Stage B proof_level SYNTHETIC_ONLY is preserved and explicitly not elevated into live decision or venue truth."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_live_bridge_native_strategy_currentness",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_live_bridge_native_strategy_currentness",
+        "expected_result": "Accept only replay-valid latest native assessment under active matching current policy and allocation; reject stale, missing, noncanonical or fake receipt."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_live_bridge_abstains_without_preflight",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_live_bridge_abstains_without_preflight",
+        "expected_result": "NO_TRADE, PAUSE and REASSESS and malformed outputs result in zero permit, zero network/preflight and zero order."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_live_bridge_rederives_native_gate_c",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_live_bridge_rederives_native_gate_c",
+        "expected_result": "Build native current BUY-only execution intent/feasibility and Gate C; never convert or reuse AUTO-01 preview, synthetic venue or stale data as executable permit."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_live_bridge_preflight_fail_closed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_live_bridge_preflight_fail_closed",
+        "expected_result": "Actual native read-only preflight BLOCKED for geoblock, host, fee, venue, ledger and changed-currentness failures with reason code; no invented success."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_live_bridge_no_side_effects_or_claim_inflation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/test_live_preflight_bridge.py::test_live_bridge_no_side_effects_or_claim_inflation",
+        "expected_result": "No OAuth/private account/credential/canary/reconcile/create/cancel/daemon/model calls or store mutation; summary distinguishes offline protocol fixtures from real provenance."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-01",
+    "next_title": "Separately Approved Attended First Live Economic Canary",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-LIVE-BRIDGE-01",
+    "forbidden_in_this_wp": [
+      "Any new OAuth strategy-mode adapter, any edit to oauth_plan_stage_b.py, Strategy Manager policy/controller/models, or invented source/usage/cost/receipt.",
+      "Any actual OAuth call, personal OAuth credential handling, model generation, Polymarket private account/wallet client, order CREATE/CANCEL or signing.",
+      "Any edit to live_orch.py, native Gate C, execution feasibility, portfolio/risk/kill limits, dependency/workflow, scheduler or market-data infrastructure.",
+      "Any real-world PREFLIGHT_PASS, authentic strategy model-origin or capital readiness claim based solely on offline fixtures, synthetic clocks or unverifiable run labels.",
+      "Any execution or live capital activation; first canary requires fresh owner-specific separate authority and genuine current operational evidence.",
+      "Any modification or bypass of Hermes runtime P036 or historical guard files; bridge must live in src/research_runtime/ and architecture guard adds only that exact file."
+    ]
+  }
+}

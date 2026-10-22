@@ -295,7 +295,11 @@ def test_architecture_exact_approval_preserves_all_original_guards(tmp_path):
                             cwd=ROOT, capture_output=True, text=True, check=True).stdout
     modified = (ROOT / "tests/test_architecture_boundaries.py").read_text()
     addition = '    # S10-HERMES-AUTO-01: exact offline opportunity connector only.\n    "'+target+'",\n'
-    assert modified.replace(addition, "", 1) == source
+    # S10-HERMES-LIVE-BRIDGE-01 (R4): exactly one further exact-file entry is approved.
+    bridge = ('    # S10-HERMES-LIVE-BRIDGE-01: exact foreground read-only live-preflight composer only.\n'
+              '    "src/research_runtime/live_preflight_bridge.py",\n')
+    assert modified.count(bridge) == 1
+    assert modified.replace(addition, "", 1).replace(bridge, "", 1) == source
 
 
 # --- S10-HERMES-AUTO-02 additive: optional offline producer evidence ---------------

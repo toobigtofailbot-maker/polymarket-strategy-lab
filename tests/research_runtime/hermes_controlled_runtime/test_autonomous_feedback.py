@@ -403,8 +403,13 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
                 with pytest.raises(AssertionError):
                     guard()
     # Architecture guard is unmodified: the Hermes child directory approval already covers both modules.
-    assert subprocess.run(["git", "diff", "--quiet", BASE_SHA, "--", "tests/test_architecture_boundaries.py"],
-                          cwd=ROOT).returncode == 0
+    # S10-HERMES-LIVE-BRIDGE-01 (R4): the only difference is its one exact-file entry outside the Hermes package.
+    base = subprocess.run(["git", "show", BASE_SHA + ":tests/test_architecture_boundaries.py"], cwd=ROOT,
+                          capture_output=True, text=True, check=True).stdout
+    current = (ROOT / "tests/test_architecture_boundaries.py").read_text()
+    bridge = ('    # S10-HERMES-LIVE-BRIDGE-01: exact foreground read-only live-preflight composer only.\n'
+              '    "src/research_runtime/live_preflight_bridge.py",\n')
+    assert current.count(bridge) == 1 and current.replace(bridge, "", 1) == base
     scopes = runpy.run_path(str(ROOT / "tests/test_architecture_boundaries.py"))["APPROVED_SRC_SCOPES"]
     assert "src/research_runtime/hermes_controlled_runtime" in scopes
 
