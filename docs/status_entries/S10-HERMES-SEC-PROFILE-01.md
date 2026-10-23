@@ -1,3 +1,34 @@
+# S10-HERMES-SEC-PROFILE-01 certified scope17 continuation
+
+State: AUTHORIZED_SCOPE17_IMPLEMENTED; final validation pending.
+PR251 / branch codex/s10-hermes-sec-profile-01,existing draft,preserved implementation.
+Base:f2b8916fe2bd377b0790278f4be5dad85568d367 (merged PR250).
+Prompt SHA256:13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f.
+Spec SHA256:288f3b098be859d2d9eae2918d2e0554c5d4df86c335e51e4ee5037bf77380bd.
+Certificate SHA256:a992de97ef0cb7dd3df8274f3e0faae13ae83403ac8db2a1926da9088c4b9862.
+Policy SHA256:eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680 unchanged.
+Exact17 paths: the previous16 plus the historical IO artifact guard. Native
+PROTECTED spec/readiness pass; owner explicitly authorized this amended resume.
+
+Only new code edits are the exact policy allowlist entry,its JSON/Python shadow
+negatives,and the required existing historical snapshot comparison adjustment.
+The three historical guard/wrapper tests pass on the actual complete tracked tree.
+Four runtime modules and three other native test modules are byte-identical to
+prior implementation. All prior failures remain historical evidence below.
+
+Fresh full local tracked-tree tests,security and final-head hosted CI are pending
+at this checkpoint;actual results/current head/posted evidence mode belong in the
+live PR body. No current-head SHA is encoded here. Review readiness:see live PR
+body after mandatory validation. Independent combined implementation/security and
+final Side21 merge-readiness review remain mandatory. Merge ready:NO until those
+reviews and Karl's decision. No merge/deployment/real credentials/OAuth/host/trading.
+Linux Hermes profile/control-count remains UNOBSERVED and separately gated;
+D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
+
+---
+
+## Historical scope16 blocked record (superseded by scope17 authority)
+
 # S10-HERMES-SEC-PROFILE-01 amended implementation
 
 State: BLOCKED_REQUIRES_INDEPENDENT_SCOPE_RECERTIFICATION after required hosted CI.

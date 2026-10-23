@@ -386,6 +386,17 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
         base = subprocess.run(["git", "show", f"{BASE_SHA}:{guard_path}"], cwd=ROOT, capture_output=True,
                               text=True, check=True).stdout
         current = (ROOT / guard_path).read_text(encoding="utf-8")
+        # Scope17 permits only these exact guard additions; all historical source stays fixed.
+        if "input_output" in guard_path:
+            for approved in (
+                '        "docs/hermes_runtime_security_profile.json",\n',
+                '    # S10-HERMES-SEC-PROFILE-01: unrelated siblings remain forbidden.\n'
+                '    for hostile in ("docs/hermes_runtime_security_profile_shadow.json",\n'
+                '                    "docs/hermes_runtime_security_profile_shadow.py"):\n'
+                '        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n\n',
+            ):
+                assert current.count(approved) == 1
+                current = current.replace(approved, "", 1)
         # S10-HERMES-AUTO-02-REAL-01 and -ACTIVATION exact additions
         for real01 in ACTIVATION_GUARD_ADDITIONS[guard_path] + REAL01_GUARD_ADDITIONS[guard_path]:
             assert current.count(real01) == 1
@@ -397,6 +408,9 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
         with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0, listing, "")):
             guard()
         rejected = [sibling] + ([test_sibling] if "input_output" in guard_path else [])
+        if "input_output" in guard_path:
+            rejected += ["docs/hermes_runtime_security_profile_shadow.json",
+                         "docs/hermes_runtime_security_profile_shadow.py"]
         for extra in rejected:
             with patch.object(subprocess, "run",
                               return_value=subprocess.CompletedProcess([], 0, listing + extra + "\n", "")):

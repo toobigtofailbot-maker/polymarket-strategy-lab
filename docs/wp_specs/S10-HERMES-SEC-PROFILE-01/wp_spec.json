@@ -15,7 +15,7 @@
       "head_sha": "115bda7147d6cbb883af3bc845ac4fa2bd056932",
       "merge_sha": "f2b8916fe2bd377b0790278f4be5dad85568d367"
     },
-    "objective": "Bind the exact five-package patched Hermes dependency profile to native request and receipt identity; verify every child launch and fail closed on original/forged/mixed profiles; no production installation, OAuth or provider invocation.",
+    "objective": "Bind the five-package patched Hermes profile to existing native request/receipt identity and repair the exact preexisting tracked-artifact allowlist to admit the one new profile JSON, preserving the historical negative guard; continue existing draft PR #251, not a new branch/PR. No production installation, OAuth, provider invocation or live trading.",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": false,
     "xl_authorization_basis": null
@@ -30,6 +30,7 @@
       "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
       "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
       "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
       "docs/hermes_runtime_security_profile.json",
       "docs/hermes_real_provider_stage_b_contract.md",
       "docs/deferred_items_log.md",
@@ -48,6 +49,7 @@
       "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
       "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
       "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
       "docs/hermes_runtime_security_profile.json",
       "docs/hermes_real_provider_stage_b_contract.md",
       "docs/deferred_items_log.md",
@@ -73,10 +75,12 @@
       "src/data_layer/",
       "src/operator_cockpit_frontend/"
     ],
-    "max_changed_files": 16,
+    "max_changed_files": 17,
     "exact_scope_required": true,
-    "historical_compatibility_edits": [],
-    "rollback_surface": "Revert exactly the sixteen declared repository paths. Retain old immutable host pin and all historical receipts unchanged. No production pin is installed or selected in this WP.",
+    "historical_compatibility_edits": [
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "rollback_surface": "Revert exactly the seventeen declared repository paths, including the narrow tracked-artifact guard entry, without widening historical regex. Retain the existing production host pin and historical receipts unchanged; no production installation or OAuth in this WP.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -345,7 +349,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Exactly sixteen declared files and mandatory local/full/exact-head CI evidence; no production installation or provider/account operation.",
+        "condition": "Exactly seventeen declared files and mandatory local/full/exact-head CI evidence; no production installation or provider/account operation.",
         "failure_category": "SCOPE_POLICY_INVALID"
       }
     ]
@@ -543,7 +547,7 @@
         "source": "manual_evidence",
         "test": "final_native_and_security_evidence",
         "command": "Run exact readiness --check-diff, final full local suite, applicable security checks and one exact-head hosted CI plan as specified in prompt.",
-        "expected_result": "Exact sixteen-file diff, independent certificate and readiness valid; stable local full suite and required Tier 3 exact-head hosted checks observed; no production calls."
+        "expected_result": "Exact sixteen-file diff, independent certificate and readiness valid; stable local full suite and required Tier 3 exact-head hosted checks observed; no production calls. Final full-suite and hosted CI run on the exact tracked seventeen-file tree; historical allowlist positive and unknown JSON/Python sibling negatives; test_autonomous_feedback historical snapshot remains exact after subtracting only approved guard additions. New exact-head CI PASS required across all required compatibility legs, never inferred from earlier untracked snapshots."
       }
     ]
   },

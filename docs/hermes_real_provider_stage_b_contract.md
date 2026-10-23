@@ -362,3 +362,31 @@ No forbidden guard edit or test skip occurred. PR251 is draft,not ready and not
 merge-ready. D009 records the blocker. Native readiness still describes package
 structure only; it cannot override required CI failure or authorize scope expansion.
 Production,OAuth/credentials,trading and D005 boundaries remain unchanged.
+
+
+## S10-HERMES-SEC-PROFILE-01 certified scope17 continuation (2026-10-23)
+
+Karl explicitly authorized the independently certified17-path amendment on existing
+draft PR251. New prompt SHA256:
+`13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f`;
+spec:`288f3b098be859d2d9eae2918d2e0554c5d4df86c335e51e4ee5037bf77380bd`;
+certificate:`a992de97ef0cb7dd3df8274f3e0faae13ae83403ac8db2a1926da9088c4b9862`.
+Policy SHA256 remains
+`eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`.
+Native spec guard PASS and PROTECTED readiness IMPLEMENTATION_READY,scope17.
+
+D009's missing-path authority is resolved by independent recertification. The exact
+tracked-artifact allowlist adds only docs/hermes_runtime_security_profile.json;
+JSON/Python shadow siblings remain forbidden. The existing in-scope historical
+snapshot subtracts only those exact additions,and exercises both sibling negatives.
+All four runtime source modules and the other three native test modules are
+byte-identical to the preserved prior implementation. The three previously failing
+historical guard/wrapper tests now pass on the complete actual tracked tree.
+Historical scope16 CI failure is retained as failure,not reclassified as PASS.
+
+D002/D009 acceptance is pending fresh full tracked-tree local validation,security
+checks and one new exact-head full hosted CI. This is an implementation checkpoint,
+not final independent acceptance. Linux Hermes promotion remains D004,separately
+gated and UNOBSERVED; optional inactive routing C081 issue remains D008. No new
+runtime/dependency/credential/host authority,no eighteenth path,skip or guard
+weakening. D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.

@@ -302,6 +302,7 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
     )
     allowed = {
         "docs/hermes_readonly_boundary.md",
+        "docs/hermes_runtime_security_profile.json",
         "docs/hermes_research_brain_execution_plan.md",
         "docs/hermes_advisory_foundation_research_brain_architecture.md",
         "docs/hermes_input_output_contracts_and_validator_requirements.md",
@@ -439,6 +440,11 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
         if any(pattern.search(normalized) for pattern in forbidden_patterns):
             findings.append(normalized)
     assert findings == []
+    # S10-HERMES-SEC-PROFILE-01: unrelated siblings remain forbidden.
+    for hostile in ("docs/hermes_runtime_security_profile_shadow.json",
+                    "docs/hermes_runtime_security_profile_shadow.py"):
+        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)
+
     # S10-HERMES-AUTO-02-REAL-01: unregistered siblings of the new module/test stay rejected.
     for hostile in ("src/research_runtime/hermes_controlled_runtime/real_provider_stage_b_shadow.py",
                     "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b_shadow.py"):
