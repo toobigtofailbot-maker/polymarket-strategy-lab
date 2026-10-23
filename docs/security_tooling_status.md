@@ -309,3 +309,164 @@ WP169 introduces credential-like input handling that fails closed: secret-bearin
 WP174B adds no dependency; the exact installed pins (`polymarket-client==0.10.0`, `websockets==15.0.1`) are unchanged, so the hosted `dependency-audit` job and `pip-audit` closure are unaffected. Project-local gitleaks and Semgrep must be AVAILABLE and scan the final source (including `src/execution_gateway/gate_b.py` and `gate_b_operator.py`) with no material finding; any material finding is a HARD STOP.
 
 WP174B handles a real signer private key, so its security boundary is fail-closed and no-echo by construction: the key is accepted only through an interactive `getpass` no-echo prompt (never argv, a file, a pipe, or the environment), held in an opaque non-serializable in-memory lease whose value is never exposed through `repr`/`str`/serialization and is cleared on close (physical memory zeroization is never claimed). L2 credentials are derived in memory and never persisted. The raw SDK client, credentials, private key, API key, secret, and passphrase are never exposed as public attributes, committed, logged, journaled, emitted to the cockpit, or placed in exceptions or PR evidence; raw SDK exceptions are replaced by a closed sanitized error vocabulary. Adversarial secret-sentinel tests prove recursive no-echo across every output surface. No real secret is used by pytest, CI, security scanners, or reviewers; the only real-secret use is the operator's local no-echo empty-wallet smoke, whose sanitized receipt (content-addressed public fields only) is the sole consumed evidence and is never committed. If any scanner or log ever captured a real secret, it is a protected incident requiring key rotation, and the secret is never written into the incident record.
+
+
+## Historical blocked checkpoint (superseded by amended S10-HERMES-SEC-PROFILE-01)
+
+The independent certificate and exact prompt/spec passed native pre-implementation gates on the frozen PR #250 base `f2b8916fe2bd377b0790278f4be5dad85568d367`. Karl requested execution of the certified WP on 2026-10-23. The sixteen-file draft implementation is incomplete and NOT_MERGE_READY; no full-suite, final independent review or acceptance CI PASS is claimed.
+
+The shared profile guard rejected the earlier local shadow: it had **83 distributions**, while the certified Windows profile binds **68**. The 15 extras include pip, edge-tts, boto3/botocore and their dependencies. Creation timestamps coincide with the earlier predraft native probe. The earlier 67-row zero-match audit preceded that probe and does not attest its later changed environment. The original source/lock bytes and all five candidate target versions remained unchanged; installed inventory did not.
+
+A fresh task-owned scratch install from the exact candidate lock restored the approved **68-distribution profile** (`75e3bcea7af741fe599594a744eeb043d494973f79a5291286e60b325a17e4a8`), with `uv sync --locked` and `uv pip check` both exit 0. A socket-denied native reproduction with supported `security.allow_lazy_installs: false` and a child-process audit guard kept that profile identical before/after. It observed **0 explicit-empty tools and 17 control tools**, not the certified 18; `text_to_speech` was absent. No production installation or account/provider operation occurred.
+
+The smallest proposed correction is independent review of a narrowly amended, recertified prompt/spec: explicitly disable lazy installation in every sterile child home, prevent installer subprocess escape, compare inventory before/after probing, and freeze the genuinely observed sealed control toolset instead of asserting the historical 18. Do not add unreviewed optional dependencies or relax identity validation to preserve a count. The current certificate/prompt/spec bytes remain unchanged; no amendment is implemented under them. Linux evidence remains separately gated and unobserved.
+
+D005 remains OPEN. Credentials/OAuth, host promotion, model/account endpoints, capital/orders and merge remain unauthorized. LIVE TRADING STATUS: DISABLED. USD 0; orders 0.
+
+
+A second immutable-artifact blocker was observed before committing: repository `* text=auto` normalizes the supplied CRLF JSON. Certified working spec SHA256 `318b958031c69b6792336761f822b24534f61d9ae939f00e2a9275a33677917f` becomes staged LF SHA256 `13a37ece07fbd9f8141a6cce9ca404bf33c4ec44749ef272a1f1146b990d5ff1`; policy `df4bb5bdf20249614e1887a64c9d6d71e03834668be67ae765e837ec2af41ac7` becomes `eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`. Prompt and certificate bytes do not change. Staging was undone; no normalized artifact was committed, and no Git filter/plumbing or seventeenth .gitattributes edit was used. Reissue the amended prompt/spec/policy with LF raw bytes and an independent certificate covering those exact bytes. No PR, commit, push, full-suite or hosted acceptance run was performed after this hard stop; the implementation remains an uncommitted local checkpoint.
+
+
+## S10-HERMES-SEC-PROFILE-01 amended implementation (2026-10-23)
+
+Karl explicitly authorized resuming the same sixteen-file uncommitted checkpoint.
+The newly independent Side21 certificate, prompt and spec pass the native guard and
+IMPLEMENTATION_READY gate. Current normative policy SHA256 is
+`eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`.
+The previous certificate/hash and 18-tool criteria in the historical checkpoint
+above are superseded; its 83-package drift and earlier audit remain historical facts.
+
+The shared verifier reads the exact pin-owned interpreter's isolated metadata,
+requires the complete approved inventory and immutable dependency inputs, and
+rechecks after native children. All sterile configs disable lazy installs and
+stripped environments set HERMES_DISABLE_LAZY_INSTALLS=1. Offline probe/fake-wire
+and mock OAuth children deny process execution before Hermes imports. Future
+separately authorized real OAuth retains its browser opener; no real login runs here.
+Windows requires the exact seventeen observed default tools and zero explicit tools.
+Linux's 64-distribution policy is a derived equality target, with native tool count
+UNOBSERVED; installation, audit and native proof precede separate host promotion.
+Owner-controlled immutable source is assumed; race-proof hostile-host attestation
+is not claimed.
+
+Mandatory profile digests bind StageBRequest, Real01Request, OAuthPlanRequest,
+preflight eligibility, wire reports, origin/provenance records and their canonical
+hashes. Legacy missing-profile evidence is ineligible without rewriting history.
+ID-token/JWKS parsing uses a single sanitized ID_TOKEN_INVALID path, RS256 and
+required claims, fresh options, a 64-KiB token limit, 1-MiB streamed JWKS limit,
+at most 100 keys and one matching RSA signature key. Explicit null alg/use rejects;
+absent optional members remain supported. PyJWT's historical no-published-fix
+advisory caveat remains; bounded regressions do not establish a universal vendor fix.
+Four-format Pillow smoke tests do not prove every optional image route safe.
+
+Current Windows candidate: 68 installed distributions, 67 audited requirements
+(editable Hermes excluded), dependency consistency exit 0 and post-probe audit exit
+0 with zero known vulnerabilities. Full-suite and exact-head CI results remain the
+PR's live evidence; no completion or merge readiness is inferred from these checks.
+D005 OPEN; OAuth/credentials NOT AUTHORIZED; LIVE TRADING STATUS: DISABLED;
+USD 0; orders 0. Production and retained host pin are untouched.
+
+
+Security scan qualification: Semgrep 1.176.1 scanned all four changed source modules
+with p/python and p/security-audit (200 applicable rules, zero scan errors). One
+subprocess-injection alert at capture_offline_wire is a FALSE POSITIVE under the
+explicit immutable owner-controlled pin assumption: verified pin-owned executable,
+constant Python program, list argv with shell disabled, and untrusted scenario/model
+bytes confined to stdin. R001 rejects out-of-pin/metacharacter executable paths before
+launch; R002 denies subprocess/shell escapes; R003 denies mismatched wire launch.
+No scanner exclusion, suppression or security risk acceptance was added. Independent
+implementation review remains required. Gitleaks source scan found zero leaks;
+whole working-tree scan reports 19 alerts, all on unchanged baseline lines, including
+historical negative fixtures. Existing findings are not reported as a clean
+whole-repository scan. No new finding line was introduced.
+
+
+Final local validation: sealed Windows native focused suite25 passed without skips;
+R001-R007 each pass as exact separate commands; adjacent95 and architecture51 pass.
+After native construction, the matching68-distribution inventory and67-row audit
+remain exact, audit exit0 with zero known vulnerabilities. The existing local Linux
+image ran the complete repository suite offline with strict DuckDB, no installation:
+14028 passed,15 skipped,125 warnings,exit0. Windows broad validation was interrupted
+after the same pyarrow._dataset Application Control block reproduced on untouched
+main; it is not PASS. The offline Linux repository suite is not Linux Hermes
+installation/security-profile/control-count evidence. Actual final-head hosted CI,
+posted evidence and independent Side21 review are governed by the live PR body;
+merge remains Karl-only after required independent approval.
+
+
+## Final tracked-tree CI blocker (supersedes local acceptance inference)
+
+Required run39995853674 on c767f9850f5dd9d2612385355f829051637e255b fails
+all four compatibility jobs,three tests per job,through the same historical IO
+artifact guard. Its git ls-files check rejects the newly tracked profile JSON.
+The local14028-pass broad snapshot and25-pass focused run preceded tracking that
+new file; they do not establish committed-tree acceptance. This was a preventable
+tracked-artifact discovery/validation-copy gap,not a CI environment excuse.
+The historical guard path is outside the certified16; a minimal exact allowlist
+addition requires independently recertifying17 paths and renewed owner authority.
+The in-scope feedback source-snapshot assertion must account for the addition.
+No forbidden guard edit or test skip occurred. PR251 is draft,not ready and not
+merge-ready. D009 records the blocker. Native readiness still describes package
+structure only; it cannot override required CI failure or authorize scope expansion.
+Production,OAuth/credentials,trading and D005 boundaries remain unchanged.
+
+
+## S10-HERMES-SEC-PROFILE-01 certified scope17 continuation (2026-10-23)
+
+Karl explicitly authorized the independently certified17-path amendment on existing
+draft PR251. New prompt SHA256:
+`13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f`;
+spec:`288f3b098be859d2d9eae2918d2e0554c5d4df86c335e51e4ee5037bf77380bd`;
+certificate:`a992de97ef0cb7dd3df8274f3e0faae13ae83403ac8db2a1926da9088c4b9862`.
+Policy SHA256 remains
+`eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`.
+Native spec guard PASS and PROTECTED readiness IMPLEMENTATION_READY,scope17.
+
+D009's missing-path authority is resolved by independent recertification. The exact
+tracked-artifact allowlist adds only docs/hermes_runtime_security_profile.json;
+JSON/Python shadow siblings remain forbidden. The existing in-scope historical
+snapshot subtracts only those exact additions,and exercises both sibling negatives.
+All four runtime source modules and the other three native test modules are
+byte-identical to the preserved prior implementation. The three previously failing
+historical guard/wrapper tests now pass on the complete actual tracked tree.
+Historical scope16 CI failure is retained as failure,not reclassified as PASS.
+
+D002/D009 acceptance is pending fresh full tracked-tree local validation,security
+checks and one new exact-head full hosted CI. This is an implementation checkpoint,
+not final independent acceptance. Linux Hermes promotion remains D004,separately
+gated and UNOBSERVED; optional inactive routing C081 issue remains D008. No new
+runtime/dependency/credential/host authority,no eighteenth path,skip or guard
+weakening. D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
+
+## Scope17 final local validation record (2026-10-23)
+
+Validated implementation commit: `5eb878592f6c31d3efd7bfa63d1d6e13f5cf36f8`.
+Complete committed tracked tree, exact17 paths, no overlay or omitted policy:
+`python -B -m pytest -q -p no:cacheprovider`, existing offline Linux Python3.12
+image, WP167_STRICT_DUCKDB=1: 14028 passed, 15 skipped, 125 warnings in 536.52s (0:08:56); exit0.
+Historical guard/wrappers:3 passed. Native plus adjacent focused suite:176 passed.
+R001-R007 exact requirement nodes:each passed. Repository-truth tests:43 passed.
+All nine implementation/test Python hashes remain unchanged after these runs.
+
+A development full run had1 failed,14027 passed,15 skipped: the scope17 deferred
+section was appended below a historical terminal-row invariant. Moving only that
+section into the existing current-WP area resolved it; the historical test and
+terminal row were preserved. That failed run remains retained as failed evidence.
+
+Fresh sealed Windows native receipt:exact17 default tool names,0 explicit tools,
+installer subprocess denied,zero stderr and stable approved68-distribution profile.
+Post-probe pip check PASS; actual installed67-requirement pip-audit:0 known
+vulnerabilities,without ignores or suppression; inventory identical before/after.
+Semgrep five paths,200 applicable rules,one verified command-injection FALSE
+POSITIVE,0 errors; no suppression. The pin-owned constant child program/list argv
+and stdin-only data flow are unchanged; pre-launch/profile/denied-process negatives
+pass. Linux Hermes native installation/audit/control-count remains UNOBSERVED.
+
+D009's tracked-artifact failure is locally resolved under independent scope17
+authority. D002 now awaits exact-final-head hosted full CI,posted evidence and
+independent Side21 combined implementation/security and final readiness review.
+The final hosted result and live head belong in the PR body; no current-head SHA
+is encoded here. Merge ready:NO pending independent review and Karl's decision.
+D004/D006/D007/D008 remain qualified as previously recorded. D005 OPEN;
+LIVE TRADING STATUS:DISABLED;real capital USD0;real orders0.
+No eighteenth path,dependency change,workflow/routing edit,production operation,
+real credential/OAuth/provider/account call,merge,deployment or trading authority.

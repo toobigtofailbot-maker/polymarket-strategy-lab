@@ -65,7 +65,7 @@ def test_provenance_rejects_model_self_attestation_and_tampering(tmp_path):
         (reid(record, information_cutoff_ns=native.T0 - 1), "PROVENANCE_CLOCK_INVALID"),
         (reid(record, response_completed_ns=native.AT + 1), "PROVENANCE_CLOCK_INVALID"),
         (reid(record, deadline_ns=native.AT), "PROVENANCE_CLOCK_INVALID"),
-        (reid(record, issued_at_ns=native.T0 + 1), "PRODUCER_CLOCK_CONFLICT"),
+        (reid(record, issued_at_ns=native.T0 + 1), "PROVENANCE_ORIGIN_FORGED"),
         (reid(record, lifecycle_head="0" * 64), "PRODUCER_STATE_CHANGED"),
         (reid(record, strategy_version_id=other), "PRODUCER_CLAIM_MISMATCH"),
         (reid(record, hermes_assessment_id=None), "PRODUCER_CLAIM_MISMATCH"),
@@ -386,6 +386,17 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
         base = subprocess.run(["git", "show", f"{BASE_SHA}:{guard_path}"], cwd=ROOT, capture_output=True,
                               text=True, check=True).stdout
         current = (ROOT / guard_path).read_text(encoding="utf-8")
+        # Scope17 permits only these exact guard additions; all historical source stays fixed.
+        if "input_output" in guard_path:
+            for approved in (
+                '        "docs/hermes_runtime_security_profile.json",\n',
+                '    # S10-HERMES-SEC-PROFILE-01: unrelated siblings remain forbidden.\n'
+                '    for hostile in ("docs/hermes_runtime_security_profile_shadow.json",\n'
+                '                    "docs/hermes_runtime_security_profile_shadow.py"):\n'
+                '        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n\n',
+            ):
+                assert current.count(approved) == 1
+                current = current.replace(approved, "", 1)
         # S10-HERMES-AUTO-02-REAL-01 and -ACTIVATION exact additions
         for real01 in ACTIVATION_GUARD_ADDITIONS[guard_path] + REAL01_GUARD_ADDITIONS[guard_path]:
             assert current.count(real01) == 1
@@ -397,6 +408,9 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
         with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0, listing, "")):
             guard()
         rejected = [sibling] + ([test_sibling] if "input_output" in guard_path else [])
+        if "input_output" in guard_path:
+            rejected += ["docs/hermes_runtime_security_profile_shadow.json",
+                         "docs/hermes_runtime_security_profile_shadow.py"]
         for extra in rejected:
             with patch.object(subprocess, "run",
                               return_value=subprocess.CompletedProcess([], 0, listing + extra + "\n", "")):
@@ -460,3 +474,19 @@ def test_activation_real_origin_source_class_spoof_replay_and_guards(tmp_path, m
             with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0, listing + extra + "\n", "")):
                 with pytest.raises(AssertionError):
                     guard()
+
+
+def test_security_profile_provenance_rejects_old_or_forged_identity(tmp_path):
+    w, args, proposal, _ = world(tmp_path / "world")
+    request, result, record, content = produce(tmp_path, args, proposal)
+    assert record["runtime_profile_sha256"] == request.runtime_profile_sha256 == result.runtime_profile_sha256
+    checked = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=record))
+    assert checked["status"] == "ELIGIBLE_PREVIEW"
+    for digest in (None, "0" * 64, tf._profile_entries()[1]["profile_id"].rsplit(":", 1)[1]):
+        forged = reid(record, runtime_profile_sha256=digest)
+        verdict = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=forged))
+        assert verdict["status"] != "ELIGIBLE_PREVIEW"
+    old = dict(record); old.pop("runtime_profile_sha256")
+    old["provenance_id"] = fb.PROVENANCE_PREFIX + fb._digest({k:v for k,v in old.items() if k != "provenance_id"})
+    assert cycle.evaluate_once(**dict(args, choice=content, producer_evidence=old))["status"] != "ELIGIBLE_PREVIEW"
+    assert "runtime_profile_sha256" in result.to_public()

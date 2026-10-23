@@ -1,5 +1,127 @@
 # Deferred Items Log
 
+## S10-HERMES-SEC-PROFILE-01 historical blockers (amended resolution below)
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-HERMES-SEC-PROFILE-01-D001 | Frozen 68-package profile conflicts with historical 18-tool negative control | BLOCKED_REQUIRES_INDEPENDENT_RECERTIFICATION | Shared verifier rejects prior shadow inventory of 83 distributions. Clean exact-lock Windows install has 68 and passes pip check; sealed native construction preserves that profile, exposes 0 empty tools and 17 control tools, with text_to_speech absent. Review a minimal exact-byte amendment disabling lazy installs/installer subprocess escape and requiring before/after profile equality with the observed sealed toolset. Retain current prompt/spec/certificate unchanged; no dependency-graph expansion or waiver. |
+| S10-HERMES-SEC-PROFILE-01-D002 | Complete implementation and final validation | NOT_MERGE_READY | Partial sixteen-file draft only. Compilation/diff checks are not full validation. Finish only after independently recertified scope/criteria and renewed exact-package implementation authority; then run focused/adjacent tests, matching native/audit evidence, one stable local full suite, exact-head hosted CI and independent final review. No production promotion/OAuth authority. |
+| S10-HERMES-SEC-PROFILE-01-D003 | Certified JSON raw bytes change under Git text normalization | BLOCKED_REQUIRES_INDEPENDENT_RECERTIFICATION | CRLF spec normalizes from certified 318b958031c69b6792336761f822b24534f61d9ae939f00e2a9275a33677917f to staged 13a37ece07fbd9f8141a6cce9ca404bf33c4ec44749ef272a1f1146b990d5ff1; policy df4bb5bdf20249614e1887a64c9d6d71e03834668be67ae765e837ec2af41ac7 to eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680. Reissue corrected LF prompt/spec/policy and independent exact-byte certificate. Staging undone; no commit, plumbing bypass or .gitattributes change. |
+
+
+### Amended resolution (2026-10-23)
+
+D001 and D003 above are historical blockers, now RESOLVED_BY_INDEPENDENT_AMENDMENT:
+Side21 reissued LF-native prompt/spec/policy/certificate, authorized by Karl for
+checkpoint resume. The sealed Windows acceptance is the observed exact17-set,
+without optional installations; previous 83-package evidence remains rejected.
+D002 is BLOCKED_REQUIRES_INDEPENDENT_SCOPE_RECERTIFICATION; prior runs remain historical,
+not acceptance evidence. Final exact-head CI and independent Side21 review remain
+mandatory before merge. S10-HERMES-SEC-PROFILE-01-D004: Linux installation, native
+count, inventory/audit and host promotion are DEFERRED_TO_SEPARATELY_AUTHORIZED_WP;
+no Linux native/security PASS is inferred from Windows. D005 remains OPEN.
+S10-HERMES-SEC-PROFILE-01-D006: whole-tree Gitleaks reports 19 unchanged baseline
+alert lines; zero introduced alerts. Baseline triage remains in its original owning
+scope. Semgrep's one command-injection alert is verified FALSE POSITIVE with
+in-scope pre-launch and process-denial tests; no suppression or ignore rule.
+Exact final CI and independent review still required.
+S10-HERMES-SEC-PROFILE-01-D007: Windows full-suite environment is BLOCKED_OS_POLICY:
+pyarrow._dataset DLL is denied by Application Control in both untouched main and
+this WP. No OS-policy bypass or dependency change. Native Hermes focused25 and
+R001-R007 pass; the existing Linux validation image is used offline for broad
+coverage: 14028 passed, 15 skipped, 125 warnings, exit0. Windows full coverage
+remains separately evidenced by exact-head CI.
+S10-HERMES-SEC-PROFILE-01-D008: optional routing-enabled local diagnostic returns
+CI_PLAN_INVALID because Git emits a zero-padded copy similarity status C081 for the
+new independent certificate, while the base classifier accepts only C100 or one/
+two digits. Routing variable CI_RISK_ROUTING_ENABLED is unset (read-only lookup);
+current native workflow therefore uses its fixed DEFAULT_OFF Tier3/full bootstrap
+plan and bootstrap final gate. No CI/routing switch or classifier was changed.
+Future routing enablement needs its own approved classifier correction; actual
+hosted expanded jobs/final gate must still pass on this WP's final head.
+S10-HERMES-SEC-PROFILE-01-D009: required hosted compatibility CI fails on all four
+OS/Python legs (run39995853674,c767f9850f5dd9d2612385355f829051637e255b).
+The historical IO artifact guard at tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py:441
+uses git ls-files and rejects the newly tracked docs/hermes_runtime_security_profile.json.
+Three tests fail through that single guard; final gate fails because compatibility
+failed. The prior local broad/native passes were obtained while the policy JSON
+was untracked, so they do not establish tracked-tree acceptance. Preventable: YES;
+preflight missed a complete tracked-tree guard and the validation copy omitted new
+paths from its Git index. Root cause: INCOMPLETE_TRACKED_ARTIFACT_GUARD_DISCOVERY.
+No in-scope production/runtime fix can satisfy the unchanged guard. A concrete
+one-path allowlist proposal passes a read-only in-memory positive/sibling-negative
+simulation; the in-scope feedback source-snapshot assertion also needs its exact
+addition accounted for. Minimum scope is seventeen paths, requiring amended
+prompt/spec and independent recertification plus owner authorization. No guard,
+test skip, policy filename, Git tracking or certificate bypass was applied. PR251
+returned to draft; Ready for review:NO; merge ready:NO. Current implementation
+is preserved. Final broad checks must use the staged/committed full tracked tree.
+
+
+
+
+## Scope17 final local validation record (2026-10-23)
+
+Validated implementation commit: `5eb878592f6c31d3efd7bfa63d1d6e13f5cf36f8`.
+Complete committed tracked tree, exact17 paths, no overlay or omitted policy:
+`python -B -m pytest -q -p no:cacheprovider`, existing offline Linux Python3.12
+image, WP167_STRICT_DUCKDB=1: 14028 passed, 15 skipped, 125 warnings in 536.52s (0:08:56); exit0.
+Historical guard/wrappers:3 passed. Native plus adjacent focused suite:176 passed.
+R001-R007 exact requirement nodes:each passed. Repository-truth tests:43 passed.
+All nine implementation/test Python hashes remain unchanged after these runs.
+
+A development full run had1 failed,14027 passed,15 skipped: the scope17 deferred
+section was appended below a historical terminal-row invariant. Moving only that
+section into the existing current-WP area resolved it; the historical test and
+terminal row were preserved. That failed run remains retained as failed evidence.
+
+Fresh sealed Windows native receipt:exact17 default tool names,0 explicit tools,
+installer subprocess denied,zero stderr and stable approved68-distribution profile.
+Post-probe pip check PASS; actual installed67-requirement pip-audit:0 known
+vulnerabilities,without ignores or suppression; inventory identical before/after.
+Semgrep five paths,200 applicable rules,one verified command-injection FALSE
+POSITIVE,0 errors; no suppression. The pin-owned constant child program/list argv
+and stdin-only data flow are unchanged; pre-launch/profile/denied-process negatives
+pass. Linux Hermes native installation/audit/control-count remains UNOBSERVED.
+
+D009's tracked-artifact failure is locally resolved under independent scope17
+authority. D002 now awaits exact-final-head hosted full CI,posted evidence and
+independent Side21 combined implementation/security and final readiness review.
+The final hosted result and live head belong in the PR body; no current-head SHA
+is encoded here. Merge ready:NO pending independent review and Karl's decision.
+D004/D006/D007/D008 remain qualified as previously recorded. D005 OPEN;
+LIVE TRADING STATUS:DISABLED;real capital USD0;real orders0.
+No eighteenth path,dependency change,workflow/routing edit,production operation,
+real credential/OAuth/provider/account call,merge,deployment or trading authority.
+
+## S10-HERMES-SEC-PROFILE-01 certified scope17 continuation (2026-10-23)
+
+Karl explicitly authorized the independently certified17-path amendment on existing
+draft PR251. New prompt SHA256:
+`13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f`;
+spec:`288f3b098be859d2d9eae2918d2e0554c5d4df86c335e51e4ee5037bf77380bd`;
+certificate:`a992de97ef0cb7dd3df8274f3e0faae13ae83403ac8db2a1926da9088c4b9862`.
+Policy SHA256 remains
+`eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`.
+Native spec guard PASS and PROTECTED readiness IMPLEMENTATION_READY,scope17.
+
+D009's missing-path authority is resolved by independent recertification. The exact
+tracked-artifact allowlist adds only docs/hermes_runtime_security_profile.json;
+JSON/Python shadow siblings remain forbidden. The existing in-scope historical
+snapshot subtracts only those exact additions,and exercises both sibling negatives.
+All four runtime source modules and the other three native test modules are
+byte-identical to the preserved prior implementation. The three previously failing
+historical guard/wrapper tests now pass on the complete actual tracked tree.
+Historical scope16 CI failure is retained as failure,not reclassified as PASS.
+
+D002/D009 acceptance is pending fresh full tracked-tree local validation,security
+checks and one new exact-head full hosted CI. This is an implementation checkpoint,
+not final independent acceptance. Linux Hermes promotion remains D004,separately
+gated and UNOBSERVED; optional inactive routing C081 issue remains D008. No new
+runtime/dependency/credential/host authority,no eighteenth path,skip or guard
+weakening. D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
+
+
 ## S10-HERMES-TS02
 
 | ID | Item | State | Required next evidence |
@@ -20,6 +142,7 @@
 | ID | Item | State | Required next evidence |
 |---|---|---|---|
 | S10-PIT-CLOCK-ORDER-01-D001 | Independent Side19 review, PR publication and hosted CI | PENDING_SEPARATE_OWNER_APPROVAL | Local repair evidence only; no PR/CI/merge authority. GitHub GraphQL predecessor metadata read was unavailable; remote main identity, merge parents and predecessor files are verified locally. |
+
 
 ## S10-WALLET-03 bounded research follow-up
 

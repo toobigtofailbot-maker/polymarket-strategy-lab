@@ -1,0 +1,566 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-SEC-PROFILE-01",
+    "title": "D005 Security Dependency Profile Binding Without Activation",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_DEPENDENCY_SECURITY_PROFILE",
+    "package_size_class": "L",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-sec-profile-01",
+    "required_predecessor": {
+      "pr_number": 250,
+      "head_sha": "115bda7147d6cbb883af3bc845ac4fa2bd056932",
+      "merge_sha": "f2b8916fe2bd377b0790278f4be5dad85568d367"
+    },
+    "objective": "Bind the five-package patched Hermes profile to existing native request/receipt identity and repair the exact preexisting tracked-artifact allowlist to admit the one new profile JSON, preserving the historical negative guard; continue existing draft PR #251, not a new branch/PR. No production installation, OAuth, provider invocation or live trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/tool_free_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "docs/hermes_runtime_security_profile.json",
+      "docs/hermes_real_provider_stage_b_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/S10-HERMES-SEC-PROFILE-01.md",
+      "docs/wp_specs/S10-HERMES-SEC-PROFILE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-SEC-PROFILE-01/wp_spec.json",
+      "docs/wp_specs/S10-HERMES-SEC-PROFILE-01/draftability_certificate.json"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/tool_free_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/real_provider_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
+      "src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "docs/hermes_runtime_security_profile.json",
+      "docs/hermes_real_provider_stage_b_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/S10-HERMES-SEC-PROFILE-01.md",
+      "docs/wp_specs/S10-HERMES-SEC-PROFILE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-SEC-PROFILE-01/wp_spec.json",
+      "docs/wp_specs/S10-HERMES-SEC-PROFILE-01/draftability_certificate.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "tools/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 17,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py"
+    ],
+    "rollback_surface": "Revert exactly the seventeen declared repository paths, including the narrow tracked-artifact guard entry, without widening historical regex. Retain the existing production host pin and historical receipts unchanged; no production installation or OAuth in this WP.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": true
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": true,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only profile identity and fail-closed child admission change; model/provider and economic behavior remain fixed.",
+    "items": [
+      {
+        "surface": "Native pin profile verification",
+        "before": "Commit/semver alone admit altered dependencies.",
+        "after": "Closed manifest verifies exact pyproject/lock hashes, interpreter platform/version and installed inventory before child launch; SHA256 profile is mandatory.",
+        "change_authorized": true,
+        "compatibility_requirement": "No source pin impersonation or arbitrary manifest supplied by caller; deny v1 reports for new dispatch.",
+        "authority": "DEPENDENCY_PROFILE_ONLY"
+      },
+      {
+        "surface": "Stage B, offline REAL-01 and OAuth request/receipt lineage",
+        "before": "Requests/receipts bind source commit and tool fingerprint.",
+        "after": "Add mandatory runtime_profile_sha256 to reports, requests and origin/provenance records and their existing canonical hashes; every consumer checks the approved manifest.",
+        "change_authorized": true,
+        "compatibility_requirement": "Legacy persisted evidence remains historical, never rewritten or upgraded into new eligible proof. Economic validation and provider selection unchanged.",
+        "authority": "NON_ECONOMIC_PROFILE_BINDING"
+      },
+      {
+        "surface": "OAuth verification expression",
+        "before": "RS256 and claims/fresh options already enforced; header parse is before local decode catch.",
+        "after": "Preserve existing verification and place header/JWK/claims parsing under the same sanitized fail-closed boundary with bounded input checks.",
+        "change_authorized": true,
+        "compatibility_requirement": "Synthetic tests only; no credential content read, consent, refresh, endpoint call or acceptance waiver.",
+        "authority": "OFFLINE_AUTH_CODE_TESTING_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Closed requirements for exact profile identity and existing safety boundaries.",
+    "items": [
+      {
+        "path": "profile.inputs",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exact candidate pyproject/lock bytes and per-platform inventory/interpreter identity from the frozen LF policy; no lazy subprocess/package mutation after native probe.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact candidate pyproject/lock bytes and per-platform inventory/interpreter identity from the frozen LF policy; no lazy subprocess/package mutation after native probe.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "profile.identity",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "SHA256 of canonical closed profile preimage; expected allowlisted digest, never commit/semver alone. Frozen policy raw SHA256 eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "SHA256 of canonical closed profile preimage; expected allowlisted digest, never commit/semver alone. Frozen policy raw SHA256 eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": "profile_digest"
+      },
+      {
+        "path": "profile.launch",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Recompute against exact pin/interpreter before every native, fake-wire and OAuth child; deny drift before credentials or network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Recompute against exact pin/interpreter before every native, fake-wire and OAuth child; deny drift before credentials or network.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "profile.lineage",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Mandatory runtime_profile_sha256 traverses existing canonical request IDs, probe fingerprints and origin/provenance records.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Mandatory runtime_profile_sha256 traverses existing canonical request IDs, probe fingerprints and origin/provenance records.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "security.jwt",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "RS256, exp/iat/iss/aud/sub, nonce and fresh options retained; malformed input fails closed without raw echo.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "RS256, exp/iat/iss/aud/sub, nonce and fresh options retained; malformed input fails closed without raw echo.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "security.dependencies",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Five target versions only; fixed lock, pip check, matching installed audit; Windows proof does not attest Linux.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Five target versions only; fixed lock, pip check, matching installed audit; Windows proof does not attest Linux.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "safety.non_authority",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No production replacement, OAuth/provider/account call, execution, scheduler, capital or order authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No production replacement, OAuth/provider/account call, execution, scheduler, capital or order authority.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Sanitized fixed reason codes and hashes only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "Runtime profile ID derives from every closed preimage field; exact observed and derived examples below use the native canonical projection algorithm.",
+    "items": [
+      {
+        "rule_id": "profile_digest",
+        "target_path": "profile.identity",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "schema",
+          "upstream_commit",
+          "hermes_version",
+          "python_implementation",
+          "python_version",
+          "platform",
+          "machine",
+          "pyproject_sha256",
+          "uv_lock_sha256",
+          "installed_inventory_sha256"
+        ],
+        "excluded_paths": [],
+        "prefix": "hermes-profile:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Human implementation authorization remains separate from independent certification and native readiness.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Separate independent PROTECTED certificate binds the exact prompt/spec raw bytes, all twelve lenses PASS, no unresolved decisions, implementability PASS.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Native IMPLEMENTATION_READY with the independent certificate followed by Karl explicit implementation authorization; never infer deployment or login authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly seventeen declared files and mandatory local/full/exact-head CI evidence; no production installation or provider/account operation.",
+        "failure_category": "SCOPE_POLICY_INVALID"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Both canonical IDs are deterministically verified examples, not implementation/production PASS receipts. Windows is observed; Linux is an explicit derived target.",
+    "items": [
+      {
+        "example_id": "windows_profile_identity",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "profile_digest"
+        ],
+        "input": {
+          "schema": "hermes-runtime-profile-v1",
+          "upstream_commit": "345cd2b057a452236de401d3534b8502a7465e8d",
+          "hermes_version": "0.21.3",
+          "python_implementation": "CPython",
+          "python_version": "3.12.3",
+          "platform": "win32",
+          "machine": "amd64",
+          "pyproject_sha256": "265ede9072fc1623ec198b67532b89fbee41038dce5cba08ec3dccd8449b852c",
+          "uv_lock_sha256": "0247608b19b929a126377e136ed8290af018d41b05b39516745f630f7a8ec2f7",
+          "installed_inventory_sha256": "e561f7fff5b642368880880ad1dfd393f9da1dd1a36c42cffb2e8db021e36904",
+          "profile": {
+            "identity": "hermes-profile:sha256:75e3bcea7af741fe599594a744eeb043d494973f79a5291286e60b325a17e4a8"
+          }
+        }
+      },
+      {
+        "example_id": "linux_derived_target_identity",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "profile_digest"
+        ],
+        "input": {
+          "schema": "hermes-runtime-profile-v1",
+          "upstream_commit": "345cd2b057a452236de401d3534b8502a7465e8d",
+          "hermes_version": "0.21.3",
+          "python_implementation": "CPython",
+          "python_version": "3.12.3",
+          "platform": "linux",
+          "machine": "x86_64",
+          "pyproject_sha256": "265ede9072fc1623ec198b67532b89fbee41038dce5cba08ec3dccd8449b852c",
+          "uv_lock_sha256": "0247608b19b929a126377e136ed8290af018d41b05b39516745f630f7a8ec2f7",
+          "installed_inventory_sha256": "7364c01b32006cc43d6bfbf6a5032b7667371df85af4e921f60d16213584110a",
+          "profile": {
+            "identity": "hermes-profile:sha256:31176884c6fc112a92096c09add7403c3ad75d8578d1ec840e4609ddb2f9744f"
+          }
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Planned new nodes belong to exact in-scope test files; implementation must create them with real assertions and record actual counts.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_security_profile_hash_binds_dependency_inputs",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py::test_security_profile_hash_binds_dependency_inputs",
+        "expected_result": "One changed requirement, lock byte, Python version, platform, package version, missing/extra/duplicate inventory or forged original pin blocks before child launch; valid manifest hash deterministic."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_security_profile_native_tools_and_denied_sockets",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py::test_security_profile_native_tools_and_denied_sockets",
+        "expected_result": "Windows sealed 68-distribution candidate: exactly 17 observed default-control names, zero explicit tools, lazy installations forbidden, subprocess installer attempts denied, socket targets denied, and identical approved 68-distribution inventory before/after. The 83-distribution drift and earlier pre-probe audit are not admissible. No old-pin PASS; Linux control/tool count unobserved and separately gated."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_security_profile_offline_wire_lineage",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py::test_security_profile_offline_wire_lineage",
+        "expected_result": "Offline fake-wire child verifies profile before launch and binds exact profile to canonical request, captured wire and origin; mismatch never dispatches."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_security_profile_oauth_claims_and_malformed_input",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_security_profile_oauth_claims_and_malformed_input",
+        "expected_result": "Synthetic valid RS256 accepted; wrong algorithm/key/issuer/audience/nonce/claims, malformed/deep header, oversized token/JWKS and reused options rejected without echo; actual child parsing path exercised."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_security_profile_oauth_preflight_and_origin_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_security_profile_oauth_preflight_and_origin_binding",
+        "expected_result": "Profile required for mock preflight and dispatch-origin classification; missing/stale/forged profiles fail before credential access or mocked HTTP dispatch; sterile children disable Hermes lazy installs and offline subprocess package installation."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_security_profile_provenance_rejects_old_or_forged_identity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_security_profile_provenance_rejects_old_or_forged_identity",
+        "expected_result": "Profile survives provenance hashing and verification; old evidence cannot be relabelled, and unchanged no-economic preview semantics remain."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_security_profile_dependency_and_image_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py::test_security_profile_dependency_and_image_compatibility",
+        "expected_result": "Frozen lock and installed inventory match per-platform policy; Pillow decode/convert/save and JPEG thumbnail smoke checks, dependency consistency, matching audit and explicit PyJWT options-regression evidence retained."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "manual_evidence",
+        "test": "final_native_and_security_evidence",
+        "command": "Run exact readiness --check-diff, final full local suite, applicable security checks and one exact-head hosted CI plan as specified in prompt.",
+        "expected_result": "Exact sixteen-file diff, independent certificate and readiness valid; stable local full suite and required Tier 3 exact-head hosted checks observed; no production calls. Final full-suite and hosted CI run on the exact tracked seventeen-file tree; historical allowlist positive and unknown JSON/Python sibling negatives; test_autonomous_feedback historical snapshot remains exact after subtracting only approved guard additions. New exact-head CI PASS required across all required compatibility legs, never inferred from earlier untracked snapshots."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-SEC-HOST-PROMOTION-01",
+    "next_title": "Separately Authorized Linux Host Profile Installation and Attended OAuth Preparation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-SEC-PROFILE-01",
+    "forbidden_in_this_wp": [
+      "Production VPS or retained pin writes, deployment/repointing, service/firewall changes",
+      "Real credential reading, OAuth/login/refresh, provider/model inference or account/private endpoint calls",
+      "Capital, wallet/ledger, Gate C or Stage A/B activation, orders/signing/cancel, scheduler and region workarounds",
+      "Unreviewed upstream commit, lock override, extra dependency upgrade, vulnerability waiver or own independent certificate"
+    ]
+  }
+}

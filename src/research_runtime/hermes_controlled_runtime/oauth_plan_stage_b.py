@@ -203,6 +203,40 @@ def save_tokens(record, tok, scopes):
 def token_fields_ok(tok):
     return (type(tok) is dict and type(tok.get("access_token")) is str and type(tok.get("expires_in")) is int
             and str(tok.get("token_type", "")).lower() == "bearer")
+def verify_id_token(token, http, audience, nonce):
+    try:
+        if type(token) is not str or len(token.encode("utf-8")) > 65_536:
+            raise ValueError()
+        kid = jwt.get_unverified_header(token).get("kid")
+        if type(kid) is not str or not kid:
+            raise ValueError()
+        # Bound the bytes as they arrive, before parsing JSON or constructing any key.
+        chunks, size = [], 0
+        with http.stream("GET", C["jwks_url"]) as response:
+            if response.status_code != 200:
+                raise ValueError()
+            for chunk in response.iter_bytes():
+                size += len(chunk)
+                if size > 1_048_576:
+                    raise ValueError()
+                chunks.append(chunk)
+        document = json.loads(b"".join(chunks))
+        keys = document.get("keys") if type(document) is dict else None
+        if type(keys) is not list or len(keys) > 100 or any(type(k) is not dict for k in keys):
+            raise ValueError()
+        keys = [k for k in keys if k.get("kid") == kid]
+        if len(keys) != 1 or keys[0].get("kty") != "RSA":
+            raise ValueError()
+        key = keys[0]
+        if ("alg" in key and key["alg"] != "RS256") or ("use" in key and key["use"] != "sig"):
+            raise ValueError()
+        claims = jwt.decode(token, key=jwt.PyJWK(keys[0]).key, algorithms=["RS256"], audience=audience,
+                            issuer=C["issuer"], leeway=60, options={"require": ["exp", "iat", "iss", "aud", "sub"]})
+        if claims.get("nonce") != nonce:
+            raise ValueError()
+        return claims
+    except Exception:
+        raise Blocked("ID_TOKEN_INVALID") from None
 def phase_login(report):
     host = read("host_id.json") or {"ext_agent_host_id": "urn:uuid:" + __import__("uuid").uuid4().__str__()}
     write("host_id.json", host)
@@ -297,17 +331,7 @@ def phase_login(report):
         tok = response.json()
         if not token_fields_ok(tok) or type(tok.get("id_token")) is not str:
             raise Blocked("TOKEN_RESPONSE_INVALID")
-        kid = jwt.get_unverified_header(tok["id_token"]).get("kid")
-        keys = [k for k in http.get(C["jwks_url"]).json().get("keys", []) if k.get("kid") == kid]
-        if len(keys) != 1:
-            raise Blocked("ID_TOKEN_KEY_UNKNOWN")
-        try:
-            claims = jwt.decode(tok["id_token"], key=jwt.PyJWK(keys[0]).key, algorithms=["RS256"], audience=issued,
-                                issuer=C["issuer"], leeway=60, options={"require": ["exp", "iat", "iss", "aud", "sub"]})
-        except Exception:
-            raise Blocked("ID_TOKEN_INVALID")
-        if claims.get("nonce") != nonce:
-            raise Blocked("ID_TOKEN_NONCE_MISMATCH")
+        claims = verify_id_token(tok["id_token"], http, issued, nonce)
     if registration.get("subject") not in (None, claims["sub"]):
         raise Blocked("ACCOUNT_MISMATCH")
     scopes = set(str(tok.get("scope", "")).split())
@@ -492,6 +516,7 @@ class OAuthPlanRequest:
     deadline_ns: int
     hermes_commit: str
     tool_surface_fingerprint: str
+    runtime_profile_sha256: str
     model_input: bytes = field(default=b"", repr=False)
 
 
@@ -516,14 +541,15 @@ def build_oauth_request(*, surface_report: object, candidate_menu, lineage=(), i
     draft = OAuthPlanRequest("", stage.request_id, ROUTE["provider"], ROUTE["api_mode"], ROUTE["base_url"],
                              ROUTE["model"], _sha(INSTRUCTIONS.encode("utf-8")), stage.model_input_sha256,
                              stage.candidate_menu_sha256, information_cutoff_ns, issued_at_ns, deadline_ns,
-                             stage.hermes_commit, stage.tool_surface_fingerprint, model_input=model_input)
+                             stage.hermes_commit, stage.tool_surface_fingerprint, stage.runtime_profile_sha256, model_input=model_input)
     return replace(draft, request_id=REQUEST_ID_PREFIX + stage_b._digest(_preimage(draft)))
 
 
 def request_is_bound(request: object) -> bool:
     return (type(request) is OAuthPlanRequest and
             (request.provider, request.api_mode, request.base_url, request.model) == tuple(ROUTE.values()) and
-            request.hermes_commit == stage_b.PINNED_HERMES_COMMIT and type(request.model_input) is bytes and
+            request.hermes_commit == stage_b.PINNED_HERMES_COMMIT and
+            stage_b.profile_digest_is_approved(request.runtime_profile_sha256) and type(request.model_input) is bytes and
             _sha(request.model_input) == request.model_input_sha256 and
             request.instructions_sha256 == _sha(INSTRUCTIONS.encode("utf-8")) and
             request.request_id == REQUEST_ID_PREFIX + stage_b._digest(_preimage(request)))
@@ -564,6 +590,9 @@ class OAuthPlanTransport:
         head = (root / ".git" / "HEAD").read_text(encoding="ascii").strip()
         exe = Path(self._python) if self._python is not None else (
             root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python"))
+        profile = stage_b.verify_runtime_profile(root, python_executable=exe)
+        if "runtime_profile_sha256" in extra and extra["runtime_profile_sha256"] != profile:
+            raise ValueError("PROFILE_MISMATCH")
         spec = dict(phase=phase, mode=self.mode, mock=self._mock, credential_dir=str(self._credentials),
                     model=ROUTE["model"], route=ROUTE, login_wait_s=self._login_wait_s,
                     refresh_margin_s=REFRESH_MARGIN_S, min_token_seconds=MIN_TOKEN_SECONDS,
@@ -578,18 +607,22 @@ class OAuthPlanTransport:
             # Sterile route config: a known context window skips the authenticated /models init probe.
             Path(home, "config.yaml").write_text(
                 "model:\n  provider: {provider}\n  default: {model}\n  base_url: {base_url}\n".format(**ROUTE)
-                + f"  context_length: {real01.ROUTE_CONTEXT_LENGTH}\n", encoding="utf-8")
+                + f"  context_length: {real01.ROUTE_CONTEXT_LENGTH}\nsecurity:\n  allow_lazy_installs: false\n", encoding="utf-8")
             env = {key: home for key in ("HERMES_HOME", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP")}
-            env.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1", PATH=str(exe.parent), NO_COLOR="1")
+            env.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1", PATH=str(exe.parent), NO_COLOR="1", HERMES_DISABLE_LAZY_INSTALLS="1")
             if "SYSTEMROOT" in os.environ:
                 env["SYSTEMROOT"] = os.environ["SYSTEMROOT"]
-            completed = subprocess.run([str(exe), "-I", "-B", "-c", _CHILD_SOURCE], cwd=root, env=env,
+            completed = subprocess.run([str(exe), "-I", "-B", "-c",
+                                        (stage_b._OFFLINE_PROCESS_GUARD if self.mode == "mock" else "") + _CHILD_SOURCE], cwd=root, env=env,
                                        input=json.dumps(spec).encode("utf-8"), capture_output=True,
                                        timeout=timeout_s, check=False)
+        if stage_b.verify_runtime_profile(root, python_executable=exe) != profile:
+            raise ValueError("PROFILE_MISMATCH")
         lines = completed.stdout.decode("utf-8", "replace").strip().splitlines()
         report = json.loads(lines[-1]) if completed.returncode == 0 and lines else {}
         if type(report) is dict and report:
             report["hermes_commit"] = head
+            report["runtime_profile_sha256"] = profile
         return report
 
     def login(self) -> dict:
@@ -603,7 +636,7 @@ class OAuthPlanTransport:
 
     def _send(self, request: OAuthPlanRequest) -> dict:
         self.dispatch_count += 1
-        return self._run_child("dispatch", dict(instructions=INSTRUCTIONS, model_input=request.model_input.decode("utf-8"),
+        return self._run_child("dispatch", dict(instructions=INSTRUCTIONS, runtime_profile_sha256=request.runtime_profile_sha256, model_input=request.model_input.decode("utf-8"),
                                                 timeout_s=STREAM_TIMEOUT_S, max_output_bytes=MAX_OUTPUT_BYTES),
                                STREAM_TIMEOUT_S + 120)
 
@@ -655,6 +688,9 @@ def evaluate_preflight(report: object, *, attestation: object, checked_at_ns: in
     mode = report.get("mode") if report.get("mode") in ("real", "mock") else "UNKNOWN"
     if report.get("hermes_commit") != stage_b.PINNED_HERMES_COMMIT:
         return verdict("PIN_MISMATCH", facts, mode)
+    if not stage_b.profile_digest_is_approved(report.get("runtime_profile_sha256")):
+        return verdict("PROFILE_MISMATCH", facts, mode)
+    facts["runtime_profile_sha256"] = report["runtime_profile_sha256"]
     if report.get("api_key_env_present") is not False:
         return verdict("API_KEY_ENV_PRESENT", facts, mode)
     if report.get("status") != "DONE":
@@ -688,6 +724,7 @@ def eligibility_is_witnessed(eligibility: object) -> bool:
         return False
     body = {k: getattr(eligibility, k) for k in ("status", "reason_code", "model", "checked_at_ns", "mode", "facts")}
     return (eligibility.status == PLAN_USAGE_ELIGIBLE and eligibility.mode == "real" and
+            stage_b.profile_digest_is_approved(eligibility.facts.get("runtime_profile_sha256")) and
             eligibility.eligibility_id == ELIGIBILITY_PREFIX + stage_b._digest(body))
 
 
@@ -705,6 +742,8 @@ def verify_dispatch_wire(request: OAuthPlanRequest, report: object) -> dict:
         return verdict("WIRE_REPORT_INVALID")
     if report.get("hermes_version") != stage_b.PINNED_HERMES_SEMVER or report.get("hermes_commit") != stage_b.PINNED_HERMES_COMMIT:
         return verdict("PIN_MISMATCH")
+    if not stage_b.profile_digest_is_approved(report.get("runtime_profile_sha256")) or report.get("runtime_profile_sha256") != request.runtime_profile_sha256:
+        return verdict("PROFILE_MISMATCH")
     if report.get("api_key_env_present") is not False or report.get("tls_verify") is not True or \
             report.get("trust_env") is not False:
         return verdict("UNSAFE_CHILD_ENVIRONMENT")
@@ -859,7 +898,7 @@ def _origin_record(request: OAuthPlanRequest, status: str, facts: dict, raw: byt
     record = dict(
         schema_id="hermes-oauth-plan-origin-record", request_id=request.request_id,
         stage_b_request_id=request.stage_b_request_id, hermes_commit=request.hermes_commit,
-        tool_surface_fingerprint=request.tool_surface_fingerprint, provider_route="CHATGPT_PLAN_OAUTH",
+        tool_surface_fingerprint=request.tool_surface_fingerprint, runtime_profile_sha256=request.runtime_profile_sha256, provider_route="CHATGPT_PLAN_OAUTH",
         endpoint_host=API_HOST, endpoint_path=RESPONSES_PATH, expected_model=request.model,
         transport_mode=TRANSPORT_REAL if real else TRANSPORT_MOCK, status=status,
         eligibility_id=getattr(eligibility, "eligibility_id", None),
@@ -891,6 +930,8 @@ def _origin_record(request: OAuthPlanRequest, status: str, facts: dict, raw: byt
 
 def verify_origin_record(record: object) -> bool:
     if type(record) is not dict or record.get("schema_id") != "hermes-oauth-plan-origin-record":
+        return False
+    if not stage_b.profile_digest_is_approved(record.get("runtime_profile_sha256")):
         return False
     body = {k: v for k, v in record.items() if k != "record_id"}
     return record.get("record_id") == RECORD_ID_PREFIX + stage_b._digest(body)
@@ -944,7 +985,7 @@ def run_oauth_attempt(request: object, *, eligibility: object, transport: object
     if terminal.exists():
         try:
             record = json.loads(terminal.read_bytes())
-            if not verify_origin_record(record):
+            if not verify_origin_record(record) or record.get("runtime_profile_sha256") != request.runtime_profile_sha256:
                 raise ValueError
         except Exception:
             return OAuthPlanResult(request_id, "JOURNAL_INVALID", None)
@@ -954,7 +995,8 @@ def run_oauth_attempt(request: object, *, eligibility: object, transport: object
     if marker.exists():
         return OAuthPlanResult(request_id, "ATTEMPT_ALREADY_RESERVED", None)
     real = transport.mode == "real"
-    if real and not eligibility_is_witnessed(eligibility):
+    if real and (not eligibility_is_witnessed(eligibility) or
+                 eligibility.facts.get("runtime_profile_sha256") != request.runtime_profile_sha256):
         return OAuthPlanResult(request_id, "PLAN_ELIGIBILITY_NOT_ESTABLISHED", None)
     dispatched = clock()
     if real and not 0 <= dispatched - eligibility.checked_at_ns <= MAX_ELIGIBILITY_AGE_NS:

@@ -19,13 +19,13 @@ from src.research_runtime.hermes_controlled_runtime import tool_free_stage_b as 
 
 ROOT = Path(__file__).resolve().parents[3]
 PIN_ROOT = Path(os.environ.get("POLYMARKET_HERMES_PIN_ROOT",
-                               r"C:\Users\dersu\polymarket-h1-runtime\hermes-agent-v0.21.3"))
+                               "hermes-security-candidate-not-configured"))
 _DEFAULT_TOOLS = ["clarify", "delegate_task", "execute_code", "memory", "patch", "read_file", "search_files",
-                  "skill_manage", "skill_view", "skills_list", "terminal", "text_to_speech", "tool_call",
+                  "skill_manage", "skill_view", "skills_list", "terminal", "tool_call",
                   "tool_describe", "tool_search", "web_extract", "web_search", "write_file"]
-# Shape recorded from the exact-pin probe on 2026-10-16 (synthetic copy for the pure verifier).
+# Synthetic copy of the sealed Windows 68-distribution observation on 2026-10-23; not native proof.
 RECORDED_REPORT = dict(
-    schema="auto02-native-tool-surface-v1", hermes_version="0.21.3", hermes_commit=tf.PINNED_HERMES_COMMIT,
+    schema="auto02-native-tool-surface-v2", runtime_profile_sha256=tf._profile_entries()[0]["profile_id"].rsplit(":", 1)[1], hermes_version="0.21.3", hermes_commit=tf.PINNED_HERMES_COMMIT,
     selector_empty=[], definitions_empty=[], network_attempts=[["127.0.0.1", 9]] * 2,
     explicit_empty=dict(agent_tools=[], valid_tool_names=[], context_engine_tools=[],
                         request_keys=["messages", "model", "timeout"], request_tools=[], tool_choice_present=False),
@@ -85,7 +85,7 @@ def test_exact_pin_native_toolfree_request_has_zero_effective_tools(tmp_path):
     ):
         verdict = tf.verify_native_tool_surface(mutated(path, value))
         assert verdict == dict(status=tf.SURFACE_BLOCKED, reason_code=code, tool_surface_fingerprint=None,
-                               hermes_commit=None, real_provider=tf.REAL_PROVIDER_NOT_INVOKED,
+                               hermes_commit=None, runtime_profile_sha256=None, real_provider=tf.REAL_PROVIDER_NOT_INVOKED,
                                provider_side_toolfree="UNPROVEN"), (path, verdict)
     for bad in (None, [], {}, "report"):
         assert tf.verify_native_tool_surface(bad)["status"] == tf.SURFACE_BLOCKED
@@ -115,7 +115,11 @@ def test_stage_b_single_dispatch_and_invalid_terminals(tmp_path):
     first = tf.run_tool_free_stage_b(request, backend=backend, reservation_dir=tmp_path)
     assert first.status == tf.VALID_OUTPUT and tf.is_producer_result(first)
     assert first.raw_output_sha256 == hashlib.sha256(b'{"action":"NO_TRADE"}').hexdigest()
-    assert "NO_TRADE" not in json.dumps(first.to_public())
+    public = first.to_public()
+    assert {f.name for f in dataclasses.fields(tf.StageBResult)} == set(public) - {
+        "transport_mode", "real_provider"} | {"output_bytes", "_witness"}
+    assert "output_bytes" not in public and "_witness" not in public
+    assert "NO_TRADE" not in json.dumps(public)
     replay = tf.run_tool_free_stage_b(request, backend=backend, reservation_dir=tmp_path)
     assert replay.status == "DISPATCH_ALREADY_RESERVED" and backend.dispatch_count == 1
     assert not tf.is_producer_result(replay)
@@ -177,3 +181,114 @@ print("IMPORT_NO_IO_PASS")
 '''
     result = subprocess.run([sys.executable, "-B", "-c", script], cwd=ROOT, capture_output=True, text=True)
     assert result.returncode == 0 and "IMPORT_NO_IO_PASS" in result.stdout, result.stderr
+
+
+def profile_metadata(entry=None):
+    entry = entry or tf._profile_entries()[0]
+    return dict(**{k: entry["preimage"][k] for k in
+                   ("python_implementation", "python_version", "platform", "machine")},
+                inventory=copy.deepcopy(entry["inventory"]))
+
+
+def test_security_profile_hash_binds_dependency_inputs(tmp_path, monkeypatch):
+    for entry in tf._profile_entries():
+        metadata = profile_metadata(entry)
+        args = dict(pyproject_sha256=entry["preimage"]["pyproject_sha256"],
+                    uv_lock_sha256=entry["preimage"]["uv_lock_sha256"], source_head=tf.PINNED_HERMES_COMMIT)
+        digest = tf.verify_profile_metadata(metadata, **args)
+        assert entry["profile_id"] == "hermes-profile:sha256:" + digest
+        assert tf.verify_profile_metadata(copy.deepcopy(metadata), **args) == digest
+        cases = []
+        for field in ("python_version", "platform", "machine", "python_implementation"):
+            changed = copy.deepcopy(metadata); changed[field] = "wrong"; cases.append((changed, "PROFILE_MISMATCH"))
+        for edit in ("version", "missing", "extra", "duplicate", "unsorted"):
+            changed = copy.deepcopy(metadata)
+            if edit == "version": changed["inventory"][0]["version"] = "0.0"
+            if edit == "missing": changed["inventory"].pop()
+            if edit == "extra": changed["inventory"].append(dict(name="zz-extra", version="1"))
+            if edit == "duplicate": changed["inventory"].append(changed["inventory"][0])
+            if edit == "unsorted": changed["inventory"].reverse()
+            cases.append((changed, "PROFILE_INVALID" if edit in ("duplicate", "unsorted") else "PROFILE_MISMATCH"))
+        cases += [(None, "PROFILE_INVALID"), ({**metadata, "raw": "do-not-echo"}, "PROFILE_INVALID")]
+        for changed, code in cases:
+            with pytest.raises(ValueError) as exc:
+                tf.verify_profile_metadata(changed, **args)
+            assert str(exc.value) == code and "do-not-echo" not in str(exc.value)
+        for field in ("pyproject_sha256", "uv_lock_sha256", "source_head"):
+            with pytest.raises(ValueError, match="PIN_MISMATCH" if field == "source_head" else "PROFILE_MISMATCH"):
+                tf.verify_profile_metadata(metadata, **dict(args, **{field: "0" * 64}))
+    (tmp_path / "pyproject.toml").write_text("changed input")
+    (tmp_path / "uv.lock").write_text("changed lock")
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: pytest.fail("child started before input rejection"))
+    with pytest.raises(ValueError, match="PROFILE_MISMATCH"):
+        tf.verify_runtime_profile(tmp_path)
+    if (PIN_ROOT / ".git/HEAD").is_file():
+        for outside in (sys.executable, str(tmp_path / "python;echo-injection.exe")):
+            with pytest.raises(ValueError, match="PROFILE_MISMATCH"):
+                tf.verify_runtime_profile(PIN_ROOT, python_executable=outside)
+    policy = Path(tf.__file__).resolve().parents[3] / "docs/hermes_runtime_security_profile.json"
+    original_read = Path.read_bytes
+    monkeypatch.setattr(Path, "read_bytes", lambda self: b"untrusted" if self == policy else original_read(self))
+    with pytest.raises(ValueError, match="PROFILE_INVALID"):
+        tf._profile_entries()
+
+
+def test_security_profile_native_tools_and_denied_sockets(tmp_path, monkeypatch):
+    assert tf.verify_native_tool_surface(RECORDED_REPORT)["status"] == tf.SURFACE_CHECKED
+    old = dict(RECORDED_REPORT, schema="auto02-native-tool-surface-v1")
+    old.pop("runtime_profile_sha256")
+    assert tf.verify_native_tool_surface(old)["reason_code"] == "REPORT_INVALID"
+    for digest in (None, "", "0" * 64):
+        assert tf.verify_native_tool_surface(dict(RECORDED_REPORT, runtime_profile_sha256=digest))["status"] == tf.SURFACE_BLOCKED
+    # Both installer-style subprocesses and shell execution are denied, before app imports.
+    script = tf._OFFLINE_PROCESS_GUARD + """
+import os, subprocess, sys
+for attempt in (lambda: subprocess.run([sys.executable, "-c", "pass"]), lambda: os.system("exit 0")):
+    try: attempt()
+    except OSError as exc: assert str(exc) == "offline child: subprocess denied"
+    else: raise AssertionError("process escaped")
+print("OFFLINE_PROCESS_DENIAL_PASS")
+"""
+    sealed = subprocess.run([sys.executable, "-I", "-B", "-c", script], capture_output=True, timeout=30)
+    assert sealed.returncode == 0 and b"OFFLINE_PROCESS_DENIAL_PASS" in sealed.stdout
+    # A successful-looking app report cannot conceal inventory drift after construction.
+    with monkeypatch.context() as patch:
+        (tmp_path / ".git").mkdir(); (tmp_path / ".git/HEAD").write_text(tf.PINNED_HERMES_COMMIT)
+        profiles = iter([RECORDED_REPORT["runtime_profile_sha256"], "0" * 64])
+        patch.setattr(tf, "verify_runtime_profile", lambda *a, **k: next(profiles))
+        patch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess([], 0, b"{}", b""))
+        with pytest.raises(ValueError, match="PROFILE_MISMATCH"):
+            tf.probe_native_tool_surface(tmp_path)
+    if (PIN_ROOT / ".git/HEAD").is_file():
+        before = tf.verify_runtime_profile(PIN_ROOT)
+        report = tf.probe_native_tool_surface(PIN_ROOT)
+        assert before == tf.verify_runtime_profile(PIN_ROOT) == report["runtime_profile_sha256"]
+        assert tf.verify_native_tool_surface(report)["status"] == tf.SURFACE_CHECKED
+        assert report["default_none"]["request_tools"] == _DEFAULT_TOOLS
+        assert report["explicit_empty"]["request_tools"] == []
+        assert all(a == ["127.0.0.1", 9] for a in report["network_attempts"])
+
+
+def test_security_profile_dependency_and_image_compatibility():
+    expected = {"anyio": "4.14.2", "certifi": "2026.10.19", "pillow": "13.0.0", "pyjwt": "2.15.0", "urllib3": "2.8.0"}
+    for entry in tf._profile_entries():
+        installed = {d["name"]: d["version"] for d in entry["inventory"]}
+        assert {k: installed[k] for k in expected} == expected
+        assert tf._profile_hash(entry["inventory"]) == entry["preimage"]["installed_inventory_sha256"]
+    if (PIN_ROOT / ".git/HEAD").is_file():
+        before = tf.verify_runtime_profile(PIN_ROOT)
+        script = """import io, importlib.metadata
+from PIL import Image
+expected = {"anyio":"4.14.2","certifi":"2026.10.19","pillow":"13.0.0","pyjwt":"2.15.0","urllib3":"2.8.0"}
+assert all(importlib.metadata.version(k)==v for k,v in expected.items())
+for fmt in ("PNG", "JPEG", "GIF", "TIFF"):
+    data=io.BytesIO(); Image.new("RGB", (8,8), "blue").save(data,format=fmt)
+    with Image.open(io.BytesIO(data.getvalue())) as im:
+        im.load(); im.thumbnail((4,4)); out=io.BytesIO(); im.convert("RGBA").save(out,format="PNG")
+        assert out.getvalue().startswith(b"\\x89PNG")
+print("IMAGE_AND_DEPENDENCY_PROFILE_PASS")
+"""
+        exe = PIN_ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+        run = subprocess.run([str(exe), "-I", "-B", "-c", script], capture_output=True, timeout=60)
+        assert run.returncode == 0 and b"IMAGE_AND_DEPENDENCY_PROFILE_PASS" in run.stdout, run.stderr
+        assert tf.verify_runtime_profile(PIN_ROOT) == before

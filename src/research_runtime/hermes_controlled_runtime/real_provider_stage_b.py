@@ -65,7 +65,7 @@ _TERMINAL_COMPLETED = ["response.completed"]
 _CONTROL_DENIED_TARGET = ("models.dev", 443)
 
 # Executed ONLY inside the pinned Hermes virtualenv child (``python -I -B -c``); spec on stdin.
-_WIRE_SOURCE = r'''
+_WIRE_SOURCE = stage_b._OFFLINE_PROCESS_GUARD + r'''
 import hashlib, json, os, socket, sys
 attempts = []
 def _record(host, port):
@@ -192,6 +192,7 @@ class Real01Request:
     deadline_ns: int
     hermes_commit: str
     tool_surface_fingerprint: str
+    runtime_profile_sha256: str
     transport_mode: str = TRANSPORT_OFFLINE_FAKE_WIRE
     model_input: bytes = field(default=b"", repr=False)
 
@@ -213,14 +214,15 @@ def build_real01_request(stage_b_request: object, *, model_input: object) -> Rea
     draft = Real01Request("", stage_b_request.request_id, ROUTE["provider"], ROUTE["api_mode"], ROUTE["base_url"],
                           ROUTE["model"], _sha(INSTRUCTIONS.encode("utf-8")), stage_b_request.model_input_sha256,
                           stage_b_request.issued_at_ns, stage_b_request.deadline_ns, stage_b_request.hermes_commit,
-                          stage_b_request.tool_surface_fingerprint, model_input=model_input)
+                          stage_b_request.tool_surface_fingerprint, stage_b_request.runtime_profile_sha256, model_input=model_input)
     return replace(draft, request_id=REQUEST_ID_PREFIX + stage_b._digest(_preimage(draft)))
 
 
 def request_is_bound(request: object) -> bool:
     return (type(request) is Real01Request and request.transport_mode == TRANSPORT_OFFLINE_FAKE_WIRE and
             (request.provider, request.api_mode, request.base_url, request.model) == tuple(ROUTE.values()) and
-            request.hermes_commit == stage_b.PINNED_HERMES_COMMIT and type(request.model_input) is bytes and
+            request.hermes_commit == stage_b.PINNED_HERMES_COMMIT and
+            stage_b.profile_digest_is_approved(request.runtime_profile_sha256) and type(request.model_input) is bytes and
             _sha(request.model_input) == request.model_input_sha256 and
             request.instructions_sha256 == _sha(INSTRUCTIONS.encode("utf-8")) and
             request.request_id == REQUEST_ID_PREFIX + stage_b._digest(_preimage(request)))
@@ -241,24 +243,30 @@ def capture_offline_wire(pin_root: object, request: Real01Request, scenarios: li
     head = (root / ".git" / "HEAD").read_text(encoding="ascii").strip()
     exe = Path(python_executable) if python_executable is not None else (
         root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python"))
+    profile = stage_b.verify_runtime_profile(root, python_executable=exe)
+    if profile != request.runtime_profile_sha256:
+        raise ValueError("PROFILE_MISMATCH")
     spec = dict(route=ROUTE, instructions=INSTRUCTIONS, model_input=request.model_input.decode("utf-8"),
                 scenarios=scenarios, timeout_s=timeout_s)
     with tempfile.TemporaryDirectory(prefix="real01-hermes-home-") as home:
         # Sterile route config: a known context window skips the authenticated /models init probe.
         Path(home, "config.yaml").write_text(
             "model:\n  provider: {provider}\n  default: {model}\n  base_url: {base_url}\n".format(**ROUTE)
-            + f"  context_length: {ROUTE_CONTEXT_LENGTH}\n", encoding="utf-8")
+            + f"  context_length: {ROUTE_CONTEXT_LENGTH}\nsecurity:\n  allow_lazy_installs: false\n", encoding="utf-8")
         env = {key: home for key in ("HERMES_HOME", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP")}
-        env.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1", PATH=str(exe.parent), NO_COLOR="1")
+        env.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1", PATH=str(exe.parent), NO_COLOR="1", HERMES_DISABLE_LAZY_INSTALLS="1")
         if "SYSTEMROOT" in os.environ:
             env["SYSTEMROOT"] = os.environ["SYSTEMROOT"]
         completed = subprocess.run([str(exe), "-I", "-B", "-c", _WIRE_SOURCE], cwd=root, env=env,
                                    input=json.dumps(spec).encode("utf-8"), capture_output=True,
                                    timeout=timeout_s, check=False)
+    if stage_b.verify_runtime_profile(root, python_executable=exe) != profile:
+        raise ValueError("PROFILE_MISMATCH")
     lines = completed.stdout.decode("utf-8", "replace").strip().splitlines()
     report = json.loads(lines[-1]) if completed.returncode == 0 and lines else {}
     if type(report) is dict and report:
         report["hermes_commit"] = head
+        report["runtime_profile_sha256"] = profile
     return report
 
 
@@ -288,6 +296,8 @@ def verify_offline_wire(request: Real01Request, report: object) -> dict:
         return verdict("WIRE_REPORT_INVALID")
     if report.get("hermes_version") != stage_b.PINNED_HERMES_SEMVER or report.get("hermes_commit") != stage_b.PINNED_HERMES_COMMIT:
         return verdict("PIN_MISMATCH")
+    if not stage_b.profile_digest_is_approved(report.get("runtime_profile_sha256")) or report.get("runtime_profile_sha256") != request.runtime_profile_sha256:
+        return verdict("PROFILE_MISMATCH")
     control_attempts = report.get("control_network_attempts")
     if report.get("network_attempts") != [] or type(control_attempts) is not list or \
             any(a != list(_CONTROL_DENIED_TARGET) for a in control_attempts):
@@ -403,7 +413,7 @@ def _origin_record(request: Real01Request, status: str, facts: dict, raw: bytes 
     record = dict(
         schema_id="hermes-real01-origin-record", request_id=request.request_id,
         stage_b_request_id=request.stage_b_request_id, hermes_commit=request.hermes_commit,
-        tool_surface_fingerprint=request.tool_surface_fingerprint, provider=request.provider,
+        tool_surface_fingerprint=request.tool_surface_fingerprint, runtime_profile_sha256=request.runtime_profile_sha256, provider=request.provider,
         api_mode=request.api_mode, endpoint_host=ENDPOINT_HOST, endpoint_path=ENDPOINT_PATH,
         expected_model=request.model, transport_mode=request.transport_mode, status=status,
         wire_stage=wire.get("wire_stage", "NOT_CAPTURED"), wire_status=wire.get("status"),
@@ -439,6 +449,8 @@ def run_real01_attempt(request: object, *, transport: OfflineCodexWireTransport,
     if terminal.exists():
         try:
             record = json.loads(terminal.read_bytes())
+            if record.get("runtime_profile_sha256") != request.runtime_profile_sha256:
+                raise ValueError("PROFILE_MISMATCH")
             body = {k: v for k, v in record.items() if k != "record_id"}
             if record.get("record_id") != RECORD_ID_PREFIX + stage_b._digest(body) or \
                     record.get("request_id") != request.request_id:
