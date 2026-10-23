@@ -1,5 +1,38 @@
 # Deferred Items Log
 
+## S10-HERMES-SEC-PROFILE-01 historical blockers (amended resolution below)
+
+| ID | Item | State | Required next evidence |
+|---|---|---|---|
+| S10-HERMES-SEC-PROFILE-01-D001 | Frozen 68-package profile conflicts with historical 18-tool negative control | BLOCKED_REQUIRES_INDEPENDENT_RECERTIFICATION | Shared verifier rejects prior shadow inventory of 83 distributions. Clean exact-lock Windows install has 68 and passes pip check; sealed native construction preserves that profile, exposes 0 empty tools and 17 control tools, with text_to_speech absent. Review a minimal exact-byte amendment disabling lazy installs/installer subprocess escape and requiring before/after profile equality with the observed sealed toolset. Retain current prompt/spec/certificate unchanged; no dependency-graph expansion or waiver. |
+| S10-HERMES-SEC-PROFILE-01-D002 | Complete implementation and final validation | NOT_MERGE_READY | Partial sixteen-file draft only. Compilation/diff checks are not full validation. Finish only after independently recertified scope/criteria and renewed exact-package implementation authority; then run focused/adjacent tests, matching native/audit evidence, one stable local full suite, exact-head hosted CI and independent final review. No production promotion/OAuth authority. |
+| S10-HERMES-SEC-PROFILE-01-D003 | Certified JSON raw bytes change under Git text normalization | BLOCKED_REQUIRES_INDEPENDENT_RECERTIFICATION | CRLF spec normalizes from certified 318b958031c69b6792336761f822b24534f61d9ae939f00e2a9275a33677917f to staged 13a37ece07fbd9f8141a6cce9ca404bf33c4ec44749ef272a1f1146b990d5ff1; policy df4bb5bdf20249614e1887a64c9d6d71e03834668be67ae765e837ec2af41ac7 to eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680. Reissue corrected LF prompt/spec/policy and independent exact-byte certificate. Staging undone; no commit, plumbing bypass or .gitattributes change. |
+
+
+### Amended resolution (2026-10-23)
+
+D001 and D003 above are historical blockers, now RESOLVED_BY_INDEPENDENT_AMENDMENT:
+Side21 reissued LF-native prompt/spec/policy/certificate, authorized by Karl for
+checkpoint resume. The sealed Windows acceptance is the observed exact17-set,
+without optional installations; previous 83-package evidence remains rejected.
+D002 is LOCAL_VALIDATED_PENDING_CI_AND_INDEPENDENT_REVIEW; prior failed runs remain historical,
+not acceptance evidence. Final exact-head CI and independent Side21 review remain
+mandatory before merge. S10-HERMES-SEC-PROFILE-01-D004: Linux installation, native
+count, inventory/audit and host promotion are DEFERRED_TO_SEPARATELY_AUTHORIZED_WP;
+no Linux native/security PASS is inferred from Windows. D005 remains OPEN.
+S10-HERMES-SEC-PROFILE-01-D006: whole-tree Gitleaks reports 19 unchanged baseline
+alert lines; zero introduced alerts. Baseline triage remains in its original owning
+scope. Semgrep's one command-injection alert is verified FALSE POSITIVE with
+in-scope pre-launch and process-denial tests; no suppression or ignore rule.
+Exact final CI and independent review still required.
+S10-HERMES-SEC-PROFILE-01-D007: Windows full-suite environment is BLOCKED_OS_POLICY:
+pyarrow._dataset DLL is denied by Application Control in both untouched main and
+this WP. No OS-policy bypass or dependency change. Native Hermes focused25 and
+R001-R007 pass; the existing Linux validation image is used offline for broad
+coverage: 14028 passed, 15 skipped, 125 warnings, exit0. Windows full coverage
+remains separately evidenced by exact-head CI.
+
+
 ## S10-HERMES-TS02
 
 | ID | Item | State | Required next evidence |
@@ -20,6 +53,7 @@
 | ID | Item | State | Required next evidence |
 |---|---|---|---|
 | S10-PIT-CLOCK-ORDER-01-D001 | Independent Side19 review, PR publication and hosted CI | PENDING_SEPARATE_OWNER_APPROVAL | Local repair evidence only; no PR/CI/merge authority. GitHub GraphQL predecessor metadata read was unavailable; remote main identity, merge parents and predecessor files are verified locally. |
+
 
 ## S10-WALLET-03 bounded research follow-up
 

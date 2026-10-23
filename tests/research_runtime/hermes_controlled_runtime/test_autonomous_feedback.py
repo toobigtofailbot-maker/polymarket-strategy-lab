@@ -65,7 +65,7 @@ def test_provenance_rejects_model_self_attestation_and_tampering(tmp_path):
         (reid(record, information_cutoff_ns=native.T0 - 1), "PROVENANCE_CLOCK_INVALID"),
         (reid(record, response_completed_ns=native.AT + 1), "PROVENANCE_CLOCK_INVALID"),
         (reid(record, deadline_ns=native.AT), "PROVENANCE_CLOCK_INVALID"),
-        (reid(record, issued_at_ns=native.T0 + 1), "PRODUCER_CLOCK_CONFLICT"),
+        (reid(record, issued_at_ns=native.T0 + 1), "PROVENANCE_ORIGIN_FORGED"),
         (reid(record, lifecycle_head="0" * 64), "PRODUCER_STATE_CHANGED"),
         (reid(record, strategy_version_id=other), "PRODUCER_CLAIM_MISMATCH"),
         (reid(record, hermes_assessment_id=None), "PRODUCER_CLAIM_MISMATCH"),
@@ -460,3 +460,19 @@ def test_activation_real_origin_source_class_spoof_replay_and_guards(tmp_path, m
             with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0, listing + extra + "\n", "")):
                 with pytest.raises(AssertionError):
                     guard()
+
+
+def test_security_profile_provenance_rejects_old_or_forged_identity(tmp_path):
+    w, args, proposal, _ = world(tmp_path / "world")
+    request, result, record, content = produce(tmp_path, args, proposal)
+    assert record["runtime_profile_sha256"] == request.runtime_profile_sha256 == result.runtime_profile_sha256
+    checked = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=record))
+    assert checked["status"] == "ELIGIBLE_PREVIEW"
+    for digest in (None, "0" * 64, tf._profile_entries()[1]["profile_id"].rsplit(":", 1)[1]):
+        forged = reid(record, runtime_profile_sha256=digest)
+        verdict = cycle.evaluate_once(**dict(args, choice=content, producer_evidence=forged))
+        assert verdict["status"] != "ELIGIBLE_PREVIEW"
+    old = dict(record); old.pop("runtime_profile_sha256")
+    old["provenance_id"] = fb.PROVENANCE_PREFIX + fb._digest({k:v for k,v in old.items() if k != "provenance_id"})
+    assert cycle.evaluate_once(**dict(args, choice=content, producer_evidence=old))["status"] != "ELIGIBLE_PREVIEW"
+    assert "runtime_profile_sha256" in result.to_public()

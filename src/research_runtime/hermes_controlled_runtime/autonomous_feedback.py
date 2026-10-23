@@ -39,7 +39,7 @@ _RECORD_KEYS = {
     "schema_id", "provenance_id", "request_id", "raw_output_sha256", "candidate_menu_sha256",
     "output_schema_sha256", "model_input_sha256", "information_cutoff_ns", "issued_at_ns",
     "response_completed_ns", "deadline_ns", "model_label", "strategy_version_id", "hermes_assessment_id",
-    "lifecycle_head", "hermes_head", "paper_snapshot_id", "hermes_commit", "tool_surface_fingerprint",
+    "lifecycle_head", "hermes_head", "paper_snapshot_id", "hermes_commit", "tool_surface_fingerprint", "runtime_profile_sha256",
     "transport_mode", "producer_witness_class", "model_origin_proof", "real_provider", "promotion_gate",
 }
 _OPAQUE = re.compile(r"[a-z][a-z0-9_]*:sha256:[0-9a-f]{64}")
@@ -76,7 +76,7 @@ def build_choice_provenance(result: object, *, request: object, strategy_version
                             paper_snapshot_id: object = None) -> dict:
     """Producer-side record. Heads/ids are caller-verified store values, never model text."""
     _require(stage_b.is_producer_result(result) and stage_b.request_is_bound(request) and
-             result.request_id == request.request_id, "PRODUCER_RESULT_INVALID")
+             result.request_id == request.request_id and result.runtime_profile_sha256 == request.runtime_profile_sha256, "PRODUCER_RESULT_INVALID")
     # No cold-verified prior-paper input exists yet: any non-None reference is unverified.
     _require(paper_snapshot_id is None, "PRIOR_PAPER_SNAPSHOT_UNVERIFIED")
     _require(all(_optional_id(v) for v in (strategy_version_id, hermes_assessment_id)) and
@@ -91,7 +91,7 @@ def build_choice_provenance(result: object, *, request: object, strategy_version
         model_label=request.model_label, strategy_version_id=strategy_version_id,
         hermes_assessment_id=hermes_assessment_id, lifecycle_head=lifecycle_head, hermes_head=hermes_head,
         paper_snapshot_id=paper_snapshot_id, hermes_commit=request.hermes_commit,
-        tool_surface_fingerprint=request.tool_surface_fingerprint, transport_mode=TRANSPORT_MODE,
+        tool_surface_fingerprint=request.tool_surface_fingerprint, runtime_profile_sha256=request.runtime_profile_sha256, transport_mode=TRANSPORT_MODE,
         producer_witness_class=WITNESS_CLASS, model_origin_proof=MODEL_ORIGIN,
         real_provider=stage_b.REAL_PROVIDER_NOT_INVOKED, promotion_gate=PROMOTION_GATE,
     )
@@ -109,7 +109,8 @@ def verify_choice_provenance(record: object, *, raw_choice: bytes, candidate_men
              and record["producer_witness_class"] == WITNESS_CLASS and record["model_origin_proof"] == MODEL_ORIGIN
              and record["real_provider"] == stage_b.REAL_PROVIDER_NOT_INVOKED
              and record["promotion_gate"] == PROMOTION_GATE
-             and record["hermes_commit"] == stage_b.PINNED_HERMES_COMMIT, "PROVENANCE_ORIGIN_FORGED")
+             and record["hermes_commit"] == stage_b.PINNED_HERMES_COMMIT
+             and stage_b.profile_digest_is_approved(record["runtime_profile_sha256"]), "PROVENANCE_ORIGIN_FORGED")
     _require(record["paper_snapshot_id"] is None, "PRIOR_PAPER_SNAPSHOT_UNVERIFIED")
     _require(record["output_schema_sha256"] == choice_output_schema_sha256(), "PROVENANCE_SCHEMA_MISMATCH")
     _require(type(raw_choice) is bytes and hashlib.sha256(raw_choice).hexdigest() == record["raw_output_sha256"],
@@ -118,6 +119,11 @@ def verify_choice_provenance(record: object, *, raw_choice: bytes, candidate_men
     times = [record[k] for k in ("information_cutoff_ns", "issued_at_ns", "response_completed_ns", "deadline_ns")]
     _require(all(stage_b._time(t) for t in times) and record["information_cutoff_ns"] == information_cutoff_ns and
              times[0] <= times[1] <= times[2] <= evaluated_at_ns < times[3], "PROVENANCE_CLOCK_INVALID")
+    bound_request = stage_b.StageBRequest(**{k: record[k] for k in (
+        "request_id", "candidate_menu_sha256", "output_schema_sha256", "model_input_sha256",
+        "information_cutoff_ns", "issued_at_ns", "deadline_ns", "model_label", "hermes_commit",
+        "tool_surface_fingerprint", "runtime_profile_sha256")})
+    _require(stage_b.request_is_bound(bound_request), "PROVENANCE_ORIGIN_FORGED")
     return dict(record)
 
 
@@ -323,7 +329,7 @@ def run_one_cycle(*, journal_dir, surface_report, backend, model_label, candidat
             bundle["bundle_id"] = CYCLE_PREFIX + _digest(bundle)
             return bundle
     bundle.update(cycle_id=CYCLE_PREFIX + request.request_id.rsplit(":", 1)[1], request_id=request.request_id,
-                  tool_surface_fingerprint=request.tool_surface_fingerprint, hermes_commit=request.hermes_commit)
+                  tool_surface_fingerprint=request.tool_surface_fingerprint, runtime_profile_sha256=request.runtime_profile_sha256, hermes_commit=request.hermes_commit)
     result = stage_b.run_tool_free_stage_b(request, backend=backend, reservation_dir=root)
     bundle["stage_b_status"] = result.status
     if result.status == "DISPATCH_ALREADY_RESERVED":

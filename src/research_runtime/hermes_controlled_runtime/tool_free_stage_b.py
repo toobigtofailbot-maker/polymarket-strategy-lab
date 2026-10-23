@@ -41,14 +41,27 @@ _LOOPBACK_SENTINEL = ("127.0.0.1", 9)
 _HEX64 = re.compile(r"[0-9a-f]{64}")
 _LABEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}")
 _MAX_TIME = 2**63 - 1
-_REPORT_KEYS = {"schema", "hermes_version", "hermes_commit", "selector_empty", "definitions_empty",
+_REPORT_KEYS = {"schema", "hermes_version", "hermes_commit", "runtime_profile_sha256", "selector_empty", "definitions_empty",
                 "explicit_empty", "default_none", "network_attempts"}
 _PROBE_KEYS = {"agent_tools", "valid_tool_names", "context_engine_tools", "request_keys",
                "request_tools", "tool_choice_present"}
 _RESPONSE_KEYS = {"model", "content", "completed_at_ns", "tool_calls", "error"}
 
+# Offline children may not escape socket guards through an installer or other process.
+_OFFLINE_PROCESS_GUARD = r'''
+import sys
+
+def _deny_offline_process(event, args):
+    if event.startswith(("subprocess.", "os.system", "os.spawn", "os.exec", "os.posix_spawn", "os.startfile")):
+        raise OSError("offline child: subprocess denied")
+sys.addaudithook(_deny_offline_process)
+'''
+_WINDOWS_DEFAULT_TOOLS = ["clarify", "delegate_task", "execute_code", "memory", "patch", "read_file",
+    "search_files", "skill_manage", "skill_view", "skills_list", "terminal", "tool_call", "tool_describe",
+    "tool_search", "web_extract", "web_search", "write_file"]
+
 # Executed ONLY inside the pinned Hermes virtualenv child (``python -I -B -c``).
-_PROBE_SOURCE = r'''
+_PROBE_SOURCE = _OFFLINE_PROCESS_GUARD + r'''
 import json, os, socket, sys
 attempts = []
 def _record(host, port):
@@ -84,7 +97,7 @@ def probe(enabled):
                 tool_choice_present="tool_choice" in request)
 empty = probe([])
 default = probe(None)
-print(json.dumps(dict(schema="auto02-native-tool-surface-v1", hermes_version=hermes_cli.__version__,
+print(json.dumps(dict(schema="auto02-native-tool-surface-v2", hermes_version=hermes_cli.__version__,
     selector_empty=sorted(model_tools._select_tool_names([], None, True)),
     definitions_empty=names(model_tools.get_tool_definitions(enabled_toolsets=[], quiet_mode=True)),
     explicit_empty=empty, default_none=default, network_attempts=attempts), sort_keys=True))
@@ -103,17 +116,150 @@ def _names(value: object) -> bool:
     return type(value) is list and all(type(n) is str for n in value)
 
 
+# Owner-controlled immutable source is assumed; this is not hostile-host attestation.
+_PROFILE_POLICY_SHA256 = "eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680"
+_PROFILE_KEYS = {"schema", "upstream_commit", "hermes_version", "python_implementation",
+                 "python_version", "platform", "machine", "pyproject_sha256", "uv_lock_sha256",
+                 "installed_inventory_sha256"}
+_METADATA_SOURCE = r'''
+import importlib.metadata, json, platform, socket, sys
+def denied(*args, **kwargs):
+    raise OSError("profile metadata: network denied")
+socket.socket.connect = socket.socket.connect_ex = denied
+socket.create_connection = socket.getaddrinfo = denied
+inventory = sorted([dict(name=d.metadata["Name"].lower().replace("_", "-"), version=d.version)
+                    for d in importlib.metadata.distributions()], key=lambda d: d["name"])
+print(json.dumps(dict(python_implementation=platform.python_implementation(),
+    python_version=platform.python_version(), platform=sys.platform,
+    machine=platform.machine().lower(), inventory=inventory), allow_nan=False))
+'''
+
+
+def _profile_json(value: object) -> bytes:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+                      allow_nan=False).encode("utf-8")
+
+
+def _profile_hash(value: object) -> str:
+    return hashlib.sha256(_profile_json(value)).hexdigest()
+
+
+def _profile_entries() -> list:
+    """Load only the hash-bound repository policy, never an operator-supplied policy."""
+    try:
+        raw = (Path(__file__).resolve().parents[3] / "docs/hermes_runtime_security_profile.json").read_bytes()
+        if hashlib.sha256(raw).hexdigest() != _PROFILE_POLICY_SHA256:
+            raise ValueError("PROFILE_INVALID")
+        entries = json.loads(raw)["profiles"]
+        if type(entries) is not list or len(entries) != 2:
+            raise ValueError("PROFILE_INVALID")
+        for entry in entries:
+            preimage, inventory = entry["preimage"], entry["inventory"]
+            if set(preimage) != _PROFILE_KEYS or not _inventory_valid(inventory) or \
+                    preimage["installed_inventory_sha256"] != _profile_hash(inventory) or \
+                    entry["profile_id"] != "hermes-profile:sha256:" + _profile_hash(preimage):
+                raise ValueError("PROFILE_INVALID")
+        return entries
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+        raise ValueError("PROFILE_INVALID") from None
+
+
+def _inventory_valid(inventory: object) -> bool:
+    if type(inventory) is not list or not inventory:
+        return False
+    if any(type(d) is not dict or set(d) != {"name", "version"} or
+           any(type(d[k]) is not str or not d[k] for k in ("name", "version")) or
+           d["name"] != d["name"].lower().replace("_", "-") for d in inventory):
+        return False
+    names = [d["name"] for d in inventory]
+    return names == sorted(set(names))
+
+
+def profile_digest_is_approved(value: object) -> bool:
+    if type(value) is not str or not _HEX64.fullmatch(value):
+        return False
+    try:
+        return any(e["profile_id"] == "hermes-profile:sha256:" + value for e in _profile_entries())
+    except ValueError:
+        return False
+
+
+def verify_profile_metadata(metadata: object, *, pyproject_sha256: str, uv_lock_sha256: str,
+                            source_head: str) -> str:
+    """Pure comparison against the trusted policy; errors contain no rejected metadata."""
+    entries = _profile_entries()
+    keys = {"python_implementation", "python_version", "platform", "machine", "inventory"}
+    if type(metadata) is not dict or set(metadata) != keys or not _inventory_valid(metadata["inventory"]) or \
+            any(type(metadata[k]) is not str or not metadata[k] for k in keys - {"inventory"}):
+        raise ValueError("PROFILE_INVALID")
+    preimage = dict(schema="hermes-runtime-profile-v1", upstream_commit=PINNED_HERMES_COMMIT,
+                    hermes_version=PINNED_HERMES_SEMVER, pyproject_sha256=pyproject_sha256,
+                    uv_lock_sha256=uv_lock_sha256,
+                    installed_inventory_sha256=_profile_hash(metadata["inventory"]),
+                    **{k: metadata[k] for k in keys - {"inventory"}})
+    matches = [e for e in entries if e["preimage"] == preimage and e["inventory"] == metadata["inventory"]]
+    if len(matches) != 1:
+        raise ValueError("PROFILE_MISMATCH")
+    if source_head != PINNED_HERMES_COMMIT:
+        raise ValueError("PIN_MISMATCH")
+    return _profile_hash(preimage)
+
+
+def verify_runtime_profile(pin_root: object, *, python_executable: object = None) -> str:
+    """Recheck exact dependency inputs and pin-owned interpreter before each app child."""
+    import os
+    import subprocess
+    import tempfile
+    try:
+        root = Path(pin_root).absolute()
+        if (root / ".env").exists():
+            raise ValueError("PIN_DOTENV_PRESENT")
+        _profile_entries()
+        project_hash = hashlib.sha256((root / "pyproject.toml").read_bytes()).hexdigest()
+        lock_hash = hashlib.sha256((root / "uv.lock").read_bytes()).hexdigest()
+        entries = _profile_entries()
+        if not any(e["preimage"]["pyproject_sha256"] == project_hash and
+                   e["preimage"]["uv_lock_sha256"] == lock_hash for e in entries):
+            raise ValueError("PROFILE_MISMATCH")
+        exe = Path(python_executable).absolute() if python_executable is not None else (
+            root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python"))
+        # A Linux venv's python may itself be a symlink; its invocation path must be pin-owned.
+        if not exe.parent.resolve().is_relative_to((root / ".venv").resolve()) or not exe.is_file():
+            raise ValueError("PROFILE_MISMATCH")
+        head = (root / ".git/HEAD").read_text(encoding="ascii").strip()
+        with tempfile.TemporaryDirectory(prefix="hermes-profile-home-") as home:
+            env = {k: home for k in ("HOME", "HERMES_HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP")}
+            env.update(PATH=str(exe.parent), PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1")
+            if "SYSTEMROOT" in os.environ:
+                env["SYSTEMROOT"] = os.environ["SYSTEMROOT"]
+            completed = subprocess.run([str(exe), "-I", "-B", "-c", _METADATA_SOURCE], cwd=root,
+                                       env=env, capture_output=True, timeout=30, check=False)
+        if completed.returncode != 0 or len(completed.stdout) > 1_048_576 or completed.stderr:
+            raise ValueError("PROFILE_INVALID")
+        metadata = json.loads(completed.stdout)
+        return verify_profile_metadata(metadata, pyproject_sha256=project_hash,
+                                       uv_lock_sha256=lock_hash, source_head=head)
+    except (OSError, TypeError, KeyError, UnicodeError, RecursionError, subprocess.SubprocessError):
+        raise ValueError("PROFILE_INVALID") from None
+    except ValueError as exc:
+        code = str(exc)
+        raise ValueError(code if code in {"PROFILE_INVALID", "PROFILE_MISMATCH", "PIN_MISMATCH", "PIN_DOTENV_PRESENT"}
+                         else "PROFILE_INVALID") from None
+
+
 def verify_native_tool_surface(report: object) -> dict:
     """Pure verdict over one probe report; never trusts a partial or stub-like report."""
     def blocked(code: str) -> dict:
         return dict(status=SURFACE_BLOCKED, reason_code=code, tool_surface_fingerprint=None,
-                    hermes_commit=None, real_provider=REAL_PROVIDER_NOT_INVOKED,
+                    hermes_commit=None, runtime_profile_sha256=None, real_provider=REAL_PROVIDER_NOT_INVOKED,
                     provider_side_toolfree="UNPROVEN")
     if type(report) is not dict or set(report) != _REPORT_KEYS:
         return blocked("REPORT_INVALID")
-    if report["schema"] != "auto02-native-tool-surface-v1" or report["hermes_version"] != PINNED_HERMES_SEMVER \
+    if report["schema"] != "auto02-native-tool-surface-v2" or report["hermes_version"] != PINNED_HERMES_SEMVER \
             or report["hermes_commit"] != PINNED_HERMES_COMMIT:
         return blocked("PIN_MISMATCH")
+    if not profile_digest_is_approved(report["runtime_profile_sha256"]):
+        return blocked("PROFILE_MISMATCH")
     probes = (report["explicit_empty"], report["default_none"])
     if not all(type(p) is dict and set(p) == _PROBE_KEYS and all(_names(p[k]) for k in _PROBE_KEYS - {"tool_choice_present"})
                and type(p["tool_choice_present"]) is bool for p in probes):
@@ -128,11 +274,16 @@ def verify_native_tool_surface(report: object) -> dict:
     if not default["request_tools"] or "tools" not in default["request_keys"] \
             or default["request_tools"] != default["agent_tools"]:
         return blocked("NEGATIVE_CONTROL_NOT_OBSERVED")
+    windows_digest = next(e["profile_id"].rsplit(":", 1)[1] for e in _profile_entries()
+                          if e["preimage"]["platform"] == "win32")
+    if report["runtime_profile_sha256"] == windows_digest and any(
+            default[k] != _WINDOWS_DEFAULT_TOOLS for k in ("request_tools", "agent_tools", "valid_tool_names")):
+        return blocked("NEGATIVE_CONTROL_NOT_OBSERVED")
     attempts = report["network_attempts"]
     if type(attempts) is not list or any(a != list(_LOOPBACK_SENTINEL) for a in attempts):
         return blocked("UNEXPECTED_NETWORK_TARGET")
     return dict(status=SURFACE_CHECKED, reason_code=None, tool_surface_fingerprint=_digest(report),
-                hermes_commit=PINNED_HERMES_COMMIT, real_provider=REAL_PROVIDER_NOT_INVOKED,
+                hermes_commit=PINNED_HERMES_COMMIT, runtime_profile_sha256=report["runtime_profile_sha256"], real_provider=REAL_PROVIDER_NOT_INVOKED,
                 provider_side_toolfree="UNPROVEN")
 
 
@@ -153,17 +304,22 @@ def probe_native_tool_surface(pin_root: object, *, python_executable: object = N
     head = (root / ".git" / "HEAD").read_text(encoding="ascii").strip()
     exe = Path(python_executable) if python_executable is not None else (
         root / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python"))
+    profile = verify_runtime_profile(root, python_executable=exe)
     with tempfile.TemporaryDirectory(prefix="auto02-hermes-home-") as home:
+        Path(home, "config.yaml").write_text("security:\n  allow_lazy_installs: false\n", encoding="utf-8")
         env = {key: home for key in ("HERMES_HOME", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP")}
-        env.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1", PATH=str(exe.parent), NO_COLOR="1")
+        env.update(PYTHONDONTWRITEBYTECODE="1", PYTHONNOUSERSITE="1", PATH=str(exe.parent), NO_COLOR="1", HERMES_DISABLE_LAZY_INSTALLS="1")
         if "SYSTEMROOT" in os.environ:
             env["SYSTEMROOT"] = os.environ["SYSTEMROOT"]
         completed = subprocess.run([str(exe), "-I", "-B", "-c", _PROBE_SOURCE], cwd=root, env=env,
                                    capture_output=True, timeout=timeout_s, check=False)
+    if verify_runtime_profile(root, python_executable=exe) != profile:
+        raise ValueError("PROFILE_MISMATCH")
     lines = completed.stdout.decode("utf-8", "replace").strip().splitlines()
     report = json.loads(lines[-1]) if completed.returncode == 0 and lines else {}
     if type(report) is dict and report:
         report["hermes_commit"] = head
+        report["runtime_profile_sha256"] = profile
     return report
 
 
@@ -180,6 +336,7 @@ class StageBRequest:
     model_label: str
     hermes_commit: str
     tool_surface_fingerprint: str
+    runtime_profile_sha256: str
     enabled_toolsets: tuple[str, ...] = NATIVE_ENABLED_TOOLSETS
     transport_mode: str = TRANSPORT_OFFLINE_INJECTED
 
@@ -205,7 +362,7 @@ def build_stage_b_request(*, surface_report: object, candidate_menu_sha256: str,
         raise ValueError("REQUEST_MODEL_INVALID")
     draft = StageBRequest("", candidate_menu_sha256, output_schema_sha256, model_input_sha256,
                           information_cutoff_ns, issued_at_ns, deadline_ns, model_label,
-                          verdict["hermes_commit"], verdict["tool_surface_fingerprint"])
+                          verdict["hermes_commit"], verdict["tool_surface_fingerprint"], verdict["runtime_profile_sha256"])
     return replace(draft, request_id=REQUEST_ID_PREFIX + _digest(_request_preimage(draft)))
 
 
@@ -213,6 +370,7 @@ def request_is_bound(request: object) -> bool:
     return (type(request) is StageBRequest and request.enabled_toolsets == () and
             request.transport_mode == TRANSPORT_OFFLINE_INJECTED and
             request.hermes_commit == PINNED_HERMES_COMMIT and
+            profile_digest_is_approved(request.runtime_profile_sha256) and
             request.request_id == REQUEST_ID_PREFIX + _digest(_request_preimage(request)))
 
 
@@ -237,19 +395,20 @@ class StageBResult:
     status: str
     raw_output_sha256: str | None
     response_completed_ns: int | None
+    runtime_profile_sha256: str | None = None
     output_bytes: bytes | None = field(default=None, repr=False)
     _witness: object = field(default=None, repr=False, compare=False)
 
     def to_public(self) -> dict:
         """Receipt view: never the raw model output."""
         return dict(request_id=self.request_id, status=self.status, raw_output_sha256=self.raw_output_sha256,
-                    response_completed_ns=self.response_completed_ns, transport_mode=TRANSPORT_OFFLINE_INJECTED,
+                    response_completed_ns=self.response_completed_ns, runtime_profile_sha256=self.runtime_profile_sha256, transport_mode=TRANSPORT_OFFLINE_INJECTED,
                     real_provider=REAL_PROVIDER_NOT_INVOKED)
 
 
 def is_producer_result(result: object) -> bool:
     return (type(result) is StageBResult and result._witness is _PRODUCER and result.status == VALID_OUTPUT
-            and type(result.output_bytes) is bytes
+            and profile_digest_is_approved(result.runtime_profile_sha256) and type(result.output_bytes) is bytes
             and hashlib.sha256(result.output_bytes).hexdigest() == result.raw_output_sha256)
 
 
@@ -291,5 +450,5 @@ def run_tool_free_stage_b(request: StageBRequest, *, backend: OfflineStageBBacke
         return StageBResult(request.request_id, "DISPATCH_ALREADY_RESERVED", None, None)
     status, raw, completed = _classify(request, backend._dispatch(request))
     digest = hashlib.sha256(raw).hexdigest() if raw is not None else None
-    return StageBResult(request.request_id, status, digest, completed,
+    return StageBResult(request.request_id, status, digest, completed, request.runtime_profile_sha256,
                         raw if status == VALID_OUTPUT else None, _PRODUCER)

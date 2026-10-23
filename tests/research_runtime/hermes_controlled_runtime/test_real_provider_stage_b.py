@@ -127,7 +127,7 @@ def recorded(request=REQUEST, *, text=NO_TRADE, requests=None, **changes):
                   final=dict(status="completed", assembler_model=MODEL, output_types=["message"], output_text=text,
                              response_id_sha256="e" * 64,
                              usage=dict(input_tokens=10, output_tokens=5, total_tokens=15)))
-    report = dict(schema="real01-offline-codex-wire-v1", hermes_version="0.21.3", hermes_commit=tf.PINNED_HERMES_COMMIT,
+    report = dict(schema="real01-offline-codex-wire-v1", hermes_version="0.21.3", hermes_commit=tf.PINNED_HERMES_COMMIT, runtime_profile_sha256=RECORDED_REPORT["runtime_profile_sha256"],
                   control_tools_count=18, network_attempts=[], control_network_attempts=[["models.dev", 443]],
                   results=[result])
     for path, value in changes.items():
@@ -397,3 +397,19 @@ def test_real01_untrusted_response_strict_choice_and_tool_rejection(native_repor
         assert status == expected, (name, status)
         assert (raw is not None) == (expected == rp.VALID_OUTPUT)
     assert classify(single(native_report, "no_trade"))[2] == NO_TRADE.encode()
+
+
+def test_security_profile_offline_wire_lineage(tmp_path, monkeypatch):
+    request = make_request()
+    assert request.runtime_profile_sha256 == RECORDED_REPORT["runtime_profile_sha256"]
+    good = recorded(request)
+    assert rp.verify_offline_wire(request, good)["status"] == rp.WIRE_CHECKED
+    for digest in (None, "0" * 64, tf._profile_entries()[1]["profile_id"].rsplit(":", 1)[1]):
+        bad = dict(good, runtime_profile_sha256=digest)
+        assert rp.verify_offline_wire(request, bad)["reason_code"] == "PROFILE_MISMATCH"
+    monkeypatch.setattr(tf, "verify_runtime_profile", lambda *a, **k: (_ for _ in ()).throw(ValueError("PROFILE_MISMATCH")))
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: pytest.fail("wire child launched"))
+    (tmp_path / ".git").mkdir(); (tmp_path / ".git/HEAD").write_text(tf.PINNED_HERMES_COMMIT)
+    with pytest.raises(ValueError, match="PROFILE_MISMATCH"):
+        rp.capture_offline_wire(tmp_path, request, [])
+    assert not rp.request_is_bound(dataclasses.replace(request, runtime_profile_sha256="0" * 64))

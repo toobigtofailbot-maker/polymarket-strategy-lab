@@ -1,0 +1,587 @@
+{
+  "schema": "hermes-security-profile-policy-v1",
+  "upstream_source_commit": "345cd2b057a452236de401d3534b8502a7465e8d",
+  "original_pyproject_sha256": "a674c321c63c3bfd9fa099fab5957a64092416f7771680b370a4d77e992744ba",
+  "original_uv_lock_sha256": "4426ffd292c32cd8edda5779db49951833e87c73cab7cee845e7afe92ecb17b9",
+  "source_export_delta": [
+    {
+      "path": "pyproject.toml",
+      "original_sha256": "a674c321c63c3bfd9fa099fab5957a64092416f7771680b370a4d77e992744ba",
+      "candidate_sha256": "265ede9072fc1623ec198b67532b89fbee41038dce5cba08ec3dccd8449b852c"
+    },
+    {
+      "path": "uv.lock",
+      "original_sha256": "4426ffd292c32cd8edda5779db49951833e87c73cab7cee845e7afe92ecb17b9",
+      "candidate_sha256": "0247608b19b929a126377e136ed8290af018d41b05b39516745f630f7a8ec2f7"
+    }
+  ],
+  "inventory_name_rule": "metadata Name lowercased; underscore replaced with hyphen; dots retained; unique names sorted ascending",
+  "profiles": [
+    {
+      "profile_id": "hermes-profile:sha256:75e3bcea7af741fe599594a744eeb043d494973f79a5291286e60b325a17e4a8",
+      "preimage": {
+        "schema": "hermes-runtime-profile-v1",
+        "upstream_commit": "345cd2b057a452236de401d3534b8502a7465e8d",
+        "hermes_version": "0.21.3",
+        "python_implementation": "CPython",
+        "python_version": "3.12.3",
+        "platform": "win32",
+        "machine": "amd64",
+        "pyproject_sha256": "265ede9072fc1623ec198b67532b89fbee41038dce5cba08ec3dccd8449b852c",
+        "uv_lock_sha256": "0247608b19b929a126377e136ed8290af018d41b05b39516745f630f7a8ec2f7",
+        "installed_inventory_sha256": "e561f7fff5b642368880880ad1dfd393f9da1dd1a36c42cffb2e8db021e36904"
+      },
+      "inventory": [
+        {
+          "name": "annotated-doc",
+          "version": "0.0.4"
+        },
+        {
+          "name": "annotated-types",
+          "version": "0.7.0"
+        },
+        {
+          "name": "anyio",
+          "version": "4.14.2"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.4.4"
+        },
+        {
+          "name": "click",
+          "version": "8.4.2"
+        },
+        {
+          "name": "colorama",
+          "version": "0.4.6"
+        },
+        {
+          "name": "concurrent-log-handler",
+          "version": "0.9.29"
+        },
+        {
+          "name": "croniter",
+          "version": "6.0.0"
+        },
+        {
+          "name": "cryptography",
+          "version": "50.0.0"
+        },
+        {
+          "name": "distro",
+          "version": "1.9.0"
+        },
+        {
+          "name": "fastapi",
+          "version": "0.133.1"
+        },
+        {
+          "name": "fire",
+          "version": "0.7.1"
+        },
+        {
+          "name": "firecrawl-anydoc",
+          "version": "0.2.4"
+        },
+        {
+          "name": "h11",
+          "version": "0.16.0"
+        },
+        {
+          "name": "hermes-agent",
+          "version": "0.21.3"
+        },
+        {
+          "name": "httpcore",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httptools",
+          "version": "0.7.1"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.18"
+        },
+        {
+          "name": "jinja2",
+          "version": "3.1.6"
+        },
+        {
+          "name": "jiter",
+          "version": "0.13.0"
+        },
+        {
+          "name": "markdown",
+          "version": "3.10.2"
+        },
+        {
+          "name": "markdown-it-py",
+          "version": "4.0.0"
+        },
+        {
+          "name": "markupsafe",
+          "version": "3.0.3"
+        },
+        {
+          "name": "mdurl",
+          "version": "0.1.2"
+        },
+        {
+          "name": "nemo-relay",
+          "version": "0.8.3"
+        },
+        {
+          "name": "openai",
+          "version": "2.24.0"
+        },
+        {
+          "name": "packaging",
+          "version": "26.0"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "13.0.0"
+        },
+        {
+          "name": "pillow-heif",
+          "version": "1.5.0"
+        },
+        {
+          "name": "portalocker",
+          "version": "3.2.0"
+        },
+        {
+          "name": "prompt-toolkit",
+          "version": "3.0.52"
+        },
+        {
+          "name": "psutil",
+          "version": "7.2.2"
+        },
+        {
+          "name": "pycparser",
+          "version": "3.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.4"
+        },
+        {
+          "name": "pydantic-core",
+          "version": "2.46.4"
+        },
+        {
+          "name": "pygments",
+          "version": "2.20.0"
+        },
+        {
+          "name": "pyjwt",
+          "version": "2.15.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "python-dotenv",
+          "version": "1.2.2"
+        },
+        {
+          "name": "python-multipart",
+          "version": "0.0.32"
+        },
+        {
+          "name": "pytz",
+          "version": "2025.2"
+        },
+        {
+          "name": "pywin32",
+          "version": "311"
+        },
+        {
+          "name": "pywinpty",
+          "version": "2.0.15"
+        },
+        {
+          "name": "pyyaml",
+          "version": "6.0.3"
+        },
+        {
+          "name": "requests",
+          "version": "2.33.0"
+        },
+        {
+          "name": "rich",
+          "version": "14.3.3"
+        },
+        {
+          "name": "ruamel.yaml",
+          "version": "0.18.17"
+        },
+        {
+          "name": "ruamel.yaml.clib",
+          "version": "0.2.15"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "sniffio",
+          "version": "1.3.1"
+        },
+        {
+          "name": "snowballstemmer",
+          "version": "3.1.1"
+        },
+        {
+          "name": "socksio",
+          "version": "1.0.0"
+        },
+        {
+          "name": "starlette",
+          "version": "1.3.1"
+        },
+        {
+          "name": "tenacity",
+          "version": "9.1.4"
+        },
+        {
+          "name": "termcolor",
+          "version": "3.3.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.67.3"
+        },
+        {
+          "name": "typing-extensions",
+          "version": "4.15.0"
+        },
+        {
+          "name": "typing-inspection",
+          "version": "0.4.2"
+        },
+        {
+          "name": "tzdata",
+          "version": "2025.3"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.8.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.41.0"
+        },
+        {
+          "name": "watchfiles",
+          "version": "1.1.1"
+        },
+        {
+          "name": "wcwidth",
+          "version": "0.6.0"
+        },
+        {
+          "name": "websockets",
+          "version": "15.0.1"
+        }
+      ],
+      "evidence": "OBSERVED_WINDOWS_SHADOW_ONLY"
+    },
+    {
+      "profile_id": "hermes-profile:sha256:31176884c6fc112a92096c09add7403c3ad75d8578d1ec840e4609ddb2f9744f",
+      "preimage": {
+        "schema": "hermes-runtime-profile-v1",
+        "upstream_commit": "345cd2b057a452236de401d3534b8502a7465e8d",
+        "hermes_version": "0.21.3",
+        "python_implementation": "CPython",
+        "python_version": "3.12.3",
+        "platform": "linux",
+        "machine": "x86_64",
+        "pyproject_sha256": "265ede9072fc1623ec198b67532b89fbee41038dce5cba08ec3dccd8449b852c",
+        "uv_lock_sha256": "0247608b19b929a126377e136ed8290af018d41b05b39516745f630f7a8ec2f7",
+        "installed_inventory_sha256": "7364c01b32006cc43d6bfbf6a5032b7667371df85af4e921f60d16213584110a"
+      },
+      "inventory": [
+        {
+          "name": "annotated-doc",
+          "version": "0.0.4"
+        },
+        {
+          "name": "annotated-types",
+          "version": "0.7.0"
+        },
+        {
+          "name": "anyio",
+          "version": "4.14.2"
+        },
+        {
+          "name": "certifi",
+          "version": "2026.10.19"
+        },
+        {
+          "name": "cffi",
+          "version": "2.0.0"
+        },
+        {
+          "name": "charset-normalizer",
+          "version": "3.4.4"
+        },
+        {
+          "name": "click",
+          "version": "8.4.2"
+        },
+        {
+          "name": "croniter",
+          "version": "6.0.0"
+        },
+        {
+          "name": "cryptography",
+          "version": "50.0.0"
+        },
+        {
+          "name": "distro",
+          "version": "1.9.0"
+        },
+        {
+          "name": "fastapi",
+          "version": "0.133.1"
+        },
+        {
+          "name": "fire",
+          "version": "0.7.1"
+        },
+        {
+          "name": "firecrawl-anydoc",
+          "version": "0.2.4"
+        },
+        {
+          "name": "h11",
+          "version": "0.16.0"
+        },
+        {
+          "name": "hermes-agent",
+          "version": "0.21.3"
+        },
+        {
+          "name": "httpcore",
+          "version": "1.0.9"
+        },
+        {
+          "name": "httptools",
+          "version": "0.7.1"
+        },
+        {
+          "name": "httpx",
+          "version": "0.28.1"
+        },
+        {
+          "name": "idna",
+          "version": "3.18"
+        },
+        {
+          "name": "jinja2",
+          "version": "3.1.6"
+        },
+        {
+          "name": "jiter",
+          "version": "0.13.0"
+        },
+        {
+          "name": "markdown",
+          "version": "3.10.2"
+        },
+        {
+          "name": "markdown-it-py",
+          "version": "4.0.0"
+        },
+        {
+          "name": "markupsafe",
+          "version": "3.0.3"
+        },
+        {
+          "name": "mdurl",
+          "version": "0.1.2"
+        },
+        {
+          "name": "nemo-relay",
+          "version": "0.8.3"
+        },
+        {
+          "name": "openai",
+          "version": "2.24.0"
+        },
+        {
+          "name": "packaging",
+          "version": "26.0"
+        },
+        {
+          "name": "pathspec",
+          "version": "1.1.1"
+        },
+        {
+          "name": "pillow",
+          "version": "13.0.0"
+        },
+        {
+          "name": "pillow-heif",
+          "version": "1.5.0"
+        },
+        {
+          "name": "prompt-toolkit",
+          "version": "3.0.52"
+        },
+        {
+          "name": "psutil",
+          "version": "7.2.2"
+        },
+        {
+          "name": "ptyprocess",
+          "version": "0.7.0"
+        },
+        {
+          "name": "pycparser",
+          "version": "3.0"
+        },
+        {
+          "name": "pydantic",
+          "version": "2.13.4"
+        },
+        {
+          "name": "pydantic-core",
+          "version": "2.46.4"
+        },
+        {
+          "name": "pygments",
+          "version": "2.20.0"
+        },
+        {
+          "name": "pyjwt",
+          "version": "2.15.0"
+        },
+        {
+          "name": "python-dateutil",
+          "version": "2.9.0.post0"
+        },
+        {
+          "name": "python-dotenv",
+          "version": "1.2.2"
+        },
+        {
+          "name": "python-multipart",
+          "version": "0.0.32"
+        },
+        {
+          "name": "pytz",
+          "version": "2025.2"
+        },
+        {
+          "name": "pyyaml",
+          "version": "6.0.3"
+        },
+        {
+          "name": "requests",
+          "version": "2.33.0"
+        },
+        {
+          "name": "rich",
+          "version": "14.3.3"
+        },
+        {
+          "name": "ruamel.yaml",
+          "version": "0.18.17"
+        },
+        {
+          "name": "ruamel.yaml.clib",
+          "version": "0.2.15"
+        },
+        {
+          "name": "six",
+          "version": "1.17.0"
+        },
+        {
+          "name": "sniffio",
+          "version": "1.3.1"
+        },
+        {
+          "name": "snowballstemmer",
+          "version": "3.1.1"
+        },
+        {
+          "name": "socksio",
+          "version": "1.0.0"
+        },
+        {
+          "name": "starlette",
+          "version": "1.3.1"
+        },
+        {
+          "name": "tenacity",
+          "version": "9.1.4"
+        },
+        {
+          "name": "termcolor",
+          "version": "3.3.0"
+        },
+        {
+          "name": "tqdm",
+          "version": "4.67.3"
+        },
+        {
+          "name": "typing-extensions",
+          "version": "4.15.0"
+        },
+        {
+          "name": "typing-inspection",
+          "version": "0.4.2"
+        },
+        {
+          "name": "urllib3",
+          "version": "2.8.0"
+        },
+        {
+          "name": "uvicorn",
+          "version": "0.41.0"
+        },
+        {
+          "name": "uvloop",
+          "version": "0.22.1"
+        },
+        {
+          "name": "watchfiles",
+          "version": "1.1.1"
+        },
+        {
+          "name": "wcwidth",
+          "version": "0.6.0"
+        },
+        {
+          "name": "websockets",
+          "version": "15.0.1"
+        }
+      ],
+      "evidence": "DERIVED_LINUX_TARGET_NOT_INSTALLED_OR_PROBED"
+    }
+  ],
+  "credentials_authorized": false,
+  "production_promotion_authorized": false
+}

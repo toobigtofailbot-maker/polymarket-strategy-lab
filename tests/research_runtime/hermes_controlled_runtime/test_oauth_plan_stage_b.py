@@ -57,7 +57,7 @@ def preflight(mode="real", **changes):
     """Recorded shape of one real-mode preflight child report (synthetic values)."""
     report = dict(schema="oauth-plan-child-v1", phase="preflight", mode=mode, status="DONE", reason_code=None,
                   error_class=None, api_key_env_present=False, tls_verify=True, trust_env=False,
-                  hermes_commit=tf.PINNED_HERMES_COMMIT, refreshed=False, token_seconds_remaining=3000,
+                  hermes_commit=tf.PINNED_HERMES_COMMIT, runtime_profile_sha256=RECORDED_REPORT["runtime_profile_sha256"], refreshed=False, token_seconds_remaining=3000,
                   scopes_granted=SCOPES, access_audience_ok=True, access_issuer_ok=True, client_match=True,
                   client_id_sha256="c" * 64, models_status=200, models_count=7, target_listed=True,
                   target_visibility="list", network_attempts=[["api.openai.com", 443, True]],
@@ -80,7 +80,7 @@ def dispatch(request=REQUEST, *, text=NO_TRADE, mode="real", **changes):
     """Recorded shape of one dispatch child report (synthetic values, no provider)."""
     report = dict(schema="oauth-plan-child-v1", phase="dispatch", mode=mode, status="DONE", reason_code=None,
                   error_class=None, api_key_env_present=False, tls_verify=True, trust_env=False,
-                  hermes_commit=tf.PINNED_HERMES_COMMIT, hermes_version="0.21.3", construction_network_attempts=[],
+                  hermes_commit=tf.PINNED_HERMES_COMMIT, runtime_profile_sha256=RECORDED_REPORT["runtime_profile_sha256"], hermes_version="0.21.3", construction_network_attempts=[],
                   token_seconds_remaining=3000, scopes_granted=SCOPES, sdk_max_retries=0, requests=[sent(request)],
                   presend_block=None, client_stop=None, http_status=None, failed_code=None,
                   terminal_events=["response.completed"], event_count=6, server_model=MODEL,
@@ -249,7 +249,7 @@ def test_oauth_plan_entitlement_fails_closed(tmp_path, monkeypatch):
                          (dict(callback=dict(state="forged-state")), "STATE_MISMATCH"),
                          (dict(callback=dict(client_id=None)), "REGISTRATION_INCOMPLETE"),
                          (dict(token=dict(id_claims=dict(aud="oaiapp_other"))), "ID_TOKEN_INVALID"),
-                         (dict(token=dict(id_claims=dict(nonce="replayed"))), "ID_TOKEN_NONCE_MISMATCH"),
+                         (dict(token=dict(id_claims=dict(nonce="replayed"))), "ID_TOKEN_INVALID"),
                          (dict(token=dict(status=400)), "TOKEN_EXCHANGE_FAILED")):
         failed = mock_world(tmp_path / code, **kwargs).login()
         assert failed["status"] == "BLOCKED" and failed["reason_code"] == code, (code, failed)
@@ -585,3 +585,110 @@ def test_oauth_response_strict_origin_and_errors(tmp_path, monkeypatch):
             assert raw == NO_TRADE.encode() and facts["usage"] == dict(input_tokens=10, output_tokens=5, total_tokens=15)
             assert facts["response_id_sha256"] == hashlib.sha256(b"resp_mock").hexdigest()
             assert facts["x_request_id_sha256"] == hashlib.sha256(b"req_mock").hexdigest()
+
+
+def test_security_profile_oauth_preflight_and_origin_binding(tmp_path, monkeypatch):
+    report = preflight()
+    eligible = op.evaluate_preflight(report, checked_at_ns=T0, attestation=ATTEST)
+    assert eligible.facts["runtime_profile_sha256"] == REQUEST.runtime_profile_sha256
+    assert op.eligibility_is_witnessed(eligible)
+    for digest in (None, "0" * 64):
+        blocked = op.evaluate_preflight(dict(report, runtime_profile_sha256=digest), checked_at_ns=T0, attestation=ATTEST)
+        assert blocked.reason_code == "PROFILE_MISMATCH" and not op.eligibility_is_witnessed(blocked)
+        assert op.verify_dispatch_wire(REQUEST, dict(dispatch(), runtime_profile_sha256=digest))["reason_code"] == "PROFILE_MISMATCH"
+    monkeypatch.setattr(tf, "verify_runtime_profile", lambda *a, **k: (_ for _ in ()).throw(ValueError("PROFILE_MISMATCH")))
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: pytest.fail("OAuth child launched"))
+    (tmp_path / ".git").mkdir(); (tmp_path / ".git/HEAD").write_text(tf.PINNED_HERMES_COMMIT)
+    credentials = tmp_path / "never-created-credentials"
+    transport = op.OAuthPlanTransport(tmp_path, credentials, mode="mock", mock={})
+    with pytest.raises(ValueError, match="PROFILE_MISMATCH"):
+        transport.preflight()
+    assert not credentials.exists()
+
+
+def test_security_profile_oauth_claims_and_malformed_input():
+    import ast
+    import types
+    tree = ast.parse(op._CHILD_SOURCE)
+    helper = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "verify_id_token")
+    source = ast.unparse(helper)
+    assert "65536" in source and "1048576" in source and "100" in source
+    calls = []
+    class Blocked(Exception):
+        pass
+    class Response:
+        status_code = 200
+        def __init__(self, data): self.data = data
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def iter_bytes(self): yield self.data
+    document = dict(keys=[dict(kty="RSA", kid="synthetic", alg="RS256", use="sig")])
+    def decode(token, **kwargs):
+        calls.append(kwargs)
+        assert kwargs["algorithms"] == ["RS256"]
+        assert kwargs["options"] == {"require": ["exp", "iat", "iss", "aud", "sub"]}
+        if token != "valid": raise ValueError("do-not-echo")
+        return dict(nonce="nonce")
+    namespace = dict(json=json, jwt=types.SimpleNamespace(get_unverified_header=lambda t:dict(kid="synthetic"),
+                     PyJWK=lambda k:types.SimpleNamespace(key="synthetic-only"), decode=decode),
+                     C=dict(jwks_url="https://synthetic.invalid/jwks", issuer="issuer"), Blocked=Blocked)
+    exec(compile(ast.Module(body=[helper], type_ignores=[]), "actual-child-helper", "exec"), namespace)
+    verify = namespace["verify_id_token"]
+    def client(data): return types.SimpleNamespace(stream=lambda *a:Response(data))
+    assert verify("valid", client(json.dumps(document).encode()), "aud", "nonce") == dict(nonce="nonce")
+    for token, data, nonce in [("invalid", json.dumps(document).encode(), "nonce"),
+                               ("valid", json.dumps(document).encode(), "wrong"),
+                               ("x"*65537, b"{}", "nonce"),
+                               ("valid", b"x"*1048577, "nonce"),
+                               ("valid", b"["*1500, "nonce"),
+                               ("valid", b"{", "nonce")]:
+        with pytest.raises(Blocked) as exc: verify(token, client(data), "aud", nonce)
+        assert str(exc.value) == "ID_TOKEN_INVALID" and "do-not-echo" not in str(exc.value)
+    for keys in [[], [document["keys"][0]]*101, [document["keys"][0]]*2, [None],
+                 [dict(kty="oct", kid="synthetic")], [dict(kty="RSA", kid="synthetic", alg="HS256")],
+                 [dict(kty="RSA", kid="synthetic", use="enc")],
+                 [dict(kty="RSA", kid="synthetic", alg=None)], [dict(kty="RSA", kid="synthetic", use=None)], [dict(kty="RSA", kid="other")]]:
+        with pytest.raises(Blocked, match="ID_TOKEN_INVALID"):
+            verify("valid", client(json.dumps(dict(keys=keys)).encode()), "aud", "nonce")
+    assert calls[0]["options"] is not calls[1]["options"]
+    if not (PIN_ROOT / ".git/HEAD").is_file():
+        return  # Pure parser negatives above always run; real-library evidence is local candidate only.
+    script = r"""import ast, base64, json, sys, time, socket
+import jwt, httpx
+from cryptography.hazmat.primitives.asymmetric import rsa
+source=json.load(sys.stdin)["helper"]
+class Blocked(Exception): pass
+namespace=dict(json=json,jwt=jwt,Blocked=Blocked,C=dict(jwks_url="https://synthetic.invalid/jwks",issuer="issuer"))
+exec(source,namespace)
+verify=namespace["verify_id_token"]
+key=rsa.generate_private_key(public_exponent=65537,key_size=2048)
+jwk=dict(json.loads(jwt.algorithms.RSAAlgorithm.to_jwk(key.public_key())),kid="test",alg="RS256",use="sig")
+now=int(time.time()); claims=dict(exp=now+300,iat=now,iss="issuer",aud="aud",sub="subject",nonce="nonce")
+client=httpx.Client(transport=httpx.MockTransport(lambda r:httpx.Response(200,json=dict(keys=[jwk]))))
+def deny(*a,**k): raise OSError("network denied")
+socket.socket.connect=socket.create_connection=socket.getaddrinfo=deny
+assert verify(jwt.encode(claims,key,algorithm="RS256",headers=dict(kid="test")),client,"aud","nonce")["sub"]=="subject"
+for change in [dict(exp=now-600),dict(iat=now+600),dict(iss="other"),dict(aud="other"),dict(nonce="wrong"),dict(sub=None)]:
+    try:verify(jwt.encode(dict(claims,**change),key,algorithm="RS256",headers=dict(kid="test")),client,"aud","nonce")
+    except Blocked as e:assert str(e)=="ID_TOKEN_INVALID"
+    else:raise AssertionError("invalid claim accepted")
+try:verify(jwt.encode(claims,b"synthetic-non-secret-key-material-32",algorithm="HS256",headers=dict(kid="test")),client,"aud","nonce")
+except Blocked:pass
+else:raise AssertionError("HS256 accepted")
+header=base64.urlsafe_b64encode(b'{"kid":'+b'['*1500+b'0'+b']'*1500+b'}').rstrip(b'=').decode()+'.e30.AA'
+try:verify(header,client,"aud","nonce")
+except Blocked as e:assert str(e)=="ID_TOKEN_INVALID"
+else:raise AssertionError("nested header accepted")
+expired=jwt.encode(dict(claims,exp=now-600),key,algorithm="RS256")
+options=dict(verify_signature=False);jwt.decode(expired,options=options);assert options==dict(verify_signature=False)
+options["verify_signature"]=True
+try:jwt.decode(expired,key.public_key(),algorithms=["RS256"],audience="aud",issuer="issuer",options=options)
+except jwt.ExpiredSignatureError:pass
+else:raise AssertionError("reused options bypass")
+print("ACTUAL_CHILD_JWT_NEGATIVES_PASS")
+"""
+    import os
+    exe = PIN_ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    completed = subprocess.run([str(exe), "-I", "-B", "-c", script], input=json.dumps(dict(helper=source)).encode(),
+                               capture_output=True, timeout=60)
+    assert completed.returncode == 0 and b"ACTUAL_CHILD_JWT_NEGATIVES_PASS" in completed.stdout, completed.stderr
