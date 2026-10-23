@@ -15,7 +15,7 @@ D001 and D003 above are historical blockers, now RESOLVED_BY_INDEPENDENT_AMENDME
 Side21 reissued LF-native prompt/spec/policy/certificate, authorized by Karl for
 checkpoint resume. The sealed Windows acceptance is the observed exact17-set,
 without optional installations; previous 83-package evidence remains rejected.
-D002 is LOCAL_VALIDATED_PENDING_CI_AND_INDEPENDENT_REVIEW; prior failed runs remain historical,
+D002 is BLOCKED_REQUIRES_INDEPENDENT_SCOPE_RECERTIFICATION; prior runs remain historical,
 not acceptance evidence. Final exact-head CI and independent Side21 review remain
 mandatory before merge. S10-HERMES-SEC-PROFILE-01-D004: Linux installation, native
 count, inventory/audit and host promotion are DEFERRED_TO_SEPARATELY_AUTHORIZED_WP;
@@ -39,6 +39,23 @@ current native workflow therefore uses its fixed DEFAULT_OFF Tier3/full bootstra
 plan and bootstrap final gate. No CI/routing switch or classifier was changed.
 Future routing enablement needs its own approved classifier correction; actual
 hosted expanded jobs/final gate must still pass on this WP's final head.
+S10-HERMES-SEC-PROFILE-01-D009: required hosted compatibility CI fails on all four
+OS/Python legs (run39995853674,c767f9850f5dd9d2612385355f829051637e255b).
+The historical IO artifact guard at tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py:441
+uses git ls-files and rejects the newly tracked docs/hermes_runtime_security_profile.json.
+Three tests fail through that single guard; final gate fails because compatibility
+failed. The prior local broad/native passes were obtained while the policy JSON
+was untracked, so they do not establish tracked-tree acceptance. Preventable: YES;
+preflight missed a complete tracked-tree guard and the validation copy omitted new
+paths from its Git index. Root cause: INCOMPLETE_TRACKED_ARTIFACT_GUARD_DISCOVERY.
+No in-scope production/runtime fix can satisfy the unchanged guard. A concrete
+one-path allowlist proposal passes a read-only in-memory positive/sibling-negative
+simulation; the in-scope feedback source-snapshot assertion also needs its exact
+addition accounted for. Minimum scope is seventeen paths, requiring amended
+prompt/spec and independent recertification plus owner authorization. No guard,
+test skip, policy filename, Git tracking or certificate bypass was applied. PR251
+returned to draft; Ready for review:NO; merge ready:NO. Current implementation
+is preserved. Final broad checks must use the staged/committed full tracked tree.
 
 
 ## S10-HERMES-TS02

@@ -1,6 +1,6 @@
 # S10-HERMES-SEC-PROFILE-01 amended implementation
 
-State: IMPLEMENTED_LOCAL under authorized amended resume; independent acceptance pending.
+State: BLOCKED_REQUIRES_INDEPENDENT_SCOPE_RECERTIFICATION after required hosted CI.
 Governance: PROTECTED / risk4 / L / exact sixteen paths.
 Base: `f2b8916fe2bd377b0790278f4be5dad85568d367`, PR #250.
 Branch: `codex/s10-hermes-sec-profile-01`.
@@ -23,35 +23,52 @@ Linux derived profile:
 `31176884c6fc112a92096c09add7403c3ad75d8578d1ec840e4609ddb2f9744f`;
 Linux native install/audit/control count remain UNOBSERVED and separately gated.
 
-Validation: Windows dependency consistency PASS (68 packages); post-probe matching
-audit PASS (67 requirements, zero known vulnerabilities). Adjacent cycle,
-preflight/canary and historical IO/workflow docs: 95 passed; foundation architecture
-and shared architecture: 51 passed. Focused development failure on earlier clock
-error precedence was corrected to reject the newly bound request as forged first.
-Native focused suite: 25 passed, 0 skipped, 0 failed. Exact R001-R007 commands:
-seven individual passes against the sealed candidate. Semgrep: four source files,
-200 applicable rules, zero errors, one command-injection FALSE POSITIVE verified
-without suppression; Gitleaks source scan zero, whole-tree19 unchanged baseline
-alert lines with zero introduced. Windows broad suite hit an Application Control
-block on pyarrow._dataset, reproduced on untouched main; it was interrupted, not
-reported as PASS. Existing Linux validation image runs an isolated detached copy
-with networking disabled, no installation and strict DuckDB. The full offline local
-suite passed: 14028 passed, 15 skipped, 125 warnings, exit0. This is repository
-validation, not a Linux Hermes profile installation/admission claim. Hosted CI and
-independent implementation/Side21 acceptance are separately recorded in live PR evidence. See live PR evidence
-for final counts and current head; this record contains no current-head SHA.
+## Final tracked-tree validation blocker
 
-Merge requires Karl after independent Side21 review. No merge/deployment,
-production host mutation, real credentials/OAuth/provider/account operations,
-capital or orders. D005 OPEN; LIVE TRADING STATUS: DISABLED; USD 0; orders 0.
-An optional routing=true diagnostic hit the base classifier's C081 copy-status
-parser gap (D008). The routing variable is unset, so actual hosted validation uses
-the native DEFAULT_OFF full plan and bootstrap final gate. No workflow/setting edit.
+Hosted run39995853674 on implementation head
+`c767f9850f5dd9d2612385355f829051637e255b` fails all four compatibility legs:
+Linux3.12/3.14 each:3 failed,14025 passed,15 skipped,125 warnings;
+Windows3.12/3.14 each:3 failed,14022 passed,18 skipped,125 warnings.
+All three failures reach the historical IO artifact guard's tracked-file check:
+`docs/hermes_runtime_security_profile.json` is not in its exact allowlist.
+The failing guard lives outside the certified sixteen-file scope. The final CI
+gate also fails; its full-history secret scan and five binary detection tests pass.
+The other six classify/NDFD/audit/frontend jobs pass; inherited root/NDFD audits
+retain the existing fsspec exemption, distinct from the unsuppressed Hermes audit.
 
-Review readiness and posted evidence mode: see live PR body after required
-exact-head CI and posted verification. Merge ready: NO until independent approval;
-merge performed: NO. This stable pre-publication record does not assert hosted CI
-or independent review PASS.
+Historical local validation:25 native focused passes,seven R001-R007 individual
+passes,95 adjacent and51 architecture passes; local offline Linux full suite14028
+passed,15 skipped,125 warnings. These passes preceded tracking the policy JSON;
+they do not establish final tracked-tree acceptance. Source/test hashes are
+unchanged, but git ls-files omitted the untracked policy in that validation copy.
+A fresh local tracked guard reproduction fails identically after commit.
+Root cause: INCOMPLETE_TRACKED_ARTIFACT_GUARD_DISCOVERY; preventable:YES.
+
+Sealed Windows native receipt remains bounded evidence:68 distributions,67 audited
+requirements,0 known vulnerabilities without suppression; exact17 default tools,
+0 explicit tools,denied subprocess,matching before/after profile and zero stderr.
+Semgrep200 applicable rules:one verified command-injection FALSE POSITIVE,0 errors.
+Gitleaks final implementation-head history:568 commits,0 findings; directory scan
+has19 unchanged baseline alert lines,0 introduced. Windows local broad coverage
+was also blocked by Application Control; neither blocker is waived.
+
+D009 records the exact additional guard path needed for independent17-path scope
+recertification. A proposal-only in-memory exact allowlist positive and unknown
+JSON/source sibling negatives pass; the in-scope feedback source-snapshot
+assertion must also account for that exact addition. The actual out-of-scope
+guard remains untouched. No seventeenth implementation path, skip, Git index
+bypass,policy rename or certificate rewrite was applied. Existing implementation
+and immutable amended bytes remain preserved; no further implementation or
+acceptance CI run is authorized until the scope is recertified and approved.
+
+PR251 is returned to draft. Actual current PR head and blocked posted evidence are
+in its body; this stable record has no self-referential current-head SHA.
+Optional routing=true C081 diagnostic remains D008; actual default-off full CI
+ran without workflow/setting edits. D005 OPEN; LIVE TRADING STATUS:DISABLED;
+real capital USD0;real orders0. No merge,deployment,production host mutation,
+real OAuth/credential/provider/account operation or trading authorization.
+Evidence mode: BLOCKED_NOT_READY. Ready for review:NO. Merge ready:NO.
+Merge performed:NO. Independent Side21 scope review is required.
 
 ---
 

@@ -345,3 +345,20 @@ main; it is not PASS. The offline Linux repository suite is not Linux Hermes
 installation/security-profile/control-count evidence. Actual final-head hosted CI,
 posted evidence and independent Side21 review are governed by the live PR body;
 merge remains Karl-only after required independent approval.
+
+
+## Final tracked-tree CI blocker (supersedes local acceptance inference)
+
+Required run39995853674 on c767f9850f5dd9d2612385355f829051637e255b fails
+all four compatibility jobs,three tests per job,through the same historical IO
+artifact guard. Its git ls-files check rejects the newly tracked profile JSON.
+The local14028-pass broad snapshot and25-pass focused run preceded tracking that
+new file; they do not establish committed-tree acceptance. This was a preventable
+tracked-artifact discovery/validation-copy gap,not a CI environment excuse.
+The historical guard path is outside the certified16; a minimal exact allowlist
+addition requires independently recertifying17 paths and renewed owner authority.
+The in-scope feedback source-snapshot assertion must account for the addition.
+No forbidden guard edit or test skip occurred. PR251 is draft,not ready and not
+merge-ready. D009 records the blocker. Native readiness still describes package
+structure only; it cannot override required CI failure or authorize scope expansion.
+Production,OAuth/credentials,trading and D005 boundaries remain unchanged.
