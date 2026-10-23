@@ -44,6 +44,10 @@ for final counts and current head; this record contains no current-head SHA.
 Merge requires Karl after independent Side21 review. No merge/deployment,
 production host mutation, real credentials/OAuth/provider/account operations,
 capital or orders. D005 OPEN; LIVE TRADING STATUS: DISABLED; USD 0; orders 0.
+An optional routing=true diagnostic hit the base classifier's C081 copy-status
+parser gap (D008). The routing variable is unset, so actual hosted validation uses
+the native DEFAULT_OFF full plan and bootstrap final gate. No workflow/setting edit.
+
 Review readiness and posted evidence mode: see live PR body after required
 exact-head CI and posted verification. Merge ready: NO until independent approval;
 merge performed: NO. This stable pre-publication record does not assert hosted CI

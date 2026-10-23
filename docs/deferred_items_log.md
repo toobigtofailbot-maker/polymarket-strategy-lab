@@ -31,6 +31,14 @@ this WP. No OS-policy bypass or dependency change. Native Hermes focused25 and
 R001-R007 pass; the existing Linux validation image is used offline for broad
 coverage: 14028 passed, 15 skipped, 125 warnings, exit0. Windows full coverage
 remains separately evidenced by exact-head CI.
+S10-HERMES-SEC-PROFILE-01-D008: optional routing-enabled local diagnostic returns
+CI_PLAN_INVALID because Git emits a zero-padded copy similarity status C081 for the
+new independent certificate, while the base classifier accepts only C100 or one/
+two digits. Routing variable CI_RISK_ROUTING_ENABLED is unset (read-only lookup);
+current native workflow therefore uses its fixed DEFAULT_OFF Tier3/full bootstrap
+plan and bootstrap final gate. No CI/routing switch or classifier was changed.
+Future routing enablement needs its own approved classifier correction; actual
+hosted expanded jobs/final gate must still pass on this WP's final head.
 
 
 ## S10-HERMES-TS02
