@@ -1,6 +1,6 @@
 # S10-HERMES-SEC-PROFILE-01 certified scope17 continuation
 
-State: AUTHORIZED_SCOPE17_IMPLEMENTED; final validation pending.
+State: SCOPE17_LOCAL_VALIDATED; exact-final-head hosted CI and independent review pending.
 PR251 / branch codex/s10-hermes-sec-profile-01,existing draft,preserved implementation.
 Base:f2b8916fe2bd377b0790278f4be5dad85568d367 (merged PR250).
 Prompt SHA256:13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f.
@@ -16,14 +16,48 @@ The three historical guard/wrapper tests pass on the actual complete tracked tre
 Four runtime modules and three other native test modules are byte-identical to
 prior implementation. All prior failures remain historical evidence below.
 
-Fresh full local tracked-tree tests,security and final-head hosted CI are pending
-at this checkpoint;actual results/current head/posted evidence mode belong in the
-live PR body. No current-head SHA is encoded here. Review readiness:see live PR
+Full local tracked-tree tests and security are validated below. Exact-final-head
+hosted CI is pending at this committed checkpoint; actual final results,current
+head and posted evidence mode belong in the live PR body. No current-head SHA is encoded here. Review readiness:see live PR
 body after mandatory validation. Independent combined implementation/security and
 final Side21 merge-readiness review remain mandatory. Merge ready:NO until those
 reviews and Karl's decision. No merge/deployment/real credentials/OAuth/host/trading.
 Linux Hermes profile/control-count remains UNOBSERVED and separately gated;
 D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
+
+## Scope17 final local validation record (2026-10-23)
+
+Validated implementation commit: `5eb878592f6c31d3efd7bfa63d1d6e13f5cf36f8`.
+Complete committed tracked tree, exact17 paths, no overlay or omitted policy:
+`python -B -m pytest -q -p no:cacheprovider`, existing offline Linux Python3.12
+image, WP167_STRICT_DUCKDB=1: 14028 passed, 15 skipped, 125 warnings in 536.52s (0:08:56); exit0.
+Historical guard/wrappers:3 passed. Native plus adjacent focused suite:176 passed.
+R001-R007 exact requirement nodes:each passed. Repository-truth tests:43 passed.
+All nine implementation/test Python hashes remain unchanged after these runs.
+
+A development full run had1 failed,14027 passed,15 skipped: the scope17 deferred
+section was appended below a historical terminal-row invariant. Moving only that
+section into the existing current-WP area resolved it; the historical test and
+terminal row were preserved. That failed run remains retained as failed evidence.
+
+Fresh sealed Windows native receipt:exact17 default tool names,0 explicit tools,
+installer subprocess denied,zero stderr and stable approved68-distribution profile.
+Post-probe pip check PASS; actual installed67-requirement pip-audit:0 known
+vulnerabilities,without ignores or suppression; inventory identical before/after.
+Semgrep five paths,200 applicable rules,one verified command-injection FALSE
+POSITIVE,0 errors; no suppression. The pin-owned constant child program/list argv
+and stdin-only data flow are unchanged; pre-launch/profile/denied-process negatives
+pass. Linux Hermes native installation/audit/control-count remains UNOBSERVED.
+
+D009's tracked-artifact failure is locally resolved under independent scope17
+authority. D002 now awaits exact-final-head hosted full CI,posted evidence and
+independent Side21 combined implementation/security and final readiness review.
+The final hosted result and live head belong in the PR body; no current-head SHA
+is encoded here. Merge ready:NO pending independent review and Karl's decision.
+D004/D006/D007/D008 remain qualified as previously recorded. D005 OPEN;
+LIVE TRADING STATUS:DISABLED;real capital USD0;real orders0.
+No eighteenth path,dependency change,workflow/routing edit,production operation,
+real credential/OAuth/provider/account call,merge,deployment or trading authority.
 
 ---
 

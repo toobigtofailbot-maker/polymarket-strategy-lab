@@ -436,3 +436,37 @@ not final independent acceptance. Linux Hermes promotion remains D004,separately
 gated and UNOBSERVED; optional inactive routing C081 issue remains D008. No new
 runtime/dependency/credential/host authority,no eighteenth path,skip or guard
 weakening. D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
+
+## Scope17 final local validation record (2026-10-23)
+
+Validated implementation commit: `5eb878592f6c31d3efd7bfa63d1d6e13f5cf36f8`.
+Complete committed tracked tree, exact17 paths, no overlay or omitted policy:
+`python -B -m pytest -q -p no:cacheprovider`, existing offline Linux Python3.12
+image, WP167_STRICT_DUCKDB=1: 14028 passed, 15 skipped, 125 warnings in 536.52s (0:08:56); exit0.
+Historical guard/wrappers:3 passed. Native plus adjacent focused suite:176 passed.
+R001-R007 exact requirement nodes:each passed. Repository-truth tests:43 passed.
+All nine implementation/test Python hashes remain unchanged after these runs.
+
+A development full run had1 failed,14027 passed,15 skipped: the scope17 deferred
+section was appended below a historical terminal-row invariant. Moving only that
+section into the existing current-WP area resolved it; the historical test and
+terminal row were preserved. That failed run remains retained as failed evidence.
+
+Fresh sealed Windows native receipt:exact17 default tool names,0 explicit tools,
+installer subprocess denied,zero stderr and stable approved68-distribution profile.
+Post-probe pip check PASS; actual installed67-requirement pip-audit:0 known
+vulnerabilities,without ignores or suppression; inventory identical before/after.
+Semgrep five paths,200 applicable rules,one verified command-injection FALSE
+POSITIVE,0 errors; no suppression. The pin-owned constant child program/list argv
+and stdin-only data flow are unchanged; pre-launch/profile/denied-process negatives
+pass. Linux Hermes native installation/audit/control-count remains UNOBSERVED.
+
+D009's tracked-artifact failure is locally resolved under independent scope17
+authority. D002 now awaits exact-final-head hosted full CI,posted evidence and
+independent Side21 combined implementation/security and final readiness review.
+The final hosted result and live head belong in the PR body; no current-head SHA
+is encoded here. Merge ready:NO pending independent review and Karl's decision.
+D004/D006/D007/D008 remain qualified as previously recorded. D005 OPEN;
+LIVE TRADING STATUS:DISABLED;real capital USD0;real orders0.
+No eighteenth path,dependency change,workflow/routing edit,production operation,
+real credential/OAuth/provider/account call,merge,deployment or trading authority.
