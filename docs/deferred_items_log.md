@@ -58,6 +58,35 @@ returned to draft; Ready for review:NO; merge ready:NO. Current implementation
 is preserved. Final broad checks must use the staged/committed full tracked tree.
 
 
+
+## S10-HERMES-SEC-PROFILE-01 certified scope17 continuation (2026-10-23)
+
+Karl explicitly authorized the independently certified17-path amendment on existing
+draft PR251. New prompt SHA256:
+`13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f`;
+spec:`288f3b098be859d2d9eae2918d2e0554c5d4df86c335e51e4ee5037bf77380bd`;
+certificate:`a992de97ef0cb7dd3df8274f3e0faae13ae83403ac8db2a1926da9088c4b9862`.
+Policy SHA256 remains
+`eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`.
+Native spec guard PASS and PROTECTED readiness IMPLEMENTATION_READY,scope17.
+
+D009's missing-path authority is resolved by independent recertification. The exact
+tracked-artifact allowlist adds only docs/hermes_runtime_security_profile.json;
+JSON/Python shadow siblings remain forbidden. The existing in-scope historical
+snapshot subtracts only those exact additions,and exercises both sibling negatives.
+All four runtime source modules and the other three native test modules are
+byte-identical to the preserved prior implementation. The three previously failing
+historical guard/wrapper tests now pass on the complete actual tracked tree.
+Historical scope16 CI failure is retained as failure,not reclassified as PASS.
+
+D002/D009 acceptance is pending fresh full tracked-tree local validation,security
+checks and one new exact-head full hosted CI. This is an implementation checkpoint,
+not final independent acceptance. Linux Hermes promotion remains D004,separately
+gated and UNOBSERVED; optional inactive routing C081 issue remains D008. No new
+runtime/dependency/credential/host authority,no eighteenth path,skip or guard
+weakening. D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
+
+
 ## S10-HERMES-TS02
 
 | ID | Item | State | Required next evidence |
@@ -2959,31 +2988,3 @@ qualification/economic/paper/live/Gate-C authority (no wallet live shortcut crea
 | S10-DEPLOY-PLAN-01-D003 | Exact upgrade-eligibility metric definitions, observation windows and isolated-execution baseline methodology | DEFERRED_TO_S10_DEPLOY_01 | P2 | S10-DEPLOY-01 must freeze them before any criterion is used as evidence | The ~85% RAM / ~15% MemAvailable / swap, ~85% CPU, ~80% disk / ~30-day headroom, ~10% I/O wait, >=20% p95 latency degradation, recovery-objective and isolation-failure criteria are review triggers only, never automatic upgrades or purchases; Karl decides after reviewing telemetry. Same-host isolation mechanism (Docker/systemd/other) is not frozen; Kubernetes is not required. |
 | S10-DEPLOY-PLAN-01-D004 | Jurisdiction, geoblocking, venue-terms, latency and provider-fit verification of the AlphaVPS Sofia, Bulgaria host | DEFERRED_TO_S10_DEPLOY_01 | P1 | S10-DEPLOY-01 (and any later auth/signing/live package) before the host carries paper or live runtime | S10-DEPLOY-PLAN-01 performs no provider probe, purchase, benchmark or legal/terms review; the planning direction is not evidence that the host is permitted, reachable or adequate for any venue path. The charter's jurisdiction, geoblocking, latency, reliability and operational-fit considerations remain verification obligations. |
 | S10-DEPLOY-PLAN-01-D005 | Package size-class label reconciliation | RECORDED_DESIGN_NOTE | P3 | None | Side14 drafted S10-DEPLOY-PLAN-01 as size M, but the repo WP spec guard caps M at 10 changed files; the exact 13-path scope is therefore classified L in the machine spec. Classification only: no path added, removed or widened. |
-
-
-## S10-HERMES-SEC-PROFILE-01 certified scope17 continuation (2026-10-23)
-
-Karl explicitly authorized the independently certified17-path amendment on existing
-draft PR251. New prompt SHA256:
-`13ca60c7658bdee15754276b4fcd8b7440420d53c18f88f82efb40d1b0c8596f`;
-spec:`288f3b098be859d2d9eae2918d2e0554c5d4df86c335e51e4ee5037bf77380bd`;
-certificate:`a992de97ef0cb7dd3df8274f3e0faae13ae83403ac8db2a1926da9088c4b9862`.
-Policy SHA256 remains
-`eba64a49fa0d6215278b34e96725e195fb1549d143673117c992b6ae52935680`.
-Native spec guard PASS and PROTECTED readiness IMPLEMENTATION_READY,scope17.
-
-D009's missing-path authority is resolved by independent recertification. The exact
-tracked-artifact allowlist adds only docs/hermes_runtime_security_profile.json;
-JSON/Python shadow siblings remain forbidden. The existing in-scope historical
-snapshot subtracts only those exact additions,and exercises both sibling negatives.
-All four runtime source modules and the other three native test modules are
-byte-identical to the preserved prior implementation. The three previously failing
-historical guard/wrapper tests now pass on the complete actual tracked tree.
-Historical scope16 CI failure is retained as failure,not reclassified as PASS.
-
-D002/D009 acceptance is pending fresh full tracked-tree local validation,security
-checks and one new exact-head full hosted CI. This is an implementation checkpoint,
-not final independent acceptance. Linux Hermes promotion remains D004,separately
-gated and UNOBSERVED; optional inactive routing C081 issue remains D008. No new
-runtime/dependency/credential/host authority,no eighteenth path,skip or guard
-weakening. D005 OPEN;LIVE TRADING STATUS:DISABLED;real capital USD0;orders0.
