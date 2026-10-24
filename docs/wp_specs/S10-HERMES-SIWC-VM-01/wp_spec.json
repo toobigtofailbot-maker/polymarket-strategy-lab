@@ -1,0 +1,592 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-SIWC-VM-01",
+    "title": "Selected SIWC registration handoff and isolated non-dispatch preflight",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SIWC_SELECTED_REGISTRATION_VM_BRIDGE",
+    "package_size_class": "L",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-siwc-vm-01",
+    "required_predecessor": {
+      "pr_number": 251,
+      "head_sha": "c17054654c9806bfdfd8c61d7166f41961fd3513",
+      "merge_sha": "07c53cf7c362a96a5f437f506beb1022d82749bc"
+    },
+    "objective": "Implement only the dormant Windows-source/Linux-VM selected-registration bridge and isolated preflight software under later independent exact-byte certification and Karl authorization; synthetic tests only, no operational credential authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+      "docs/hermes_real_provider_stage_b_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/S10-HERMES-SIWC-VM-01.md",
+      "docs/wp_specs/S10-HERMES-SIWC-VM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-SIWC-VM-01/wp_spec.json",
+      "docs/wp_specs/S10-HERMES-SIWC-VM-01/draftability_certificate.json"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+      "docs/hermes_real_provider_stage_b_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/security_tooling_status.md",
+      "docs/status_entries/S10-HERMES-SIWC-VM-01.md",
+      "docs/wp_specs/S10-HERMES-SIWC-VM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-SIWC-VM-01/wp_spec.json",
+      "docs/wp_specs/S10-HERMES-SIWC-VM-01/draftability_certificate.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "tools/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly eleven declared repo paths; do not touch real credential storage, pending markers, host, pin, history or prior certificates. Operator credential recovery is separately authorized and never a Git rollback.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Same native module and original route; Windows source only, Linux VM destination. The supplied independently inspected promotion report records the approved Linux profile hermes-profile:sha256:31176884c6fc112a92096c09add7403c3ad75d8578d1ec840e4609ddb2f9744f, 64 installed distributions, 63 actual audited registry requirements with zero known findings and no ignores, native empty/default controls, and PR251 active/bound/current at its recorded observation. Reuse that completed evidence; do not reinstall or replay promotion. It does not prove new SIWC bridge credential behavior, new-code scratch acceptance or real entitlement, and this drafting session does not renew host currentness.",
+    "items": [
+      {
+        "surface": "OAuthPlanTransport credential phases",
+        "before": "Callable login/preflight exist; fixed temp writer and no selected VM import or common refresh lock.",
+        "after": "One common credential protocol with confined Windows source and POSIX Linux destination stores and native child-held locks; selected transfer APIs and same-module CLI reuse canonical preflight/evaluator.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing public method signatures, route, profile, dispatch IDs/journal and evaluator remain; real unsupported-platform use refuses before credentials; no account picker or fallback. The native-phase contract below expressly preserves fail-closed no-record caller behavior; it does not make the excluded production caller operational.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Windows source storage/ACL/locking and selected export",
+        "before": "Native login callable exists but no protected Windows storage/lock/export contract is implemented.",
+        "after": "Windows Source Contract: source login/export only, non-elevated user and local NTFS persistent ACLs. Use stdlib ctypes, CreateFileW no-follow reparse handles and parent handles without delete sharing, handle identity/volume/single-link checks, protected explicit owner-SID/SYSTEM-only DACL at creation and GetSecurityInfo validation; reject unsafe/inherited/null/broad ACLs and untrusted ancestor mutation. Deny reparse/junction, UNC/non-NTFS/device/ADS/ambiguous paths; canonical handle-based excluded-root confinement. Fixed never-deleted lock file plus LockFileEx exclusive/fail-immediately, held by credential child; no PID/time stealing or source refresh/catalogue/inference. CREATE_NEW random temps, checked FlushFileBuffers/publication, exact post-publication identity/ACL/length/hash and durable pending/commit/retirement state; no ACL-ignore or unsupported ReplaceFileW write-through flag. Windows export must obey the exact W1 barrier,",
+        "change_authorized": true,
+        "compatibility_requirement": "publication and restart rows below. No weaker durability or read-back proof is allowed. Existing user ACLs are never repaired or elevated. Unsupported capabilities/ambiguous flush/rename/ACL/crash remain blocked, no orphan adoption/retry/rollback. New and replacement generations follow R002 and preserve token-set atomicity. No generic framework/new dependency/module; all R001-R005 semantics remain. Separately assessed Windows source-only variant; no WSL/headless callback assumption, Windows VM/preflight support or waiver of destination guarantees. No Win32 probe ran here.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Windows W1 pending/retirement barrier",
+        "before": "Revision B left this Windows retirement/publication/restart ordering unspecified.",
+        "after": "ACTIVE admits no interrupted mutation. Bind one selected bundle in child memory only. Before ANY new secret-bearing export file: CREATE_NEW immutable private PENDING, then RETIRED, each with explicit protected DACL, synchronous noninheritable share=0 no-follow FILE_FLAG_WRITE_THROUGH handle; checked full WriteFile, FlushFileBuffers, same-object pathname/ID/owner/ACL/link/content checks. Never use temporary/delete-on-close attributes. Retirement linearizes only after RETIRED barrier; retain both records permanently. Any collision/short write/flush/check failure blocks, no overwrite/delete/retry. Only the original lock-owning invocation may publish after retirement.",
+        "change_authorized": true,
+        "compatibility_requirement": "Private state record keys exactly schema_id/schema_version/state/operation_alias/selected_generation/registration_binding/source_host_binding/destination_host_binding/export_digest/target_binding; schema_id=siwc-source-export-state, version1.0.0, PENDING or RETIRED. Bindings stay child-only. Missing, invalid or disagreeing state never restores ACTIVE. No real-source storage premise is established here; require local NTFS and a storage stack honoring documented flush completions. If premise is unsupported/unestablished, refuse DURABILITY_UNESTABLISHED, no real export or weaker guarantee.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Windows W1 first publication and generation replacement",
+        "before": "Revision B left this Windows retirement/publication/restart ordering unspecified.",
+        "after": "After retirement only, CREATE_NEW random protected write-through same-directory temp; full write/flush/ID/ACL/hash checks then close temp handle, retain parent handles/child lock. Same-volume MoveFileExW flags0x8 only: absent final, no replace/copy/reboot fallback. OPEN_EXISTING final share0 read/write/read-control no-follow/write-through; verify expected temp ID, link count, volume, owner/DACL, complete bound bytes; FlushFileBuffers/check and recheck retirement. DONE only after exclusive durable sanitized receipt; all ambiguity BLOCKED, no retry/cleanup/source reuse.",
+        "change_authorized": true,
+        "compatibility_requirement": "Export and state records never replace. Before retirement only, existing admitted same-session credential update requires durable operation-pending barrier; prepared/verified/flushed replacement; close file handles but retain parents/lock; ReplaceFileW(target,replacement,NULL,0,NULL,NULL). No backup/ACL-ignore/unsupported write-through flag. Reopen/verify expected replacement ID, exact generation/bytes/ACL, FlushFileBuffers/check before existing commit. All partial/error outcomes retain pending and block, no assumption old bytes survived, retry/orphan/backup adoption. Linux unchanged.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Windows W1 restart/refusal and failure model",
+        "before": "Revision B left this Windows retirement/publication/restart ordering unspecified.",
+        "after": "Matching RETIRED+PENDING always SOURCE_SESSION_RETIRED regardless of output/receipt; PENDING alone, invalid/unreadable/conflicting/missing expected state or interrupted replacement blocks EXPORT_STATE_INVALID. No tail skipping, prior-ACTIVE fallback, auto completion, republish, marker clearing or reactivation. Busy lock remains SESSION_BUSY. Recovery is outside WP, requires separate owner authorization; retain artifacts and emit closed code. Process death preserves OS; power loss may drop unacknowledged writes. Safety requires both acknowledged retirement barriers before any bundle byte.",
+        "change_authorized": true,
+        "compatibility_requirement": "Actual new-code native R002/R003 tests: death at every pending/write/flush/retired/temp/move/final/receipt boundary, short writes, false API returns, sharing collisions, ReplaceFileW partial outcomes; zero early export, correct disk/ID/ACL state, no source reuse. Persistence schedules may lose only unacknowledged writes; losing acknowledged writes is an unsupported-device counterexample, not a PASS. Neither readback nor process kills prove hardware. Unconditional arbitrary-device power-loss durability is incompatible with frozen APIs/constraints; refuse rather than weaken. No physical probe, power cycle or new test node.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Exact native-phase binding",
+        "before": "Certified inputs omitted native login/dispatch record mapping and first-login unissued identity.",
+        "after": "The protected operator record accepts exactly source-login, source-export, prepare-vm-host, import-selected, preflight-only and dispatch. Each value admits only its mapped native phase/platform above. A record must be securely read and validated before credential reads or browser/network/storage mutation; the common native child lock and lifecycle admission then cover every credential phase. Missing, expired, wrong-phase/platform or mismatched records refuse without sensitive side effects; no home/environment/default record discovery or implicit record mutation.",
+        "change_authorized": true,
+        "compatibility_requirement": "A source-export record cannot admit login; preflight-only cannot admit _send; dispatch cannot admit preflight or control-plane work. Attestation is the exact canonical evaluator dict only for preflight-only, null otherwise. refresh_allowed must be false for source-login, source-export and dispatch; only VM preflight may refresh under the existing gate. The record itself grants no real operation authority. All static/hash/validity/path/size constraints remain.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Fresh source-login binding",
+        "before": "Certified inputs omitted native login/dispatch record mapping and first-login unissued identity.",
+        "after": "Only source-login on a genuinely new Windows source slot admits selected_client_id=\"dynamic_agent_client\" with selected_subject=\"NEW_REGISTRATION_UNBOUND\". This fixed pair is not an issued identity or generic wildcard. Both values are forbidden in stored issued registration/credential, export/import/preflight/dispatch and public receipts. destination_host_id must be null for source-login. Source-export instead requires the separately selected prepared VM host ID.",
+        "change_authorized": true,
+        "compatibility_requirement": "NEW requires no registration/credential, pending/retired state, source host record, orphan temp or other session artifact; only the verified fixed session lock may already exist. Invalid/partial/conflicting state is never inferred fresh from missing files. After owner-record/storage admission and under the lock, persist the existing durable login-pending barrier before creating host/session state or opening/binding the browser callback. Callback failure/death leaves blocked pending; no adoption, clearing or automatic reauthorization. This specializes R002, with no new recovery framework.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Issued and returning login binding",
+        "before": "Certified inputs omitted native login/dispatch record mapping and first-login unissued identity.",
+        "after": "After fresh attended callback, validate the actual issued non-dynamic client ID, ID-token issuer/audience/subject/nonce and all required scopes using the existing native login validation; failure or partial response accepts no issued session. Bind and atomically persist the actual issued client/subject/token set under the existing pending/commit protocol. Sentinels never become an issued session. On returning source-login the record contains exact issued stored client/subject, never either sentinel; validate those and non-retired/non-pending coherent source state before browser/token side effects, then require post-callback client/subject equality.",
+        "change_authorized": true,
+        "compatibility_requirement": "prepare-vm-host alone may use selected_client_id=null and selected_subject=null together as not-yet-issued binding context; partial-null pairs and this pair on any other operation refuse. It may instead carry two exact issued values. VM preparation creates only its stable empty host identity and claims no source-account read/verification; if legitimately available protected source context exists, any supplied issued pair must match it. destination_host_id is null only for source-login or prepare-vm-host, and a nonempty exact host binding for all other phases. All remaining selected values must be exact issued strings; no wildcard.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Existing dispatch admission and caller limitation",
+        "before": "Certified inputs omitted native login/dispatch record mapping and first-login unissued identity.",
+        "after": "dispatch classifies the existing separately gated _send credential phase; it creates no inference permission or new dispatch route. In the existing module, real _send must require both this distinct bound record and the existing witnessed eligibility, bound request, deadline/profile and one-attempt journal admission through run_oauth_attempt, plus the separately required external owner/runtime authority. A direct _send call or typed dispatch record alone cannot supply those gates. Do not weaken or replace the existing witness/journal semantics; preserve recorded-report monkeypatch and legitimate offline tests.",
+        "change_authorized": true,
+        "compatibility_requirement": "At frozen main, live_canary.native_oauth_attempt builds one real OAuthPlanTransport without operator_record_path, calls preflight, then reuses it in run_oauth_attempt. live_canary.py remains forbidden and byte-unchanged. Under the new missing-record/phase checks that path intentionally remains blocked; no runtime-ready claim, implicit record, mutable preflight-to-dispatch rebinding or fallback. A later independently governed caller-integration prerequisite must provide disjoint records and preserve external gates before any separately authorized real use. This WP requires fail-closed caller compatibility, not operational activation of that caller.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Non-dispatch receipts and bounded regression obligations",
+        "before": "Certified inputs omitted native login/dispatch record mapping and first-login unissued identity.",
+        "after": "The closed non-dispatch receipt operation allowlist is prepare-vm-host, import-selected, preflight-only and source-export; source-login may appear only if an attended control-plane receipt is actually produced. dispatch is always forbidden there. No new receipt/API is required for dispatch; the original dispatch report/journal stays separate. Every non-dispatch receipt has dispatch_count=0 and the original no-secret/no-identifier/evidence/authority restrictions. Fresh-login sentinels are never copied into a public receipt.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use existing R001-R005 nodes only. Add the exact narrow negative cases below, including operation cross-products, initial/returning identity states, no-record live-canary refusal and existing mock/witness/journal regressions. These are planned implementation tests, not current behavior PASS. Reuse matched Windows/Linux scratch after independent recertification; do not reinstall or claim new-code/storage/entitlement proof in this draft.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "Windows verified volume-root effective 0x4 ACE only",
+        "before": "Generic ancestor guard rejects effective untrusted root FILE_ADD_SUBDIRECTORY along with other mutation bits.",
+        "after": "Sole volume-root ACE clarification: an effective untrusted allow ACE may have 0x4 FILE_ADD_SUBDIRECTORY as its only otherwise-prohibited bit (mask & 0x500D0156 == 0x4) only on the independently handle-verified local NTFS volume-root directory, never an intermediate or private leaf. Read/traverse bits may coexist; no other old rejected bit is exempt, even beside 0x4: FILE_ADD_FILE 0x2, FILE_DELETE_CHILD 0x40, DELETE, WRITE_DAC, WRITE_OWNER, write-EA/attributes and GENERIC_WRITE/ALL still refuse. Inherit-only ACEs do not grant effective root rights and cannot establish this exception. Keep trusted owner/DACL validation and fail closed on unknown/unsupported ACEs or metadata. Never clear 0x4 from the universal ancestor mask or treat a caller boolean/path prefix as root proof.",
+        "change_authorized": true,
+        "compatibility_requirement": "Root eligibility is per retained no-delete-share, no-follow directory handle: require GetDriveTypeW local fixed volume, GetVolumeInformationByHandleW NTFS/persistent ACLs, GetFinalPathNameByHandleW normalized VOLUME_NAME_GUID naming exactly the volume root (no relative suffix), and independently open that canonical GUID root with the same safe flags. Compare volume serial/file-index identities via GetFileInformationByHandle; all descendant handles must stay on that volume. Refuse missing/ambiguous/inconsistent results, drive/SUBST aliases to subdirectories, wrong-volume/root masquerade, mount/reparse points or excluded-root overlap. Only this proven root may provisionally pass its 0x4 ACE; no credential access, publication or success until the entire existing descendant chain, owner/SYSTEM-only protected private leaf, identities and locks pass unchanged.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Thirteen original semantic paths and five requirements preserved; bounded clause partition changes only for corrected platform/evidence wording. Windows source contract is additionally normative in api_matrix.",
+    "items": [
+      {
+        "path": "identity.transfer_part1",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A single selected registration is the unit of handoff. Add OAuthPlanTransport.export_selected_session() and import_selected_session(); prepare_vm_host() creates only a stable destination host ID. Export runs under the source session lock, validates the native record/mapping and retained ID-token consistency, durably disables source use before producing one owner-only bundle. No whole-directory copy. Import requires a fresh empty credential slot with pre-existing destination host ID; never overwrites a slot or host ID. Preserve issued client_id, subject, issuer, full scopes, access/refresh/id tokens as one issued set; destination credential",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A single selected registration is the unit of handoff. Add OAuthPlanTransport.export_selected_session() and import_selected_session(); prepare_vm_host() creates only a stable destination host ID. Export runs under the source session lock, validates the native record/mapping and retained ID-token consistency, durably disables source use before producing one owner-only bundle. No whole-directory copy. Import requires a fresh empty credential slot with pre-existing destination host ID; never overwrites a slot or host ID. Preserve issued client_id, subject, issuer, full scopes, access/refresh/id tokens as one issued set; destination credential",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "identity.transfer_part2",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "host metadata becomes its existing host ID, which must differ from source. Reject malformed/ambiguous/mixed registration, missing selected mapping/retained ID token, wrong issuer/audience/client/sub/scopes and source-equals-destination host before any network. A protected owner-supplied selection must match the transferred mapping, not email. Offline JWT payload consistency is not signature/entitlement verification: trust originates only in the source attended validated native login and owner-controlled secure transfer. No offline import may claim fresh OIDC validation. Import is allowed once; an existing target, consumed source or pending import refuses replay.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "host metadata becomes its existing host ID, which must differ from source. Reject malformed/ambiguous/mixed registration, missing selected mapping/retained ID token, wrong issuer/audience/client/sub/scopes and source-equals-destination host before any network. A protected owner-supplied selection must match the transferred mapping, not email. Offline JWT payload consistency is not signature/entitlement verification: trust originates only in the source attended validated native login and owner-controlled secure transfer. No offline import may claim fresh OIDC validation. Import is allowed once; an existing target, consumed source or pending import refuses replay.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storage.confinement_part1",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Production bridge is Windows source + Linux destination. Linux retains dir_fd, O_NOFOLLOW, O_DIRECTORY, flock and durable fsync; Windows source must satisfy the exact Windows Source Contract in this prompt and spec.api_matrix. Unsupported capabilities/filesystems return PLATFORM_UNSUPPORTED before credential access/network. Source is non-elevated Windows user; destination is one non-root uid. Validate lexical paths before resolve; reject repository, pin/release roots and overlapping source/destination/output roots. Owner supplies an approved storage root outside all repo/releases. Linux: walk using anchored no-follow descriptors; ancestors root/current-uid owned and not group/world writable, leaf current-uid 0700, regular files current-uid 0600, single link, bounded size. Windows: handle/ACL equivalents must meet",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Production bridge is Windows source + Linux destination. Linux retains dir_fd, O_NOFOLLOW, O_DIRECTORY, flock and durable fsync; Windows source must satisfy the exact Windows Source Contract in this prompt and spec.api_matrix. Unsupported capabilities/filesystems return PLATFORM_UNSUPPORTED before credential access/network. Source is non-elevated Windows user; destination is one non-root uid. Validate lexical paths before resolve; reject repository, pin/release roots and overlapping source/destination/output roots. Owner supplies an approved storage root outside all repo/releases. Linux: walk using anchored no-follow descriptors; ancestors root/current-uid owned and not group/world writable, leaf current-uid 0700, regular files current-uid 0600, single link, bounded size. Windows: handle/ACL equivalents must meet",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storage.confinement_part2",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "the separately assessed contract; chmod is not an ACL test. Reject symlinks, reparse/junction semantics, hard links, FIFOs/devices, unsafe owners/modes and unsafe temp/final targets; never chmod/chown or delete existing user files to repair them. Use exclusive random same-directory private temp creation (Linux 0600, Windows protected DACL), flush/fsync and directory fsync on Linux, verified-descriptor publication; Windows checked Win32 flush/publication with fail-closed uncertainty as specified below; no fixed .tmp, no truncation of pre-existing files. New artifacts publish without replacement. An existing selected credential may be atomically replaced only by its validated same-session next generation under the lock. Multi-file import/login uses a",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "the separately assessed contract; chmod is not an ACL test. Reject symlinks, reparse/junction semantics, hard links, FIFOs/devices, unsafe owners/modes and unsafe temp/final targets; never chmod/chown or delete existing user files to repair them. Use exclusive random same-directory private temp creation (Linux 0600, Windows protected DACL), flush/fsync and directory fsync on Linux, verified-descriptor publication; Windows checked Win32 flush/publication with fail-closed uncertainty as specified below; no fixed .tmp, no truncation of pre-existing files. New artifacts publish without replacement. An existing selected credential may be atomically replaced only by its validated same-session next generation under the lock. Multi-file import/login uses a",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "storage.confinement_part3",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "durable pending marker; crash leaves an unusable blocked slot, never mixed usable state. Orphan temp files are not adopted or automatically deleted; exact repair requires later owner action. Threat model is owner-controlled immutable executable and local filesystem, not malicious root/same-uid tampering or hostile snapshot rollback. JSON limits: operator record 64 KiB, transfer 256 KiB, credential/registration/host records 256 KiB/16 KiB/4 KiB; maximum nesting 8, reject duplicate keys/nonfinite numbers. Positive native filesystem tests run as a non-root user under a private scratch root with safe ancestors; do not silently exempt writable /tmp ancestors or claim a root-owned fixture proves non-root storage.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "durable pending marker; crash leaves an unusable blocked slot, never mixed usable state. Orphan temp files are not adopted or automatically deleted; exact repair requires later owner action. Threat model is owner-controlled immutable executable and local filesystem, not malicious root/same-uid tampering or hostile snapshot rollback. JSON limits: operator record 64 KiB, transfer 256 KiB, credential/registration/host records 256 KiB/16 KiB/4 KiB; maximum nesting 8, reject duplicate keys/nonfinite numbers. Positive native filesystem tests run as a non-root user under a private scratch root with safe ancestors; do not silently exempt writable /tmp ancestors or claim a root-owned fixture proves non-root storage.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "session.refresh_part1",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Use one fixed, securely opened never-unlinked lock file per selected credential slot: Linux nonblocking fcntl.flock; Windows source LockFileEx exclusive+fail-immediately. The credential child holds the lock throughout read/validate/mutate/remote phase. All native login/preflight/import/export/dispatch credential readers participate, including direct Python callers; no wrapper-only mutex. Busy returns SESSION_BUSY, never waits/retries. OS release after process death handles stale locks; never steal/unlink by timestamp or PID. Source export marks that session transferred-out before publication and all source real operations then stop. VM is the sole permitted refresh owner; owner must quiesce all source copies/external callers before handoff, which is an operational trust prerequisite rather than a distributed-lock claim. Write/fsync a refresh-pending marker before the one possible refresh request. Validate replacement issuer/audience/client/scopes and",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Use one fixed, securely opened never-unlinked lock file per selected credential slot: Linux nonblocking fcntl.flock; Windows source LockFileEx exclusive+fail-immediately. The credential child holds the lock throughout read/validate/mutate/remote phase. All native login/preflight/import/export/dispatch credential readers participate, including direct Python callers; no wrapper-only mutex. Busy returns SESSION_BUSY, never waits/retries. OS release after process death handles stale locks; never steal/unlink by timestamp or PID. Source export marks that session transferred-out before publication and all source real operations then stop. VM is the sole permitted refresh owner; owner must quiesce all source copies/external callers before handoff, which is an operational trust prerequisite rather than a distributed-lock claim. Write/fsync a refresh-pending marker before the one possible refresh request. Validate replacement issuer/audience/client/scopes and",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "session.refresh_part2",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "coherent identity before atomic commit; preserve old refresh only if a valid response legitimately omits its replacement and preserve retained ID token unless a newly supplied one is validated. Do not add a JWKS fetch to preflight; an unvalidated replacement ID token blocks locally. Mark commit complete durably before clearing pending. Crash/timeout/denial/invalid_grant/uncertain rotation leaves blocked pending state and no retry or rollback to the old token; no automatic deletion, recovery, second refresh, source resumption or reimport. A fresh explicit owner reauthorization/recovery decision is required. Returning attended login reuses the selected issued client and sends retained ID-token hint only to the fixed authorization endpoint, with fresh PKCE/state/nonce; never emit the URL. No logout/revocation manager is added.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "coherent identity before atomic commit; preserve old refresh only if a valid response legitimately omits its replacement and preserve retained ID token unless a newly supplied one is validated. Do not add a JWKS fetch to preflight; an unvalidated replacement ID token blocks locally. Mark commit complete durably before clearing pending. Crash/timeout/denial/invalid_grant/uncertain rotation leaves blocked pending state and no retry or rollback to the old token; no automatic deletion, recovery, second refresh, source resumption or reimport. A fresh explicit owner reauthorization/recovery decision is required. Returning attended login reuses the selected issued client and sends retained ID-token hint only to the fixed authorization endpoint, with fresh PKCE/state/nonce; never emit the URL. No logout/revocation manager is added.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "operator.preflight_part1",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Add same-module main(argv) with only prepare-vm-host, import-selected and preflight-only subcommands. No CLI login, dispatch, export, fallback, inference, canary or strategy command. Export remains a narrow source API, documented for a later attended owner phase. Help/parse errors must not construct transport, inspect credentials or show private supplied values. Default invocation is help; explicit subcommand required. Secret token bytes and selection/attestation values arrive through securely opened protected files/descriptors inside the child, never argv/environment/stdout. Preserve OAuthPlanTransport.preflight() and evaluate_preflight() as canonical; main invokes precisely one preflight and evaluator, no tool-surface probe or run_oauth_attempt. Pre-admission validates pin/profile, storage, identity, source-transfer state and pending state before authenticated calls; then the child permits only zero-or-one POST auth.openai.com/api/accounts/oauth/token and exactly one GET",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Add same-module main(argv) with only prepare-vm-host, import-selected and preflight-only subcommands. No CLI login, dispatch, export, fallback, inference, canary or strategy command. Export remains a narrow source API, documented for a later attended owner phase. Help/parse errors must not construct transport, inspect credentials or show private supplied values. Default invocation is help; explicit subcommand required. Secret token bytes and selection/attestation values arrive through securely opened protected files/descriptors inside the child, never argv/environment/stdout. Preserve OAuthPlanTransport.preflight() and evaluate_preflight() as canonical; main invokes precisely one preflight and evaluator, no tool-surface probe or run_oauth_attempt. Pre-admission validates pin/profile, storage, identity, source-transfer state and pending state before authenticated calls; then the child permits only zero-or-one POST auth.openai.com/api/accounts/oauth/token and exactly one GET",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "operator.preflight_part2",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "api.openai.com/v1/models on success. Auth/identity failure stops before catalogue. Deny all other method/host/path/redirect/socket/process targets before send, especially Responses, backend-api, proxy and fallback paths. Preserve TLS verify, trust_env=False, no redirects, route/scopes/profile/thresholds and one attempt. Report zero dispatch on success and refusal. Never return raw child report, credential, account or exception text to CLI. Publish a closed sanitized durable receipt atomically without overwrite, outside repo/release/credential roots; receipt failure is BLOCKED with zero retry, not successful acceptance. Operator-record schema_id is siwc-vm-operator-binding, schema_version 1.0.0; remaining fields: operation, operation_alias, selected_client_id, selected_subject, approved_storage_root, excluded_roots, destination_host_id, expected_source_commit, expected_runtime_profile_sha256, refresh_allowed, valid_from_ns, valid_until_ns, attestation. All keys required. The",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "api.openai.com/v1/models on success. Auth/identity failure stops before catalogue. Deny all other method/host/path/redirect/socket/process targets before send, especially Responses, backend-api, proxy and fallback paths. Preserve TLS verify, trust_env=False, no redirects, route/scopes/profile/thresholds and one attempt. Report zero dispatch on success and refusal. Never return raw child report, credential, account or exception text to CLI. Publish a closed sanitized durable receipt atomically without overwrite, outside repo/release/credential roots; receipt failure is BLOCKED with zero retry, not successful acceptance. Operator-record schema_id is siwc-vm-operator-binding, schema_version 1.0.0; remaining fields: operation, operation_alias, selected_client_id, selected_subject, approved_storage_root, excluded_roots, destination_host_id, expected_source_commit, expected_runtime_profile_sha256, refresh_allowed, valid_from_ns, valid_until_ns, attestation. All keys required. The",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "operator.preflight_part3",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Native Phase Admission Contract below defines exactly six record operations and the only identity/host null or sentinel exceptions; attestation is canonical only for preflight-only and null otherwise. Alias matches [a-z0-9][a-z0-9-]{0,47}; strict nonboolean integer timestamps satisfy 0 < valid_until_ns-valid_from_ns <= 900000000000 and contain current time. Static hashes: lowercase exact SHA40/SHA256; selected strings: except those explicit null/sentinel pairs, nonempty, at most 4096 UTF-8 bytes; excluded_roots: unique list of 1-32 absolute paths. attestation exactly matches canonical evaluator dict, never a default. refresh_allowed: strict bool; false plus near-expiry blocks before POST. Transfer exact keys: schema_id, schema_version, registration, credential, source_host_id, source_validation; schema_id=siwc-selected-transfer, schema_version=1.0.0. Native registration/credential meanings remain, with no other registration or file. source_validation is a closed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native Phase Admission Contract below defines exactly six record operations and the only identity/host null or sentinel exceptions; attestation is canonical only for preflight-only and null otherwise. Alias matches [a-z0-9][a-z0-9-]{0,47}; strict nonboolean integer timestamps satisfy 0 < valid_until_ns-valid_from_ns <= 900000000000 and contain current time. Static hashes: lowercase exact SHA40/SHA256; selected strings: except those explicit null/sentinel pairs, nonempty, at most 4096 UTF-8 bytes; excluded_roots: unique list of 1-32 absolute paths. attestation exactly matches canonical evaluator dict, never a default. refresh_allowed: strict bool; false plus near-expiry blocks before POST. Transfer exact keys: schema_id, schema_version, registration, credential, source_host_id, source_validation; schema_id=siwc-selected-transfer, schema_version=1.0.0. Native registration/credential meanings remain, with no other registration or file. source_validation is a closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "operator.preflight_part4",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "source_commit/runtime_profile_sha256/validated_login_identity object; true means the protected source provenance, never independent remote attestation. Add keyword-only operator_record_path=None to existing constructor; real storage/control phases require the bound record, absent means refusal; recorded-report monkeypatches remain valid. New methods use self-bound protected paths; export_selected_session(*, transfer_file), import_selected_session(*, transfer_file), prepare_vm_host() return no secret bytes. CLI exit0 only on published accepted receipt, exit1 on refusal, exit2 on safe usage error; help exit0 has no storage/network effects. Preflight acceptance requires canonical real eligibility plus separate owner authority; an offline synthetic preflight receipt remains BLOCKED/PLAN_USAGE_UNVERIFIED, exit1, while pure evaluator tests retain their original synthetic outcomes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "source_commit/runtime_profile_sha256/validated_login_identity object; true means the protected source provenance, never independent remote attestation. Add keyword-only operator_record_path=None to existing constructor; real storage/control phases require the bound record, absent means refusal; recorded-report monkeypatches remain valid. New methods use self-bound protected paths; export_selected_session(*, transfer_file), import_selected_session(*, transfer_file), prepare_vm_host() return no secret bytes. CLI exit0 only on published accepted receipt, exit1 on refusal, exit2 on safe usage error; help exit0 has no storage/network effects. Preflight acceptance requires canonical real eligibility plus separate owner authority; an offline synthetic preflight receipt remains BLOCKED/PLAN_USAGE_UNVERIFIED, exit1, while pure evaluator tests retain their original synthetic outcomes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "safety.authority_part1",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "This PROTECTED software package, if independently certified and explicitly authorized later, permits implementation and synthetic/offline tests only. credentials=true describes implementation of credential-sensitive code, not permission to read real records; network=false forbids real product calls during implementation. No real login/import/export/preflight, host/SSH/install/promotion/account/model/Responses access, wallet/order/ledger, scheduler, economics, config or dependency changes. Live trading disabled, USD 0, orders 0. Synthetic receipts have evidence_class OFFLINE_TEST_ONLY and real_entitlement UNVERIFIED; they cannot grant plan eligibility, dispatch, D005 closure or host capacity proof. Real receipts require",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "This PROTECTED software package, if independently certified and explicitly authorized later, permits implementation and synthetic/offline tests only. credentials=true describes implementation of credential-sensitive code, not permission to read real records; network=false forbids real product calls during implementation. No real login/import/export/preflight, host/SSH/install/promotion/account/model/Responses access, wallet/order/ledger, scheduler, economics, config or dependency changes. Live trading disabled, USD 0, orders 0. Synthetic receipts have evidence_class OFFLINE_TEST_ONLY and real_entitlement UNVERIFIED; they cannot grant plan eligibility, dispatch, D005 closure or host capacity proof. Real receipts require",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "safety.authority_part2",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "separate exact owner operation authority, carry canonical evaluator status without upgrading model discovery to inference entitlement, and retain D005 OPEN until independent accepted live proof. All receipt fields are allowlisted; reject extra/unsupported fields and recursively exclude tokens, client/sub/host/account identifiers or hashes of them, raw URLs/query strings, local paths/usernames/IPs, free-form text and errors. No repr/asdict/debug/exception sink may expose protected records. Keep C8G operator choice and MEMORY/IO qualification; preserve completed Linux promotion evidence and all remaining blockers without relabelling historical records.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "separate exact owner operation authority, carry canonical evaluator status without upgrading model discovery to inference entitlement, and retain D005 OPEN until independent accepted live proof. All receipt fields are allowlisted; reject extra/unsupported fields and recursively exclude tokens, client/sub/host/account identifiers or hashes of them, raw URLs/query strings, local paths/usernames/IPs, free-form text and errors. No repr/asdict/debug/exception sink may expose protected records. Keep C8G operator choice and MEMORY/IO qualification; preserve completed Linux promotion evidence and all remaining blockers without relabelling historical records.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed codes, public static hashes, nonidentifying operation alias and booleans only",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Reuse existing eligibility/profile identities unchanged; receipt is evidence only, not a credential-derived identity or authority token.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Descriptions of future gates, not current status claims.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Only independent Side21 exact-byte certificate of final LF prompt/spec and complete native protected gates; this draft grants none.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Only Karl subsequent explicit implementation order after native readiness; real credential/host/account operations remain excluded.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly eleven paths; R001-R005 offline tests, required security/full/hosted validation and independent final review; no live credential use.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new canonical identity derivation. Executable behavior examples and negative matrix are frozen in the prompt acceptance section and R001-R005 tests.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "All five named nodes are PLANNED_NEW_NODE in the exact existing in-scope test file. Existing baseline nodes are mapped in the external matrix.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_siwc_selected_registration_handoff",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_siwc_selected_registration_handoff",
+        "expected_result": "A single selected registration is the unit of handoff. Add OAuthPlanTransport.export_selected_session() and import_selected_session(); prepare_vm_host() creates only a stable destination host ID. Export runs under the source session lock, validates the native record/mapping and retained ID-token consistency, durably disables source use before producing one owner-only bundle. No whole-directory copy. Import requires a fresh empty credential slot with pre-existing destination host ID; never overwrites a slot or host ID. Preserve issued client_id, subject, issuer, full scopes, access/refresh/id tokens as one issued set; destination credential host metadata becomes its existing host ID, which must differ from source. Reject malformed/ambiguous/mixed registration, missing selected mapping/retained ID token, wrong issuer/audience/client/sub/scopes and source-equals-destination host before any network. A protected owner-supplied selection must match the transferred mapping, not email. Offline JWT payload consistency is not signature/entitlement verification: trust originates only in the source attended validated native login and owner-controlled secure transfer. No offline import may claim fresh OIDC validation. Import is allowed once; an existing target, consumed source or pending import refuses replay. Apply the affected native-phase/initial-login cases in the prompt narrow admission negative matrix; all earlier cases remain mandatory."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_siwc_storage_confinement_atomicity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_siwc_storage_confinement_atomicity",
+        "expected_result": "Production bridge is Windows source + Linux destination. Linux retains dir_fd, O_NOFOLLOW, O_DIRECTORY, flock and durable fsync; Windows source must satisfy the exact Windows Source Contract in this prompt and spec.api_matrix. Unsupported capabilities/filesystems return PLATFORM_UNSUPPORTED before credential access/network. Source is non-elevated Windows user; destination is one non-root uid. Validate lexical paths before resolve; reject repository, pin/release roots and overlapping source/destination/output roots. Owner supplies an approved storage root outside all repo/releases. Linux: walk using anchored no-follow descriptors; ancestors root/current-uid owned and not group/world writable, leaf current-uid 0700, regular files current-uid 0600, single link, bounded size. Windows: handle/ACL equivalents must meet the separately assessed contract; chmod is not an ACL test. Reject symlinks, reparse/junction semantics, hard links, FIFOs/devices, unsafe owners/modes and unsafe temp/final targets; never chmod/chown or delete existing user files to repair them. Use exclusive random same-directory private temp creation (Linux 0600, Windows protected DACL), flush/fsync and directory fsync on Linux, verified-descriptor publication; Windows checked Win32 flush/publication with fail-closed uncertainty as specified below; no fixed .tmp, no truncation of pre-existing files. New artifacts publish without replacement. An existing selected credential may be atomically replaced only by its validated same-session next generation under the lock. Multi-file import/login uses a durable pending marker; crash leaves an unusable blocked slot, never mixed usable state. Orphan temp files are not adopted or automatically deleted; exact repair requires later owner action. Threat model is owner-controlled immutable executable and local filesystem, not malicious root/same-uid tampering or hostile snapshot rollback. JSON limits: operator record 64 KiB, transfer 256 KiB, credential/registration/host records 256 KiB/16 KiB/4 KiB; maximum nesting 8, reject duplicate keys/nonfinite numbers. Positive native filesystem tests run as a non-root user under a private scratch root with safe ancestors; do not silently exempt writable /tmp ancestors or claim a root-owned fixture proves non-root storage. Apply Windows W1 retirement/publication/restart obligations in api_matrix: every real child-kill and API/persistence fault boundary, no secret-bearing temp before both flushed/verified barriers, source never reactivates; process-kill PASS is not power-loss evidence, unsupported acknowledged-write loss is not a valid storage premise. Apply the affected native-phase/initial-login cases in the prompt narrow admission negative matrix; all earlier cases remain mandatory. Apply the sole verified NTFS volume-root effective-0x4 clarification in the prompt and api_matrix; execute its bounded R002/R003 native/synthetic negative matrix. No intermediate/leaf, other mutation-bit, POSIX or W1 exemption; every refusal preserves source/other-file bytes and identities and publishes zero token bytes."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_siwc_refresh_owner_and_crash",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_siwc_refresh_owner_and_crash",
+        "expected_result": "Use one fixed, securely opened never-unlinked lock file per selected credential slot: Linux nonblocking fcntl.flock; Windows source LockFileEx exclusive+fail-immediately. The credential child holds the lock throughout read/validate/mutate/remote phase. All native login/preflight/import/export/dispatch credential readers participate, including direct Python callers; no wrapper-only mutex. Busy returns SESSION_BUSY, never waits/retries. OS release after process death handles stale locks; never steal/unlink by timestamp or PID. Source export marks that session transferred-out before publication and all source real operations then stop. VM is the sole permitted refresh owner; owner must quiesce all source copies/external callers before handoff, which is an operational trust prerequisite rather than a distributed-lock claim. Write/fsync a refresh-pending marker before the one possible refresh request. Validate replacement issuer/audience/client/scopes and coherent identity before atomic commit; preserve old refresh only if a valid response legitimately omits its replacement and preserve retained ID token unless a newly supplied one is validated. Do not add a JWKS fetch to preflight; an unvalidated replacement ID token blocks locally. Mark commit complete durably before clearing pending. Crash/timeout/denial/invalid_grant/uncertain rotation leaves blocked pending state and no retry or rollback to the old token; no automatic deletion, recovery, second refresh, source resumption or reimport. A fresh explicit owner reauthorization/recovery decision is required. Returning attended login reuses the selected issued client and sends retained ID-token hint only to the fixed authorization endpoint, with fresh PKCE/state/nonce; never emit the URL. No logout/revocation manager is added. Apply Windows W1 retirement/publication/restart obligations in api_matrix: every real child-kill and API/persistence fault boundary, no secret-bearing temp before both flushed/verified barriers, source never reactivates; process-kill PASS is not power-loss evidence, unsupported acknowledged-write loss is not a valid storage premise. Apply the affected native-phase/initial-login cases in the prompt narrow admission negative matrix; all earlier cases remain mandatory."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_siwc_non_dispatch_preflight_receipt",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_siwc_non_dispatch_preflight_receipt",
+        "expected_result": "Add same-module main(argv) with only prepare-vm-host, import-selected and preflight-only subcommands. No CLI login, dispatch, export, fallback, inference, canary or strategy command. Export remains a narrow source API, documented for a later attended owner phase. Help/parse errors must not construct transport, inspect credentials or show private supplied values. Default invocation is help; explicit subcommand required. Secret token bytes and selection/attestation values arrive through securely opened protected files/descriptors inside the child, never argv/environment/stdout. Preserve OAuthPlanTransport.preflight() and evaluate_preflight() as canonical; main invokes precisely one preflight and evaluator, no tool-surface probe or run_oauth_attempt. Pre-admission validates pin/profile, storage, identity, source-transfer state and pending state before authenticated calls; then the child permits only zero-or-one POST auth.openai.com/api/accounts/oauth/token and exactly one GET api.openai.com/v1/models on success. Auth/identity failure stops before catalogue. Deny all other method/host/path/redirect/socket/process targets before send, especially Responses, backend-api, proxy and fallback paths. Preserve TLS verify, trust_env=False, no redirects, route/scopes/profile/thresholds and one attempt. Report zero dispatch on success and refusal. Never return raw child report, credential, account or exception text to CLI. Publish a closed sanitized durable receipt atomically without overwrite, outside repo/release/credential roots; receipt failure is BLOCKED with zero retry, not successful acceptance. Operator-record schema_id is siwc-vm-operator-binding, schema_version 1.0.0; remaining fields: operation, operation_alias, selected_client_id, selected_subject, approved_storage_root, excluded_roots, destination_host_id, expected_source_commit, expected_runtime_profile_sha256, refresh_allowed, valid_from_ns, valid_until_ns, attestation. All keys required. The Native Phase Admission Contract below defines exactly six record operations and the only identity/host null or sentinel exceptions; attestation is canonical only for preflight-only and null otherwise. Alias matches [a-z0-9][a-z0-9-]{0,47}; strict nonboolean integer timestamps satisfy 0 < valid_until_ns-valid_from_ns <= 900000000000 and contain current time. Static hashes: lowercase exact SHA40/SHA256; selected strings: except those explicit null/sentinel pairs, nonempty, at most 4096 UTF-8 bytes; excluded_roots: unique list of 1-32 absolute paths. attestation exactly matches canonical evaluator dict, never a default. refresh_allowed: strict bool; false plus near-expiry blocks before POST. Transfer exact keys: schema_id, schema_version, registration, credential, source_host_id, source_validation; schema_id=siwc-selected-transfer, schema_version=1.0.0. Native registration/credential meanings remain, with no other registration or file. source_validation is a closed source_commit/runtime_profile_sha256/validated_login_identity object; true means the protected source provenance, never independent remote attestation. Add keyword-only operator_record_path=None to existing constructor; real storage/control phases require the bound record, absent means refusal; recorded-report monkeypatches remain valid. New methods use self-bound protected paths; export_selected_session(*, transfer_file), import_selected_session(*, transfer_file), prepare_vm_host() return no secret bytes. CLI exit0 only on published accepted receipt, exit1 on refusal, exit2 on safe usage error; help exit0 has no storage/network effects. Preflight acceptance requires canonical real eligibility plus separate owner authority; an offline synthetic preflight receipt remains BLOCKED/PLAN_USAGE_UNVERIFIED, exit1, while pure evaluator tests retain their original synthetic outcomes. Apply the Native Phase Admission Contract and narrow admission negative matrix in the prompt/api_matrix."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_siwc_authority_and_redaction",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py::test_siwc_authority_and_redaction",
+        "expected_result": "This PROTECTED software package, if independently certified and explicitly authorized later, permits implementation and synthetic/offline tests only. credentials=true describes implementation of credential-sensitive code, not permission to read real records; network=false forbids real product calls during implementation. No real login/import/export/preflight, host/SSH/install/promotion/account/model/Responses access, wallet/order/ledger, scheduler, economics, config or dependency changes. Live trading disabled, USD 0, orders 0. Synthetic receipts have evidence_class OFFLINE_TEST_ONLY and real_entitlement UNVERIFIED; they cannot grant plan eligibility, dispatch, D005 closure or host capacity proof. Real receipts require separate exact owner operation authority, carry canonical evaluator status without upgrading model discovery to inference entitlement, and retain D005 OPEN until independent accepted live proof. All receipt fields are allowlisted; reject extra/unsupported fields and recursively exclude tokens, client/sub/host/account identifiers or hashes of them, raw URLs/query strings, local paths/usernames/IPs, free-form text and errors. No repr/asdict/debug/exception sink may expose protected records. Keep C8G operator choice and MEMORY/IO qualification; preserve completed Linux promotion evidence and all remaining blockers without relabelling historical records. Apply the affected native-phase/initial-login cases in the prompt narrow admission negative matrix; all earlier cases remain mandatory."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-SIWC-OWNER-ACCEPT-01",
+    "next_title": "Separately authorized native source/VM handoff and non-dispatch account acceptance",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-SIWC-VM-01",
+    "forbidden_in_this_wp": [
+      "Real credential reading/creation/transfer, browser login, token/JWKS/model endpoint access or Responses inference",
+      "VPS/SSH/production installation or profile promotion; platform/ACL expansion",
+      "Wallet/ledger/order/Gate-C/strategy/scheduler/economic or config changes",
+      "Self-certificate, source changes before independent certification and Karl order, automatic D005 closure"
+    ]
+  }
+}

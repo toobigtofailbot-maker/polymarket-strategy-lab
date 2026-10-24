@@ -1,5 +1,73 @@
 # Hermes Real-Provider Stage B Contract (S10-HERMES-AUTO-02-REAL-01)
 
+## S10-HERMES-SIWC-VM-01 protected software bridge
+
+The normative exact-byte package is `docs/wp_specs/S10-HERMES-SIWC-VM-01/`.
+Only `oauth_plan_stage_b.py` and its existing test module change product code.
+Karl authorized software implementation/synthetic tests and one PR; real operations
+and merge remain separately gated. Stable evidence: `docs/status_entries/S10-HERMES-SIWC-VM-01.md`.
+
+The bridge route remains provider=custom,api_mode=codex_responses,
+base_url=https://api.openai.com/v1,model=gpt-6.1-sol, the original six scopes,
+issuer and public OAuth endpoints. The historical openai-codex/backend route
+below and API-key billing are distinct and never fallback choices.
+
+Every native phase requires its exact protected operator record before credential
+admission. Windows source-only operations are source-login/source-export; Linux
+destination operations are prepare-vm-host/import-selected/preflight-only/dispatch.
+First login admits only the exact unbound sentinel pair into an empty slot;
+returning login binds stored issued client/subject and retained ID-token hint.
+There is no implicit record discovery. The unchanged live-canary caller supplies
+no record and remains fail-closed. A dispatch record alone never grants inference:
+the original request binding, real eligibility witness/freshness and one-attempt
+journal gates still precede the private dispatch lease.
+
+`OAuthPlanTransport` adds keyword-only `operator_record_path=None`, plus
+`prepare_vm_host()`, `import_selected_session(*, transfer_file)` and
+`export_selected_session(*, transfer_file)`. Login stays the existing attended
+Python API; no login/export/dispatch CLI. Help has no private I/O. The CLI offers
+only prepare-vm-host/import-selected/preflight-only, with required --pin-root,
+--credential-dir,--operator-record,--receipt and import-only --transfer-file.
+Exit0 requires an accepted durable receipt,exit1 is refusal,exit2 safe usage error.
+Secrets/selection/attestation enter the pinned child through protected files/stdin,
+never argv/environment or CLI output. No real command invocation is authorized here.
+
+Transfer is one complete selected issued set, not a directory copy. Export validates
+source identity/generation under its fixed lock, then writes immutable verified
+PENDING and RETIRED barriers before creating any token-bearing output file. A
+one-use process-local permit cannot be reused after restart. Matching barriers
+always retire source; malformed/partial/unknown state refuses without adoption,
+repair, retry or reactivation. Output/receipt publish without overwrite. Import
+requires a fresh destination slot with its prepared distinct host ID, preserves
+issued identity/tokens/scopes and destination host, and keeps immutable import
+pending/commit evidence. Offline payload consistency is not fresh OIDC validation.
+
+Linux uses non-root private0700 ancestors/leaf,0600 single-link regular files,
+anchored nofollow descriptors, fixed nonblocking flock and file/directory fsync.
+Windows uses non-elevated local persistent-ACL NTFS, retained no-delete-sharing
+handles, protected owner/SYSTEM private DACLs, fixed LockFileEx and checked Win32
+flush/publication. The sole ancestor exception requires independent GUID-root
+opening plus actual root volume serial/file-index equivalence: only effective
+untrusted dangerous-mask intersection exactly0x4 at that retained real root.
+All other dangerous grants, unsafe descendants, aliases/reparse/hardlinks refuse.
+No existing host ACL repair, elevation or alternate-volume workaround.
+
+Credential mutation writes pending before any grant request, validates replacement
+identity/scopes and commits a new generation before clearing pending. Windows
+ReplaceFileW uses zero flags/no backup; every partial failure stays pending.
+Refresh belongs only to Linux, one optional POST followed by one catalogue GET;
+no retry/redirect/proxy/fallback/Responses is admitted by preflight. Aliases are
+consumed before authenticated phases. Canonical preflight/evaluator semantics stay.
+Closed receipts exclude protected identifiers/digests/paths/raw errors and always
+carry dispatch0/execution NONE/USD0/orders0. Synthetic receipts stay
+OFFLINE_TEST_ONLY/BLOCKED/UNVERIFIED, never entitlement or D005 closure.
+
+Native process-death and synthetic persistence schedules do not prove controller/
+media power-loss durability. Future real-source storage whose premise cannot be
+established must refuse DURABILITY_UNESTABLISHED; that admission requires separate
+owner/independent review. No unconditional arbitrary-hardware/snapshot guarantee.
+No real credential/OAuth/host/economic operation or production entitlement is proven.
+
 Dormant, local/offline seam. It is not a provider call, not a model-origin proof, not live
 authority and not a scheduler. Governing package: `docs/wp_specs/S10-HERMES-AUTO-02-REAL-01/`.
 
