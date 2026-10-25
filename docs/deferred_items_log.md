@@ -1,5 +1,27 @@
 # Deferred Items Log
 
+## S10-HERMES-SIWC-VM-01 consolidated disposition (2026-10-24)
+
+| ID | State | Resolution / remaining evidence |
+|---|---|---|
+| S10-HERMES-SIWC-VM-01-D001 | RESOLVED_LOCAL_SCRATCH | Approved separate native Linux CPython3.12.3/64 profile reused unchanged; no promotion/installation replay. |
+| S10-HERMES-SIWC-VM-01-D002 | RESOLVED_INDEPENDENT_ADMISSION_AMENDMENT | Frozen Side21 six-operation contract/certificate retained; same-module integration and negative matrix. |
+| S10-HERMES-SIWC-VM-01-D003 | RESOLVED_NARROW_ROOT_ACE_AMENDMENT | Actual retained NTFS root/GUID/serial/file-ID0x4 proof and native lock/publication/death cases; no other ancestor exemption/host ACL change/hardware guarantee. |
+| S10-HERMES-SIWC-VM-01-D004 | RESOLVED_ISOLATED_SCANNER | Karl authorized official digest-pinned CE runner; both exact rulepacks executed locally/offline. Raw warnings remain qualified separately below. |
+| S10-HERMES-SIWC-VM-01-D005 | CONDITIONAL_HOSTED_ELIGIBILITY_AUTHORIZED | One same draft PR may transition solely for existing exact-head hosted CI after required local gates. No workflow/routing/settings/manual-dispatch/merge grant. |
+| S10-HERMES-SIWC-VM-01-D006 | RESOLVED_DISPOSABLE_PROJECT_ENVIRONMENT | Old critical certifi audit retained. Separately authorized project-only image uses2026.10.19, actual69-package inventory/audit; optional NDFD dependencies are existing approved pins. Native68/64 profiles unchanged, no tracked dependency edit/new ignore. |
+| S10-HERMES-SIWC-VM-01-D007 | RESOLVED_GIT_HARNESS | Real local detached predecessor clone with all11 exact-byte overlays staged externally; Linux container rev-parse uses genuine metadata, no fake SHA. Legacy Windows-profile native wire fixture tested with matching Windows pin; Linux recorded/full CI mode has no configured native pin. New Linux SIWC native proof is separate/unskipped. |
+| S10-HERMES-SIWC-VM-01-D008 | OPEN_INDEPENDENT_IMPLEMENTATION_SECURITY_REVIEW | Three Semgrep exec warnings remain OPEN until independently triaged/accepted by Side21. Literal/AST local false-positive reasoning is evidence only, rawexit1 retained, no suppression. Final exact-head review and Karl-only merge decision required; see PR metadata/current body. |
+| S10-HERMES-SIWC-VM-01-D009 | SEPARATE_OWNER_ACCEPTANCE_REQUIRED | Real Windows storage durability premise, attended sign-in, selective handoff, actual VM/account/model/geography/credits evidence remain unestablished and unauthorized here. No inference/trading/host-capacity proof or D005 closure. |
+| S10-HERMES-SIWC-VM-01-D010 | RESOLVED_CANONICAL_EXCLUDED_ROOTS | Final internal review reproduced lexical-only excluded-root alias admission. Existing module now resolves POSIX public exclusions strictly and compares Windows normalized GUID handle paths; only public excluded directory aliases are followed, private slot chain remains nofollow. Identical pre-repair/post-repair actual POSIX alias assertions and native Win32 bounded canonical-name negatives accompany fresh target scans/tests. No new path/certificate semantics. |
+| S10-HERMES-SIWC-VM-01-D011 | RESOLVED_WINDOWS_TEST_CONTEXT | First exact-head hosted Windows run correctly refused the elevated runner at the mandatory platform guard; three tests incorrectly expected ordinary-token storage behavior. Test-only helper independently queries the real token and asserts exact PLATFORM_UNSUPPORTED/no-created-path for elevated contexts. Every ordinary-token positive/crash/ACL assertion remains on the non-elevated native run; hosted refusal is not native positive acceptance. No privilege mock/downgrade, account/host setup, production change or added skip. |
+
+Historical failed receipts and transient checkpoints are preserved externally;
+they are not relabelled passing or silently reset. Current commands/counts and
+negative matrix: `docs/status_entries/S10-HERMES-SIWC-VM-01.md`. Baseline19 Gitleaks
+directory matches remain qualified, no introduced alert. D005 OPEN; live DISABLED;
+capital/orders USD0/0. No real credentials/OAuth/provider/host/economic operations.
+
 ## S10-HERMES-SEC-PROFILE-01 historical blockers (amended resolution below)
 
 | ID | Item | State | Required next evidence |

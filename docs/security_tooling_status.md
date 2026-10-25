@@ -1,5 +1,38 @@
 # Security Tooling Status
 
+## S10-HERMES-SIWC-VM-01 security evidence
+
+No tracked dependency, lock, configuration or workflow changed. Karl separately
+authorized disposable tooling/environment corrections only. Matched Windows68 and
+Linux64 Hermes profiles remain exact; fresh native metadata/profile and pip checks
+pass. Their67/63 registry requirements audit without ignores; local source Hermes
+distribution is profile/source-verified, not treated as a registry package.
+
+The old cached project interpreter's certifi2026.7.22 finding is retained as
+failed evidence (GHSA-6q48-6c7w-9gw2/PYSEC-2026-4320). A new disposable interpreter
+uses certifi2026.10.19 and existing optional ecCodes pins. Actual69-package complete
+inventory hash5c7b0dab9c16c7aa1e0b09f5ad5a5cda47391096c9867693083ee02ae230671f;
+pip check and pip-audit2.10.1 pass with only inherited CVE-2026-104851 fsspec
+exception. No certifi waiver or frozen-profile mutation. Prior63 project count
+included cwd-visible source Hermes metadata; isolated actual base count is62.
+
+Semgrep CE1.176.1 official image digest
+7f1e1b6711ec37be9e66717ac155778c2dae06205521ef85c7886ac28864c14e,
+resolved p/python151rules and p/security-audit79 applicable rules, actual two final
+Python files, network none/metrics off/non-root/read-only/no credentials or upload:
+0 findings/exit0 and3exec warnings/exit1 respectively,0 parser errors. All three
+warnings trace to literal-only immutable source/test AST; local false-positive
+reasoning is NOT independent acceptance. They remain OPEN for Side21 exact-head
+review. No rule suppression or automatic scan PASS. Embedded strings need manual
+review; CE is not an independent software/security certificate.
+
+Gitleaks8.27.2 redacted full tracked-candidate directory scan returns19 unchanged
+baseline matches,0 introduced,rawexit1; exact frozen-line comparison retained.
+Frontend npm audit:336 dependencies,0 vulnerabilities. Remaining/full/hosted
+results and exact commands: stable status fragment and current PR body. No whole-
+repo clean claim, real entitlement/hardware premise, merge or runtime authority.
+D005 OPEN; LIVE DISABLED; USD0/orders0.
+
 ## Purpose
 
 This document records local security-tool availability and scan results through WP15. It is status evidence only; it does not authorize runtime dependency integration, copied external code, venue API integration, or live trading.

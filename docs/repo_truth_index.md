@@ -2230,3 +2230,31 @@ pending external review. METHOD/WALLET01/02/03 and provider-conditional coverage
 unchanged. Real operator approval, provider observations and study remain absent;
 ACT-OPS-01 / STUDY-ACT-01 separately gated. Local evidence is not PR/CI/release
 readiness or source-acquisition authority; independent Side19 acceptance pending.
+
+## S10-HERMES-SIWC-VM-01 — software implementation awaiting independent review
+
+The certified eleven-path Windows-source/Linux-VM SIWC bridge is implemented on
+`codex/s10-hermes-siwc-vm-01`, based on PR251 merge07c53cf7c362a96a5f437f506beb1022d82749bc.
+Six protected operation records, selected transfer/source retirement, native private
+storage/locks and three non-dispatch CLI commands are covered by synthetic tests.
+The original public SIWC route/evaluator/wire/origin/journal remain; the excluded
+no-record live-canary caller intentionally refuses. Existing boundary groups in
+`docs/ai/codex/PROTECTED_PATHS.md` remain controlling. No operational activation.
+
+Karl retained software/one-PR authority and explicitly authorized the isolated
+scanner, disposable project-validation repair and conditional same-PR hosted-CI
+eligibility. Historical D001-D007 environment/admission obstacles are resolved
+only as recorded in `docs/status_entries/S10-HERMES-SIWC-VM-01.md`; earlier failed
+receipts are preserved externally. The frozen68/64-distribution native Hermes
+profiles are unchanged. The separate project interpreter uses certifi2026.10.19
+and existing optional NDFD pins; tracked dependency/config/CI changes0.
+
+Three Semgrep static-source exec warnings remain OPEN for independent Side21
+triage/acceptance; local false-positive reasoning and rawexit1 are retained.
+Nineteen Gitleaks directory matches are exact unchanged baseline lines; no
+introduced match or new ignore. Current local/full/hosted counts and exact commands
+are in the stable status entry and PR body. Required independent exact-head
+implementation/security review and Karl-only merge decision remain pending.
+Evidence mode: BLOCKED_NOT_READY; Ready for review:NO pending independent review.
+D005 OPEN; live trading DISABLED; capital/orders USD0/0. No real credentials,
+OAuth/provider/account/model/Responses, VPS/SSH, wallet/ledger/order or economic action.
