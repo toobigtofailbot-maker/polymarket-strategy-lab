@@ -40,6 +40,225 @@ GAMMA = X.gamma_doc(orderMinSize=1)
 FRESH_BOOK = X.book_doc(timestamp=str(X.BOOK_MS + 1_500))
 PHRASE = L.LIVE_ORCH_CONFIRMATION_PHRASE
 HOUR_NS = 3600 * 1_000_000_000
+_SIWC_RECORD_KEYS = ("oauth_preflight_operator_record_path", "oauth_dispatch_operator_record_path")
+
+
+def _siwc_case(tmp_path):
+    return dict(oauth_pin_root=str(PIN_ROOT), oauth_credential_dir=str(tmp_path / "synthetic-creds"),
+                oauth_journal_dir=str(tmp_path / "journal"), plan_usage_attestation=dict(fixture.ATTEST),
+                oauth_deadline_s=60, oauth_preflight_operator_record_path=str(tmp_path / "preflight.json"),
+                oauth_dispatch_operator_record_path=str(tmp_path / "dispatch.json"))
+
+
+def _siwc_attempt(case, clock=None):
+    return lc.native_oauth_attempt(case, candidate_menu=fixture.MENU, lineage=fixture.LINEAGE,
+                                   information_cutoff_ns=fixture.T0, clock_ns=clock or fixture.clock())
+
+
+def _siwc_observed_reports(monkeypatch, *, report=None):
+    """Intercept every child; synthetic observed reports are protocol evidence only."""
+    calls, requests = [], []
+    build = op.build_oauth_request
+
+    def request(**kwargs):
+        value = build(**kwargs)
+        requests.append(value)
+        return value
+
+    def child(self, phase, extra, timeout):
+        calls.append((self, phase, self._operator_record_path))
+        if phase == "preflight":
+            return copy.deepcopy(fixture.preflight() if report is None else report)
+        assert phase == "dispatch" and self._dispatch_admitted is op._OBSERVED
+        return fixture.dispatch(requests[-1])
+
+    monkeypatch.setattr(tf, "probe_native_tool_surface", lambda _root: copy.deepcopy(RECORDED_REPORT))
+    monkeypatch.setattr(op, "build_oauth_request", request)
+    monkeypatch.setattr(op.OAuthPlanTransport, "_run_child", child)
+    return calls, requests
+
+
+def test_canary_siwc_case_operator_record_paths(tmp_path, monkeypatch):
+    c = Canary(tmp_path / "world", monkeypatch)
+    path = c.write()
+    original = lc.load_case(path)
+    assert not any(k in original for k in _SIWC_RECORD_KEYS)
+    # Check never opens either private record, even when neither exists.
+    for key in _SIWC_RECORD_KEYS:
+        c.case[key] = str(tmp_path / (key + ".json"))
+    assert c.check()["status"] == "PASS"
+    for value in (None, True, 7, [], {}, "", "relative.json", str(tmp_path / ".." / "record"), "\x00",
+                  str(tmp_path / "newline\nrecord")):
+        c.case[_SIWC_RECORD_KEYS[0]] = value
+        with pytest.raises(lc.CanaryBlocked, match="^CASE_INVALID$"):
+            lc.load_case(c.write())
+    monkeypatch.setattr(op, "OAuthPlanTransport", lambda *a, **k: pytest.fail("invalid path constructed transport"))
+    monkeypatch.setattr(tf, "probe_native_tool_surface", lambda *a: pytest.fail("invalid path probed pin"))
+    valid = _siwc_case(tmp_path)
+    for change in ({k: None for k in _SIWC_RECORD_KEYS},
+                   {_SIWC_RECORD_KEYS[1]: valid[_SIWC_RECORD_KEYS[0]]},
+                   {_SIWC_RECORD_KEYS[0]: "relative"}):
+        with pytest.raises(lc.CanaryBlocked, match="^OAUTH_PREFLIGHT_INELIGIBLE$"):
+            _siwc_attempt(dict(valid, **change))
+    assert not Path(valid["oauth_journal_dir"]).exists()
+
+
+@pytest.mark.parametrize("proof", ["caller", "native_child"])
+def test_canary_siwc_native_dual_phase_admission(tmp_path, monkeypatch, proof):
+    if proof == "native_child":
+        if sys.platform != "linux":
+            pytest.skip("native preflight-only/dispatch destination requires Linux")
+        fixture.require_pin()
+        _siwc_native_child_admission(monkeypatch)
+        return
+    case = _siwc_case(tmp_path)
+    calls, requests = _siwc_observed_reports(monkeypatch)
+    result, deadline = _siwc_attempt(case)
+    assert result.status == op.VALID_OUTPUT and deadline == requests[0].deadline_ns
+    assert [phase for _, phase, _ in calls] == ["preflight", "dispatch"]
+    assert [path for _, _, path in calls] == [case[k] for k in _SIWC_RECORD_KEYS]
+    assert calls[0][0] is not calls[1][0] and len(requests) == 1
+    assert calls[0][0].dispatch_count == 0 and calls[1][0].dispatch_count == 1
+    assert all(t.mode == "real" for t, _, _ in calls)  # All child execution was intercepted above.
+
+
+def _siwc_native_child_admission(monkeypatch):
+    import uuid
+    h = fixture.siwc_helpers()
+    revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    profile = tf.verify_runtime_profile(PIN_ROOT)
+    with fixture.siwc_posix_root() as directory:
+        root = Path(directory)
+        credentials = root / "credentials"
+        credentials.mkdir(mode=0o700)
+        output = root / "output"
+        output.mkdir(mode=0o700)
+
+        def record(phase, **changes):
+            now = time.time_ns()
+            value = dict(fixture.siwc_binding(h, phase), approved_storage_root=str(root),
+                         excluded_roots=[str(ROOT), str(PIN_ROOT)], expected_source_commit=revision,
+                         expected_runtime_profile_sha256=profile, operation_alias="synthetic-" + uuid.uuid4().hex,
+                         valid_from_ns=now - 1_000_000_000, valid_until_ns=now + 800_000_000_000)
+            value.update(changes)
+            path = root / (uuid.uuid4().hex + ".json")
+            with h["SIWCPosixSlot"](directory, approved_root=directory, excluded_roots=[]) as store:
+                store.publish(path.name, json.dumps(value).encode(), 65536)
+            return path
+
+        def transport(path):
+            return op.OAuthPlanTransport(PIN_ROOT, credentials, mode="mock", operator_record_path=path,
+                mock=dict(models=dict(status=200, body=dict(models=[dict(slug=fixture.MODEL, visibility="list")])),
+                          responses=fixture.sse_message(fixture.NO_TRADE)))
+
+        prepared = transport(record("prepare-vm-host", selected_client_id=None, selected_subject=None,
+                                    destination_host_id=None))
+        prepared._receipt_path = str(output / "prepare.receipt.json")
+        prepared_report = prepared.prepare_vm_host()
+        assert prepared_report["status"] == "DONE", prepared_report
+        host = json.loads((credentials / "host_id.json").read_bytes())["ext_agent_host_id"]
+        transfer = fixture.siwc_transfer_fixture(h)
+        transfer["source_validation"].update(source_commit=revision,
+                                            runtime_profile_sha256=RECORDED_REPORT["runtime_profile_sha256"])
+        transfer["credential"].update(expires_at=int(time.time()) + 3600, saved_at=int(time.time()) - 1)
+        with h["SIWCPosixSlot"](str(output), approved_root=directory, excluded_roots=[]) as store:
+            store.publish("selected.json", json.dumps(transfer).encode())
+        imported = transport(record("import-selected", destination_host_id=host))
+        imported._receipt_path = str(output / "import.receipt.json")
+        imported_report = imported.import_selected_session(transfer_file=output / "selected.json")
+        assert imported_report["status"] == "DONE", imported_report
+        preflight = transport(record("preflight-only", destination_host_id=host))
+        report = preflight.preflight()
+        assert report["status"] == "DONE" and report["http_calls"] == [["GET", op.API_HOST, op.MODELS_PATH, 200]]
+        eligibility = op.evaluate_preflight(report, attestation=fixture.ATTEST, checked_at_ns=time.time_ns())
+        assert eligibility.status == op.PLAN_USAGE_UNVERIFIED and not op.eligibility_is_witnessed(eligibility)
+        surface = dict(RECORDED_REPORT, runtime_profile_sha256=profile)
+        request = op.build_oauth_request(surface_report=surface, candidate_menu=fixture.MENU, lineage=fixture.LINEAGE,
+            information_cutoff_ns=fixture.T0, issued_at_ns=fixture.T0, deadline_ns=fixture.DEADLINE)
+        dispatch = transport(record("dispatch", destination_host_id=host))
+        result = op.run_oauth_attempt(request, eligibility=None, transport=dispatch,
+                                     journal_dir=root / "journal", clock_ns=fixture.clock())
+        assert result.status == op.VALID_OUTPUT and dispatch.dispatch_count == 1
+        assert result.origin["real_origin"] == op.REAL_ORIGIN_UNVERIFIED
+        assert preflight._operator_record_path != dispatch._operator_record_path
+        for change in (dict(operation="dispatch"), dict(selected_subject="wrong-synthetic-subject"),
+                       dict(expected_runtime_profile_sha256="0" * 64), dict(valid_until_ns=1),
+                       dict(selected_client_id=None), dict(extra="synthetic-private-sentinel")):
+            refused = transport(record("preflight-only", destination_host_id=host, **change)).preflight()
+            assert refused["status"] == "BLOCKED" and refused["http_calls"] == []
+        malformed = record("preflight-only", destination_host_id=host)
+        malformed.write_bytes(b'{"truncated":')
+        refused = transport(malformed).preflight()
+        assert refused["status"] == "BLOCKED" and refused["http_calls"] == []
+        captured = []
+        child = op.OAuthPlanTransport._run_child
+
+        def capture(self, *args):
+            value = child(self, *args)
+            captured.append(value)
+            return value
+
+        monkeypatch.setattr(op.OAuthPlanTransport, "_run_child", capture)
+        wrong_phase = transport(record("preflight-only", destination_host_id=host))
+        denied = op.run_oauth_attempt(request, eligibility=None, transport=wrong_phase,
+                                     journal_dir=root / "denied-journal", clock_ns=fixture.clock())
+        assert denied.status != op.VALID_OUTPUT and captured[-1]["http_calls"] == []
+
+
+@pytest.mark.parametrize("denial", ["unwitnessed", "denied", "stale", "future", "journal", "child"])
+def test_canary_siwc_dispatch_guards_and_journal(tmp_path, monkeypatch, denial):
+    case = _siwc_case(tmp_path)
+    report = fixture.preflight(mode="mock") if denial == "unwitnessed" else fixture.preflight()
+    if denial == "denied":
+        report["target_listed"] = False
+    calls, _ = _siwc_observed_reports(monkeypatch, report=report)
+    if denial == "journal":
+        root = Path(case["oauth_journal_dir"])
+        root.mkdir()
+        (root / "oauthplan-attempt.reserved").write_bytes(b"synthetic-reserved")
+    ticks = iter([fixture.T0, fixture.T0 + op.MAX_ELIGIBILITY_AGE_NS + 1] if denial == "stale" else
+                 [fixture.T0, fixture.T0 - 1] if denial == "future" else range(fixture.T0, fixture.T0 + 100))
+    if denial == "child":
+        original = op.OAuthPlanTransport._run_child
+
+        def refuse(self, phase, extra, timeout):
+            if phase == "dispatch":
+                raise ValueError("synthetic-private-sentinel")
+            return original(self, phase, extra, timeout)
+
+        monkeypatch.setattr(op.OAuthPlanTransport, "_run_child", refuse)
+        result, _ = _siwc_attempt(case, lambda: next(ticks))
+        assert result.status == "ATTEMPT_TRANSPORT_FAILED_CONSUMED"
+        assert "synthetic-private-sentinel" not in json.dumps(result.origin)
+    else:
+        with pytest.raises(lc.CanaryBlocked):
+            _siwc_attempt(case, lambda: next(ticks))
+    assert not any(phase == "dispatch" for _, phase, _ in calls)
+    if denial == "child":
+        with pytest.raises(lc.CanaryBlocked, match="OAUTH_JOURNAL_NOT_FRESH"):
+            _siwc_attempt(case)
+
+
+def test_canary_siwc_legacy_offline_compatibility(tmp_path, monkeypatch):
+    c = Canary(tmp_path / "legacy", monkeypatch)
+    assert not any(k in c.case for k in _SIWC_RECORD_KEYS)
+    receipt = c.run()
+    assert receipt["evidence_class"] == "OFFLINE_TEST_ONLY" and receipt["claim"] == "PROTOCOL_ONLY"
+    assert c.oauth_calls == 1
+    # Unchanged D005 regression supplies no record fields and expects this exact code.
+    with pytest.raises(lc.CanaryBlocked, match="^OAUTH_PREFLIGHT_INELIGIBLE$"):
+        _siwc_attempt({k: v for k, v in _siwc_case(tmp_path).items() if k not in _SIWC_RECORD_KEYS})
+
+
+def test_canary_siwc_redaction_and_authority_limits(tmp_path, monkeypatch):
+    c = Canary(tmp_path / "redaction", monkeypatch)
+    for key in _SIWC_RECORD_KEYS:
+        c.case[key] = str(tmp_path / ("synthetic-private-sentinel-" + key))
+    receipt = c.run()
+    encoded = json.dumps([receipt, c.records])
+    assert "synthetic-private-sentinel" not in encoded
+    assert not any(key in receipt for key in _SIWC_RECORD_KEYS)
+    assert receipt["evidence_class"] == "OFFLINE_TEST_ONLY" and receipt["no_live_authority"] is True
 
 
 def utc(ns: int) -> str:
@@ -311,6 +530,8 @@ def test_live_canary_run_requires_attended_tty_and_single_oauth_dispatch(tmp_pat
     monkeypatch.setattr(tf, "probe_native_tool_surface", lambda pin_root, **_kw: copy.deepcopy(RECORDED_REPORT))
 
     def children(canary, *, preflight=None, usage=True):
+        for key in _SIWC_RECORD_KEYS:
+            canary.case[key] = str(canary.tmp / (key + ".json"))
         sends = []
 
         def child(_self, phase, extra, timeout_s):

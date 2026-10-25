@@ -1,0 +1,116 @@
+Package Identity:
+  WP ID: S10-LIVE-CANARY-SIWC-01
+  Title: Live-canary SIWC phase-bound OAuth caller integration
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-live-canary-siwc-01
+  Package class: LIVE_CANARY_SIWC_CALLER_INTEGRATION
+  Package size class: M
+  Evidence mode expected: DRAFT / OFFLINE_TEST_ONLY until independent review
+  Runtime impact: Dormant caller integration only; no activated behavior
+  Product impact: Existing canary OAuth invocation, offline-only implementation
+  Network impact: No real product network during implementation
+  Credential impact: Credential-sensitive software logic only; no real secrets
+  Dependency impact: NONE
+  Trading impact: NONE; zero orders and capital
+  Governance track expected: PROTECTED
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High for protected boundary review; otherwise normal
+  Reason: Small caller integration, but phase-specific authentication and dispatch safeguards
+  Escalate to higher reasoning or STOP if: Existing native APIs cannot safely provide two disjoint phase admissions inside this exact scope
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: true
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: true
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+STATUS — DRAFT, NOT CERTIFIED AND NOT IMPLEMENTATION-AUTHORIZED
+
+Predecessor hard gate: PR #252 must be merged, final head cd11e28f19fa35553cfbbb5b3d644b74db0bdcb6, merge ce7ded8f18b58ec6ab6104ccb65783e79f1230cb. Refresh local/remote main and PR collision before any implementation. If a newer main commit exists, verify its effect rather than silently using the frozen base. Native PROTECTED certificate must independently bind the final exact LF prompt/spec bytes before Codex changes code; Codex never issues its own certificate. Karl's previous D005 implementation authorization DOES NOT extend to this new WP.
+
+OBJECTIVE / WHY THIS WP
+PR #252 supplied exactly six native phase-bound operator records. The existing src/execution_gateway/live_canary.py::native_oauth_attempt currently creates OAuthPlanTransport(..., mode="real") with no operator_record_path, then reuses one transport for preflight and dispatch. D005 correctly refuses it. Fix the caller integration only; this is the shortest remaining software path toward an eventual first live canary. D005 real Windows login, selected handoff, Linux host and real non-dispatch preflight remain separate, owner-authorized operational work; they are not performed here.
+
+AUTHORITY / NON-AUTHORITY POSTURE AND LIMITS
+This Risk 4 PROTECTED WP permits prospective changes to the two listed Python paths and declared documentation, but only after an independent certificate and fresh Karl implementation authorization. credentials=true, hermes_runtime=true and execution=true allow OFFLINE SOFTWARE editing of this protected economic caller; they grant no real credential, authenticated network, model call, live execution, or economic authority. No real OAuth/browser, selected transfer, VPS/SSH, deployment, production host, wallet keys, signer, private account calls, order/cancel, live ledger, Gate C, scheduler/daemon, external code copy, dependency/lock/workflow/tool changes or capital use. No owner or operator-record path supplied from outside the repo may be read during drafting/tests; synthetic records only. The centralized groups in docs/ai/codex/PROTECTED_PATHS.md remain binding.
+
+EXACT REQUIRED = ALLOWED PATHS (10; no extras)
+1. src/execution_gateway/live_canary.py
+2. tests/execution_gateway/test_live_canary.py
+3. docs/live_canary_runbook.md
+4. docs/project_status.md
+5. docs/repo_truth_index.md
+6. docs/deferred_items_log.md
+7. docs/status_entries/S10-LIVE-CANARY-SIWC-01.md
+8. docs/wp_specs/S10-LIVE-CANARY-SIWC-01/wp_prompt.txt
+9. docs/wp_specs/S10-LIVE-CANARY-SIWC-01/wp_spec.json
+10. docs/wp_specs/S10-LIVE-CANARY-SIWC-01/draftability_certificate.json
+
+Only src/execution_gateway/live_canary.py and tests/execution_gateway/test_live_canary.py are code/test paths. Do not edit src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py, its tests, src/execution_gateway/live_orch.py, gateways/risk, workflows, dependencies, broad test allowlists, older WPs or the three D005 certified artifacts. Reuse D005 implementation; do not introduce a new auth parser, token storage, CLI, credential framework, or caller-side duplicate validator. If actual native API compatibility makes the exact scope impossible, return one concrete minimal blocker with evidence; do not weaken the contract or silently expand paths.
+
+STARTUP AND CONTEXT BUDGET
+Read repository startup documents, PR #252 merge and docs/ai/codex/{PROTECTED_PATHS,WP_SPEC_STANDARD,WP_DRAFTING_STANDARD,NEGATIVE_TEST_MATRIX_POLICY,VALIDATION_MATRIX}.md. Inspect only the two caller/code-test paths, the D005 OAuth transport interface and its existing tests (read only), docs/hermes_real_provider_stage_b_contract.md, docs/live_canary_runbook.md and the relevant D005/D001-D008 status rows. Prefer a small implementation and actual behavior tests over verbose docs. Codex may choose helper placement, exact naming and test mechanisms within permitted paths; preserve public schemas and contracts unless a bounded backward-compatible addition is necessary.
+
+NORMATIVE REQUIREMENTS (spec.semantic_fields mirrors these exact sentences)
+R001 case.operator_records
+Extend the existing closed live-canary case schema with two optional absolute local paths for separate preflight-only and dispatch operator records. Check remains non-economic and does not open either record; existing offline fixture cases and injected seam tests remain valid. A production native OAuth attempt requires both distinct nonempty paths before it constructs any transport or accesses credentials, and missing/same/invalid paths fail closed without leaking local paths or record content. Do not put credentials, selected client/subject, token values, operator-record JSON, or source/destination host identifiers in the case or public receipt.
+
+R002 oauth.phase_separation
+In native_oauth_attempt construct one OAuthPlanTransport in real mode bound to the preflight-only record, perform exactly one canonical preflight and evaluate_preflight call with the existing case attestation, require the genuine witnessed eligibility and freshness, and construct a separate real transport bound to the dispatch record only for the existing build_oauth_request/run_oauth_attempt path. Do not mutate an operator_record_path on a previously used transport or borrow one record for two phases; preflight-only may refresh under its protected native rules, dispatch never refreshes. The native D005 six-operation validator, pinned profile, identity and slot/generation protections remain authoritative.
+
+R003 oauth.dispatch_gates
+Preserve all existing request binding, venue/menu freshness, witnessed eligibility, deadline, profile, journal single-reservation, one dispatch lease, existing Stage A check, TTY, owner confirmation, risk, account/host/geoblock and native canary safeguards. The new dispatch record is necessary but never sufficient for runtime authorization. Any missing/expired/mismatched or wrongly typed record, preflight denial, absent witness, stale eligibility, journal collision or native child refusal blocks without an inference send or order. No retry, fallback, implicit credential discovery, CLI dispatch or direct _send bypass.
+
+R004 compatibility.safety
+Change only the existing live_canary caller and its test file. Keep the existing OAuthPlanTransport, evaluate_preflight, run_oauth_attempt, live_orch, gateway, strategy, journal, evaluator, operator-record schema, public SIWC route and three D005 non-dispatch CLI commands untouched. Existing offline/mock and test-injection semantics, receipt shape, call counters and redaction remain; do not accidentally make a fake eligible or send production traffic in tests. No live operation, credentials, login, SSH, host promotion, wallet or capital action is authorized.
+
+R005 evidence.review
+Demonstrate positive phase separation and negative admission in real offline native child fixtures, plus unchanged test-injected/legacy canary behavior and the existing one-journal/Stage-A rejection cases. Run the focused caller and OAuth regression tests, pertinent adjacent integration tests, applicable security scans, stable final local suite, exact-scope/readiness gates, and exact-head hosted CI on one PR; honestly preserve skips and baseline findings. Update only the declared documentation/status paths, preserve historical D005 records, and keep D005 operational acceptance and live trading DISABLED. An independent exact-byte certificate and new Karl software implementation authorization are prerequisites to implementation; merge and operations remain separately authorized.
+
+
+NEGATIVE-TEST MATRIX / MINIMUM EFFECTIVE TESTS
+- Positive: actual native children in mock mode prove two distinct protected fixture records select preflight-only then dispatch while eligibility and origin remain UNVERIFIED. Separately use the existing synthetic observed-report/test-injection pattern to exercise production caller phase wiring, witnessed-gate handling and one-journal/at-most-one-dispatch behavior with HTTP fully intercepted. Never promote mock eligibility or origin to genuine production authority; every fixture result is OFFLINE_TEST_ONLY / PROTOCOL_ONLY.
+- Negative: absent/same/cross-wired/malformed/expired/selection-or-profile-mismatched records refuse; no real credentials/provider model/order touched; no identity/record/path reflected in public output.
+- Negative: rejected/stale/unwitnessed preflight, journal consumed/reserved, and missing Stage A/TTy/host risk conditions retain the original no-dispatch/no-order semantics.
+- Compatibility: old OFFLINE_TEST_ONLY tests and canonical OAuth mock/recorded regressions remain valid. Case additions must not force all legacy fixtures to materialize real operator records.
+- Keep native D005 admission tests intact; do not replace genuine native negatives with mocks. Synthetic records and synthetic credential sets may be read only inside disposable offline fixtures; no real credential access. No unnecessary cross-product explosion: one representative per distinct risk and boundary plus existing regression coverage.
+
+EVIDENCE PLAN / VERIFICATION / REPORT BACK
+Run applicable exact-byte native protected gates, scoped tests on Windows and Linux when available, adjacent tests, local stable full suite, security scans (triage known unchanged findings rather than bypass them), and exact-head hosted PR CI. Preserve factual results and correct ordinary disposable test-environment problems autonomously, without changing frozen runtime profiles or repository dependencies. One branch, one PR, no merge. Do not relabel Semgrep raw findings or synthetic evidence as real eligibility. Final packet: commit/PR/head, exactly ten changed paths, brief R001-R005 test mapping, commands and outcomes, remaining operational gates, any material deviation. Owner merge and all live operations remain separate.
+
+HARD MERGE GATE / HARD STOPS
+No implementation before an independent certificate binds the exact final prompt/spec bytes, the actual native protected readiness gate passes, and Karl explicitly authorizes this new software WP. No merge before the required scoped/full/security evidence, exact-head hosted CI, independent protected implementation review and posted-evidence discipline are satisfied; owner merge authorization remains separate. Stop for changed hashes, dirty/stale/diverged main, missing predecessor evidence, forbidden-path necessity, native API incompatibility or unavailable required validation. Draft component diagnostics without a certificate are advisory only and never IMPLEMENTATION_READY.
+
+COMPATIBILITY / IMPOSSIBILITY CHECK
+The D005 child maps preflight to preflight-only and dispatch to dispatch and checks the record operation before slot credential access. One record cannot admit both phases; two transport instances may share the same credential directory while retaining distinct immutable operator-record paths. Keep record-content validation exclusively in the native child. Preserve the existing no-record caller refusal code OAUTH_PREFLIGHT_INELIGIBLE so the unchanged D005 native Linux regression remains valid; reject missing/invalid path inputs before constructing a transport. Mock native children remain ineligible and cannot alone demonstrate a genuinely witnessed production success. Only test seams simulate the observed production-gate path, with no real entitlement claim. No feature validator is deferred: successor_boundary.feature_validator_moved_to names this WP; operational acceptance alone belongs to the separately gated successor.
+
+REQUIREMENT-TO-EVIDENCE TRACEABILITY
+R001 -> test_canary_siwc_case_operator_record_paths; R002 -> test_canary_siwc_native_dual_phase_admission; R003 -> test_canary_siwc_dispatch_guards_and_journal; R004 -> test_canary_siwc_legacy_offline_compatibility; R005 -> test_canary_siwc_redaction_and_authority_limits. Each node lives in tests/execution_gateway/test_live_canary.py and uses the exact spec.evidence_plan command. The committed status fragment records the actual negative-test matrix, results and applicable/non-applicable policy categories. Required new nodes are planned in-scope nodes before implementation, not existing test evidence.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|case|operator_records|production_attempt|REQUIRE|distinct_absolute_phase_paths|case.operator_records|R001
+NR002|oauth|phase_separation|native_attempt|REQUIRE|separate_bound_transports|oauth.phase_separation|R002
+NR003|oauth|dispatch_gates|any_attempt|PRESERVE_EXACT|native_witness_and_journal_gates|oauth.dispatch_gates|R003
+NR004|compatibility|safety|caller_change|PRESERVE_EXACT|existing_native_and_offline_boundaries|compatibility.safety|R004
+NR005|evidence|review|implementation_review|REQUIRE|offline_evidence_and_separate_authorization|evidence.review|R005
+END_NORMATIVE_RULE_MATRIX_V1
+
+SUCCESSOR BOUNDARY / POST-MERGE
+S10-LIVE-CANARY-OPS-01 is a separately gated operational acceptance/first-canary preparation successor (not authorized by this WP). It will need explicit Karl decisions for physical eligibility, account/identity, attended Windows SIWC login, selected transfer and Linux source retirement proof, non-dispatch PLAN_USAGE_ELIGIBLE, actual host currentness/redeployment, fresh strategy and risk authority, Deposit Wallet funding, ledger initialization and Stage A. D005 OPEN; LIVE TRADING DISABLED; capital USD 0; real orders 0 until actual separate gates.

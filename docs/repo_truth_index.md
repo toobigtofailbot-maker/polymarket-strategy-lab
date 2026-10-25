@@ -2258,3 +2258,16 @@ implementation/security review and Karl-only merge decision remain pending.
 Evidence mode: BLOCKED_NOT_READY; Ready for review:NO pending independent review.
 D005 OPEN; live trading DISABLED; capital/orders USD0/0. No real credentials,
 OAuth/provider/account/model/Responses, VPS/SSH, wallet/ledger/order or economic action.
+
+## S10-LIVE-CANARY-SIWC-01 caller integration
+
+- Exact certified prompt/spec/certificate: `docs/wp_specs/S10-LIVE-CANARY-SIWC-01/`.
+- Stable implementation/validation and negative matrix: `docs/status_entries/S10-LIVE-CANARY-SIWC-01.md`.
+- Operator contract: `docs/live_canary_runbook.md`, phase-bound caller section.
+- Production delta is confined to `src/execution_gateway/live_canary.py`; tests
+  remain in `tests/execution_gateway/test_live_canary.py`. Reuses unchanged D005
+  transport, evaluator, profile and native child admissions. Two distinct records
+  and transports preserve witnessed freshness and single journal admission.
+- No runtime activation, real credential/provider/host/account/model/order
+  operation, merge, dependency or workflow change. D005 OPEN; live DISABLED;
+  USD 0 / real orders 0. S10-LIVE-CANARY-OPS-01 remains separately gated.

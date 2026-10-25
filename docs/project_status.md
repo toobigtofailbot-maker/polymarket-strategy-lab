@@ -2174,3 +2174,19 @@ implementation/security review and Karl-only merge decision remain pending.
 Evidence mode: BLOCKED_NOT_READY; Ready for review:NO pending independent review.
 D005 OPEN; live trading DISABLED; capital/orders USD0/0. No real credentials,
 OAuth/provider/account/model/Responses, VPS/SSH, wallet/ledger/order or economic action.
+
+## S10-LIVE-CANARY-SIWC-01 software implementation
+
+Risk 4 / PROTECTED / M; frozen base PR #252 merge
+`ce7ded8f18b58ec6ab6104ccb65783e79f1230cb`. Karl explicitly authorized the
+certified ten-path software WP, synthetic/offline validation and one PR. The
+dormant live-canary caller now accepts two optional record paths and constructs
+distinct phase-bound transports; D005 source/record schema, native witness, journal,
+Stage A, gateway and economics remain unchanged. Independent exact-byte Side21
+draftability certificate and native pre-implementation guards passed.
+
+Implementation/security review remains independently gated; see
+`docs/status_entries/S10-LIVE-CANARY-SIWC-01.md` and the current PR body for actual
+validation and readiness. No merge or operational authority. D005 OPEN; live
+DISABLED; USD 0; real orders 0. Successor: separately authorized
+S10-LIVE-CANARY-OPS-01. Historical D005 records above are preserved.

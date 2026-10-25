@@ -1,0 +1,432 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-LIVE-CANARY-SIWC-01",
+    "title": "Live-canary SIWC phase-bound OAuth caller integration",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "LIVE_CANARY_SIWC_CALLER_INTEGRATION",
+    "package_size_class": "M",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-live-canary-siwc-01",
+    "required_predecessor": {
+      "pr_number": 252,
+      "head_sha": "cd11e28f19fa35553cfbbb5b3d644b74db0bdcb6",
+      "merge_sha": "ce7ded8f18b58ec6ab6104ccb65783e79f1230cb"
+    },
+    "objective": "Integrate the merged D005 phase-bound OAuth operator records into the existing live-canary caller using synthetic/offline tests only; keep live, product network, credentials and economic actions disabled.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/execution_gateway/live_canary.py",
+      "tests/execution_gateway/test_live_canary.py",
+      "docs/live_canary_runbook.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-LIVE-CANARY-SIWC-01.md",
+      "docs/wp_specs/S10-LIVE-CANARY-SIWC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-CANARY-SIWC-01/wp_spec.json",
+      "docs/wp_specs/S10-LIVE-CANARY-SIWC-01/draftability_certificate.json"
+    ],
+    "allowed_changed_files": [
+      "src/execution_gateway/live_canary.py",
+      "tests/execution_gateway/test_live_canary.py",
+      "docs/live_canary_runbook.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-LIVE-CANARY-SIWC-01.md",
+      "docs/wp_specs/S10-LIVE-CANARY-SIWC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-LIVE-CANARY-SIWC-01/wp_spec.json",
+      "docs/wp_specs/S10-LIVE-CANARY-SIWC-01/draftability_certificate.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "tools/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/research_runtime/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/data_layer/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 10,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only ten declared paths on the feature branch. No credential, source-retirement, canary ledger, host, runtime/profile or production rollback is part of this software WP.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": true,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Wire existing independent native phase admission into the existing dormant canary caller. Only the caller is writable; OAuth transport remains unchanged.",
+    "items": [
+      {
+        "surface": "live_canary.load_case",
+        "before": "Original case has no phase-record path fields.",
+        "after": "Add two optional absolute paths; old check and synthetic cases remain valid.",
+        "change_authorized": true,
+        "compatibility_requirement": "No credential bytes or selected account identity in case; new fields cannot be silently inferred.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "live_canary.native_oauth_attempt",
+        "before": "One real transport has no operator record and is reused for preflight/dispatch.",
+        "after": "Construct distinct real transports, separately bound to preflight-only and dispatch operator records.",
+        "change_authorized": true,
+        "compatibility_requirement": "Keep native transport API and R005 dispatch lease; no operator-path mutation, fallback or second send.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "live_canary.run",
+        "before": "Stage A -> witnessed OAuth -> native handoff -> attended confirmation -> one canary.",
+        "after": "Same sequence with phase-bound caller; failure remains zero economic and consumed journal semantics hold.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing TTY/Stage A/geoblock/account/host/risk/order and fake-injection boundaries untouched.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "OAuthPlanTransport",
+        "before": "Merged D005 six-operation child-enforced admission; no-record production caller fails closed.",
+        "after": "Unchanged; caller supplies matching distinct records per native phase.",
+        "change_authorized": false,
+        "compatibility_requirement": "No edits to OAuth source, native storage, W1 retirement, CLI or original canonical evaluator.",
+        "authority": "OFFLINE_IMPLEMENTATION_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Five bounded rules matched verbatim to the prompt; no new cryptographic identity is introduced.",
+    "items": [
+      {
+        "path": "case.operator_records",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "Extend the existing closed live-canary case schema with two optional absolute local paths for separate preflight-only and dispatch operator records. Check remains non-economic and does not open either record; existing offline fixture cases and injected seam tests remain valid. A production native OAuth attempt requires both distinct nonempty paths before it constructs any transport or accesses credentials, and missing/same/invalid paths fail closed without leaking local paths or record content. Do not put credentials, selected client/subject, token values, operator-record JSON, or source/destination host identifiers in the case or public receipt.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Extend the existing closed live-canary case schema with two optional absolute local paths for separate preflight-only and dispatch operator records. Check remains non-economic and does not open either record; existing offline fixture cases and injected seam tests remain valid. A production native OAuth attempt requires both distinct nonempty paths before it constructs any transport or accesses credentials, and missing/same/invalid paths fail closed without leaking local paths or record content. Do not put credentials, selected client/subject, token values, operator-record JSON, or source/destination host identifiers in the case or public receipt.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Fixed blocked reason codes and sanitized counters only; no record/credential/path disclosure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "oauth.phase_separation",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "In native_oauth_attempt construct one OAuthPlanTransport in real mode bound to the preflight-only record, perform exactly one canonical preflight and evaluate_preflight call with the existing case attestation, require the genuine witnessed eligibility and freshness, and construct a separate real transport bound to the dispatch record only for the existing build_oauth_request/run_oauth_attempt path. Do not mutate an operator_record_path on a previously used transport or borrow one record for two phases; preflight-only may refresh under its protected native rules, dispatch never refreshes. The native D005 six-operation validator, pinned profile, identity and slot/generation protections remain authoritative.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "In native_oauth_attempt construct one OAuthPlanTransport in real mode bound to the preflight-only record, perform exactly one canonical preflight and evaluate_preflight call with the existing case attestation, require the genuine witnessed eligibility and freshness, and construct a separate real transport bound to the dispatch record only for the existing build_oauth_request/run_oauth_attempt path. Do not mutate an operator_record_path on a previously used transport or borrow one record for two phases; preflight-only may refresh under its protected native rules, dispatch never refreshes. The native D005 six-operation validator, pinned profile, identity and slot/generation protections remain authoritative.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Fixed blocked reason codes and sanitized counters only; no record/credential/path disclosure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "oauth.dispatch_gates",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "Preserve all existing request binding, venue/menu freshness, witnessed eligibility, deadline, profile, journal single-reservation, one dispatch lease, existing Stage A check, TTY, owner confirmation, risk, account/host/geoblock and native canary safeguards. The new dispatch record is necessary but never sufficient for runtime authorization. Any missing/expired/mismatched or wrongly typed record, preflight denial, absent witness, stale eligibility, journal collision or native child refusal blocks without an inference send or order. No retry, fallback, implicit credential discovery, CLI dispatch or direct _send bypass.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Preserve all existing request binding, venue/menu freshness, witnessed eligibility, deadline, profile, journal single-reservation, one dispatch lease, existing Stage A check, TTY, owner confirmation, risk, account/host/geoblock and native canary safeguards. The new dispatch record is necessary but never sufficient for runtime authorization. Any missing/expired/mismatched or wrongly typed record, preflight denial, absent witness, stale eligibility, journal collision or native child refusal blocks without an inference send or order. No retry, fallback, implicit credential discovery, CLI dispatch or direct _send bypass.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Fixed blocked reason codes and sanitized counters only; no record/credential/path disclosure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "compatibility.safety",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "Change only the existing live_canary caller and its test file. Keep the existing OAuthPlanTransport, evaluate_preflight, run_oauth_attempt, live_orch, gateway, strategy, journal, evaluator, operator-record schema, public SIWC route and three D005 non-dispatch CLI commands untouched. Existing offline/mock and test-injection semantics, receipt shape, call counters and redaction remain; do not accidentally make a fake eligible or send production traffic in tests. No live operation, credentials, login, SSH, host promotion, wallet or capital action is authorized.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Change only the existing live_canary caller and its test file. Keep the existing OAuthPlanTransport, evaluate_preflight, run_oauth_attempt, live_orch, gateway, strategy, journal, evaluator, operator-record schema, public SIWC route and three D005 non-dispatch CLI commands untouched. Existing offline/mock and test-injection semantics, receipt shape, call counters and redaction remain; do not accidentally make a fake eligible or send production traffic in tests. No live operation, credentials, login, SSH, host promotion, wallet or capital action is authorized.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Fixed blocked reason codes and sanitized counters only; no record/credential/path disclosure",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "evidence.review",
+        "source": "CONSTANT",
+        "type": "string",
+        "required_rule": "Demonstrate positive phase separation and negative admission in real offline native child fixtures, plus unchanged test-injected/legacy canary behavior and the existing one-journal/Stage-A rejection cases. Run the focused caller and OAuth regression tests, pertinent adjacent integration tests, applicable security scans, stable final local suite, exact-scope/readiness gates, and exact-head hosted CI on one PR; honestly preserve skips and baseline findings. Update only the declared documentation/status paths, preserve historical D005 records, and keep D005 operational acceptance and live trading DISABLED. An independent exact-byte certificate and new Karl software implementation authorization are prerequisites to implementation; merge and operations remain separately authorized.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Demonstrate positive phase separation and negative admission in real offline native child fixtures, plus unchanged test-injected/legacy canary behavior and the existing one-journal/Stage-A rejection cases. Run the focused caller and OAuth regression tests, pertinent adjacent integration tests, applicable security scans, stable final local suite, exact-scope/readiness gates, and exact-head hosted CI on one PR; honestly preserve skips and baseline findings. Update only the declared documentation/status paths, preserve historical D005 records, and keep D005 operational acceptance and live trading DISABLED. An independent exact-byte certificate and new Karl software implementation authorization are prerequisites to implementation; merge and operations remain separately authorized.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Fixed blocked reason codes and sanitized counters only; no record/credential/path disclosure",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Reuse existing D005 selection/profile binding and existing canary request/identity mechanisms with no new derivations.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Workflow authorization phases are distinct from native canary and OAuth state.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Independent exact LF prompt/spec certificate and actual native protected gates required.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly approves this new scope; prior D005 approval does not automatically transfer.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Only after permitted code, actual bounded tests and complete required validation; no real OAuth or orders.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve exact canonical WP schema failure order; native consumer uses existing sanitized fixed codes.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new derived identity. Five concrete required test nodes form the executable examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Five executable offline test families in existing live-canary test module; all security and full-suite evidence additionally required.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_canary_siwc_case_operator_record_paths",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_canary_siwc_case_operator_record_paths",
+        "expected_result": "Case schema remains backward compatible; absent/duplicate/invalid production paths refuse before transport or credential IO, preserving legacy missing-path refusal; native child rejects cross-wired records without leaks."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_canary_siwc_native_dual_phase_admission",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_canary_siwc_native_dual_phase_admission",
+        "expected_result": "Actual native mock children prove distinct preflight-only/dispatch admissions with UNVERIFIED eligibility/origin; separate intercepted caller seams exercise witnessed gates with synthetic private files and no provider network."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_canary_siwc_dispatch_guards_and_journal",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_canary_siwc_dispatch_guards_and_journal",
+        "expected_result": "Witness freshness/authority and one journal/one attempt remain; wrong or denied phase leads zero dispatch/order."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_canary_siwc_legacy_offline_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_canary_siwc_legacy_offline_compatibility",
+        "expected_result": "Existing fake/recorded tests and Stage A/TTY/no-fallback behavior unchanged; D005 source and API untouched."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_canary_siwc_redaction_and_authority_limits",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_canary.py::test_canary_siwc_redaction_and_authority_limits",
+        "expected_result": "No records/tokens/client/subject/local paths reach receipts; synthetic outcomes never assert live entitlement."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-LIVE-CANARY-OPS-01",
+    "next_title": "Separately authorized first-live operational readiness and owner acceptance",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-LIVE-CANARY-SIWC-01",
+    "forbidden_in_this_wp": [
+      "Real OAuth/identity/credential read, import, export, login or refresh",
+      "Real source-to-VM SSH transfer or host deployment",
+      "Real model/Responses inference or provider network",
+      "Real wallet/account/signing, live canary, Gate-C activation, ledger or order",
+      "Strategy qualification or portfolio policy activation",
+      "New dependencies, workflows, credential framework or CI bypass"
+    ]
+  }
+}
