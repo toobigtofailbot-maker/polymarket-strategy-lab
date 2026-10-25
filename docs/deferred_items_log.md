@@ -1,5 +1,21 @@
 # Deferred Items Log
 
+## S10-LIVE-CANARY-SIWC-01 bounded follow-up
+
+| ID | State | Required evidence / boundary |
+|---|---|---|
+| S10-LIVE-CANARY-SIWC-01-D001 | OPEN_INDEPENDENT_IMPLEMENTATION_REVIEW | Independent Side21 review of the exact final PR/head and security findings; executor validation is not independent acceptance. |
+| S10-LIVE-CANARY-SIWC-01-D002 | INHERITED_WINDOWS_OS_POLICY_LIMITATION | Local Windows project collection fails because application control blocks the existing Nautilus stop_market DLL. No OS/policy or dependency change; isolated Linux validation and existing hosted Windows CI provide separate evidence. |
+| S10-LIVE-CANARY-SIWC-01-D003 | SEPARATE_OWNER_OPERATIONS_REQUIRED | D005 real login/selected transfer/VM preflight, physical/account eligibility, host currentness, strategy/risk, Deposit Wallet, ledger and Stage A remain unperformed here. S10-LIVE-CANARY-OPS-01 is separately gated. |
+
+Git fetch initially failed to connect; the native sync-gate retry succeeded with
+clean local main equal to origin/main at the frozen PR #252 merge. An initial
+disposable clone inherited CRLF conversion and failed the frozen profile hash;
+its tracked snapshot was replaced with exact Git archive bytes. No source guard,
+profile, real credential or host policy was changed. Failed receipts remain
+external evidence. D005 OPEN; live DISABLED; USD 0 / real orders 0.
+
+
 ## S10-HERMES-SIWC-VM-01 consolidated disposition (2026-10-24)
 
 | ID | State | Resolution / remaining evidence |

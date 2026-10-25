@@ -90,3 +90,25 @@ A crash leaves the `live_canary` run lock behind, and the next run reports `STAG
 | `OWNER_CONFIRMATION_MISMATCH` | The Stage B line was not exact, or EOF |
 | `PERMIT_INTENT_MISMATCH` | Permit and intent are not the native pair |
 | Native LIVE-ORCH codes (for example `PERMIT_EXPIRED`, `SINGLE_ORDER_LIMIT_EXCEEDED`, `VENUE_NOT_FEASIBLE`) | Final admission refused; zero transmit |
+
+## S10-LIVE-CANARY-SIWC-01 caller binding (software only)
+
+The optional case fields `oauth_preflight_operator_record_path` and
+`oauth_dispatch_operator_record_path` are absolute local paths to two distinct
+protected D005 operator records. Existing offline cases may omit them. `check`
+validates any supplied path spelling without opening either record. The production
+OAuth attempt requires both paths before constructing a transport; absent, invalid
+or equal paths return `OAUTH_PREFLIGHT_INELIGIBLE` with no private IO.
+
+The caller constructs one transport bound to the `preflight-only` record and one
+separate transport bound to the `dispatch` record. D005 validates record contents
+inside the native child, including operation, identity, profile, current commit,
+storage and generation. Only preflight may perform its natively permitted refresh;
+dispatch never refreshes. Genuine witnessed, fresh eligibility and the existing
+single-attempt journal remain required. Record paths and contents never enter
+public receipts. A record is necessary but grants no canary or order authority.
+
+This software package performs no real OAuth, credential transfer, host activation,
+account/model request or economic operation. D005 operational acceptance remains
+OPEN. LIVE TRADING DISABLED; USD 0; real orders 0. Later owner authorization and all
+existing Stage A, attended confirmation, Gate C and native canary gates still apply.

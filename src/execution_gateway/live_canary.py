@@ -43,6 +43,7 @@ _CASE_REQUIRED = {"schema_id", "schema_version", *_PATH_KEYS, "public_signer_add
                   "host", "plan_usage_attestation", "candidate_menu", "max_hermes_age_s",
                   "stage_a_authorization_sha256"}
 _CASE_OPTIONAL = {"oauth_deadline_s": 180, "max_public_data_age_s": 60}
+_OPERATOR_RECORD_KEYS = ("oauth_preflight_operator_record_path", "oauth_dispatch_operator_record_path")
 _STAGE_A_KEYS = {"schema_id", "schema_version", "release_sha", "execution_host_binding_sha256",
                  "live_orch_state_root", "ledger_head_at_approval", "public_signer_address",
                  "deposit_wallet_address", "approved_menu", "side", "max_create_attempts", "envelope",
@@ -97,14 +98,22 @@ def _canonical(value: object) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
 
 
+def _operator_record_path_ok(value: object) -> bool:
+    return (type(value) is str and bool(value) and not any(ord(c) < 32 or ord(c) == 127 for c in value) and
+            Path(value).is_absolute() and
+            not any(part in {".", ".."} for part in value.replace("\\", "/").split("/")))
+
+
 def load_case(path: object) -> dict:
     """Closed strict-JSON case; any defect is CASE_INVALID (never echoed)."""
     try:
         case = _strict_json(_read_bounded(Path(path)))
-        _require(type(case) is dict and _CASE_REQUIRED <= set(case) <= _CASE_REQUIRED | set(_CASE_OPTIONAL) and
+        _require(type(case) is dict and _CASE_REQUIRED <= set(case) <=
+                 _CASE_REQUIRED | set(_CASE_OPTIONAL) | set(_OPERATOR_RECORD_KEYS) and
                  (case["schema_id"], case["schema_version"]) == CASE_SCHEMA, "CASE_INVALID")
         case = {**_CASE_OPTIONAL, **case}
         _require(all(type(case[k]) is str and Path(case[k]).is_absolute() for k in _PATH_KEYS), "CASE_INVALID")
+        _require(all(_operator_record_path_ok(case[k]) for k in _OPERATOR_RECORD_KEYS if k in case), "CASE_INVALID")
         host = case["host"]
         _require(type(host) is dict and set(host) == _HOST_KEYS and _int_in(host["ssh_port"], 1, 65535) and
                  all(type(host[k]) is str for k in _HOST_KEYS - {"ssh_port"}), "CASE_INVALID")
@@ -448,18 +457,26 @@ def native_oauth_attempt(case: dict, *, candidate_menu, lineage, information_cut
     """Production Stage B: tool surface, eligibility preflight, one request, ONE dispatch."""
     from src.research_runtime.hermes_controlled_runtime import oauth_plan_stage_b as op
     from src.research_runtime.hermes_controlled_runtime.tool_free_stage_b import probe_native_tool_surface
+    preflight_record, dispatch_record = (case.get(k) for k in _OPERATOR_RECORD_KEYS)
+    _require(all(_operator_record_path_ok(p) for p in (preflight_record, dispatch_record)),
+             "OAUTH_PREFLIGHT_INELIGIBLE")
+    _require(Path(preflight_record) != Path(dispatch_record), "OAUTH_PREFLIGHT_INELIGIBLE")
     journal = Path(case["oauth_journal_dir"])
     _require(not journal.exists() or (journal.is_dir() and not any(journal.iterdir())), "OAUTH_JOURNAL_NOT_FRESH")
     surface = probe_native_tool_surface(Path(case["oauth_pin_root"]))
-    transport = op.OAuthPlanTransport(Path(case["oauth_pin_root"]), Path(case["oauth_credential_dir"]), mode="real")
-    eligibility = op.evaluate_preflight(transport.preflight(), attestation=case["plan_usage_attestation"],
+    preflight_transport = op.OAuthPlanTransport(Path(case["oauth_pin_root"]), Path(case["oauth_credential_dir"]),
+                                               mode="real", operator_record_path=preflight_record)
+    eligibility = op.evaluate_preflight(preflight_transport.preflight(), attestation=case["plan_usage_attestation"],
                                         checked_at_ns=clock_ns())
     _require(op.eligibility_is_witnessed(eligibility), "OAUTH_PREFLIGHT_INELIGIBLE")
     issued = clock_ns()
+    _require(0 <= issued - eligibility.checked_at_ns <= op.MAX_ELIGIBILITY_AGE_NS, "OAUTH_PREFLIGHT_INELIGIBLE")
     request = op.build_oauth_request(surface_report=surface, candidate_menu=candidate_menu, lineage=lineage,
                                      information_cutoff_ns=information_cutoff_ns, issued_at_ns=issued,
                                      deadline_ns=issued + case["oauth_deadline_s"] * 1_000_000_000)
-    return op.run_oauth_attempt(request, eligibility=eligibility, transport=transport, journal_dir=journal,
+    dispatch_transport = op.OAuthPlanTransport(Path(case["oauth_pin_root"]), Path(case["oauth_credential_dir"]),
+                                              mode="real", operator_record_path=dispatch_record)
+    return op.run_oauth_attempt(request, eligibility=eligibility, transport=dispatch_transport, journal_dir=journal,
                                 clock_ns=clock_ns), request.deadline_ns
 
 
