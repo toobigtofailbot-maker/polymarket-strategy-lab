@@ -50,6 +50,15 @@ controller/media power-loss behavior. Future real export with unestablished
 premise must refuse DURABILITY_UNESTABLISHED under separate owner admission.
 No universal hostile-root/same-uid/snapshot rollback protection is claimed.
 
+The first hosted head38ae8d037c620c446a4f35a3fc366297ad7b1f28 had three Windows
+test-precondition failures: actual elevated runner correctly refused before native
+storage admission. The in-scope test helper now independently queries TokenElevation
+and asserts exact PLATFORM_UNSUPPORTED/no-created-path in that unsupported context.
+All ordinary-token native positives, fourteen crash boundaries and unsafe ACL
+assertions remain mandatory on the actual non-elevated Windows run. No production
+change, token downgrade/mock, host/user setup, CI change or new skip. Hosted
+elevated refusal is never reported as non-elevated native acceptance.
+
 ## Local validation
 
 Approved native child profiles are CPython3.12.3 Windows68:
@@ -65,7 +74,7 @@ closure; old failing image retained. No profile/OS-policy/host ACL/dependency ed
 Windows, approved pin configured:
 ```text
 python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py
-19 passed,5 Linux-only skipped; exit0;90.91s (final canonical-exclusion source).
+19 passed, 5 skipped in 87.53s (0:01:27); exit0 (ordinary-token native positives; final test context correction).
 python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py
 11 passed; exit0;95.22s (legacy fixture binds Windows profile).
 ```
@@ -78,11 +87,11 @@ Native Windows wire proof is separate; Linux skips are not cross-OS native proof
 
 ```text
 /usr/local/bin/python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py
-22 passed, 2 skipped in 169.74s (0:02:49); exit0.
+22 passed, 2 skipped in 186.54s (0:03:06); exit0.
 /usr/local/bin/python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py tests/research_runtime/hermes_controlled_runtime/test_tool_free_stage_b.py tests/research_runtime/hermes_controlled_runtime/test_real_provider_stage_b.py tests/research_runtime/hermes_controlled_runtime/test_two_stage.py tests/research_runtime/test_autonomous_opportunity_cycle.py tests/research_runtime/test_live_preflight_bridge.py tests/execution_gateway/test_live_canary.py tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py tests/test_hermes_advisory_foundation_architecture_docs.py tests/test_agent_hermes_manual_setup_decision_record_docs.py tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py tests/test_architecture_boundaries.py tests/data_layer/analytical_research/test_ndfd_grib_dependency_compatibility.py tests/test_ndfd_grib_decoder_dependency_contract_docs.py
-281 passed,7 platform/recorded-native skips; exit0;117.45s.
+281 passed, 7 skipped in 67.95s (0:01:07); exit0; platform/recorded-native skips only.
 /usr/local/bin/python -B -m pytest -q -p no:cacheprovider
-14061 passed, 14 skipped, 125 warnings in 485.83s (0:08:05)
+14061 passed, 14 skipped, 125 warnings in 487.19s (0:08:07)
 ```
 
 Historical Linux failures are retained: archive Git identity missing, incomplete

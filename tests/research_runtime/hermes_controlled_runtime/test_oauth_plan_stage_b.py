@@ -824,7 +824,8 @@ def test_siwc_refresh_owner_and_crash():
         h["siwc_publish_retired_export"](restarted,output,"second.json",bundle,state,permit=permit)
     assert set(output.files) == {"transfer.json"}
     if sys.platform == "win32":
-        siwc_windows_crash_boundaries(h)
+        if not siwc_windows_elevated_refusal(h):
+            siwc_windows_crash_boundaries(h)
     elif sys.platform == "linux":
         siwc_posix_mutation_crash_boundaries(h)
     # Persistence schedules may lose only writes before their required barrier.
@@ -1458,6 +1459,35 @@ with n["SIWCPosixSlot"](v["path"],approved_root=v["path"],excluded_roots=[]) as 
             if child.poll() is None: child.kill(); child.wait(timeout=10)
 
 
+def siwc_windows_elevated_refusal(h):
+    """Actual elevated runners prove refusal; native positives require ordinary tokens."""
+    import ctypes as c
+    from ctypes import wintypes as w
+    import tempfile
+    import uuid
+    k, a = c.WinDLL("kernel32",use_last_error=True), c.WinDLL("advapi32",use_last_error=True)
+    k.GetCurrentProcess.restype = w.HANDLE
+    k.CloseHandle.argtypes = [w.HANDLE]
+    a.OpenProcessToken.argtypes = [w.HANDLE,w.DWORD,c.c_void_p]
+    a.GetTokenInformation.argtypes = [w.HANDLE,c.c_int,c.c_void_p,w.DWORD,c.c_void_p]
+    token, elevated, size = w.HANDLE(), w.DWORD(), w.DWORD()
+    assert a.OpenProcessToken(k.GetCurrentProcess(),8,c.byref(token))
+    try:
+        assert a.GetTokenInformation(token,20,c.byref(elevated),c.sizeof(elevated),c.byref(size))
+    finally:
+        assert k.CloseHandle(token)
+    if not elevated.value:
+        return False
+    # No token downgrade, privilege mock, ACL change or ignored native failure.
+    # This path never exists, so unsupported admission must leave it absent.
+    absent = Path(tempfile.gettempdir())/("siwc-never-created-"+uuid.uuid4().hex)
+    assert not absent.exists()
+    with pytest.raises(h["SIWCBlocked"],match="^PLATFORM_UNSUPPORTED$"):
+        with h["SIWCWindowsSlot"](str(absent),approved_root=str(absent),excluded_roots=[]): pass
+    assert not absent.exists()
+    return True
+
+
 def siwc_windows_private_directory(parent,name="slot"):
     """Synthetic fixture only: create a new directory with its DACL from birth."""
     import ctypes as c
@@ -1496,6 +1526,8 @@ def siwc_windows_private_directory(parent,name="slot"):
 @pytest.mark.skipif(sys.platform != "win32",reason="native Windows source case")
 def test_siwc_windows_storage_barriers_and_lock(tmp_path):
     h = siwc_helpers()
+    if siwc_windows_elevated_refusal(h):
+        return
     # The ordinary temp ancestry may grant sandbox principals write/delete.
     # Create only this synthetic private fixture directly under the same root.
     import uuid
@@ -1672,6 +1704,8 @@ def siwc_native_windows_replacement_failures(h):
 @pytest.mark.skipif(sys.platform != "win32",reason="native Windows unsafe ACL case")
 def test_siwc_windows_unsafe_storage_refuses_without_mutation(tmp_path):
     h = siwc_helpers()
+    if siwc_windows_elevated_refusal(h):
+        return
     ordinary = tmp_path/"inherited"
     ordinary.mkdir()
     before = ordinary.stat()
