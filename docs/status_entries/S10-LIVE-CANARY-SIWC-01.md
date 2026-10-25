@@ -76,7 +76,9 @@ unchanged resolved p/python and p/security-audit packs: both exit 0,
 exclusion was detected; final scans explicitly include both files. CE does not
 provide Pro cross-file analysis. No suppression or new ignored source rule.
 Gitleaks8.27.2 redacted tracked candidate/base scans: both 19 findings, raw exit 1;
-all rule/file/line identities equal, 0 introduced. No whole-repo clean claim.
+all rule/file/matched-source-line-content identities equal, 0 introduced.
+The deferred-log baseline finding shifts by 16 lines after the new section;
+its exact source-line bytes are unchanged. No whole-repo clean claim.
 Fresh isolated project inventory audit: 69 packages, exit 0, no unwaived finding,
 only the inherited CVE-2026-104851 fsspec exception. Frontend audit: 336 dependencies,
 0 vulnerabilities, exit 0. No new ignore, runtime dependency or lock change.
