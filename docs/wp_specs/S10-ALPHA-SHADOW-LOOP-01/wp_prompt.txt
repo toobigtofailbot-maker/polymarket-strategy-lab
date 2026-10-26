@@ -1,0 +1,261 @@
+Package Identity:
+  WP ID: S10-ALPHA-SHADOW-LOOP-01
+  Title: Repeated Evidence-Backed Alpha Discovery, Probability, Net Edge & Outcome Learning
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-alpha-shadow-intelligence-loop
+  Package class: REAL_SOURCE_BACKED_SHADOW_ALPHA_INTELLIGENCE
+  Package size class: M — exactly six changed tracked paths
+  Evidence mode expected: REAL_PUBLIC_SOURCE_AND_HISTORICAL_VERIFIABLE_LABELS, explicitly distinct from offline fixtures
+  Runtime impact: additive bounded foreground read-only-public research operator; no daemon
+  Product impact: reusable non-economic intelligence and feedback; no execution or account capability
+  Network impact: bounded public-source GET only during separately scoped empirical validation; GitHub PR/CI workflow
+  Credential impact: none
+  Dependency impact: none
+  Trading impact: zero orders, zero capital
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High; apply repo installed skills when useful
+  Reason: exact native composition, empirical source semantics, economics and protocol checks
+  Escalate to higher reasoning or STOP if: no legitimate independent forecast method exists for the observed event class, or scope would cross protected paths
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: true
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE AND FULL BOUNDED OWNER AUTHORITY / NON-AUTHORITY
+I, Karl, authorize **upon my forwarding this execution package**, one complete, lean implementation of the six-file alpha-intelligence foreground loop. Codex may inspect current repo facts, use native APIs, implement/revise tests/code, run approved bounded PUBLIC GETs for factual proof, perform offline research-paper simulations, resolve routine same-scope defects, run full required governance/readiness/tests, create one reviewed PR, and return the complete evidence. Routine same-scope work needs no further approval. Karl retains merge and subsequent deployment decisions.
+
+The goal is **not a simulation-only wiring demo**: on one truly supported real observed market/event class, the loop must be capable of obtaining an independently justified versioned probability from genuine information and computing after-cost opportunity scores, or truthfully report a real-evidence blocker. The method can be a source-grounded deterministic model or a validated already-authorized forecast producer; model verbal confidence is never event probability. If an available real-source path cannot support the market's exact resolution predicate, do not invent one or claim end-to-end real success. Historic replay only proves reproducibility if the forecasts were frozen before the labels.
+
+This WP does not authorize new paid Hermes/Firecrawl research, OAuth/keys, production Hermes history writes, private API/account/wallet/signing, host runtime changes, active CC changes, money movement, real or paper venue orders, exchange mutations, LIVE-ORCH run, autonomous scheduling, portfolio/policy changes, merge, deployment, or capital. The `hermes_runtime:true`/`paper:true` flags admit only controlled **research-facing existing interfaces/fixtures** within this package, not new real inference or canonical trading authority. Public network=true is restricted to bounded GETs under genuine nonsecret public URLs; no posting, credentialed fetch or bulk crawler. No fake source or synthetic probability is empirical proof.
+
+Keep existing security/audit floors, but avoid needless hardening, second registries, second execution kernels or per-market owner micromanagement. Be willing to score uncertain but positive net EV; never force positive scores or trades.
+
+# 2. FROZEN BASE AND CC COLLISION GATE — BEFORE EDITING
+Read AGENTS.md and repo-native coding/readiness/WP specs; `docs/alpha_discovery_control_plane_contract.md`, `docs/discovery_learning_foreground_proof_contract.md`, `docs/executable_edge_contract.md`, native Gamma/CLOB adapter, WP173 research paper, AUTO-01/02/Hermes assessment contracts. Record live main commit and PR state; Frozen inspection base: 7f24f5b253d61755fad22ed1d08ecba9a7d6e697. Immediate merged predecessor: PR #253, head eed3a546770bdcc82257a5dee8242bb2ebb6a931, merge 7f24f5b253d61755fad22ed1d08ecba9a7d6e697. Also verify PR #243 remains an ancestor. Any newer main requires bounded compatibility inspection and refreshed base evidence before branch creation.
+
+`git fetch origin --prune` then `git rev-parse main origin/main HEAD`, `git log -1 --oneline`, `git status --short --branch`, and ancestor checks for both predecessor commits. Stop before branch creation on dirty/stale/diverged main; do not switch, reset or update any other checkout. Use a separate clean worktree only after the native sync gate succeeds.
+
+Ask for the CC canary result/changed paths if not already known; do not block **read-only nonconflicting prep** while CC is active. Do not alter its branch/worktree/release/host/stores. Before implementation, verify no same-path source or governance collision, no already-open duplicate WP, and predecessor/main compatibility. If conflicting, STOP only that implementation surface and return an exact minimal reconciliation; never overwrite CC's work. No new blanket repo audit.
+
+# 3. EXACT IMPLEMENTATION FILE SET — SIX TRACKED PATHS, NO OTHERS
+1. `tools/alpha/run_shadow_alpha_cycle.py` — repeatable explicit CLI (discover, score, update-outcomes, verify or equivalent minimal subcommands). Bounded public reads and scratch-only immutable journal/manifest. Reuse native ALPHA-02, AUTO/manager read interfaces and execution feasibility; new code is orchestration, a minimal source-specific probability estimator/adapter and measured feedback glue, NOT a second core engine.
+2. `tests/tools/alpha/test_shadow_alpha_cycle.py` — one compact end-to-end positive/negative test suite for R001–R010 below.
+3. `docs/shadow_alpha_cycle_contract.md` — concise documented inputs, public source, event matching, clocks, formulas, outcome accounting, lifecycle and proof limitations.
+4. `docs/status_entries/S10-ALPHA-SHADOW-LOOP-01.md` — stable, factual status evidence (not an invented success flag).
+5. `docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_prompt.txt` — exact present execution text.
+6. `docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_spec.json` — matching machine-readable spec.
+
+No changes to `src/`, live authorization, wallets, protected paths, dependency files or workflow files. Prefer native public-source adapters and standard library. If a genuine missing source interface demonstrably requires a seventh or protected file or a package install, return exact conflict and the smallest proposed scope amendment for Side22/Karl; no silent widening. Tracked changed-file set must equal the six above, respecting native status/repo-truth guards. No repository-tracked result DB; create scratch outside checkout with explicit root.
+
+# 4. IMPLEMENT THE WHOLE NON-ECONOMIC CYCLE, NOT JUST A BRIEF
+**R001 — Actual observed universe:** Use approved existing Gamma/CLOB public source primitives (or native verified PIT snapshots when offline). Per bounded run: at most 200 observed market summaries, triage every returned market, score up to 20 unique candidates and perform deep independent forecast analysis on up to eight selected candidates. Explicit cohort/cutoff, current-vs-replay flag, category, liquidity, market restrictions, resolution terms, selection/skips/errors. No claim of all-market completeness. Any expanded limit requires review.
+
+**R002 — Real independent probability producer:** Implement **at least one event-class-specific evidence-backed producer/derivation path**, with a testable mapping of the market resolution predicate to the information source and a versioned method. May reuse genuinely documented model/forecast source or current authoritative external statistics; do not merely require caller to hand-enter `p`. Capture original factual observations and publication/availability times, source digest, method/version, probability `p` in [0,1], explicit uncertainty band, cutoff, market/condition/token/outcome and settlement semantics. If no genuinely compatible real source is available, produce `PROBABILITY_UNAVAILABLE` / `DATA_INSUFFICIENT` and report an evidence blocker; **never label synthetic or post-resolution hindsight as real success**. Support source expansion later via minimal documented interface, not a fleet of stubs. If Hermes real inference is required, propose the smallest separately bounded runtime authorization, do not silently call it in this WP.
+
+**R003 — After-cost and execution-aware ranking:** Use exact Decimal, native Gamma/CLOB prices, actual minimums/ticks/fees/terms and native feasibility interfaces, plus visible spread, liquidity, slippage, latency/markout and conservative maker queue/fill assumptions. Compute conditional fill value and per-intended-order expected value, never equating passive posted quote with filled order. Show `p_market`, `p_estimate`, uncertainty, gross EV, costs, conservative net EV, min/order admissibility, and why a candidate has positive/negative/unresolved edge. Do not promote `FEASIBLE` to profitable or model confidence to calibrated event probability. Handle 50/50 ties, voids, multiclass and unclear settlement using exact payout mapping or abstention; do not incorrectly apply binary Bernoulli payout.
+
+**R004 — Genuinely repeated foreground cycles:** An operator may trigger successive independent bounded cycles using the same verified configuration; dedupe exact candidate/forecast lineage while preserving *every* new occurrence in an append-only scratch journal. STARTED before work, one terminal, cold replay without additional provider, public network or research credits. Record rejected/deferred/unscorable/NO_TRADE/REASSESS as well as positive shadow trade ideas and stopped attempts. No daemon or scheduler yet. Do not require fixed 8 candidates to exist.
+
+**R005 — Useful decision policy:** A shadow action may be `SHADOW_CANDIDATE`, `NO_TRADE`, `RESEARCH`, `REASSESS`, or `DEFER`, with a machine reason and honest conservative edge. Configurable thresholds based on expected net value, supported uncertainty and realistic fill, not arbitrary 'high' language-confidence; no automatic order intent, permit, allocation, risk/policy change or promised fill. An available method may have high uncertainty and still merit a small trial *later* if its conservative expected economics remain positive.
+
+**R006 — Native paper and decisions:** If a separately evidenced WP173 paper snapshot exists, read/link it using existing identity and native math; never fake a fill or infer that a shadow idea caused an unrelated fill. Paper vs historical forecast vs true live reconciled outcome are three distinct evidence classes. If absent, honest `NO_PAPER_SESSION` and continue the intelligence loop.
+
+**R007 — Resolution and feedback:** On a later command, look up genuine independently sourced final venue outcome/payout (or accept a verifiably pre-recorded immutable source) and append only after validating exact event version/condition/outcome and resolution time. Distinguish unresolved, void, half-pay, cancelled, disputed. For correct binary labels with genuinely before-outcome predictions, calculate Brier/log loss vs market snapshot baseline, by category/horizon and all observations. Track fill rate, hypothetical shadow EV vs separately verified paper and actual live net P&L. No trade and unfilled orders have no realized trade profit; no using future labels as features or duplicated outcomes as independent trials. If there are not yet resolved independent events, display `INSUFFICIENT_OUTCOMES` rather than invented learning performance.
+
+**R008 — Actual improvement experiment:** Derive a **versioned, reversible research-priority or selection-parameter candidate** from empirical feedback, evaluate it against a chronological holdout/OOS slice where sufficient evidence exists, compare with fixed original and market/no-trade baselines, and record whether improvement is demonstrated or unproven. No automatic model updates, new policy, trade permission or risk relaxation. If n is too small, output `IMPROVEMENT_NOT_YET_MEASURABLE` with the necessary future sample evidence. Keep proposals inspectable, not meaningless free-text 'try more research'.
+
+**R009 — Non-economic and hostile-input protection:** Strictly no auth accounts/keys, production writes, trading, risk overrides, private account data, synthetic producer promotion, forged citations, invalid source, data leakage, future leakage, duplicate profit, or network rerun during verify. Reject stale price, mismatched market/condition/token, fees unknown, malformed minimums, dangerous paths/symlinks, unresolved payouts, false confidence and interrupted journal corruptions without echoing secrets. A failed proof is not a PASS.
+
+**R010 — Honest operator scorecard:** One compact result: observed/screened/scored/independent-p/actionable/abstained/error denominators, source freshness, net edge distribution and fill estimates, outcomes and calibration if available, version comparison if meaningful, time/cost, cold replay and all account/wallet/order attempts (expected ZERO). Status is `SHADOW_INTELLIGENCE_REAL_EVIDENCE_PASS`, `PLUMBING_ONLY`, `DATA_INSUFFICIENT`, or `BLOCKED`, directly justified by records. No claim of profitability until sufficiently realized OOS data supports it.
+
+# 5. ACCEPTANCE AND NEGATIVE TEST MATRIX
+Tests must prove native output on (a) a genuinely public observed input and genuine source-grounded independent forecast on at least one semantically compatible category for REAL_EVIDENCE_PASS, and (b) deterministic offline replicas that test invalid cases. The live public observation may be a post-implementation bounded empirical receipt, **not a passing fake pytest fixture**.
+
+Required focused test names/coverage:
+- `test_real_source_method_and_exact_market_predicate` (real source method + exact compatibility checks; fixtures only prove logic, real receipt separate).
+- `test_discovery_coverage_skips_and_repeated_attempt_denominators` (two occurrences counted separately; cold verify makes zero attempts).
+- `test_shadow_policy_positive_negative_and_uncertain_ev` (R005: positive conservative net EV can qualify without high verbal confidence; nonpositive/unknown economics abstain).
+- `test_net_ev_uncertainty_fee_queue_and_nonfill` (known hand arithmetic, conservative maker fill, min/tick, order not executable).
+- `test_source_cutoff_market_identity_and_lookahead_rejections` (stale/future/mismatched input closes).
+- `test_nonbinary_void_tie_and_disputed_resolution_rules` (no false binary label).
+- `test_independent_resolution_metrics_against_market_baseline` (two distinct events; frozen forecast and source).
+- `test_versioned_improvement_oos_or_insufficient_data` (no automatic adoption, no false promotion).
+- `test_shadow_paper_live_evidence_never_conflated` (no fake fills or PnL).
+- `test_partial_crash_replay_and_protected_boundary` (crash/restart, no provider/credential/order/network during verify).
+- `test_public_source_unavailable_is_honest_block` (data absent -> honest no-edge outcome, not fictitious scored candidate).
+
+Native commands to run after copying two WP files to the exact in-repo target paths, **before substantive code changes**:
+```
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_prompt.txt --spec docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_spec.json --repo-root .
+```
+After final frozen stable-head commit run `--check-diff --base <recorded-actual-base> --head <final-exact-head>` plus all required repo-native scope/secret/architecture/status checks and one full suite. Validate after every final source change. If repo native `RUNTIME` policy or actual API proves this scope impossible, STOP with a precise compatibility row; never weaken security/validation to make it green.
+
+# 6. NORMATIVE RULES — ONE AUTHORITATIVE BOUNDED MATRIX
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|source|observed_universe|public_data_only|REQUIRE|observed_denominator|source.observed_universe|R001
+NR002|probability|independent_forecast|actual_method_and_predicate|REQUIRE|verifiable_forecast|probability.independent_forecast|R002
+NR003|economics|net_executable_ev|fees_uncertainty_and_fills|REQUIRE|conservative_score|economics.net_edge|R003
+NR004|cycle|journal_occurrence|bounded_repetition|REQUIRE|exact_attempt_count|cycle.journal|R004
+NR005|decision|shadow_action|positive_net_ev_not_language_confidence|REQUIRE|shadow_only|decision.action|R005
+NR006|feedback|native_paper|separate_provenance|REQUIRE|research_only_paper|feedback.paper|R006
+NR007|feedback|resolution_event|genuine_later_outcome|REQUIRE|nonlookahead_metrics|feedback.resolution|R007
+NR008|learning|versioned_method_revision|sufficient_oos_only|REQUIRE|reversible_candidate|learning.revision|R008
+NR009|safety|economic_authority|any_execution_or_account_path|FORBID|zero_economic_actions|safety.authority|R009
+NR010|report|scorecard|every_run|REQUIRE|honest_terminal_status|report.metrics|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 7. HARD STOPS AND SUCCESSOR BOUNDARY
+STOP if (a) source/forecast predicate cannot be supported without inventing real probability, (b) proof needs a protected CC file, new dependency, credential, product write or new source path outside six files, (c) separate cc branch/release/runtime would be touched, (d) any risk/permit/live path would change, (e) independent source freshness or resolution time cannot be verified but is claimed genuine, (f) native WP/readiness/CI guard fails after allowed routine fixes, (g) economics/payout baseline would be materially wrong, or (h) public network budget cannot be kept narrow. Report one precise factual blocker; do not initiate unapproved successor.
+
+A future PROTECTED **autonomous small-position pilot** reuses native risk, OMS, ledger, signer isolation, Gate C and account eligibility; it requires separate Karl standing-live authority and no borrowing the first attended $5 canary's one-use Stage A/B. Plan one consolidated activation—not micropackages—once CC and measurable shadow/paper results justify it. Fast BTC five-minute execution is deterministic and not a slow per-order freeform LLM loop.
+
+# 8. REPORT BACK / EVIDENCE PLAN
+Return a short owner-readable report with the exact base/final SHA and PR, deterministic spec/readiness/diff checks, bounded *real* public sample receipts (or truthful data blocker), independent forecast method/provenance, research and network attempt accounting, after-cost scores, source/attempt/feedback denoms, cold verification, OOS improvement disposition, unresolved gates, exact changed paths and CC collision verdict. Never call a fixture or soft Hermes `CONTINUE` assessment a proven edge. Codex can autonomously fix routine same-scope issues, but only Karl merges and approves subsequent product inference, protected pilot and real capital.
+
+# 9. SIDE22 REVIEW ADDENDUM — ORIGINAL ADMISSION FINDING
+This candidate corrects mechanical package defects. A native IMPLEMENTATION_READY
+result is not a claim of empirical implementability, implementation or independence.
+The supplied draft's source/method admission was SOURCE_BINDING_UNRESOLVED. Before
+substantive implementation, bind one actual event class, public source, exact
+resolution predicate, derivation/version, uncertainty construction, publication and
+availability clocks, and one genuine compatible market/source pair. Store the bounded
+compatibility evidence outside the checkout. Do not ask Karl to invent a probability
+method: resolve it autonomously using permitted read-only inspection when possible.
+If no compatible pair can be established within this package, stop with the precise
+source or scope conflict. Do not implement a permanent probability-unavailable stub.
+
+Existing NDFD PoP12 is a 12-hour precipitation feature, not by itself the probability
+of the full-day station/CLI settlement predicate. PLAN-01 freezes a fitted B1/B2 model;
+neither sealed DATA-03 labels nor a supportive Alpha episode may substitute for an
+admissible pre-outcome forecast. Do not alter or fit against sealed qualification data.
+No inference that other categories or methods are impossible is warranted.
+
+Economics must use expected contract payout, not verbal confidence. For a binary BUY,
+conditional net value per filled share is E[payout | fill, available evidence] minus
+the actual acquisition price, fees and separately identified residual costs. Multiply
+by intended shares and an evidenced conservative fill probability to obtain per-order
+EV. Do not double-count spread/slippage already included in the acquisition VWAP.
+Maker adverse selection can correlate fills with outcomes; a marginal p times an
+invented fill ratio is not conservative proof. Unknown fees, fill assumptions or payout
+semantics produce unscorable status. WP172 PASS requires its native OOS/truth bindings;
+current quote scoring cannot manufacture that PASS or a native execution intent.
+
+Context Budget: read startup, this pair, the named native contracts and direct APIs
+first. Inspect source callers/tests only for concrete compatibility questions. No
+credential files, production stores, host probing, deployment or canary operations.
+Reference every boundary group in docs/ai/codex/PROTECTED_PATHS.md's Centralized
+Boundary Group Reference. Only explicit foreground public research and read-only
+paper interfaces are within the posture; all economic boundaries remain closed.
+
+Six-file scope compatibility remains to be proved before edits. Do not invent a
+blanket requirement to modify central status files: the active narrow package and
+existing S10-ALPHA-03A precedent matter. Conversely a material deferred issue requiring
+docs/deferred_items_log.md under AGENTS.md cannot be hidden in a fragment to evade
+that rule. If such a write is necessary, report the precise amendment; do not widen
+the exact scope or weaken a historical guard. Preparation artifacts are external.
+
+Validation uses docs/ai/codex/VALIDATION_MATRIX.md and the current execution state
+machine: focused/adjacent tests during edits, required actual-surface security,
+negative matrix, stable-candidate full suite, exact-diff gate and exact-head hosted
+CI. Keep the implementation PR draft until stable. Use one combined independent
+implementation review and final Side PR review. The executor cannot self-certify
+independence. Required PR evidence mode is exactly one of PUBLIC_VERIFIER_PASS,
+PRIVATE_REPO_MANUAL_VERIFIED or BLOCKED_NOT_READY; empirical scorecard statuses are
+separate. Karl alone merges and authorizes future standing live capital.
+
+# 10. EXECUTION FREEZE — ADMITTED SOURCE AND METHOD (2026-10-26)
+Karl explicitly authorized this execution in the current conversation. Source
+admission is PUBLIC_FORECAST_BINDING_OBSERVED, not proof of predictive skill.
+The real binding is Gamma market 6000454, condition
+0x40ee7af3b229f1be9ff15eae770e1bb7c2d2f6371fc9d3c031d0ea2e9705d7eb,
+Nets/Celtics on 2026-10-27T23:30:00Z, to ESPN NBA event 401909877.
+Frozen public receipts outside the checkout were acquired before kickoff:
+Gamma cohort SHA256 20cc4530f69c31e7fa8032a6e63926e5f97be14fc6170f7a4b47600009c0b6ca;
+ESPN summary SHA256 229f328be976849c40e859b5b6c4f199e5b2abe05feeffd9f034e9f352ac0e26.
+ESPN Matchup Predictor reports Nets 16.7%, Celtics 83.3%. This package's
+versioned method is espn-nba-pregame-v1: match league, exact two team names,
+scheduled start and unstarted status; divide the publisher's gameProjection
+decimal percentages by 100 and require complementary probabilities. No invented
+forecast or assumed ESPN model implementation/version. Provider model vintage,
+training provenance and publication timestamp are NOT_PUBLISHED; acquisition
+time is independently recorded availability, never backdated publication.
+
+Discovery is an explicitly bounded NBA moneyline observed cohort, obtained by
+fixed-host Gamma GET, at most 200 markets; triage every returned row via ALPHA-02.
+Use at most two dated ESPN scoreboards, eight matched pregame summaries, and two
+public CLOB books per analyzed game. At most 20 scored outcome candidates and
+eight deep independent forecasts; global universe completeness remains unproven.
+Hard cycle limits: 32 GET attempts, 2 MB/body, 20 s/request, 120 s total. No
+redirect, proxy/environment credential discovery, retries or arbitrary URL input.
+Preserve a public receipt for unavailable/oversize/invalid sources as an attempt.
+
+Only the byte-exact supported NBA rule template is admitted: final winner including
+overtime, postponement waits for completion, outright cancellation pays 0.5 each.
+Any changed/unclear rules, spread/total/player prop, game already started, source
+identity conflict or nonbinary payout semantics close that candidate. Forecast
+probability is CONDITIONAL_ON_COMPLETION. Cancellation probability is unknown:
+robust expected-payout bounds include 0.5, rather than assuming cancellation=0.
+The fixed 0.10 forecast stress radius is a disclosed sensitivity parameter, NOT
+an empirically calibrated confidence interval. Also expose calibration=UNPROVEN
+and the [0,1] identification bound; no learned certainty is claimed. Decisions
+use the stress/cancellation payout bound and disclose its assumption basis.
+
+Reuse native PIT builders/store and ALPHA-02 universe/triage/queue in isolated
+scratch, native venue normalization and pure depth/fee/minimum mechanics. Never
+manufacture a StrategyVersion, ExecutionIntent, WP172 PASS or AUTO permit. No
+Hermes dispatch is needed. Reuse verified read-only native paper snapshots when
+explicitly supplied; absent paper is NO_PAPER_SESSION. Shadow books are scenarios,
+not simulated fills or causal paper/live performance. Aggressive depth capacity
+and full/capped fill scenarios are separate from an unmeasured realized fill rate.
+Passive fill probability is UNKNOWN: no hypothetical maker fill credit.
+
+Each manual cycle is a new STARTED-first occurrence; interrupted occurrences get
+one terminal and are never automatically redispatched. Deduplicate prediction and
+outcome statistical units by event, while retaining repeated observations and
+attempts. Cold verify replays only frozen bytes and native scratch stores without
+provider/network dispatch. Source clocks and actual attempts remain inspectable.
+
+Outcome update acquires final Gamma settlement and a matching independent final
+ESPN game summary, requiring exact original rule/identity and strictly later source
+availability. Cancellation/0.5 is separate from completed binary calibration;
+postponed, disputed and unresolved states remain pending. Never calculate realized
+trade profit for these nonfilled shadow decisions. Brier/log loss compare the
+earliest admissible pregame event forecast with its same-time book midpoint.
+
+Learning proposes one reversible research-only blend weight from the fixed grid
+0.25,0.5,0.75,1 for independent probability vs market midpoint. Optimize Brier on
+chronological formation events; evaluate once on a disjoint chronological holdout
+with at least ten independent events per slice and formation labels available
+before the first holdout prediction. Report original, market and candidate metrics
+on identical events and no-trade P&L baseline zero, explicitly not forecast loss.
+Missing sample/timing support is IMPROVEMENT_NOT_YET_MEASURABLE, not a fake improvement.
+No automatic adoption, production model change, allocation, scheduler or live path.
+
+Independent implementation review clarifications: a positive full-fill scenario
+with unmeasured fill probability/dependence is RESEARCH, never actionable edge.
+Expose a per-intended-order identification bound including adverse selected fills;
+do not assert a positive point EV. Scored denominators exclude inadmissible/null-EV
+outcomes. The improvement formation roster is the first ten finalized independent
+events in journal order; the holdout is the first ten subsequent finalized events
+with forecasts strictly after all formation labels. Freeze both id lists in the
+proposal identity so later arrivals cannot move the evaluated holdout.
