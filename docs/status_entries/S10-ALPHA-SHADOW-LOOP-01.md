@@ -6,9 +6,9 @@
 - Base commit: `7f24f5b253d61755fad22ed1d08ecba9a7d6e697`.
 - Immediate predecessor: PR #253, head `eed3a546770bdcc82257a5dee8242bb2ebb6a931`, merge equals base; PR #243 ancestry verified.
 - Authority: Karl's explicit execution request, 26 October 2026; RUNTIME, risk 3, exact six-path M package.
-- Validated implementation commit: see current PR body for stable-candidate validation binding.
+- Validated implementation commit: `12caea758449a4bc0e948cdbcad6d3af32f56af0`; subsequent status-only evidence changes preserve reviewed source hashes.
 - Current live PR head: see GitHub PR metadata and PR body; this fragment is non-self-referential.
-- Evidence mode: BLOCKED_NOT_READY; Ready for review: NO while validation/publication is pending.
+- Evidence policy: the current posted evidence mode, exact-head CI and readiness decision are recorded in the PR body; this stable record does not assert dynamic readiness.
 - Merge, deployment, live capital and canary operations: NOT AUTHORIZED.
 
 ## Implementation and scope
@@ -70,6 +70,25 @@ attempts. A later outcome command made zero requests because games had not start
 it reported zero resolved independent events and IMPROVEMENT_NOT_YET_MEASURABLE.
 Cold verification re-derived three completed operations with zero fresh attempts.
 These are software/source observations, not evidence of predictive skill or profit.
+
+A third real cycle exercised the final reviewed acquisition code: 49 screened
+markets, eight forecasts, six admissible scenarios, ten unscorable outcomes and
+zero actionable trades. Cumulative cycle totals are 147 market occurrences,
+24 forecast occurrences, 20 admissible scenario occurrences and 81 public GETs;
+unique market/game counts remain 49/eight. Cold replay verified all four operations
+(three cycles and one empty outcome update) with zero fresh attempts.
+
+Semgrep CE 1.176.1 scanned both final Python files with 200 applicable p/python and
+p/security-audit rules: zero findings/parser errors, exit 0. Gitleaks 8.27.2 scanned
+the six added files with the unchanged repo config: zero findings, exit 0.
+Native readiness with exact diff, exact scope helper and generated-artifact guard
+passed on the implementation commit. The complete local Linux run initially had
+six existing SIWC test failures because the validation image's scratch home was
+read-only (14084 passed, 14 skipped, 125 warnings). An isolated empty tmpfs with
+the image user's ownership corrected the environment: affected native file 22
+passed, two platform skips, exit 0. No source/dependency remediation was required.
+The authoritative final full-suite/hosted counts and exact commands belong in the
+current PR body; initial environment failures are retained there as evidence.
 
 ## Negative-test matrix
 
