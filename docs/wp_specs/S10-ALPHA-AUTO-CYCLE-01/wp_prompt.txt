@@ -1,0 +1,125 @@
+Package Identity:
+  WP ID: S10-ALPHA-AUTO-CYCLE-01
+  Title: Bounded Autonomous Public-Research Cycle on PR254
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-alpha-auto-cycle-01
+  Package class: BOUNDED_FOREGROUND_AUTONOMOUS_SHADOW_RESEARCH
+  Package size class: M (exactly six tracked files)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: Local research operator only; no production deployment
+  Product impact: Repeated public NBA forecast/cost/outcome scoring; zero economic authority
+  Network impact: Same fixed public read-only Gamma/CLOB/ESPN GET endpoints as PR254
+  Credential impact: None
+  Dependency impact: None
+  Trading impact: None
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: GPT-6 Medium/High or equivalent competent Codex execution
+  Reason: Native six-path RUNTIME integration with strict source and clock controls
+  Escalate to higher reasoning or STOP if: genuine conflicting protected source, missing authoritative source contract, native readiness failure after ordinary one-batch fixes
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: true
+hermes_runtime: false
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Goal and bounded owner authorization
+Karl authorizes drafting, native readiness preparation, implementation, isolated offline and bounded public-source validation, routine same-scope technical corrections, one draft PR, and hosted CI for this **non-economic** package. Start now in a fresh independent checkout. CC's 2026-10-26 handoff is evidenced only by an interim report: do not treat owner-described task completion as evidence of a submitted/reconciled order. Do not contact or modify CC's work, host, credentials, stores or release. Any later actual final canary evidence is independently reconciled by the protected successor.
+
+The goal is the SHORTEST working autonomous research cycle: repeatedly run the already-merged PR254 `tools/alpha/run_shadow_alpha_cycle.py` engine on a fixed, limited cadence, periodically update real outcomes, verify frozen receipts and present honest opportunity/abstention and performance evidence. Implement only the missing bounded scheduling/orchestration and aggregation, NOT another source adapter, alternative scorer, trading engine or learning framework.
+
+This authorization does NOT permit merge, VPS or systemd changes, standing daemon, production or wallet/account authentication, provider-paid inference, signing, order/position/cancel operations, Gate C permit creation/promotion, portfolio allocations, live policy activation, capital, or secret reads. No CC shared worktree, CC branch, protected source files, host/runtime/credentials or real production stores may be modified.
+
+# 2. Hard merge and collision preflight
+- Verify live `main` at 7506f62c7d55d3065f928d93971caf6b1d5519a9, PR254 merged with head `943689567f4c84ed55232143d8f69069bc03a93e`, PR253 ancestry, and check current open PRs. `git fetch origin --prune; git switch main; git pull --ff-only origin main; git rev-parse HEAD; git status --short --branch` (do not reset other operators' worktrees).
+- If main has advanced, inspect only changed files: proceed in the isolated branch when non-overlapping and normal merge-base checks pass; STOP for actual source or authority conflict, not mere unrelated main advancement. Never rebase shared CC worktrees.
+- Read `AGENTS.md`, `CLAUDE_START_HERE.md`, `CODEX_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, `docs/ai/codex/WP_DRAFTING_STANDARD.md`, `docs/ai/codex/WP_SPEC_STANDARD.md`, `docs/shadow_alpha_cycle_contract.md` and the merged PR254 operator/tests. Use installed skills where they materially improve testing, software review or data analysis. Do not browse broad architecture.
+- The attached strict `wp_spec.json` is a prepared candidate, NOT an asserted native readiness result. Normalize/import both files at the specified six tracked paths, reconcile any schema/rule errors in one batch, and **pass** the real repository-native preimplementation gate below BEFORE any product implementation. Avoid reauthoring the scope unless a genuinely material defect requires it.
+
+# 3. Exact scope (6 required = 6 allowed)
+- `docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_prompt.txt`
+- `docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_spec.json`
+- `docs/shadow_alpha_auto_cycle_contract.md`
+- `docs/status_entries/S10-ALPHA-AUTO-CYCLE-01.md`
+- `tests/tools/alpha/test_shadow_alpha_auto.py`
+- `tools/alpha/run_shadow_alpha_auto.py`
+Every other file is prohibited, including existing PR254 implementation/test/contract files, `src/**`, `src/execution_gateway/**`, `docs/live_trading_authorization.md`, `.github/**`, `requirements*`, locks, systemd and any runtime config. Do not add an allowlist exception. If a required change cannot fit these paths, produce a minimal precise blocked result rather than edit an unauthorized seventh file.
+
+# 4. Implementation contract — one operator, no new engine
+Implement `tools/alpha/run_shadow_alpha_auto.py` as a foreground, finite **bounded repeat driver** importing/calling the existing `run_shadow_alpha_cycle` public operator methods (`cycle`, `update_outcomes`, `verify`, read-only status aggregation). No vendor SDK or server is added. The scheduler never calls Hermes; independent probability still comes from public ESPN pregame Matchup Predictor as in PR254.
+
+Interface: `run --scratch-dir ABS --max-cycles 1..12 --interval-seconds 60..3600 --outcome-every 1..12 [--max-runtime-seconds ...]`; `status --scratch-dir ABS`. Only explicitly supplied existing initialized shadow scratch directory; no default path, no auto-init or credential-path probing. Operator bound max runtime 6h (including sleeps), one exclusive process/session lock, no concurrent `cycle` dispatch, no detached daemon; clock is authoritative for wake scheduling, result cutoff and monotone deadlines. A wall-clock drift or expired cap terminates; never compress missed slots into bursts. Use short sleep/check to respect graceful termination and deadline. No invocations after deadline.
+
+At most 12 cycles per invocation. Each `cycle` already caps public GETs to 32 and has no retry; preserve this cap and all fixed endpoint/body/source/rule checks. Call `update_outcomes` only at declared interval after the eligible cycle and never more than once for the same slot; it must use existing source and finalization validation and never look into future outcomes. Calls to `verify` must be cold/no-network and must never create a new research occurrence. Never mutate earlier evidence or make repeat attempts look like unique markets. If a native cycle is interrupted, record the exact terminal/unknown denominator and continue only if native recovery supports it; otherwise fail closed. Do not hide skipped/delayed slots.
+
+Produce a sanitized human+JSON operator summary (outside repo) that derives, not redefines, the native ledger counts: unique markets vs occurrences; forecasts/events; scorable/unscorable; research/abstain; requests attempted/succeeded/failed/interrupted/unknown; realized resolved events and Brier/log loss when available; market baseline where valid; limited economic scenarios (fee, depth, slippage and explicit unknown fill); elapsed time and resource/request cost when observed. Distinguish absolute market-predictor forecast quality, non-actionable conditional fill EV, paper snapshots, and genuine live filled P&L. Missing is UNKNOWN, not zero. Never fabricate positive EV, fill probability, or historical labels. An informative `NO_ACTIONABLE_EDGE` is successful operation, not an error to loosen thresholds.
+
+Idempotence/rollback: fail if scratch contains an unsafe path/symlink, corrupted earlier receipts, unknown concurrent lock, or claims of live authority. Atomic new session evidence only in scratch; optional interrupted session marker with no rewriting native sub-ledgers. Replaying `status` or cold verification must make ZERO public calls. No separate canonical DB or competing strategy scoring engine. Keep implementation small (~one thin adapter), no excessive new framework.
+
+# 5. Integration boundary: not part of this source WP
+This RUNTIME package is a production-quality feeder ONLY. It does not make automatic economic decisions. The **separately gated PROTECTED** `S10-ALPHA-AUTO-PILOT-01` successor, following independent verification of CC canary reconciliation, owns an unattended signer/delegation design, exact owner-approved standing risk authority, native strategy/version/assessment linkage, Gate C, native account/geoblock/order/reconcile checks, kill switch and live order placement. Its requirements are in the companion `PROTECTED_LIVE_PILOT_SUCCESSOR.md`. Begin its **read-only source inspection and protected prompt/spec drafting** now, without modifying live/protected sources. Its implementation, deploy and activation must wait for truthful CC reconciliation, independently certified exact protected package, the separate implementation authorization and subsequent standing live-capital decision. Do not fake that functionality within this six-path WP or amend CC source files now.
+
+# 6. Preimplementation governance and implementation autonomy
+Create exact package files and run:
+`python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_prompt.txt --spec docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_spec.json --repo-root .`
+Only after `IMPLEMENTATION_READY` plus Karl's explicit implementation authorization (the accompanying first-person bootstrap supplies bounded approval after readiness), implement. RUNTIME track requires deterministic readiness, not a self-issued independent PROTECTED certificate. One batch of ordinary same-scope prompt/spec corrections is allowed, with gate rerun. Freeze base/head and run exact `--check-diff`, `tools/git/diff_scope_summary.py --require-exact-scope`, generated-artifact guard and `git diff --check` before opening PR. Enforce exact authority mirrors.
+
+# 7. Focused/negative evidence and completion
+Provide tests in the single declared test file:
+R001 bounded cadence, deadlines, max-cycle/resource caps; fake monotone clock, no missed-slot catchup.
+R002 cold invocation of real native PR254 cycle/outcomes/verify seams, no duplicated scoring, no new provider.
+R003 native request and operation denominators (success, rejects, missing, interrupted, lock contention); unique-versus-occurrence separation.
+R004 negative outdated/unknown forecasts, books, fees, event rules, outcomes; ensure the original PR254 fail-closed decisions are respected unchanged.
+R005 exact zero-network status/verify and no second dispatch after interrupted/crash; no corruption rewrites or symlink/path escape.
+R006 disabled trading/account/credential/CC overlap; test malicious metadata and no import side effects.
+R007 honest actionability, after-cost sensitivity and no learned profitable assertion from a short sample.
+
+Run focused tests and relevant adjacent PR254 tests plus one full repo suite on stable source head (if CI/environment blocks, report the exact blocker without fabricated PASS). One bounded real public research run is authorized using the existing fixed Gamma/CLOB/ESPN endpoints and outside-checkout scratch (up to 2 cycles, >=60s apart), strictly ZERO protected account/market mutation and ZERO provider calls; sample may legitimately yield `NO_ACTIONABLE_EDGE`. Re-run `status` and `verify` offline; verify counts and source hashes independently. No real attempt if actual data access disallowed by environment.
+
+Only publish one focused branch/PR after all gates pass, hosted checks run, independent relevant source review is requested. Do not self-approve, merge, deploy or start an unattended persistent host service. Return exact PR URL/head, real test counts, observed research receipts, genuine limitations, and zero-economy/no-overlap proof. Stop after report.
+
+# 8. Failure and result semantics
+Return `AUTO_SHADOW_PR_READY_FOR_SIDE22`, `AUTO_SHADOW_NATIVE_ALREADY_SUFFICIENT`, or `AUTO_SHADOW_BLOCKED:<exact reason>`. No follow-up WP for ordinary same-scope fixes. If the architecture already has the exact operator behavior, avoid code churn; document the direct invocation and return `NATIVE_ALREADY_SUFFICIENT` with verified proofs. Respect live PR head / governance changes. No annual-scale architecture studies or expanding source support until the first complete operational loop exists.
+
+# 9. NATIVE READINESS NORMALIZATION (one-batch mechanical correction, no scope or authority change)
+The imported Side22 candidate failed native readiness on missing structural signals and one non-canonical spec failure category (`IMPLEMENTATION_INCOMPLETE` replaced by `SEMANTIC_CONTRADICTION`, matching the PR254 precedent). This section restates sections 1-8 in the native vocabulary only.
+
+Objective / authority / non-authority: as section 1 and spec `identity.objective`; RUNTIME research-only authority; non-authority over orders, accounts, credentials, signer, Gate C, live policy, deployment and protected sources.
+
+Hard stops: section 2 collision rules, section 3 seventh-file rule and section 8 blocked semantics. Also STOP if native PR254 seams cannot be called without modifying PR254 files, or if a real run would need credentials, a provider call or any non-PR254 endpoint.
+
+Negative test matrix: R004, R005 and R006 are the negative groups (stale/unknown sources, unsafe path/symlink/corrupt receipt/lock contention/crash replay, authority and malicious metadata); R001 and R003 include cap, deadline and denominator negatives.
+
+Evidence plan / requirement mapping: spec `evidence_plan` R001-R007, one test node each in `tests/tools/alpha/test_shadow_alpha_auto.py`, plus the bounded real public run of section 7.
+
+Successor boundary: spec `successor_boundary`; `S10-ALPHA-AUTO-PILOT-01` is separately gated PROTECTED and nothing here implements it.
+
+Report back: section 7 completion list and section 8 result vocabulary.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|schedule|cadence|bounded_cycles_and_deadline|REQUIRE|no_catch_up_burst|schedule.bounds|R001
+NR002|native|pr254_engine|every_research_operation|REQUIRE|reuse_without_duplication|native.reuse|R002
+NR003|evidence|denominators|every_session_summary|PRESERVE_EXACT|derived_native_counts|evidence.denominator|R003
+NR004|source|public_inputs|stale_unknown_or_unsupported|REJECT|native_fail_closed|source.invariants|R004
+NR005|restart|status_and_verify|any_invocation|FORBID|zero_new_dispatch|restart.safety|R005
+NR006|authority|economic_and_account_paths|any_invocation|FORBID|zero_economic_actions|authority.separation|R006
+NR007|quality|actionability_claims|short_or_unfilled_sample|FORBID|no_unmeasured_edge_claim|quality.measurement|R007
+END_NORMATIVE_RULE_MATRIX_V1

@@ -1,0 +1,446 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-AUTO-CYCLE-01",
+    "title": "Bounded Autonomous Public-Research Cycle on PR254",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_FOREGROUND_AUTONOMOUS_SHADOW_RESEARCH",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-alpha-auto-cycle-01",
+    "required_predecessor": {
+      "pr_number": 254,
+      "head_sha": "943689567f4c84ed55232143d8f69069bc03a93e",
+      "merge_sha": "7506f62c7d55d3065f928d93971caf6b1d5519a9"
+    },
+    "objective": "Compose existing PR254 public NBA discovery/scoring/outcome engine into at most twelve finite, automatically timed, durable non-economic research cycles; preserve native denominators; never grant account, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_spec.json",
+      "docs/shadow_alpha_auto_cycle_contract.md",
+      "docs/status_entries/S10-ALPHA-AUTO-CYCLE-01.md",
+      "tests/tools/alpha/test_shadow_alpha_auto.py",
+      "tools/alpha/run_shadow_alpha_auto.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-AUTO-CYCLE-01/wp_spec.json",
+      "docs/shadow_alpha_auto_cycle_contract.md",
+      "docs/status_entries/S10-ALPHA-AUTO-CYCLE-01.md",
+      "tests/tools/alpha/test_shadow_alpha_auto.py",
+      "tools/alpha/run_shadow_alpha_auto.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_runtime/",
+      "agent_memory/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 6,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert six additive public research files; original PR254 source/tests, canonical records, CC live canary and all protected sources untouched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": true
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": true,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Thin scheduled foreground operator composes already merged native public-only research methods; no new canonical API.",
+    "items": [
+      {
+        "surface": "run_shadow_alpha_auto foreground CLI",
+        "before": "PR254 manual cycle/update-outcomes/verify only",
+        "after": "Bounded repeat driver with explicit schedule caps and no missed-slot catch-up",
+        "change_authorized": true,
+        "compatibility_requirement": "Native PR254 source/public endpoints and scratch invariants unchanged; no imported execution/credential side effect",
+        "authority": "AUTONOMOUS_PUBLIC_RESEARCH_ONLY"
+      },
+      {
+        "surface": "autonomous research status",
+        "before": "Manual per-occurrence counters must be inspected individually",
+        "after": "Offline ledger-derived, cold-verifiable session summary with complete unknown/abstention denominators",
+        "change_authorized": true,
+        "compatibility_requirement": "Never copy or rewrite canonical forecast/decision/label facts; no edge/fill/profit promotion",
+        "authority": "RESEARCH_REPORT_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Seven bounded behavior groups uniquely describe this thin research orchestration layer.",
+    "items": [
+      {
+        "path": "schedule.bounds",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "At most twelve scheduled research cycles over at most six hours with no catch-up bursts; explicit intervals and deadlines",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "At most twelve scheduled research cycles over at most six hours with no catch-up bursts; explicit intervals and deadlines",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "native.reuse",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuses native PR254 cycle, update_outcomes and verify without reimplementing probability, source or economics",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuses native PR254 cycle, update_outcomes and verify without reimplementing probability, source or economics",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "evidence.denominator",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Preserves attempts, completed, unknown, interrupted, abstained, scorable and unique-versus-occurrence denominators from native receipts",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Preserves attempts, completed, unknown, interrupted, abstained, scorable and unique-versus-occurrence denominators from native receipts",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "source.invariants",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Fixed public endpoints, honest pregame timestamps, no unsupported NBA rules, no invented fill or fee",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fixed public endpoints, honest pregame timestamps, no unsupported NBA rules, no invented fill or fee",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "restart.safety",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No new dispatch on status/verify; concurrency/unsafe path/corrupt source fail closed, no duplicate retries",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No new dispatch on status/verify; concurrency/unsafe path/corrupt source fail closed, no duplicate retries",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.separation",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Zero private keys, OAuth, account, VPS, execution, canary, permit or live capital integration",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Zero private keys, OAuth, account, VPS, execution, canary, permit or live capital integration",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "quality.measurement",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Research scenario economics and out-of-sample outcome/probability comparisons remain measurable, not falsely actionable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Research scenario economics and out-of-sample outcome/probability comparisons remain measurable, not falsely actionable",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 verified or typed blocked",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical identity hash derivation; reuse native PR254 source receipts and digests.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical repository readiness/human authorization chain; no economic activation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Prompt/spec strict native readiness genuinely PASSES",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl supplied explicit scoped implementation authorization in bootstrap and package has passed native gate",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exact six allowed files only; focused, adjacent, full suite and shadow real proof completed truthfully",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Conform to repository fixed schema precedence; no raw user inputs in diagnostics.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new schema identity derivation or standalone validator example schema; acceptance evidence is concrete tests and bounded public receipts.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Seven focused regression groups plus real bounded public proof and one full suite on stable head.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_schedule_bounds",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_schedule_bounds",
+        "expected_result": "At most twelve scheduled research cycles over at most six hours with no catch-up bursts; explicit intervals and deadlines"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_reuse",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_native_reuse",
+        "expected_result": "Reuses native PR254 cycle, update_outcomes and verify without reimplementing probability, source or economics"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_evidence_denominator",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_evidence_denominator",
+        "expected_result": "Preserves attempts, completed, unknown, interrupted, abstained, scorable and unique-versus-occurrence denominators from native receipts"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_source_invariants",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_source_invariants",
+        "expected_result": "Fixed public endpoints, honest pregame timestamps, no unsupported NBA rules, no invented fill or fee"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_restart_safety",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_restart_safety",
+        "expected_result": "No new dispatch on status/verify; concurrency/unsafe path/corrupt source fail closed, no duplicate retries"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_authority_separation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_authority_separation",
+        "expected_result": "Zero private keys, OAuth, account, VPS, execution, canary, permit or live capital integration"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_quality_measurement",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_auto.py::test_quality_measurement",
+        "expected_result": "Research scenario economics and out-of-sample outcome/probability comparisons remain measurable, not falsely actionable"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-AUTO-PILOT-01",
+    "next_title": "Owner-Authorized Micro-Risk Autonomous Live Pilot after First Attended Canary",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-AUTO-PILOT-01",
+    "forbidden_in_this_wp": [
+      "Any autonomous or manual real Polymarket CREATE/CANCEL/SELL order",
+      "Trading credentials, signer/private key, wallet/account reads and transfers",
+      "Production VPS, deployment, timer/unit activation, risk or policy store edits",
+      "Existing CC first-live-canary source/branch/worktree modifications",
+      "Any Gate C permit construction/alteration or label as executable authority",
+      "Provider OAuth or paid inference and research of unsupported market categories",
+      "Claim of calibrated/positive edge, fills or profitability without measurements"
+    ]
+  }
+}
