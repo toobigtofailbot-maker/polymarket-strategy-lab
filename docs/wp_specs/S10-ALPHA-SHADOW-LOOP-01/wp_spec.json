@@ -1,0 +1,514 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-SHADOW-LOOP-01",
+    "title": "Repeated Evidence-Backed Alpha Discovery, Probability, Net Edge and Outcome Learning",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "REAL_SOURCE_BACKED_SHADOW_ALPHA_INTELLIGENCE",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-alpha-shadow-intelligence-loop",
+    "required_predecessor": {
+      "pr_number": 253,
+      "head_sha": "eed3a546770bdcc82257a5dee8242bb2ebb6a931",
+      "merge_sha": "7f24f5b253d61755fad22ed1d08ecba9a7d6e697"
+    },
+    "objective": "Implement repeatable public-source-backed candidate discovery, one real semantically compatible independent event probability method, net executable EV ranking, append-only shadow decisions and outcome/learning feedback; no credential, account, scheduler, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_spec.json",
+      "docs/shadow_alpha_cycle_contract.md",
+      "docs/status_entries/S10-ALPHA-SHADOW-LOOP-01.md",
+      "tests/tools/alpha/test_shadow_alpha_cycle.py",
+      "tools/alpha/run_shadow_alpha_cycle.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-SHADOW-LOOP-01/wp_spec.json",
+      "docs/shadow_alpha_cycle_contract.md",
+      "docs/status_entries/S10-ALPHA-SHADOW-LOOP-01.md",
+      "tests/tools/alpha/test_shadow_alpha_cycle.py",
+      "tools/alpha/run_shadow_alpha_cycle.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_runtime/",
+      "agent_memory/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 6,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly six tracked additive alpha shadow files; canonical Alpha/strategy/Hermes stores, CC canary, paper/live, risk and policies remain untouched; shadow scratch output remains outside repository.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": true,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One additive foreground CLI coordinates existing native research and public-source logic without changing execution or source contracts.",
+    "items": [
+      {
+        "surface": "run_shadow_alpha_cycle foreground CLI",
+        "before": "Existing ALPHA-03A is finite offline proof and does not routinely obtain real public market candidates or source-backed probability estimates.",
+        "after": "Repeatable bounded observed-universe scan + one genuine event-specific independent forecast method + scoring + later outcome feedback.",
+        "change_authorized": true,
+        "compatibility_requirement": "Must reuse ALPHA-02, WP172 and existing public adapters; never touch protected paths.",
+        "authority": "SHADOW_PUBLIC_RESEARCH_ONLY"
+      },
+      {
+        "surface": "shadow immutable observation/decision journal",
+        "before": "No one-loop record of actual independent p, fill-aware candidate edge and time-later resolution.",
+        "after": "One replay-verifiable attempt / prediction / resolution record per occurrence, outside repository.",
+        "change_authorized": true,
+        "compatibility_requirement": "Only public source and genuine separately available resolutions; historical/replay not current venue.",
+        "authority": "SHADOW_PUBLIC_RESEARCH_ONLY"
+      },
+      {
+        "surface": "shadow learning proposal",
+        "before": "Current roadmap reserves outcome learning but native repeated empirical improvement has not been demonstrated.",
+        "after": "Propose one bounded parameter/research selection revision, if enough OOS evidence exists.",
+        "change_authorized": true,
+        "compatibility_requirement": "No modification of original forecasts, risk, production stores or automatic adoption.",
+        "authority": "SHADOW_PUBLIC_RESEARCH_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Ten complete bounded behaviors establish source realism, probability, net edge, repeated attempts, paper/resolution feedback, measured improvements and non-economic safety.",
+    "items": [
+      {
+        "path": "source.observed_universe",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Observed public Gamma/CLOB market universe with exact scoped full denominator",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Observed public Gamma/CLOB market universe with exact scoped full denominator",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "probability.independent_forecast",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One actually source-backed event-class-specific probability producer/method and uncertainty, exact market resolution predicate, no arbitrary user p; espn-nba-pregame-v1, exact NBA moneyline rule template, teams/start/pre status binding, gameProjection/100, publication/model vintage NOT_PUBLISHED, availability observed before kickoff",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One actually source-backed event-class-specific probability producer/method and uncertainty, exact market resolution predicate, no arbitrary user p; espn-nba-pregame-v1, exact NBA moneyline rule template, teams/start/pre status binding, gameProjection/100, publication/model vintage NOT_PUBLISHED, availability observed before kickoff",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "economics.net_edge",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Decimal after-fee/fill/slippage and uncertainty score, native feasibility reused; cancellation 0.5 payout hull, 0.10 stress is sensitivity not calibrated interval, native depth/fees/minima, maker fill UNKNOWN",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Decimal after-fee/fill/slippage and uncertainty score, native feasibility reused; cancellation 0.5 payout hull, 0.10 stress is sensitivity not calibrated interval, native depth/fees/minima, maker fill UNKNOWN",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "cycle.journal",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Repeated bounded foreground shadow runs with STARTED and terminal, replay no research redispatch",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Repeated bounded foreground shadow runs with STARTED and terminal, replay no research redispatch",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "decision.action",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Shadow only rankings and abstentions, never order or permit",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Shadow only rankings and abstentions, never order or permit",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "feedback.paper",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Distinct verified native research-paper data, no fill invention",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Distinct verified native research-paper data, no fill invention",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "feedback.resolution",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Later real resolution linked with immutable earlier forecast and Brier/log loss baseline",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Later real resolution linked with immutable earlier forecast and Brier/log loss baseline",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "learning.revision",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Versioned reversible improvement proposal and OOS evaluation or insufficient outcome",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Versioned reversible improvement proposal and OOS evaluation or insufficient outcome",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "safety.authority",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No credential, sign, wallet, live, CC mutation; reject invalid/protected input",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No credential, sign, wallet, live, CC mutation; reject invalid/protected input",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "report.metrics",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Complete honest compact scorecard and actual evidence status",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Complete honest compact scorecard and actual evidence status",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 verified or typed blocked",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "This additive WP reuses existing canonical source, forecast and journal hash helpers; it specifies no new cross-domain hash identity derivation contract.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical draftability and implementation authorization chain, with no merge or economic activation implied.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Valid matching prompt/spec and native readiness/changed path checks",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicit conversation authorization, deterministic readiness, real ESPN/Gamma source admission and noncolliding isolated worktree",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Six-path implementation and required native regression and empirical validation passes",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Conform to repository fixed schema precedence; no raw user inputs in diagnostics.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new schema identity derivation or standalone validator example schema; acceptance evidence is concrete tests and bounded public receipts.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Compact test proof mapping plus separate real-data receipt for probability producer and truthful empty-outcome learning.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_discovery_coverage_skips_and_repeated_attempt_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_discovery_coverage_skips_and_repeated_attempt_denominators",
+        "expected_result": "Observed public Gamma/CLOB market universe with exact scoped full denominator"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_real_source_method_and_exact_market_predicate",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_real_source_method_and_exact_market_predicate",
+        "expected_result": "One actually source-backed event-class-specific probability producer/method and uncertainty, exact market resolution predicate, no arbitrary user p"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_net_ev_uncertainty_fee_queue_and_nonfill",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_net_ev_uncertainty_fee_queue_and_nonfill",
+        "expected_result": "Decimal after-fee/fill/slippage and uncertainty score, native feasibility reused"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_discovery_coverage_skips_and_repeated_attempt_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_discovery_coverage_skips_and_repeated_attempt_denominators",
+        "expected_result": "Repeated bounded foreground shadow runs with STARTED and terminal, replay no research redispatch"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_shadow_policy_positive_negative_and_uncertain_ev",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_shadow_policy_positive_negative_and_uncertain_ev",
+        "expected_result": "Shadow only rankings and abstentions, never order or permit"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_shadow_paper_live_evidence_never_conflated",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_shadow_paper_live_evidence_never_conflated",
+        "expected_result": "Distinct verified native research-paper data, no fill invention"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_independent_resolution_metrics_against_market_baseline",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_independent_resolution_metrics_against_market_baseline",
+        "expected_result": "Later real resolution linked with immutable earlier forecast and Brier/log loss baseline"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_versioned_improvement_oos_or_insufficient_data",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_versioned_improvement_oos_or_insufficient_data",
+        "expected_result": "Versioned reversible improvement proposal and OOS evaluation or insufficient outcome"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_partial_crash_replay_and_protected_boundary",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_partial_crash_replay_and_protected_boundary",
+        "expected_result": "No credential, sign, wallet, live, CC mutation; reject invalid/protected input"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_public_source_unavailable_is_honest_block",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_shadow_alpha_cycle.py::test_public_source_unavailable_is_honest_block",
+        "expected_result": "Complete honest compact scorecard and actual evidence status"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-AUTO-PILOT-01",
+    "next_title": "Small-Risk Autonomous Polymarket Pilot under Standing Owner Authority",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-AUTO-PILOT-01",
+    "forbidden_in_this_wp": [
+      "Live or paper venue order placement, sign, cancel or wallet/capital access",
+      "Unattended schedule/daemon/24-7 operations",
+      "Production model paid inference or OAuth/key reads",
+      "Automated promotion of research confidence to a Gate C trading permit",
+      "First attended canary reuse, CC host/release/store mutation",
+      "Strategy/policy risk loosening or market restriction/geoblock circumvention",
+      "Proven profitability claim from a single favorable outcome"
+    ]
+  }
+}
