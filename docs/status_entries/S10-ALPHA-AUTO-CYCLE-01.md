@@ -62,6 +62,25 @@ source/input/terminal hash (0 mismatches), the counts above and an identical
 scratch tree hash before and after `status`. These are software and source
 observations, not evidence of predictive skill, fill probability or profit.
 
+## Independent review
+
+One independent read-only review of the driver and tests (separate agent context,
+focused tests 25 passed) found no HIGH issue and eleven MEDIUM/LOW findings. All
+same-scope findings were fixed in one batch with regressions: requests inside
+interrupted operations now land in a bucket (attempted = succeeded + failed +
+unknown); the misleading `fresh_attempts: 0` in `run` output was replaced by
+`session_public_requests`; skipped slots also record their due outcome update;
+interrupted-session markers bind `started.json` and events and are verified;
+event operation names are format-checked, bound once and kind-matched; the newest
+native operation is bound only when its terminal result equals the returned
+result; Ctrl+Break is handled and hard-kill behavior is documented; the runtime cap
+is documented as a dispatch cutoff; outcome states are labelled as check
+occurrences; vague R004 assertions were made exact; the symlink check is a separate
+test node that skips visibly where symlink creation is not permitted. A torn first
+write of a new session failing closed matches the native pattern and is unchanged.
+The real-run evidence above was produced by the pre-review head `cc2af95`; the
+fixes do not change dispatch, requests or native calls.
+
 ## Validation
 
 Exact commands and final counts (focused, adjacent PR254, full suite, readiness
@@ -72,11 +91,12 @@ hosted CI) are recorded in the PR body.
 
 | Category | Evidence |
 |---|---|
-| Invalid schedule arguments, deadline/reserve, missed slot, clock drift | `test_schedule_bounds` |
+| Invalid schedule arguments, deadline/reserve, missed slot and its outcome, clock drift, Ctrl+C while waiting | `test_schedule_bounds` |
 | Native seams called, no duplicated engine | `test_native_reuse` |
 | Failed requests, consecutive blocked stop, session/native lock contention | `test_evidence_denominator` |
 | Stale book, unknown fees, changed rule, started game, no outcome lookahead | `test_source_invariants` |
-| Zero-write status, interrupt, crash marker, tampered event/source, unexpected entry, checkout path, symlink | `test_restart_safety` |
+| Zero-write status, interrupt mid-cycle denominators, crash marker, tampered event/marker/operation name/source, unexpected entry, checkout path | `test_restart_safety` |
+| Symlinked scratch (skips visibly without symlink privilege) | `test_scratch_symlink_refused` |
 | Import isolation, no credential/env/URL surface, hostile metadata | `test_authority_separation` |
 | Positive full-fill scenario stays non-actionable; resolved Brier without learned claim | `test_quality_measurement` |
 

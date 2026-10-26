@@ -33,7 +33,7 @@ DRIFT_TOLERANCE_S = 5
 MAX_CONSECUTIVE_BLOCKED = 3
 POLL_S = 1
 ROOT_ENTRY = re.compile(r'(config\.json|operation\.lock|auto\.lock|op-[0-9]{6}|auto-[0-9]{6})')
-EVENT = re.compile(r'event-[0-9]{3}\.json')
+OP_NAME = re.compile(r'op-[0-9]{6}')
 
 
 class Clock:
@@ -100,7 +100,7 @@ def events(session):
 
 def verify_sessions(root):
     """Cold check of driver evidence and its bindings to native terminals; writes nothing."""
-    rows = []
+    rows, bound = [], set()
     for session in sessions(root):
         started = read(session / 'started.json')
         need(started.get('schema') == SCHEMA, 'AUTO_JOURNAL_INVALID')
@@ -109,11 +109,18 @@ def verify_sessions(root):
         log = [read(p) for p in events(session)]
         for item in log:
             if item.get('state') in ('COMPLETED', 'NATIVE_BLOCKED'):
-                op = native.safe(root / item['native_operation'] / 'terminal.json')
-                need(digest(op.read_bytes()) == item['native_terminal_sha256'], 'AUTO_NATIVE_BINDING_MISMATCH')
+                name = item['native_operation']
+                need(isinstance(name, str) and OP_NAME.fullmatch(name) is not None and name not in bound, 'AUTO_JOURNAL_INVALID')
+                bound.add(name)
+                op = native.safe(root / name, directory=True)
+                need(read(op / 'started.json')['kind'] == item['kind'], 'AUTO_NATIVE_BINDING_MISMATCH')
+                need(digest((op / 'terminal.json').read_bytes()) == item['native_terminal_sha256'], 'AUTO_NATIVE_BINDING_MISMATCH')
         terminal = read(session / 'terminal.json') if 'terminal.json' in names else None
-        if terminal is not None and terminal['status'] != 'INTERRUPTED_OR_UNKNOWN':
+        if terminal is not None:
+            # Interrupted markers bind the events present at marking time, like completed terminals.
             need(terminal['events_sha256'] == {p.name: digest(p.read_bytes()) for p in events(session)}, 'AUTO_JOURNAL_HASH_MISMATCH')
+            if terminal['status'] == 'INTERRUPTED_OR_UNKNOWN':
+                need(terminal['started_sha256'] == digest((session / 'started.json').read_bytes()), 'AUTO_JOURNAL_HASH_MISMATCH')
         rows.append({'session': session.name, 'status': terminal['status'] if terminal else 'IN_PROGRESS_OR_UNKNOWN',
                      'events': log})
     return rows
@@ -127,14 +134,17 @@ def summarize(root):
     market_occurrences, markets, forecast_occurrences = 0, set(), 0
     predictions, events_seen, actions, reasons = set(), set(), Counter(), Counter()
     scored = unscorable = 0
-    research_ev, learning, outcome_states, delays = [], None, Counter(), {}
+    research_ev, learning, outcome_checks, delays = [], None, Counter(), {}
+    for op in sorted(root.glob('op-*')):
+        # Every recorded request, including inside interrupted operations, lands in exactly one bucket.
+        for started in sorted(op.glob('request-*.started.json')):
+            receipt = op / started.name.replace('request-', 'receipt-').replace('.started', '')
+            requests[read(receipt)['state'] if receipt.exists() else 'OUTCOME_UNKNOWN'] += 1
     for op, terminal in native.all_results(root):
         kind = read(op / 'started.json')['kind']
         result = terminal['result']
         kinds[kind] += 1
         statuses[f"{kind}:{result['status']}"] += 1
-        for receipt in terminal['receipts']:
-            requests[receipt['state']] += 1
         if kind == 'CYCLE':
             for receipt in terminal['receipts']:
                 if receipt['url'] == native.DISCOVERY_URL and receipt['state'] == 'AVAILABLE':
@@ -157,7 +167,7 @@ def summarize(root):
                 if score['action'] == 'RESEARCH':
                     research_ev.append(D(score['conservative_ev_if_filled']))
         if kind == 'OUTCOMES' and result['status'] == 'OUTCOMES_RECORDED':
-            outcome_states.update(o['state'] for o in result['outcomes'])
+            outcome_checks.update(o['state'] for o in result['outcomes'])
             learning = result['learning']
     metrics = learning['metrics'] if learning else []
     def mean(key, field):
@@ -166,8 +176,8 @@ def summarize(root):
     return {'schema': SCHEMA, 'native_verify': checked,
         'operations': dict(kinds), 'operation_status': dict(statuses),
         'requests': {'attempted': checked['recorded_network_attempts'], 'succeeded': requests['AVAILABLE'],
-                     'failed': requests['UNAVAILABLE'], 'outcome_unknown': checked['network_attempt_outcome_unknown'],
-                     'interrupted_operations': checked['interrupted_or_unknown'], 'fresh_attempts': 0},
+                     'failed': requests['UNAVAILABLE'], 'outcome_unknown': requests['OUTCOME_UNKNOWN'],
+                     'interrupted_operations': checked['interrupted_or_unknown']},
         'markets': {'unique': len(markets), 'occurrences': market_occurrences},
         'forecasts': {'unique_predictions': len(predictions), 'unique_events': len(events_seen),
                       'occurrences': forecast_occurrences},
@@ -178,7 +188,7 @@ def summarize(root):
                       'conservative_ev_if_filled_range': [str(min(research_ev)), str(max(research_ev))] if research_ev else None,
                       'per_intended_order_ev': 'UNKNOWN_UNMEASURED_FILL_RATE', 'fill_probability': 'UNKNOWN'},
         'forecast_quality': {'evidence_class': 'PUBLISHER_FORECAST_VS_MARKET_MIDPOINT',
-                             'outcome_states': dict(outcome_states),
+                             'outcome_check_occurrences': dict(outcome_checks),
                              'independent_resolved_events': learning['independent_events'] if learning else 0,
                              'mean_brier': {'forecast': mean('forecast', 'brier'), 'market': mean('market', 'brier')},
                              'mean_log_loss': {'forecast': mean('forecast', 'log_loss'), 'market': mean('market', 'log_loss')},
@@ -201,7 +211,8 @@ def begin(root, settings, clock):
             need((safe_session / 'started.json').is_file(), 'AUTO_JOURNAL_INVALID')
             # Marker only; earlier events and every native sub-ledger stay untouched.
             put(safe_session / 'terminal.json', {'status': 'INTERRUPTED_OR_UNKNOWN',
-                'started_sha256': digest((safe_session / 'started.json').read_bytes())})
+                'started_sha256': digest((safe_session / 'started.json').read_bytes()),
+                'events_sha256': {p.name: digest(p.read_bytes()) for p in events(safe_session)}})
     path = root / f'auto-{len(prior) + 1:06d}'
     path.mkdir()
     put(path / 'started.json', dict(schema=SCHEMA, ordinal=len(prior) + 1, started_ns=clock.wall_ns(), **settings))
@@ -229,8 +240,10 @@ def dispatch(root, session, slot, kind, call, fetcher_type):
     except OSError:
         # On Windows native lock contention surfaces as an OS error before OPERATION_BUSY.
         return session.log(slot=slot, kind=kind, state='FAILED_CLOSED', reason='NATIVE_IO_OR_LOCK_ERROR')
-    op = native.safe(root / f'op-{before + 1:06d}', directory=True)
-    need(read(op / 'started.json')['kind'] == kind, 'AUTO_NATIVE_BINDING_MISMATCH')
+    # Bind the newest operation only if its frozen terminal is exactly the result we received.
+    op = native.safe(sorted(root.glob('op-*'))[-1], directory=True)
+    need(len(list(root.glob('op-*'))) > before and read(op / 'started.json')['kind'] == kind
+         and native.canonical(read(op / 'terminal.json')['result']) == native.canonical(result), 'AUTO_NATIVE_BINDING_MISMATCH')
     state = 'NATIVE_BLOCKED' if result['status'] == 'BLOCKED' else 'COMPLETED'
     return session.log(slot=slot, kind=kind, state=state, native_operation=op.name,
                        native_status=result['status'], native_reason=result.get('reason'),
@@ -252,6 +265,7 @@ def run(root, *, max_cycles, interval_seconds, outcome_every, max_runtime_second
         verify_sessions(root)
         path = begin(root, settings, clock)
         session = Session(path, clock)
+        ops_before = len(list(root.glob('op-*')))
         mono0, wall0 = clock.monotonic(), clock.wall_ns()
         deadline = mono0 + max_runtime_seconds
         status, blocked = 'COMPLETED', 0
@@ -265,11 +279,17 @@ def run(root, *, max_cycles, interval_seconds, outcome_every, max_runtime_second
         def reserve():
             return deadline - clock.monotonic() >= DISPATCH_RESERVE_S
 
+        def skip(slot, state):
+            # A skipped cycle slot also skips its due outcome update; both stay visible.
+            session.log(slot=slot, kind='CYCLE', state=state)
+            if slot % outcome_every == 0:
+                session.log(slot=slot, kind='OUTCOMES', state=state)
+
         try:
             for slot in range(1, max_cycles + 1):
                 target = mono0 + (slot - 1) * interval_seconds
                 if target >= deadline:
-                    session.log(slot=slot, kind='CYCLE', state='NOT_REACHED_DEADLINE')
+                    skip(slot, 'NOT_REACHED_DEADLINE')
                     continue
                 while clock.monotonic() < target:
                     stop = check()
@@ -282,10 +302,10 @@ def run(root, *, max_cycles, interval_seconds, outcome_every, max_runtime_second
                     break
                 if clock.monotonic() - target > LATE_TOLERANCE_S:
                     # Never compress missed slots into a burst; the slot stays visible.
-                    session.log(slot=slot, kind='CYCLE', state='MISSED_LATE')
+                    skip(slot, 'MISSED_LATE')
                     continue
                 if not reserve():
-                    session.log(slot=slot, kind='CYCLE', state='SKIPPED_DEADLINE_RESERVE')
+                    skip(slot, 'SKIPPED_DEADLINE_RESERVE')
                     continue
                 event = dispatch(root, session, slot, 'CYCLE', native.cycle, fetcher_type)
                 if event['state'] == 'FAILED_CLOSED':
@@ -312,6 +332,8 @@ def run(root, *, max_cycles, interval_seconds, outcome_every, max_runtime_second
             session.log(type='OPERATOR_INTERRUPT', state='INTERRUPTED')
             status = 'INTERRUPTED'
         summary = summarize(root)
+        summary['session_public_requests'] = sum(len(list(op.glob('request-*.started.json')))
+                                                 for op in sorted(root.glob('op-*'))[ops_before:])
         for row in summary['auto_sessions']:
             if row['session'] == path.name:
                 row['status'] = status
@@ -354,8 +376,11 @@ def main():
     args = parser.parse_args()
     def terminate(*_):
         raise KeyboardInterrupt
-    # Graceful termination takes the same recorded INTERRUPTED path as Ctrl+C.
-    signal.signal(signal.SIGTERM, terminate)
+    # Catchable SIGTERM/Ctrl+Break take the recorded INTERRUPTED path like Ctrl+C. A hard kill
+    # (including Windows TerminateProcess) leaves no terminal; the next run marks the session.
+    for name in ('SIGTERM', 'SIGBREAK'):
+        if hasattr(signal, name):
+            signal.signal(getattr(signal, name), terminate)
     try:
         root = native.safe(args.scratch_dir, directory=True)
         if args.command == 'run':

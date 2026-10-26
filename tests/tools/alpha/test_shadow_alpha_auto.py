@@ -125,8 +125,10 @@ def test_schedule_bounds(tmp_path, native_clock):
     # A slow cycle overruns the next slot: it is recorded as missed, never burst-dispatched.
     clock = FakeClock()
     root = fresh(tmp_path, 'slow')
-    assert go(root, clock, fetcher(clock, cost=20), max_cycles=3)['session_status'] == 'COMPLETED'
-    assert states(root) == ['COMPLETED', 'MISSED_LATE', 'COMPLETED']
+    assert go(root, clock, fetcher(clock, cost=20), max_cycles=3, outcome_every=2)['session_status'] == 'COMPLETED'
+    # The missed slot's due outcome update is visibly skipped too, never deferred into a burst.
+    assert [(e['kind'], e['state']) for e in session_events(root) if 'state' in e] == [
+        ('CYCLE', 'COMPLETED'), ('CYCLE', 'MISSED_LATE'), ('OUTCOMES', 'MISSED_LATE'), ('CYCLE', 'COMPLETED')]
     # Deadline: insufficient reserve and unreachable slots never dispatch.
     clock = FakeClock()
     root = fresh(tmp_path, 'deadline')
@@ -139,6 +141,14 @@ def test_schedule_bounds(tmp_path, native_clock):
     root = fresh(tmp_path, 'drift')
     assert go(root, clock, jump, max_cycles=3)['session_status'] == 'CLOCK_DRIFT'
     assert states(root) == ['COMPLETED']
+    # Ctrl+C while waiting for a slot is recorded; nothing dispatches afterwards.
+    class Interrupted(FakeClock):
+        def sleep(self, seconds):
+            raise KeyboardInterrupt
+    clock = Interrupted()
+    root = fresh(tmp_path, 'interrupt')
+    assert go(root, clock, fetcher(clock), max_cycles=3)['session_status'] == 'INTERRUPTED'
+    assert states(root) == ['COMPLETED', 'INTERRUPTED'] and len(list(root.glob('op-*'))) == 1
     assert inspect.signature(auto.run).parameters['fetcher_type'].default is tool.Fetcher
 
 
@@ -164,6 +174,7 @@ def test_native_reuse(tmp_path, native_clock, monkeypatch):
     assert result['forecasts']['unique_predictions'] == 1
     assert native['forecasts'][0]['p'] == '0.167' and native['forecasts'][0]['method'] == tool.METHOD
     assert result['native_verify']['completed'] == 3 and result['native_verify']['fresh_attempts'] == 0
+    assert result['session_public_requests'] == 12
     source = Path(auto.__file__).read_text()
     for duplicate in ('def probability', 'def economics', 'def learning', 'def resolution', 'urllib', 'espn.com'):
         assert duplicate not in source
@@ -176,7 +187,7 @@ def test_evidence_denominator(tmp_path, native_clock):
     assert result['markets'] == {'unique': 1, 'occurrences': 2}
     assert result['forecasts'] == {'unique_predictions': 1, 'unique_events': 1, 'occurrences': 2}
     assert result['requests'] == {'attempted': 12, 'succeeded': 12, 'failed': 0, 'outcome_unknown': 0,
-                                  'interrupted_operations': 0, 'fresh_attempts': 0}
+                                  'interrupted_operations': 0}
     candidates = result['outcome_candidates']
     assert candidates['scorable'] + candidates['unscorable'] == 4 == sum(candidates['actions'].values())
     # Failed public requests are counted; three blocked cycles stop the session.
@@ -222,18 +233,21 @@ def test_source_invariants(tmp_path, native_clock):
         markets[0]['description'] = markets[0]['description'].replace('including any', 'excluding')
     def started(summary):
         summary['header']['competitions'][0]['status']['type']['state'] = 'in'
-    cases = {'book?': (stale, 'BOOK_STALE'), 'gamma-api': (unknown_fees, None),
-             'summary?': (started, None), 'gamma-api.polymarket.com/markets?tag': (changed_rule, None)}
-    for key, (change, code) in cases.items():
+    scored = 'CYCLE:SHADOW_INTELLIGENCE_REAL_EVIDENCE_PASS'
+    cases = {'book?': (stale, {'BOOK_STALE': 2}, 1, 'CYCLE:DATA_INSUFFICIENT'),
+             'gamma-api': (unknown_fees, None, 1, 'CYCLE:DATA_INSUFFICIENT'),
+             'summary?': (started, {}, 0, 'CYCLE:DATA_INSUFFICIENT'),
+             'gamma-api.polymarket.com/markets?tag': (changed_rule, {}, 0, 'CYCLE:DATA_INSUFFICIENT')}
+    for key, (change, reasons, forecasts, status) in cases.items():
         root = fresh(tmp_path, str(len(list(tmp_path.iterdir()))))
         result = go(root, FakeClock(), type('M', (Mutating,), {'changes': {key: change}}), max_cycles=1)
         candidates = result['outcome_candidates']
         # Native fail-closed decisions arrive unchanged: nothing becomes scorable or actionable.
         assert candidates['scorable'] == 0 and result['actionability'] == 'NO_ACTIONABLE_EDGE', key
-        if code:
-            assert candidates['reasons'] == {code: 2}
-        else:
-            assert result['forecasts']['occurrences'] in (0, 1) and candidates['scorable'] == 0
+        assert result['operation_status'] == {status: 1} and status != scored, key
+        assert result['forecasts']['occurrences'] == forecasts, key
+        if reasons is not None:
+            assert candidates['reasons'] == reasons, key
     # No outcome lookahead: before kickoff the native outcome update dispatches nothing.
     root = fresh(tmp_path, 'early')
     result = go(root, FakeClock(), Replica, max_cycles=1, outcome_every=1)
@@ -273,13 +287,25 @@ def test_restart_safety(tmp_path, native_clock):
     assert not list((root / 'auto-000003').glob('event-*'))
     assert tool.read(root / 'op-000002/terminal.json')['status'] == 'INTERRUPTED_OR_UNKNOWN'
     assert resumed['native_verify']['interrupted_or_unknown'] == 1 and len(list(root.glob('op-*'))) == 3
+    # Requests inside the interrupted operation stay in the denominator.
+    requests = resumed['requests']
+    assert requests['attempted'] == requests['succeeded'] + requests['failed'] + requests['outcome_unknown'] == 14
     # Tampered driver or native evidence fails closed before any new dispatch.
     event = root / 'auto-000001/event-002.json'
     original = event.read_bytes()
     event.write_bytes(original.replace(b'COMPLETED', b'NATIVE_BLOCKED'))
     with pytest.raises(tool.Stop, match='AUTO_JOURNAL_HASH_MISMATCH'):
         auto.status(root)
+    event.write_bytes(original.replace(b'"op-000001"', b'"../other/op-000001"'))
+    with pytest.raises(tool.Stop, match='AUTO_JOURNAL_INVALID'):
+        auto.status(root)
     event.write_bytes(original)
+    marker = root / 'auto-000003/started.json'
+    marker_raw = marker.read_bytes()
+    marker.write_bytes(marker_raw.replace(b'"ordinal":3', b'"ordinal":9'))
+    with pytest.raises(tool.Stop, match='AUTO_JOURNAL_HASH_MISMATCH'):
+        auto.status(root)
+    marker.write_bytes(marker_raw)
     (root / 'op-000001/source-01.json').write_bytes(b'[]')
     with pytest.raises(tool.Stop, match='HASH_MISMATCH'):
         go(root, FakeClock(), Replica, max_cycles=1)
@@ -291,11 +317,16 @@ def test_restart_safety(tmp_path, native_clock):
         auto.status(other)
     with pytest.raises(tool.Stop, match='PATH_FORBIDDEN'):
         auto.status(tool.REPO / 'scratch')
+
+
+def test_scratch_symlink_refused(tmp_path):
+    # Separate node so a host without symlink privilege skips only this check.
+    fresh(tmp_path, 'shadow')
     link = tmp_path / 'link'
     try:
         link.symlink_to(tmp_path / 'shadow', target_is_directory=True)
     except OSError:
-        return
+        pytest.skip('symlink creation not permitted on this host; Windows reparse points are covered natively')
     with pytest.raises(tool.Stop, match='PATH_FORBIDDEN'):
         auto.status(link)
 
@@ -345,7 +376,7 @@ def test_quality_measurement(tmp_path, native_clock):
     native_clock['now'] = LATER
     tool.update_outcomes(root, fetcher_type=type('L', (Replica,), {'now': LATER}))
     quality = auto.status(root)['forecast_quality']
-    assert quality['outcome_states'] == {'COMPLETED_BINARY': 1} and quality['independent_resolved_events'] == 1
+    assert quality['outcome_check_occurrences'] == {'COMPLETED_BINARY': 1} and quality['independent_resolved_events'] == 1
     assert quality['mean_brier'] == {'forecast': '0.027889', 'market': '0.3481'}
     assert quality['improvement'] == 'IMPROVEMENT_NOT_YET_MEASURABLE'
     assert auto.status(root)['statistical_significance'] == 'NOT_ESTABLISHED'

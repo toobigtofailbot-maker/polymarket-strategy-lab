@@ -32,17 +32,21 @@ claiming live authority, fails closed (`SCRATCH_UNEXPECTED_ENTRY`).
 | Cycles per invocation | 1–12 |
 | Interval | 60–3600 s, fixed slot offsets from session start |
 | Outcome update | after cycle slot `k` when `k % outcome-every == 0`, once per slot |
-| Maximum runtime | 300–21600 s (6 h) including sleeps; default 21600 |
+| Maximum runtime | 300–21600 s (6 h) including sleeps; default 21600; a dispatch cutoff |
 | Dispatch reserve | no native call with < 150 s to the deadline |
 | Late tolerance | slot more than 5 s late is `MISSED_LATE`, never run |
 | Clock drift | wall vs monotonic elapsed differing by > 5 s ends the session |
 | Consecutive native BLOCKED cycles | 3 ends the session |
 
 The monotonic clock is authoritative for wake-up and deadlines; wall time is
-recorded and drift-checked. Sleeps are at most 1 s so Ctrl+C/SIGTERM and the
-deadline are observed promptly. Missed slots stay visible and are never compressed
+recorded and drift-checked. Sleeps are at most 1 s so Ctrl+C, a catchable SIGTERM or
+Ctrl+Break, and the deadline are observed promptly. A hard kill (including Windows
+`TerminateProcess`) leaves no terminal; the next `run` marks that session. Missed slots stay visible and are never compressed
 into bursts. Slots at or past the deadline are `NOT_REACHED_DEADLINE`; slots lacking
-the reserve are `SKIPPED_DEADLINE_RESERVE`. Nothing dispatches after the deadline.
+the reserve are `SKIPPED_DEADLINE_RESERVE`. A skipped cycle slot whose outcome update was
+due records the same state for `OUTCOMES`. Nothing dispatches after the deadline. The cap is
+a dispatch cutoff: the last native call and the closing cold verification/summary may end
+shortly after it (bounded by the native 120 s acquisition deadline plus local replay).
 One foreground process per scratch: a kernel-held `auto.lock` (released on process
 death) refuses a second session (`AUTO_SESSION_BUSY`). The native per-operation lock
 still serializes each native call, so cycles never run concurrently.
@@ -70,16 +74,18 @@ Each `run` verifies the native ledger and prior driver sessions cold, then creat
 `auto-NNNNNN/started.json` and appends exclusive, fsynced `event-NNN.json` records:
 `DISPATCH_STARTED` before each native call, then one result (`COMPLETED`,
 `NATIVE_BLOCKED`, `FAILED_CLOSED`) binding the native operation name and its
-terminal SHA-256, or a schedule state (`MISSED_LATE`, `SKIPPED_DEADLINE_RESERVE`,
+terminal SHA-256 (the newest native operation is bound only if its frozen terminal
+result equals the returned result), or a schedule state (`MISSED_LATE`, `SKIPPED_DEADLINE_RESERVE`,
 `NOT_REACHED_DEADLINE`) or `INTERRUPTED`. `terminal.json` binds every event hash
 and stores the summary. A session left without terminal (crash) receives only an
-`INTERRUPTED_OR_UNKNOWN` marker on the next `run`; its events and every native
-sub-ledger are never rewritten. A native operation interrupted mid-cycle is marked
+`INTERRUPTED_OR_UNKNOWN` marker on the next `run`, binding its `started.json` and the
+events present at that time; its events and every native sub-ledger are never rewritten. A native operation interrupted mid-cycle is marked
 by the native operator itself on its next call and is never redispatched.
 
 `status` and native `verify` are cold: zero public calls and zero writes. `status`
-re-runs native verify (full replay) plus driver-session checks; an edited event,
-native terminal or source fails closed (`AUTO_JOURNAL_HASH_MISMATCH`,
+re-runs native verify (full replay) plus driver-session checks (operation names are
+validated, bound once and kind-matched); an edited event, marker, native terminal or
+source fails closed (`AUTO_JOURNAL_HASH_MISMATCH`,
 `AUTO_NATIVE_BINDING_MISMATCH`, native hash/replay codes). These are local
 consistency checks, not signatures against an attacker rewriting all hashes.
 
@@ -87,12 +93,15 @@ consistency checks, not signatures against an attacker rewriting all hashes.
 
 The JSON summary (stdout; human lines on stderr) is derived only from the verified
 native ledger. It reports native operations by kind/status; public requests
-attempted/succeeded/failed/outcome-unknown and interrupted operations; unique
+attempted = succeeded + failed + outcome-unknown, counted from every request record
+including those inside interrupted operations; interrupted operations; for `run`, the
+public requests made in this session (`session_public_requests`); unique
 markets vs market occurrences; unique predictions/events vs forecast occurrences;
 outcome candidates scorable/unscorable with native action and reason counts;
-resolved-event states, mean Brier/log loss of the publisher forecast vs the market
+outcome check occurrences by state (repeat checks of one event count separately), mean Brier/log loss of the publisher forecast vs the market
 midpoint when resolved events exist, and the native learning status; and per
-session the schedule states. Missing values are `UNKNOWN` or null, never zero.
+session the schedule states; and the `secondsDelay` values observed in the latest
+frozen discovery bytes per market (an observation, not a venue admission check). Missing values are `UNKNOWN` or null, never zero.
 
 Evidence classes stay separate: `PUBLISHER_FORECAST_VS_MARKET_MIDPOINT` forecast
 quality; `CONDITIONAL_FULL_FILL_SCENARIO_NOT_ACTIONABLE` economics (native
