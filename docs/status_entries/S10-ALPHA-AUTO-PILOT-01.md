@@ -1,4 +1,4 @@
-# S10-ALPHA-AUTO-PILOT-01 — default-off attended NBA pilot
+# S10-ALPHA-AUTO-PILOT-01 â€” default-off attended NBA pilot
 
 Base9d0df2ea8c9502b55cb29e4c1a78af0168b3a196, merged PR255;
 branch codex/s10-alpha-auto-pilot-01. Karl explicitly authorized implementation of
@@ -83,7 +83,7 @@ Karl explicitly authorized the same-WP14-to16-path amendment. Fresh separate-con
 review by /root/amendment16_certifier passed all12lenses and implementability before
 the two tests were modified. Prompt SHA25665bdd22fdae9e012dfa56a362fd23758e4013c18f482a9f733e4b61cf390fb1b;
 spec SHA2564c7ae5393483c36584b4c4ad8da42416720ebc9fd8ecb08be58dfa027b5ccafb;
-reviewer-issued certificate SHA256633356aca7c1374ad38e29d1e1b5b81d17c068b6d11f2d2b5e625b1d8a187668.
+reviewer-issued certificate SHA2568b168604585be91ed857fff518390cbd1a641ad1654db216e23ce5e6f3981972.
 The executor copied certificate bytes unchanged. Native readiness passed16paths,
 12evidence nodes,14normative rules, PROTECTED/INDEPENDENT_CERTIFICATE. The two added
 files retain every historical baseSHA and full equality/sibling/tail assertion; only
