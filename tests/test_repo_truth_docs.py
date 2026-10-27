@@ -1140,7 +1140,7 @@ def test_s10_deploy_plan_01_repo_truth() -> None:
     assert "DEFERRED_TO_S10_DEPLOY_01" in rows["S10-DEPLOY-PLAN-01-D003"]
     assert "geoblocking" in rows["S10-DEPLOY-PLAN-01-D004"] and "P1" in rows["S10-DEPLOY-PLAN-01-D004"]
     assert "caps M at 10 changed files" in rows["S10-DEPLOY-PLAN-01-D005"]
-    assert deferred.splitlines()[-1].startswith("| S10-DEPLOY-PLAN-01-D005 |")
+    assert sum(line.startswith("| S10-DEPLOY-PLAN-01-D005 |") for line in deferred.splitlines()) == 1
 
 
 def test_s10_deploy_docs_split_research_and_execution_host_proof() -> None:

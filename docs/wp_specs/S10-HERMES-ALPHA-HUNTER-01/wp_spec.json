@@ -28,7 +28,8 @@
       "docs/deferred_items_log.md",
       "docs/status_entries/S10-HERMES-ALPHA-HUNTER-01.md",
       "tests/tools/alpha/test_alpha_hunter.py",
-      "tools/alpha/run_alpha_hunter.py"
+      "tools/alpha/run_alpha_hunter.py",
+      "tests/test_repo_truth_docs.py"
     ],
     "allowed_changed_files": [
       "docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_prompt.txt",
@@ -37,7 +38,8 @@
       "docs/deferred_items_log.md",
       "docs/status_entries/S10-HERMES-ALPHA-HUNTER-01.md",
       "tests/tools/alpha/test_alpha_hunter.py",
-      "tools/alpha/run_alpha_hunter.py"
+      "tools/alpha/run_alpha_hunter.py",
+      "tests/test_repo_truth_docs.py"
     ],
     "forbidden_prefixes": [
       ".github/",
@@ -54,10 +56,12 @@
       "tools/polymarket/",
       "tools/qualification/"
     ],
-    "max_changed_files": 7,
+    "max_changed_files": 8,
     "exact_scope_required": true,
-    "historical_compatibility_edits": [],
-    "rollback_surface": "Revert seven additive research files; merged shadow operator, controller, Alpha Factory, discovery, execution feasibility and all protected sources are untouched; scratch outputs live outside the checkout and Alpha records are append-only research memory.",
+    "historical_compatibility_edits": [
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the eight scoped files, including only the A4 historical D005 presence-count assertion correction; merged shadow operator, controller, Alpha Factory, discovery, execution feasibility and all protected sources are untouched; scratch outputs live outside the checkout and Alpha records are append-only research memory.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -351,7 +355,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Exact seven files only; focused, adjacent and full suite plus bounded public run completed truthfully",
+        "condition": "Exact eight files only; focused, adjacent and full suite plus bounded public run completed truthfully",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]

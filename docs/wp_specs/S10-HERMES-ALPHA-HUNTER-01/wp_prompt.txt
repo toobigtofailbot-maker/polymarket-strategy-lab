@@ -7,7 +7,7 @@ Package Identity:
   Required predecessor: PR #256 / S10-ALPHA-AUTO-PILOT-01, head 241054d837cd3e8944368ab9e1149eb980e01c1b, merge f0184b5d6ea1319884e403aeeb2b4ea026ec5650
   Suggested branch: codex/s10-hermes-alpha-hunter-01
   Package class: BOUNDED_FOREGROUND_MULTI_CATEGORY_RESEARCH_CANDIDATE_HUNTER
-  Package size class: M (exactly seven tracked files)
+  Package size class: M (exactly eight tracked files)
   Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
   Runtime impact: One finite foreground research operator; no daemon, no deployment
   Product impact: Ranked research candidates across two categories; zero economic authority
@@ -19,7 +19,7 @@ Package Identity:
 
 Recommended Claude/Codex Mode:
   Model/reasoning: high-reasoning implementation agent (Codex or Claude Code)
-  Reason: seven-path RUNTIME composition of merged native research, venue and Hermes seams with strict source/clock/identity controls
+  Reason: eight-path RUNTIME composition of merged native research, venue and Hermes seams with strict source/clock/identity controls
   Escalate to higher reasoning or STOP if: a native seam cannot be reused without editing a merged file outside scope, readiness fails after one ordinary correction batch, or any step would need credentials, paid inference or an order path
 
 BEGIN_GOVERNANCE_AUTHORITY_V1
@@ -56,7 +56,12 @@ origin-labelled Hermes findings can change the research tier (never the probabil
 margins), and records immutable lineage in the existing PIT store and Alpha Factory registry.
 With no Hermes budget the run is labelled `PUBLIC_SCREENER_NO_HERMES`: an honest multi-category
 screener, not proof of Hermes inference. Amendment A1 (Karl, 2026-10-27) added the Hermes
-influence and the small-order indication; scope stays seven files.
+influence and the small-order indication; scope was seven files at that amendment.
+Amendment A4 (Karl, 2026-10-27) authorizes exactly one additional path,
+`tests/test_repo_truth_docs.py`, solely to replace the historical deferred-log global-EOF
+assertion with a check that the S10-DEPLOY-PLAN-01-D005 row remains present exactly once.
+All other historical assertions and source content must be preserved; do not reorder or
+delete deferred-log history. Current exact scope is eight files; authority remains RUNTIME.
 
 The two categories are fixed by pre-draft inspection evidence (PRE-DRAFT_INSPECTION.md):
 
@@ -79,7 +84,7 @@ positive P&L are never claimed.
 
 # 2. Authority / Non-Authority Posture
 
-Authorized (after Karl's separate implementation authorization only): the seven files in
+Authorized (after Karl's separate implementation authorization only): the eight files in
 section 3; fixed public read-only GETs; one bounded real public validation run (section 8);
 controlled Hermes research ONLY through the merged `run_controlled_hermes_research` and ONLY
 when an explicit research budget greater than zero is supplied (default zero).
@@ -100,7 +105,7 @@ is the fixed label `SIZING_DEFERRED_TO_WP2`; `POLICY_OR_TECHNICAL_BLOCK:<reason>
 recommendations, never configuration changes. The USD 2-5 order size, 7-day / USD 30 loss
 policy and USD 50 reserve are WP2 design targets, NOT WP1 authority.
 
-# 3. Exact changed-file scope (7 required = 7 allowed)
+# 3. Exact changed-file scope (8 required = 8 allowed)
 
 1. `tools/alpha/run_alpha_hunter.py` (new)
 2. `tests/tools/alpha/test_alpha_hunter.py` (new; trimmed real-identity fixtures inline)
@@ -109,12 +114,13 @@ policy and USD 50 reserve are WP2 design targets, NOT WP1 authority.
 5. `docs/deferred_items_log.md` (append rows only)
 6. `docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_prompt.txt`
 7. `docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_spec.json`
+8. `tests/test_repo_truth_docs.py` (A4: only the historical D005 presence-count assertion)
 
 Every other path is prohibited, including all of `src/**`, `tools/alpha/run_shadow_alpha_cycle.py`,
 `tools/alpha/run_shadow_alpha_auto.py`, `tools/alpha/run_s10_alpha_real_01.py`,
 `tests/test_architecture_boundaries.py`, `.github/**`, `pyproject.toml`, locks, `config/**`,
 `local_data/**`. Do not add an allowlist exception. If a requirement cannot be met inside
-these seven paths, STOP with `ALPHA_HUNTER_BLOCKED:<exact reason>`.
+these eight paths, STOP with `ALPHA_HUNTER_BLOCKED:<exact reason>`.
 
 # 4. Hard merge and collision preflight (hard stops)
 
@@ -406,6 +412,7 @@ stable head. Adjacent unchanged suites: `tests/tools/alpha/test_shadow_alpha_cyc
 Gates: `python tools/wp/wp_readiness_gate.py --wp ... --spec ... --check-diff --base <base>
 --head <head>`, `tools/git/diff_scope_summary.py --require-exact-scope`, `git diff --check`,
 exact-head hosted CI, one independent implementation reviewer (RUNTIME track).
+A4 affected check: `python -B -m pytest -q -p no:cacheprovider tests/test_repo_truth_docs.py::test_s10_deploy_plan_01_repo_truth`; it must pass before the final full suite. Preserve every other assertion and all deferred-log history.
 One bounded real public run (outside the checkout, research budget absent so Hermes is not
 dispatched, <=64 GETs) demonstrates both categories or records the honest reason a category
 had no eligible market; `verify` is then re-run offline.

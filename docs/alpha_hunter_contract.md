@@ -1,7 +1,7 @@
 # Multi-Category Alpha Hunter Contract (S10-HERMES-ALPHA-HUNTER-01)
 
-Status: governed by `docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/` (RUNTIME, risk 3, exact seven-path
-scope; amendments A1-A3 independently reviewed). Operator: `tools/alpha/run_alpha_hunter.py`.
+Status: governed by `docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/` (RUNTIME, risk 3, exact eight-path
+scope; amendments A1-A3 independently reviewed; A4 owner-authorized historical test correction). Operator: `tools/alpha/run_alpha_hunter.py`.
 Authority: PUBLIC RESEARCH ONLY. No StrategyVersion, lifecycle record, ExecutionIntent, Gate C
 permit, order, wallet/account read, credential read, deployment or capital. Live trading stays
 DISABLED (`docs/live_trading_authorization.md`).
