@@ -1,6 +1,6 @@
-# S10-ALPHA-AUTO-PILOT-01 — dormant attended NBA pilot
+# S10-ALPHA-AUTO-PILOT-01 â€” dormant attended NBA pilot
 
-Karl authorized software implementation of the exact certified 14-path package.
+Karl authorized software implementation of the exact certified 16-path package (Karl-approved two-test compatibility amendment).
 This contract grants no real credentials, account access, signing, orders, capital,
 host changes, deployment, unattended operation or merge. LIVE TRADING STATUS stays
 DISABLED. All Centralized Boundary Group Reference entries in
@@ -103,5 +103,5 @@ and the exact-head PR body. Full tests/security, exact scope/readiness, hosted C
 and independent implementation/Side22 review remain required before acceptance.
 Deployment, owner eligibility/wallet, custody and capital authorization, attended
 canary reconciliation/clean no-CREATE proof, unattended Hermes selection, SELL,
-redemption and scaling remain separately gated successors. Revert the14 paths to
+redemption and scaling remain separately gated successors. Revert the16 paths to
 remove this dormant composer; no underlying risk/store/GateB/C schema changes exist.

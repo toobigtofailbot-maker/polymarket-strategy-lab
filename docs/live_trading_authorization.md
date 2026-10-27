@@ -2,7 +2,7 @@
 
 LIVE TRADING STATUS: DISABLED
 
-S10-ALPHA-AUTO-PILOT-01: Karl authorized only the certified14-path zero-economic
+S10-ALPHA-AUTO-PILOT-01: Karl authorized only the certified16-path zero-economic
 software implementation and offline validation on26October2026. The default-off
 attended-signing NBA micro-risk composer and optional native admission hook grant
 no real credential/account access, signing, orders, capital, deployment or live
@@ -21,8 +21,8 @@ qualification is available. This document does not grant live authority.
 
 Merge does not grant live authority. The inert, fully disabled Gate-C
 implementation is mergeable as dormant capability with
-`FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0` — no real economic CREATE, secret, capital,
-or strategy qualification is a merge prerequisite — while LIVE TRADING STATUS
+`FINAL_MERGE_SMOKE_CREATE_ATTEMPTS=0` â€” no real economic CREATE, secret, capital,
+or strategy qualification is a merge prerequisite â€” while LIVE TRADING STATUS
 stays DISABLED and startup stays A0_DISABLED. The single real CREATE
 (`FIRST_LIVE_ACTIVATION_CANARY_CREATE_ATTEMPTS=1`) is reserved for the separately
 authorized post-merge first live activation canary; `LIVE_ACTIVATION_PREREQUISITE_NOT_YET_AVAILABLE`

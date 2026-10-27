@@ -35,7 +35,9 @@
       "docs/status_entries/S10-ALPHA-AUTO-PILOT-01.md",
       "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_prompt.txt",
       "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_spec.json",
-      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/draftability_certificate.json"
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/draftability_certificate.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py"
     ],
     "allowed_changed_files": [
       "src/live_pilot/__init__.py",
@@ -51,7 +53,9 @@
       "docs/status_entries/S10-ALPHA-AUTO-PILOT-01.md",
       "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_prompt.txt",
       "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_spec.json",
-      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/draftability_certificate.json"
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/draftability_certificate.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py"
     ],
     "forbidden_prefixes": [
       ".github/",
@@ -70,10 +74,13 @@
       "src/execution_feasibility/",
       "src/operator_cockpit_frontend/"
     ],
-    "max_changed_files": 14,
+    "max_changed_files": 16,
     "exact_scope_required": true,
-    "historical_compatibility_edits": [],
-    "rollback_surface": "Revert the 14 paths; default None hook restores native canary behavior; no store schema, risk constant, Gate B/C or feeder change to unwind.",
+    "historical_compatibility_edits": [
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py"
+    ],
+    "rollback_surface": "Revert the 16 paths; default None hook restores native canary behavior; no store schema, risk constant, Gate B/C or feeder change to unwind.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -380,7 +387,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Exact 14 paths, negative matrix, full suite and hosted CI pass with zero orders and credentials",
+        "condition": "Exact 16 paths, negative matrix, full suite and hosted CI pass with zero orders and credentials",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
@@ -557,7 +564,7 @@
         "source": "pytest",
         "test": "test_pilot_authority_boundary",
         "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_pilot_authority_boundary",
-        "expected_result": "Live status DISABLED and source guards unchanged"
+        "expected_result": "Live status DISABLED and source guards unchanged; both historically frozen architecture comparisons recognize exactly one literal pilot approval block, strip only approved historical blocks, retain all frozen base SHAs/equality/security/sibling/tail assertions and pass their original exact pytest nodes"
       }
     ]
   },

@@ -299,7 +299,11 @@ def test_architecture_exact_approval_preserves_all_original_guards(tmp_path):
     bridge = ('    # S10-HERMES-LIVE-BRIDGE-01: exact foreground read-only live-preflight composer only.\n'
               '    "src/research_runtime/live_preflight_bridge.py",\n')
     assert modified.count(bridge) == 1
-    assert modified.replace(addition, "", 1).replace(bridge, "", 1) == source
+    # Recognize only the independently certified pilot approval; preserve the frozen comparison.
+    pilot = ('    # S10-ALPHA-AUTO-PILOT-01: exact default-off attended pilot family only.\n'
+             '    "src/live_pilot",\n')
+    assert modified.count(pilot) == 1
+    assert modified.replace(addition, "", 1).replace(bridge, "", 1).replace(pilot, "", 1) == source
 
 
 # --- S10-HERMES-AUTO-02 additive: optional offline producer evidence ---------------

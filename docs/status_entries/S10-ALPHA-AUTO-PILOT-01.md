@@ -2,14 +2,14 @@
 
 Base9d0df2ea8c9502b55cb29e4c1a78af0168b3a196, merged PR255;
 branch codex/s10-alpha-auto-pilot-01. Karl explicitly authorized implementation of
-the exact certified14-path WP, offline validation, security review and one PR.
+the original certified14-path WP, subsequently expanded by Karl to exactly16 paths, offline validation, security review and one PR.
 PROTECTED/risk4/L. Certified prompt/spec/certificate are imported unchanged;
 native pre-implementation readiness returned IMPLEMENTATION_READY, hash-bound.
 
 One composer, one default-None native hook/call site, three test surfaces, five
-contract/status/deferral documents and three governed artifacts: exactly14 paths.
+contract/status/deferral documents and three governed artifacts, plus two owner-approved historical compatibility tests: exactly16 paths.
 Native risk/caps, GateB/C, ledger schema, feeder, dependencies/workflows and live
-status are unchanged. No source implementation outside those paths is authorized.
+status are unchanged. No source implementation outside those paths is authorized. The two added tests change only exact historical approval recognition.
 
 Stable-source validation: the following command returned exit 0, 173 passed,
 0 failed, 0 skipped, no warning summary, 76.19 seconds:
@@ -56,13 +56,12 @@ world-writable. A synthetic-only rerun with private /validation-home tmpfs
 `/usr/local/bin/python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py -k 'siwc_refresh_owner_and_crash or siwc_posix_storage_and_import or siwc_posix_negative_files_and_faults or siwc_posix_import_fault_prefixes or siwc_posix_lock_process_death or siwc_posix_missing_name_after_open_is_not_absence'`
 No SIWC source, policy, OS privilege or test assertion was modified.
 
-Material blocker: two remaining architecture-text comparisons require edits outside
+Historical material blocker: two remaining architecture-text comparisons required edits outside
 the certified14-file set. Both tests independently reproduced on Windows (2failed,
 exit1); see deferred D005. The required two-line src/live_pilot approval is the sole
 difference that fails their frozen comparisons. Certified sections3/5 prohibit a
 15th path, so no compatibility fix or changed certificate was applied. Independent
-review confirmed no honest14-path fix. Hosted CI/PR publication are not performed
-while required validation is failing; final acceptance remains BLOCKED_NOT_READY.
+review confirmed no honest14-path fix. Those failures are retained as historical evidence, not a final PASS.
 Negative matrix required:YES; evidence R001-R012 is in the certified spec.
 Mandatory skill workflow applied: Ponytail, predraft/reuse/test-plan/one-shot,
 financial/boundary/evidence/sharp-edges, readiness, verification-before-completion;
@@ -78,7 +77,17 @@ Workflow/tooling network: git synchronization, GitHub metadata, scanner-rule fet
 and dependency advisory lookup. Product/provider/venue
 network, real credentials/accounts/signing/orders, deployment and capital:0.
 LIVE TRADING STATUS: DISABLED. Implementation does not grant activation or merge.
-Evidence mode: BLOCKED_NOT_READY; Ready for review:NO. Same-WP two-test compatibility
-scope amendment and fresh independent certification are required before completion.
+Evidence mode: BLOCKED_NOT_READY; Ready for review:NO pending final validation/hosted CI and independent exact-head review.
+
+Karl explicitly authorized the same-WP14-to16-path amendment. Fresh separate-context
+review by /root/amendment16_certifier passed all12lenses and implementability before
+the two tests were modified. Prompt SHA25665bdd22fdae9e012dfa56a362fd23758e4013c18f482a9f733e4b61cf390fb1b;
+spec SHA2564c7ae5393483c36584b4c4ad8da42416720ebc9fd8ecb08be58dfa027b5ccafb;
+reviewer-issued certificate SHA256633356aca7c1374ad38e29d1e1b5b81d17c068b6d11f2d2b5e625b1d8a187668.
+The executor copied certificate bytes unchanged. Native readiness passed16paths,
+12evidence nodes,14normative rules, PROTECTED/INDEPENDENT_CERTIFICATE. The two added
+files retain every historical baseSHA and full equality/sibling/tail assertion; only
+a count-checked exact pilot block is additionally removed before comparison.
+Final amendment validation is in progress; no new product behavior was added.
 The requested immediate-successor recommendation is held until Stage2 PR completion,
 per Karl's explicit ordering; it is not a reason to expand this package.
