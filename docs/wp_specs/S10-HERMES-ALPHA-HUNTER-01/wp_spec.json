@@ -1,0 +1,563 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-ALPHA-HUNTER-01",
+    "title": "Multi-Category Hermes Alpha Hunter: Source-Backed Probability, After-Cost Ranking and Budgeted Controlled Research (Research Only)",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_FOREGROUND_MULTI_CATEGORY_RESEARCH_CANDIDATE_HUNTER",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-alpha-hunter-01",
+    "required_predecessor": {
+      "pr_number": 256,
+      "head_sha": "241054d837cd3e8944368ab9e1149eb980e01c1b",
+      "merge_sha": "f0184b5d6ea1319884e403aeeb2b4ea026ec5650"
+    },
+    "objective": "One finite foreground operator that discovers NBA moneyline and US daily-rain markets, derives independent source-backed probabilities with explicit uncertainty (ESPN predictor; NWS gridpoint PoP Frechet bounds), checks public venue identity, rule, tick, minimum, depth and fee, computes an estimated after-cost margin for a fixed research quantity, ranks research candidates deterministically with an exact denominator funnel, optionally runs budget-capped controlled Hermes research (default zero budget) and records immutable lineage in the existing PIT store and Alpha Factory registry. Research only: no strategy version, Gate C permit, order, credential or capital authority; valid NO_TRADE preserved.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_spec.json",
+      "docs/alpha_hunter_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-HERMES-ALPHA-HUNTER-01.md",
+      "tests/tools/alpha/test_alpha_hunter.py",
+      "tools/alpha/run_alpha_hunter.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "allowed_changed_files": [
+      "docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_spec.json",
+      "docs/alpha_hunter_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-HERMES-ALPHA-HUNTER-01.md",
+      "tests/tools/alpha/test_alpha_hunter.py",
+      "tools/alpha/run_alpha_hunter.py",
+      "tests/test_repo_truth_docs.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/qualification/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/test_repo_truth_docs.py"
+    ],
+    "rollback_surface": "Revert the eight scoped files, including only the A4 historical D005 presence-count assertion correction; merged shadow operator, controller, Alpha Factory, discovery, execution feasibility and all protected sources are untouched; scratch outputs live outside the checkout and Alpha records are append-only research memory.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One new foreground tools operator composing merged native research, venue and Hermes seams; no new canonical library API.",
+    "items": [
+      {
+        "surface": "run_alpha_hunter run CLI",
+        "before": "Single-category NBA shadow operator only; no cross-category ranking or budgeted Hermes stage",
+        "after": "One finite invocation over NBA and US daily-rain with funnel, ranking, Alpha lineage and zero-default Hermes budget",
+        "change_authorized": true,
+        "compatibility_requirement": "Merged shadow, controller, discovery, Alpha Factory and execution-feasibility files unchanged and their tests green",
+        "authority": "PUBLIC_RESEARCH_ONLY"
+      },
+      {
+        "surface": "run_alpha_hunter verify CLI",
+        "before": "No hunter manifest exists",
+        "after": "Cold zero-network zero-dispatch re-derivation of the content-addressed manifest",
+        "change_authorized": true,
+        "compatibility_requirement": "Never rewrites journals or Alpha records; any byte change fails closed",
+        "authority": "RESEARCH_REPORT_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Twelve bounded behavior groups uniquely describe the research hunter and map 1:1 to R001-R012.",
+    "items": [
+      {
+        "path": "category.support",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "NBA ESPN and US daily-rain NWS markets each reach a probability, venue economics and ranked row from real-identity fixtures with distinct method ids",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "NBA ESPN and US daily-rain NWS markets each reach a probability, venue economics and ranked row from real-identity fixtures with distinct method ids",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "weather.probability",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Climate-day PoP percent intervals yield lower = max over fully contained intervals, upper = min(1, sum p*ceil(overlap hours)), clamped overlap-weighted point, NO-token swap and all assumption labels in Decimal",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Climate-day PoP percent intervals yield lower = max over fully contained intervals, upper = min(1, sum p*ceil(overlap hours)), clamped overlap-weighted point, NO-token swap and all assumption labels in Decimal",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "venue.economics",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Generalized economics matches shadow economics numerically on the NBA fixture and enforces tick, both native minimum dimensions (CLOB shares and Gamma USD notional), depth, freshness, native taker fee and fee-source disagreement conservative fee",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Generalized economics matches shadow economics numerically on the NBA fixture and enforces tick, both native minimum dimensions (CLOB shares and Gamma USD notional), depth, freshness, native taker fee and fee-source disagreement conservative fee",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "candidate.classification",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "RESEARCH_CANDIDATE only for source-supported venue-feasible positive estimated margin; each NO_TRADE has one closed reason; restriction recorded; class is fixed through the margin stage; hypothetical USD 2-5 fee-inclusive small-order fit over the bounded best-ask domain with the cap fee is computed with its ordered closed sub-reason, and only fitting non-contested research candidates are selectable",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "RESEARCH_CANDIDATE only for source-supported venue-feasible positive estimated margin; each NO_TRADE has one closed reason; restriction recorded; class is fixed through the margin stage; hypothetical USD 2-5 fee-inclusive small-order fit over the bounded best-ask domain with the cap fee is computed with its ordered closed sub-reason, and only fitting non-contested research candidates are selectable",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "source.independence",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A probability from a Polymarket host or equal to venue payload bytes is rejected INDEPENDENCE_INVALID and never ranked",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A probability from a Polymarket host or equal to venue payload bytes is rejected INDEPENDENCE_INVALID and never ranked",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "source.identity_time",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Lookahead, stale source or book, token or condition mismatch, conflicting duplicate, Protocol-V2, unsupported rule or resolution source, redirecting coordinates, non-percent unit, started event or climate day, off-hour intervals and incomplete coverage each reject with the first closed code in precedence order, and every reused native Stop, RuleExclusion, NdfdError and normalize code maps per market by the fixed table while UNMAPPED_NATIVE_CODE is reserved for codes outside the listed functions",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Lookahead, stale source or book, token or condition mismatch, conflicting duplicate, Protocol-V2, unsupported rule or resolution source, redirecting coordinates, non-percent unit, started event or climate day, off-hour intervals and incomplete coverage each reject with the first closed code in precedence order, and every reused native Stop, RuleExclusion, NdfdError and normalize code maps per market by the fixed table while UNMAPPED_NATIVE_CODE is reserved for codes outside the listed functions",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ranking.funnel",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Market-level and token-level funnel counts are nested with the 2x bridge, capacity overflow is ACQUISITION_CAPACITY_EXCEEDED, first-failing-stage reasons at their declared level sum exactly; final order is research tier then margin ratio, ties by category, market and token; contested tokens are never selected; a non-finite input is fatal RANKING_INPUT_INVALID",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Market-level and token-level funnel counts are nested with the 2x bridge, capacity overflow is ACQUISITION_CAPACITY_EXCEEDED, first-failing-stage reasons at their declared level sum exactly; final order is research tier then margin ratio, ties by category, market and token; contested tokens are never selected; a non-finite input is fatal RANKING_INPUT_INVALID",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes.origin",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Fake backend is OFFLINE_FIXTURE_MODEL_ORIGIN_UNVERIFIED, unknown backend rejects, synthetic chooser output is not research, only revalidated source-backed REAL_PROVIDER_REPORTED findings bound to the token change the research tier, other findings record influence NONE, run_mode and milestone are labelled honestly, Hermes researches research candidates before selection, and never changes probability, margins, small-order fields or classification",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fake backend is OFFLINE_FIXTURE_MODEL_ORIGIN_UNVERIFIED, unknown backend rejects, synthetic chooser output is not research, only revalidated source-backed REAL_PROVIDER_REPORTED findings bound to the token change the research tier, other findings record influence NONE, run_mode and milestone are labelled honestly, Hermes researches research candidates before selection, and never changes probability, margins, small-order fields or classification",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "hermes.budget",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Absent budget dispatches nothing; partial Hermes flags, ceiling breach or ledger directory mismatch reject; per-invocation and rolling 7-day caps stop dispatch; crashed reservations still count",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Absent budget dispatches nothing; partial Hermes flags, ceiling breach or ledger directory mismatch reject; per-invocation and rolling 7-day caps stop dispatch; crashed reservations still count",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "restart.integrity",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Lock contention stops, interrupted operation is marked, rerun reproduces the same candidate id and chains episodes by predecessor leaf without duplicates, cold verify uses zero network and detects any tampered byte",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Lock contention stops, interrupted operation is marked, rerun reproduces the same candidate id and chains episodes by predecessor leaf without duplicates, cold verify uses zero network and detects any tampered byte",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "memory.alpha_records",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Candidate and episode records come from native builders, carry digest refs only and an injected authority or economic key is rejected",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Candidate and episode records come from native builders, carry digest refs only and an injected authority or economic key is rejected",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011 verified or closed blocked code",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.zero_economic",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "POST, unallowlisted host, credential environment read and execution or signer imports are refused; order, account and wallet attempts equal zero",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "POST, unallowlisted host, credential environment read and execution or signer imports are refused; order, account and wallet attempts equal zero",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R012 verified or closed blocked code",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical identity derivation; manifest and Alpha identities reuse native canonical digests.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical readiness and owner authorization chain; no economic activation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native readiness gate returns IMPLEMENTATION_READY on the exact prompt and spec bytes",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl gives explicit scoped implementation authorization after readiness; drafting authorization is not implementation authorization",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exact eight files only; focused, adjacent and full suite plus bounded public run completed truthfully",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Repository fixed schema precedence; diagnostics never echo raw inputs.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new identity derivation or standalone schema validator; acceptance evidence is the named tests and the bounded public run.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Twelve focused requirement nodes in one new test file plus one full suite on the stable head.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_two_category_source_to_candidate_demonstration",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_two_category_source_to_candidate_demonstration",
+        "expected_result": "NBA ESPN and US daily-rain NWS markets each reach a probability, venue economics and ranked row from real-identity fixtures with distinct method ids"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_rain_climate_day_probability_bounds_and_labels",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_rain_climate_day_probability_bounds_and_labels",
+        "expected_result": "Climate-day PoP percent intervals yield lower = max over fully contained intervals, upper = min(1, sum p*ceil(overlap hours)), clamped overlap-weighted point, NO-token swap and all assumption labels in Decimal"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_venue_economics_parity_fee_minimum_depth",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_venue_economics_parity_fee_minimum_depth",
+        "expected_result": "Generalized economics matches shadow economics numerically on the NBA fixture and enforces tick, both native minimum dimensions (CLOB shares and Gamma USD notional), depth, freshness, native taker fee and fee-source disagreement conservative fee"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_candidate_classification_no_edge_and_restriction_distinctions",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_candidate_classification_no_edge_and_restriction_distinctions",
+        "expected_result": "RESEARCH_CANDIDATE only for source-supported venue-feasible positive estimated margin; each NO_TRADE has one closed reason; restriction recorded; class is fixed through the margin stage; hypothetical USD 2-5 fee-inclusive small-order fit over the bounded best-ask domain with the cap fee is computed with its ordered closed sub-reason, and only fitting non-contested research candidates are selectable"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_market_price_never_used_as_independent_probability",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_market_price_never_used_as_independent_probability",
+        "expected_result": "A probability from a Polymarket host or equal to venue payload bytes is rejected INDEPENDENCE_INVALID and never ranked"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_lookahead_stale_identity_protocol_and_rule_rejections",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_lookahead_stale_identity_protocol_and_rule_rejections",
+        "expected_result": "Lookahead, stale source or book, token or condition mismatch, conflicting duplicate, Protocol-V2, unsupported rule or resolution source, redirecting coordinates, non-percent unit, started event or climate day, off-hour intervals and incomplete coverage each reject with the first closed code in precedence order, and every reused native Stop, RuleExclusion, NdfdError and normalize code maps per market by the fixed table while UNMAPPED_NATIVE_CODE is reserved for codes outside the listed functions"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_funnel_denominators_and_deterministic_ranking",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_funnel_denominators_and_deterministic_ranking",
+        "expected_result": "Market-level and token-level funnel counts are nested with the 2x bridge, capacity overflow is ACQUISITION_CAPACITY_EXCEEDED, first-failing-stage reasons at their declared level sum exactly; final order is research tier then margin ratio, ties by category, market and token; contested tokens are never selected; a non-finite input is fatal RANKING_INPUT_INVALID"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_hermes_research_origin_labels_and_no_probability_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_hermes_research_origin_labels_and_no_probability_authority",
+        "expected_result": "Fake backend is OFFLINE_FIXTURE_MODEL_ORIGIN_UNVERIFIED, unknown backend rejects, synthetic chooser output is not research, only revalidated source-backed REAL_PROVIDER_REPORTED findings bound to the token change the research tier, other findings record influence NONE, run_mode and milestone are labelled honestly, Hermes researches research candidates before selection, and never changes probability, margins, small-order fields or classification"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_research_budget_zero_default_caps_and_exhaustion",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_research_budget_zero_default_caps_and_exhaustion",
+        "expected_result": "Absent budget dispatches nothing; partial Hermes flags, ceiling breach or ledger directory mismatch reject; per-invocation and rolling 7-day caps stop dispatch; crashed reservations still count"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_restart_duplicate_and_cold_verify_immutability",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_restart_duplicate_and_cold_verify_immutability",
+        "expected_result": "Lock contention stops, interrupted operation is marked, rerun reproduces the same candidate id and chains episodes by predecessor leaf without duplicates, cold verify uses zero network and detects any tampered byte"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_alpha_factory_records_carry_no_economic_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_alpha_factory_records_carry_no_economic_authority",
+        "expected_result": "Candidate and episode records come from native builders, carry digest refs only and an injected authority or economic key is rejected"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_zero_economic_authenticated_and_unallowlisted_calls",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_alpha_hunter.py::test_zero_economic_authenticated_and_unallowlisted_calls",
+        "expected_result": "POST, unallowlisted host, credential environment read and execution or signer imports are refused; order, account and wallet attempts equal zero"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "full repository suite",
+        "command": "python -B -m pytest -q -p no:cacheprovider",
+        "expected_result": "Full repository suite passes on the stable implementation head with only platform skips"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-HUNTER-PILOT-02",
+    "next_title": "Owner-Authorized Micro-Risk Policy and Protected Admission of Hunter Research Candidates (WP2)",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-HUNTER-PILOT-02",
+    "forbidden_in_this_wp": [
+      "Any real Polymarket order create, cancel or sell and any signer, Session Key or Builder credential",
+      "Wallet, account, balance or private order queries and any credential or OAuth read",
+      "StrategyVersion, lifecycle, Hermes strategy assessment, ExecutionIntent or Gate C permit creation",
+      "Risk constant, live policy, live authorization document or LIVE-ORCH and pilot source edits",
+      "USD 2-5 sizing, 7-day loss or exposure caps and reserve policy as authority",
+      "Paid Hermes or provider inference without an explicit owner-approved research budget",
+      "Daemon, scheduler, deployment or persistent service",
+      "Protocol-V2 positionId order semantics and crypto short-duration category",
+      "Claims of calibrated probability, guaranteed fills or realized profitability"
+    ]
+  }
+}
