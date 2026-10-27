@@ -261,6 +261,22 @@ operator confirmation. This contract never authorizes a real order.
 
 ## 17. Deferred
 
+### S10-ALPHA-AUTO-PILOT-01 optional admission guard
+
+LiveOrchDependencies.admission_guard defaults to None, preserving existing callers
+and their clock-call sequence. A non-None raise-only closure receives the replayed
+checkpoint, AccountEvaluation and AdmissionRisk under WalletSessionLock, after local
+prepare and final host/geoblock/permit-window checks, immediately before admission.
+Non-None return or unexpected exception becomes PILOT_GUARD_REFUSED, with zero
+admission/transmit. After success, the same conditional block resamples native time,
+rechecks the permit window and uses the fresh time for both admission calls; guard
+I/O cannot reuse an expired permit with a stale admission timestamp. No native
+session ordering, risk constants, ledger schema, Gate B/C or retry behavior changes.
+The dedicated pilot calls methods directly (no live_orch CLI confirmation phrase),
+requires its separate owner-policy record and exact native attended TTY provider,
+and does not grant activation. See docs/live_pilot_contract.md and its exact
+certified package. LIVE TRADING STATUS remains DISABLED.
+
 Economic SELL CREATE; Session Keys / Builder keys; SDK upgrade; heartbeat daemon; user-WebSocket
 recovery authority; automatic CREATE retry; auto scaling; neg-risk / delayed markets; redemption;
 funding/withdrawal/bridge; wallet deployment / approval automation; arbitrary busy-account

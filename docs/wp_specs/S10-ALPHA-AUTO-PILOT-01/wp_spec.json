@@ -1,0 +1,588 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-AUTO-PILOT-01",
+    "title": "Default-Off Attended-Signing Rules-Based NBA Micro-Risk Live Pilot under a Hermes Strategy-Level Gate",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_ATTENDED_SIGNING_RULES_BASED_LIVE_PILOT",
+    "package_size_class": "L",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-alpha-auto-pilot-01",
+    "required_predecessor": {
+      "pr_number": 255,
+      "head_sha": "1f3b2354416caeda5bb6ebd76020a34a50873a90",
+      "merge_sha": "9d0df2ea8c9502b55cb29e4c1a78af0168b3a196"
+    },
+    "objective": "Add one finite default-off attended-signing rules-based pilot composer that takes a per-wallet run lock, reconciles first, admits at most one verified pregame NBA moneyline FOK BUY per invocation, chosen by a deterministic total order, through the unchanged Gate C, LIVE-ORCH and Gate B kernel under an owner-recorded bounded policy, with pilot caps enforced inside the native wallet lock, or records a durable NO_TRADE; limit price pinned to fresh token best ask (no repricing)",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/live_pilot/__init__.py",
+      "src/live_pilot/pilot.py",
+      "src/execution_gateway/live_orch.py",
+      "tests/live_pilot/test_pilot.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "tests/test_architecture_boundaries.py",
+      "docs/live_pilot_contract.md",
+      "docs/live_orchestration_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-AUTO-PILOT-01.md",
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_spec.json",
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/draftability_certificate.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py"
+    ],
+    "allowed_changed_files": [
+      "src/live_pilot/__init__.py",
+      "src/live_pilot/pilot.py",
+      "src/execution_gateway/live_orch.py",
+      "tests/live_pilot/test_pilot.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "tests/test_architecture_boundaries.py",
+      "docs/live_pilot_contract.md",
+      "docs/live_orchestration_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-AUTO-PILOT-01.md",
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/wp_spec.json",
+      "docs/wp_specs/S10-ALPHA-AUTO-PILOT-01/draftability_certificate.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/hermes/",
+      "tools/deployment/",
+      "src/data_layer/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/strategy_lifecycle/",
+      "src/exploratory_gate_c/",
+      "src/execution_feasibility/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 16,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py",
+      "tests/research_runtime/test_autonomous_opportunity_cycle.py"
+    ],
+    "rollback_surface": "Revert the 16 paths; default None hook restores native canary behavior; no store schema, risk constant, Gate B/C or feeder change to unwind.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One narrow protected hook plus one new composer API.",
+    "items": [
+      {
+        "surface": "LiveOrchDependencies.admission_guard",
+        "before": "absent",
+        "after": "optional in-lock fail-closed callable, default None; same non-None call-site block resamples native time after guard, rechecks permit window and uses resampled admission time",
+        "change_authorized": true,
+        "compatibility_requirement": "All existing callers unchanged when None",
+        "authority": "RAISE_ONLY_NEVER_WIDEN"
+      },
+      {
+        "surface": "src/live_pilot pilot run",
+        "before": "absent",
+        "after": "run_pilot_once(*, policy_path, owner_record_path, owner_record_sha256, state_root, feeder_root, dependencies=None) and foreground main run: run lock, policy and owner-record validation, latched kill check, reconcile even when killed, stop unless NO_NEW_EXPOSURE_READY and kill clear/unlatched, intake, NO_TRADE or one deterministically selected FOK BUY via native canary; one candidate at fresh best-ask only, native FOK BUY intent literals (AGGRESSIVE_TAKER, post_only false, expiry null); no price search or share rounding",
+        "change_authorized": true,
+        "compatibility_requirement": "No Gate B client, order literal, env secret or loop",
+        "authority": "OWNER_RECORDED_POLICY_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Each protected behavior maps to one semantic path.",
+    "items": [
+      {
+        "path": "hook.admission_guard",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Optional in-lock guard at the latest safe point after final host geoblock and permit-window checks and before the first durable admission; default None preserves callers; raise or non-None return fails closed; latest-point closure calls unchanged public verify_permit_authority on same bound permit/intent, policy-bound lifecycle/Hermes stores and current trusted time; then samples current time again for pilot deadlines; changed/revoked/paused native authority or superseding assessment refuses, no substitute permit; within same non-None call-site block after success native resamples now, rechecks exact permit issued_at <= now < valid_until and uses post-guard now for both build/admit; expired guard I/O yields PERMIT_EXPIRED zero admission/transmit; default None clock-call sequence unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Optional in-lock guard at the latest safe point after final host geoblock and permit-window checks and before the first durable admission; default None preserves callers; raise or non-None return fails closed; latest-point closure calls unchanged public verify_permit_authority on same bound permit/intent, policy-bound lifecycle/Hermes stores and current trusted time; then samples current time again for pilot deadlines; changed/revoked/paused native authority or superseding assessment refuses, no substitute permit; within same non-None call-site block after success native resamples now, rechecks exact permit issued_at <= now < valid_until and uses post-guard now for both build/admit; expired guard I/O yields PERMIT_EXPIRED zero admission/transmit; default None clock-call sequence unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "policy.authority",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Policy polymarket-live-pilot-policy@1.0.0 and owner record polymarket-live-pilot-owner-activation@1.0.0 follow the bind_stage_a pattern: bounded strict JSON, exact key sets, raw bytes equal to sort_keys compact UTF-8 canonical form; policy_sha256 is lowercase sha256 of exact raw policy bytes; owner record supplied by path plus expected raw-byte sha256, its full policy_sha256, wallet, signer, release_sha and state_root equal the policy and its window lies inside the policy window and contains now; entry state_root and feeder_root equal the policy; any failure means zero native calls and no order",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Policy polymarket-live-pilot-policy@1.0.0 and owner record polymarket-live-pilot-owner-activation@1.0.0 follow the bind_stage_a pattern: bounded strict JSON, exact key sets, raw bytes equal to sort_keys compact UTF-8 canonical form; policy_sha256 is lowercase sha256 of exact raw policy bytes; owner record supplied by path plus expected raw-byte sha256, its full policy_sha256, wallet, signer, release_sha and state_root equal the policy and its window lies inside the policy window and contains now; entry state_root and feeder_root equal the policy; any failure means zero native calls and no order",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "policy.ceilings",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Hard ceilings 1<=admissions/24h<=2, total commitment<=10, order<=5 fee-inclusive, feeder age<=1800s, assessment age<=86400s, loss<=native, margin>=0; absent invalid or above ceiling fails closed, never clamped; all decimal values finite plain decimal strings; zero invalid for positive bounds but valid for experimental_margin_usd",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Hard ceilings 1<=admissions/24h<=2, total commitment<=10, order<=5 fee-inclusive, feeder age<=1800s, assessment age<=86400s, loss<=native, margin>=0; absent invalid or above ceiling fails closed, never clamped; all decimal values finite plain decimal strings; zero invalid for positive bounds but valid for experimental_margin_usd",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "control.run_lock",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Kernel-held per-wallet pilot run lock before any native call covers the pre-lock gateway-open window; native ordering unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Kernel-held per-wallet pilot run lock before any native call covers the pre-lock gateway-open window; native ordering unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "caps.pilot",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Rolling 24h admissions incl ambiguous, and native total commitment (including resolved-but-unredeemed positions) plus proposed, within policy caps counted in lock; native lifecycle/policy/allocation/head and latest Hermes currentness reverified read-only in the latest-point guard; late pause/revoke/change refuses before admission",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Rolling 24h admissions incl ambiguous, and native total commitment (including resolved-but-unredeemed positions) plus proposed, within policy caps counted in lock; native lifecycle/policy/allocation/head and latest Hermes currentness reverified read-only in the latest-point guard; late pause/revoke/change refuses before admission",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "economics.admission",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "FOK BUY intent AGGRESSIVE_TAKER, post_only false, gtd_expiration_unix_s null; price_limit equals candidate token best visible ask from fresh native snapshot, no alternate limit or price search; shares = max_order_commitment_usd / price_limit exact to 2dp without rounding or abstain MINIMUM_EXCEEDS_CAP; full visible depth at limit, delay zero, native fee-inclusive caps and minima; stress notional = shares * price_limit (not swept VWAP), Hermes age from decision_time_ns, strictly positive full-fill stress scenario exceeds experimental margin; score every pair at its own best ask, choose max stress EV then earliest start_ns then smallest token_id; unconditional order EV UNKNOWN / RESEARCH_ONLY; exact permit-bound assessment decision_time_ns bound into closure and rechecked after native authority at latest-point guard: 0 <= age <= max_hermes_assessment_age_s; crossing during TTY/prepare refuses, no repricing/retry",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "FOK BUY intent AGGRESSIVE_TAKER, post_only false, gtd_expiration_unix_s null; price_limit equals candidate token best visible ask from fresh native snapshot, no alternate limit or price search; shares = max_order_commitment_usd / price_limit exact to 2dp without rounding or abstain MINIMUM_EXCEEDS_CAP; full visible depth at limit, delay zero, native fee-inclusive caps and minima; stress notional = shares * price_limit (not swept VWAP), Hermes age from decision_time_ns, strictly positive full-fill stress scenario exceeds experimental margin; score every pair at its own best ask, choose max stress EV then earliest start_ns then smallest token_id; unconditional order EV UNKNOWN / RESEARCH_ONLY; exact permit-bound assessment decision_time_ns bound into closure and rechecked after native authority at latest-point guard: 0 <= age <= max_hermes_assessment_age_s; crossing during TTY/prepare refuses, no repricing/retry",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "feeder.intake",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Data-level PR255 feeder intake with source hash, freshness, pregame and rule checks; input never authority; verify completed CYCLE terminal inputs and reconstruct p, outcome-token mapping, start_ns and rule from hashed raw ESPN/Gamma, not derived forecasts/scores; require nonnegative bounded age and now < start_ns; latest per event by received_ns then numeric op ordinal; contradictory same-event identities or duplicate event/token pairs reject; selected start_ns and every receipt received_ns used for forecast/rule/identity bound into closure and rechecked after native authority at latest-point guard: now < start_ns and 0 <= each age <= max_feeder_age_s; crossing during TTY/prepare refuses, no reselection",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Data-level PR255 feeder intake with source hash, freshness, pregame and rule checks; input never authority; verify completed CYCLE terminal inputs and reconstruct p, outcome-token mapping, start_ns and rule from hashed raw ESPN/Gamma, not derived forecasts/scores; require nonnegative bounded age and now < start_ns; latest per event by received_ns then numeric op ordinal; contradictory same-event identities or duplicate event/token pairs reject; selected start_ns and every receipt received_ns used for forecast/rule/identity bound into closure and rechecked after native authority at latest-point guard: now < start_ns and 0 <= each age <= max_feeder_age_s; crossing during TTY/prepare refuses, no reselection",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "control.kill_switch",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Fixed flag path blocks new exposure at start, after preflight and in the latest-point guard so a flag raised after prepare still refuses; reconcile still allowed; entry flag is latched; valid policy/owner record still permits reconcile, then refusal with no intake/preflight/canary even if flag removed during reconcile",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fixed flag path blocks new exposure at start, after preflight and in the latest-point guard so a flag raised after prepare still refuses; reconcile still allowed; entry flag is latched; valid policy/owner record still permits reconcile, then refusal with no intake/preflight/canary even if flag removed during reconcile",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "custody.provider",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exact-type allowlisted secret provider only; no file env argv pipe secret; failure means no order",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact-type allowlisted secret provider only; no file env argv pipe secret; failure means no order",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lineage.market_binding",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Intent market condition token must equal a verified feeder candidate matching the policy predicate; latest-point guard calls native verify_permit_authority for same permit/intent/stores; lifecycle pause/revoke/head change or superseding Hermes assessment refuses zero admission/transmit",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Intent market condition token must equal a verified feeder candidate matching the policy predicate; latest-point guard calls native verify_permit_authority for same permit/intent/stores; lifecycle pause/revoke/head change or superseding Hermes assessment refuses zero admission/transmit",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "restart.single_transmit",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Crash or replay never causes a second transmit; native recovery reused",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Crash or replay never causes a second transmit; native recovery reused",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "report.terminal",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One durable exclusive terminal per invocation with truthful no-edge-claim semantics; only sanitized closed codes and bounded allowlisted public identifiers, never raw input, credential-like values or exception text",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One durable exclusive terminal per invocation with truthful no-edge-claim semantics; only sanitized closed codes and bounded allowlisted public identifiers, never raw input, credential-like values or exception text",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundary",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Live status stays DISABLED; no new order literal; source guards unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Live status stays DISABLED; no new order literal; source guards unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R012 verified or typed blocked",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical identity derivation over semantic fields: policy_sha256 and owner_record_sha256 are lowercase sha256 of exact raw file bytes (file-content digests, as bind_stage_a stage_a_authorization_sha256), canonical JSON form is a validity precondition, and native PR254 receipts and LIVE-ORCH ids are reused unchanged.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "PROTECTED readiness and authorization chain; activation is separate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Independent PROTECTED certificate hash-binds exact prompt and spec on a clean nonconflicting base; native readiness passes",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl separate explicit zero-economic implementation authorization; no Gate 2 economic or custodial action",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exact 16 paths, negative matrix, full suite and hosted CI pass with zero orders and credentials",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Conform to repository fixed schema precedence; no raw user inputs in diagnostics.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new schema identity derivation or standalone validator example schema; acceptance evidence is concrete tests and bounded public receipts.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "One test node per protected requirement plus PROTECTED stable-candidate checks.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_admission_guard_default_none_preserves_canary",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_admission_guard_default_none_preserves_canary",
+        "expected_result": "Default None hook leaves existing canary behavior unchanged; unchanged default None clock-call sequence"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_admission_guard_refusal_is_zero_admission",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_admission_guard_refusal_is_zero_admission",
+        "expected_result": "Guard raise or non-None return yields zero admission and zero transmit, in lock; guard runs after final host geoblock and permit-window checks and before build_admitted_episode; post-initial-authority lifecycle pause/revoke/change and superseding Hermes during authentication/prepare cause zero admission/transmit; event-start/feeder-age/Hermes-age crossing there likewise refuses; native permit expiry during guard I/O returns PERMIT_EXPIRED with zero admission/transmit; success records post-guard sampled time in build_admitted_episode and admit_and_transmit; exact expiry rejects and just-before-expiry positive control succeeds"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_policy_requires_owner_record_and_bounds",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_policy_requires_owner_record_and_bounds",
+        "expected_result": "Policy or owner record that is non-canonical, digest-mismatched, scope or window mismatched, or has any value absent, invalid or above the hard ceilings, yields no order and zero native calls; finite plain decimals, malformed/null/type/empty/duplicate/unknown fields reject; zero experimental margin is a valid positive control"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_pilot_caps_counted_in_lock",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_pilot_caps_counted_in_lock",
+        "expected_result": "Third admission in 24h and total commitment over cap refused inside the lock; concurrent pilot invocation refused by the run lock with zero native calls; late lifecycle policy/allocation/head pause/revoke/change is detected by native authority revalidation in the held wallet lock"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_admission_economics_fok_only",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_admission_economics_fok_only",
+        "expected_result": "FOK intent is BUY/AGGRESSIVE_TAKER/post_only=false/expiration null; limit price EXACTLY the fresh token best ask, no price search; cap/best ask is exact at 2dp without rounding, else MINIMUM_EXCEEDS_CAP; stress notional is shares * limit not swept VWAP; depth, delay, native cap, Hermes age and experimental margin checked; pair selection ranks stress EV, start_ns, token_id; research-only labels never claim robust unconditional EV; Hermes age rechecked after TTY/prepare at final guard with exclusive event start and inclusive maximum age: future or over-age rejects, exact maximum and just-inside controls pass"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_feeder_intake_verified",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_feeder_intake_verified",
+        "expected_result": "Stale tampered or started-game feeder data gives durable NO_TRADE; forged derived probability, negative/future age, contradictory same-event identities and duplicate pairs reject; source-derived selection independent of directory order; final guard rechecks every bound source receipt age and pregame start after TTY/prepare: exact start and over-age/future reject; exact maximum age and just-inside controls pass"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_kill_switch_blocks_new_exposure_only",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_kill_switch_blocks_new_exposure_only",
+        "expected_result": "Kill flag blocks admission at all three checks, including a flag raised after prepare, while reconcile runs; entry kill flag still runs reconcile; flag removed during reconcile stays latched and prevents intake/preflight/canary; unsuccessful reconcile prevents admission"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_custody_provider_allowlist",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_custody_provider_allowlist",
+        "expected_result": "Non-allowlisted or failing provider yields no order"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_market_binding_rejects_unrelated_market",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_market_binding_rejects_unrelated_market",
+        "expected_result": "Unrelated market under whitelisted version is refused; unchanged public verify_permit_authority rerun on same bound permit/intent/stores at latest-point hook, late REVOKE/PAUSE_NEW_EXPOSURE and superseding Hermes assessment refuse without alternate candidate or regenerated permit"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_restart_never_second_transmit",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_restart_never_second_transmit",
+        "expected_result": "Crash after admission never produces a second transmit"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_terminal_truthful_no_edge_claim",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_terminal_truthful_no_edge_claim",
+        "expected_result": "Exactly one truthful terminal per invocation; malformed and credential-like synthetic input sentinels never appear in terminal or exception diagnostics"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_pilot_authority_boundary",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py::test_pilot_authority_boundary",
+        "expected_result": "Live status DISABLED and source guards unchanged; both historically frozen architecture comparisons recognize exactly one literal pilot approval block, strip only approved historical blocks, retain all frozen base SHAs/equality/security/sibling/tail assertions and pass their original exact pytest nodes"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-AUTO-PILOT-ACT-01",
+    "next_title": "Owner Custody, Unattended Signing and Standing Pilot Activation after Attended-Canary Reconciliation",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-AUTO-PILOT-ACT-01",
+    "forbidden_in_this_wp": [
+      "Any real Polymarket CREATE CANCEL or SELL during implementation or PR",
+      "Unattended custody adapter, secret file, environment or argv credential",
+      "Deployment unit timer host change or LIVE TRADING STATUS change",
+      "Change to Gate B Gate C EXEC-FEAS risk constants or ledger schema",
+      "Reuse of attended canary Stage A or Stage B authority",
+      "Claim of unattended signing, Hermes per-market selection or autonomous live trading",
+      "Policy value above the hard ceilings or any silent clamp",
+      "FAK maker partial-fill SELL redemption or scaling",
+      "Claim of robust positive order EV fill probability or profit"
+    ]
+  }
+}

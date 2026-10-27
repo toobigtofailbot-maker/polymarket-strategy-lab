@@ -1,5 +1,21 @@
 # Deferred Items Log
 
+## S10-ALPHA-AUTO-PILOT-01 separate activation and successor gates
+
+| ID | State | Required evidence / boundary |
+|---|---|---|
+| S10-ALPHA-AUTO-PILOT-01-D001 | SEPARATE_OWNER_ACTIVATION | Owner eligibility, dedicated wallet/signer, exact standing policy and externally hash-bound owner record; attended canary terminal/reconciliation or verified clean no-CREATE proof with no unresolved mutation; no economic activity authorized by software/PR. |
+| S10-ALPHA-AUTO-PILOT-01-D002 | SEPARATE_CUSTODY_AND_DEPLOYMENT | Native attended TTY only here. Unattended custody adapter, credentials, deployment/timer/host activation and live capital require separately approved successor; no env/file/argv secret mechanism. |
+| S10-ALPHA-AUTO-PILOT-01-D003 | SEPARATE_EXIT_REDEMPTION_SCALING | SELL/exit, redemption, other sports, FAK/maker/partial-fill economics and scaling are out of scope. Native unresolved/unredeemed commitment remains counted; saturation abstains. |
+| S10-ALPHA-AUTO-PILOT-01-D004 | SEPARATE_HERMES_MARKET_SELECTION | Rules-based ESPN NBA selection under a Hermes strategy-level gate; no new provider call, per-market Hermes choice or autonomous/unattended trading claim. |
+| S10-ALPHA-AUTO-PILOT-01-D005 | RESOLVED_OWNER_APPROVED_16_PATH_AMENDMENT | Karl authorized only the two frozen architecture-text compatibility tests. Fresh separate-context PROTECTED certificate issued before either test changed; exact literal count/removal preserves original frozen SHAs, full comparisons, hostile siblings and all tail assertions. Both files are now in the exact16-path scope; final full/security/CI evidence remains required. |
+
+Stage2 validation history is preserved in the status fragment: original8failures
+resolved by private-home sandbox and owner-approved recertified16path amendment.
+Complete8-target Semgrep audit retains rawexit1/two unchanged fixed-Git-source test
+exec warnings, independently classified false positives; no suppression or unresolved
+new software finding. Actual full/hosted/posted evidence remains in the status and PR.
+
 ## S10-LIVE-CANARY-SIWC-01 bounded follow-up
 
 | ID | State | Required evidence / boundary |

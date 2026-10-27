@@ -423,7 +423,11 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
     current = (ROOT / "tests/test_architecture_boundaries.py").read_text()
     bridge = ('    # S10-HERMES-LIVE-BRIDGE-01: exact foreground read-only live-preflight composer only.\n'
               '    "src/research_runtime/live_preflight_bridge.py",\n')
-    assert current.count(bridge) == 1 and current.replace(bridge, "", 1) == base
+    # Recognize only the independently certified pilot approval; preserve the frozen comparison.
+    pilot = ('    # S10-ALPHA-AUTO-PILOT-01: exact default-off attended pilot family only.\n'
+             '    "src/live_pilot",\n')
+    assert current.count(pilot) == 1
+    assert current.count(bridge) == 1 and current.replace(bridge, "", 1).replace(pilot, "", 1) == base
     scopes = runpy.run_path(str(ROOT / "tests/test_architecture_boundaries.py"))["APPROVED_SRC_SCOPES"]
     assert "src/research_runtime/hermes_controlled_runtime" in scopes
 
