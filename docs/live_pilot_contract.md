@@ -1,4 +1,4 @@
-# S10-ALPHA-AUTO-PILOT-01 â€” dormant attended NBA pilot
+# S10-ALPHA-AUTO-PILOT-01 — dormant attended NBA pilot
 
 Karl authorized software implementation of the exact certified 16-path package (Karl-approved two-test compatibility amendment).
 This contract grants no real credentials, account access, signing, orders, capital,
