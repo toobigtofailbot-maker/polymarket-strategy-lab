@@ -366,6 +366,81 @@ def _accept_fill(shares="8", price="0.52", status="CONFIRMED", fee="0"):
     )
 
 
+def test_admission_guard_default_none_preserves_canary(harness, world):
+    permit, intent = make_permit(world)
+    deps = harness.deps()
+    assert deps.admission_guard is None
+    clock_calls = []
+    original_clock = deps.clock_ns
+    def clock():
+        clock_calls.append(True)
+        return original_clock()
+    deps.clock_ns = clock
+    result = L.LiveOrchestrator(harness.config(), dependencies=deps).canary(permit, intent)
+    assert result.create_transmits == 1 and len(harness.venue.posts) == 1
+    # Measured on the certified base with this exact offline harness.
+    assert len(clock_calls) == 11
+
+
+@pytest.mark.parametrize('mode', ['raise', 'return', 'exception', 'expiry', 'success'])
+def test_admission_guard_refusal_is_zero_admission(harness, world, monkeypatch, mode):
+    from src.execution_gateway.gate_c import LiveOrchMutationBoundary
+    permit, intent = make_permit(world)
+    calls = []
+    order = []
+    original_prepare = LiveOrchMutationBoundary.prepare
+    def prepare(self, *args, **kwargs):
+        result = original_prepare(self, *args, **kwargs)
+        order.append('prepare')
+        return result
+    monkeypatch.setattr(LiveOrchMutationBoundary, 'prepare', prepare)
+    original_build = L.build_admitted_episode
+    def build(*args, **kwargs):
+        order.append('build')
+        calls.append(('build', kwargs['admitted_time_ns']))
+        return original_build(*args, **kwargs)
+    monkeypatch.setattr(L, 'build_admitted_episode', build)
+    def guard(checkpoint, evaluation, risk):
+        order.append('guard')
+        assert order[-4:] == ['prepare', 'host', 'geoblock', 'guard']
+        assert checkpoint['episodes'] == []
+        assert evaluation.total_commitment == 0 and risk.proposed_worst_case_commitment > 0
+        # Host/geoblock were checked after signing, and the wallet lock is held.
+        assert harness.secret_requests == 1
+        with pytest.raises(GatewayError, match='GATE_B_OWNERSHIP_LOCKED'):
+            L.WalletSessionLock(harness.orchestrator().store_path.parent, WALLET).acquire()
+        calls.append(('guard', harness.now))
+        if mode == 'raise':
+            raise GatewayError('PILOT_GUARD_REFUSED:TEST')
+        if mode == 'exception':
+            raise ValueError(SECRET)
+        if mode == 'return':
+            return False
+        if mode == 'expiry':
+            harness.now = permit.valid_until_ns
+        else:
+            harness.now += 1_000_000
+    deps = harness.deps()
+    host, geoblock = deps.host_currentness, deps.geoblock
+    deps.host_currentness = lambda *args: order.append('host') or host(*args)
+    deps.geoblock = lambda: order.append('geoblock') or geoblock()
+    deps.admission_guard = guard
+    result = L.LiveOrchestrator(harness.config(), dependencies=deps).canary(permit, intent)
+    assert SECRET not in repr(result)
+    if mode == 'success':
+        assert result.create_transmits == 1
+        assert [x[0] for x in calls] == ['guard', 'build']
+        assert order[-5:] == ['prepare', 'host', 'geoblock', 'guard', 'build']
+        assert calls[1][1] > calls[0][1]
+        assert harness.ledger()['episodes'][0]['admission']['admitted_time_ns'] == calls[1][1]
+    else:
+        assert result.status == 'BLOCKED' and result.create_transmits == 0
+        assert harness.venue.posts == [] and harness.ledger()['episodes'] == []
+        assert [x[0] for x in calls] == ['guard']
+        assert result.code == ('PERMIT_EXPIRED' if mode == 'expiry' else
+                               'PILOT_GUARD_REFUSED:TEST' if mode == 'raise' else 'PILOT_GUARD_REFUSED')
+
+
 # ---------------------------------------------------------------------------
 # Capital envelope, side policy and authority gates
 # ---------------------------------------------------------------------------

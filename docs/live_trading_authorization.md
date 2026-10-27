@@ -2,6 +2,16 @@
 
 LIVE TRADING STATUS: DISABLED
 
+S10-ALPHA-AUTO-PILOT-01: Karl authorized only the certified14-path zero-economic
+software implementation and offline validation on26October2026. The default-off
+attended-signing NBA micro-risk composer and optional native admission hook grant
+no real credential/account access, signing, orders, capital, deployment or live
+activation. Its proposed <=USD5/order, <=2admissions/rolling24h, <=USD10commitment
+ceilings are dormant code maxima, not capital approval. Owner record, eligibility,
+dedicated-wallet/custody choice and attended-canary terminal/reconciliation or
+verified clean no-CREATE proof remain at the separate activation gate. Merge is
+Karl-only and is not authorized by this row. See docs/live_pilot_contract.md.
+
 WP175 implementation status: CODE-COMPLETE_PENDING_EXACT_HEAD_GATE_C_ACTIVATION.
 The protected canary code is present only for the separately gated manual
 foreground path. Gate-C activation is PENDING, no real economic CREATE has

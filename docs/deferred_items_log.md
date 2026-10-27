@@ -1,5 +1,14 @@
 # Deferred Items Log
 
+## S10-ALPHA-AUTO-PILOT-01 separate activation and successor gates
+
+| ID | State | Required evidence / boundary |
+|---|---|---|
+| S10-ALPHA-AUTO-PILOT-01-D001 | SEPARATE_OWNER_ACTIVATION | Owner eligibility, dedicated wallet/signer, exact standing policy and externally hash-bound owner record; attended canary terminal/reconciliation or verified clean no-CREATE proof with no unresolved mutation; no economic activity authorized by software/PR. |
+| S10-ALPHA-AUTO-PILOT-01-D002 | SEPARATE_CUSTODY_AND_DEPLOYMENT | Native attended TTY only here. Unattended custody adapter, credentials, deployment/timer/host activation and live capital require separately approved successor; no env/file/argv secret mechanism. |
+| S10-ALPHA-AUTO-PILOT-01-D003 | SEPARATE_EXIT_REDEMPTION_SCALING | SELL/exit, redemption, other sports, FAK/maker/partial-fill economics and scaling are out of scope. Native unresolved/unredeemed commitment remains counted; saturation abstains. |
+| S10-ALPHA-AUTO-PILOT-01-D004 | SEPARATE_HERMES_MARKET_SELECTION | Rules-based ESPN NBA selection under a Hermes strategy-level gate; no new provider call, per-market Hermes choice or autonomous/unattended trading claim. |
+
 ## S10-LIVE-CANARY-SIWC-01 bounded follow-up
 
 | ID | State | Required evidence / boundary |

@@ -929,6 +929,7 @@ class LiveOrchDependencies:
     client_factory: Callable[[str, str], object] = create_deposit_wallet_client
     pause: Callable[[float], None] = _bounded_pause
     permit_authority: Callable[..., PermitAuthority] = verify_permit_authority
+    admission_guard: Callable[[Mapping[str, object], AccountEvaluation, AdmissionRisk], None] | None = None
 
 
 class _Session:
@@ -1292,6 +1293,18 @@ class LiveOrchestrator:
             now = self._now()
             if not authority.permit.issued_at_ns <= now < authority.permit.valid_until_ns:
                 raise GatewayError("PERMIT_EXPIRED")
+            if self._deps.admission_guard is not None:
+                try:
+                    if self._deps.admission_guard(checkpoint, evaluation, risk) is not None:
+                        raise GatewayError("PILOT_GUARD_REFUSED")
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("PILOT_GUARD_REFUSED") from None
+                # A guard may read stores: never admit using the pre-guard clock.
+                now = self._now()
+                if not authority.permit.issued_at_ns <= now < authority.permit.valid_until_ns:
+                    raise GatewayError("PERMIT_EXPIRED")
             episode = build_admitted_episode(
                 authority,
                 snapshot=snapshot,
