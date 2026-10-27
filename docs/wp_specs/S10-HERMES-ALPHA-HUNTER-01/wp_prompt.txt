@@ -1,0 +1,449 @@
+Package Identity:
+  WP ID: S10-HERMES-ALPHA-HUNTER-01
+  Title: Multi-Category Hermes Alpha Hunter: Source-Backed Probability, After-Cost Ranking and Budgeted Controlled Research (Research Only)
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: f0184b5d6ea1319884e403aeeb2b4ea026ec5650
+  Required predecessor: PR #256 / S10-ALPHA-AUTO-PILOT-01, head 241054d837cd3e8944368ab9e1149eb980e01c1b, merge f0184b5d6ea1319884e403aeeb2b4ea026ec5650
+  Suggested branch: codex/s10-hermes-alpha-hunter-01
+  Package class: BOUNDED_FOREGROUND_MULTI_CATEGORY_RESEARCH_CANDIDATE_HUNTER
+  Package size class: M (exactly seven tracked files)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: One finite foreground research operator; no daemon, no deployment
+  Product impact: Ranked research candidates across two categories; zero economic authority
+  Network impact: Fixed public read-only GET allowlist (Gamma, CLOB book, ESPN, api.weather.gov); optional controlled Hermes child only under an explicit non-zero research budget
+  Credential impact: None (the operator never reads, creates or echoes credential content)
+  Dependency impact: None
+  Trading impact: None (LIVE TRADING STATUS stays DISABLED)
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: high-reasoning implementation agent (Codex or Claude Code)
+  Reason: seven-path RUNTIME composition of merged native research, venue and Hermes seams with strict source/clock/identity controls
+  Escalate to higher reasoning or STOP if: a native seam cannot be reused without editing a merged file outside scope, readiness fails after one ordinary correction batch, or any step would need credentials, paid inference or an order path
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Objective
+
+Build the shortest complete research/intelligence loop that, in ONE finite foreground
+invocation, discovers markets in at least two genuinely supported categories, derives an
+independent source-backed probability with explicit uncertainty for each supported market,
+checks current public venue mechanics (identity, rule, tick, minimum, depth, fee), computes
+an ESTIMATED after-cost margin for a fixed research quantity, states whether a hypothetical
+USD 2-5 fee-inclusive order could satisfy the verified venue rules, ranks comparable research
+candidates deterministically with a complete denominator funnel, runs budgeted controlled Hermes
+research on the provisional candidates BEFORE final selection so that validated, source-backed,
+origin-labelled Hermes findings can change the research tier (never the probability, bounds or
+margins), and records immutable lineage in the existing PIT store and Alpha Factory registry.
+With no Hermes budget the run is labelled `PUBLIC_SCREENER_NO_HERMES`: an honest multi-category
+screener, not proof of Hermes inference. Amendment A1 (Karl, 2026-10-27) added the Hermes
+influence and the small-order indication; scope stays seven files.
+
+The two categories are fixed by pre-draft inspection evidence (PRE-DRAFT_INSPECTION.md):
+
+- SPORTS_NBA_MONEYLINE: unchanged merged method `espn-nba-pregame-v1`
+  (`tools/alpha/run_shadow_alpha_cycle.py` `rule`, `matched_event`, `probability`).
+- WEATHER_US_DAILY_RAIN: Gamma daily event `where-will-it-rain-on-<month>-<day>-<year>`
+  (US cities; rule = NWS Daily Climate Report CLI measurable precipitation >= 0.01 in,
+  trace is No, climate day midnight-to-midnight LOCAL STANDARD TIME for the named ICAO
+  station, last CLI version before 2:00 PM ET the next day governs, no figure means No).
+  New method `nws-gridpoint-pop-climate-day-v1` over public `api.weather.gov` gridpoint
+  `probabilityOfPrecipitation`.
+
+Crypto short-duration is excluded: no defensible independent source-to-probability method
+exists in the repository. Protocol-V2 markets (`positionIds` equal to `clobTokenIds`, or a `polyv2-` market or event slug) are
+rejected as PROTOCOL_UNSUPPORTED; this WP does not guess V2 identity or size semantics.
+
+This is not a strategy, qualification, paper, Gate C or execution package. Valid NO_TRADE is a
+successful outcome. Proven profitability, calibrated probability, guaranteed fill and real
+positive P&L are never claimed.
+
+# 2. Authority / Non-Authority Posture
+
+Authorized (after Karl's separate implementation authorization only): the seven files in
+section 3; fixed public read-only GETs; one bounded real public validation run (section 8);
+controlled Hermes research ONLY through the merged `run_controlled_hermes_research` and ONLY
+when an explicit research budget greater than zero is supplied (default zero).
+
+Non-authority (boundary groups per `docs/ai/codex/PROTECTED_PATHS.md` Centralized Boundary
+Group Reference): credentials/secrets NOT crossed; authenticated clients NOT crossed;
+wallet/account behavior NOT crossed; order placement/cancel NOT crossed; execution gateway NOT
+crossed; paper engine NOT crossed; scheduler/bot loop NOT crossed; runtime/daemon NOT crossed;
+dashboard/deployment NOT crossed; dependency/lock changes NOT crossed; external code copying
+NOT crossed; generated artifacts NOT committed.
+
+The operator never: reads `.env` or any credential/key file or the Hermes home contents; calls
+OAuth or the tool-free/SYNTHETIC_ONLY Stage B chooser; creates a StrategyVersion, lifecycle
+record, Hermes strategy assessment, ExecutionIntent, Gate C permit or order; imports
+`src/execution_gateway`, `src/live_pilot`, signer or wallet modules; edits risk constants or
+`docs/live_trading_authorization.md`. Hermes output is advisory evidence only. A sizing note
+is the fixed label `SIZING_DEFERRED_TO_WP2`; `POLICY_OR_TECHNICAL_BLOCK:<reason>` lines are
+recommendations, never configuration changes. The USD 2-5 order size, 7-day / USD 30 loss
+policy and USD 50 reserve are WP2 design targets, NOT WP1 authority.
+
+# 3. Exact changed-file scope (7 required = 7 allowed)
+
+1. `tools/alpha/run_alpha_hunter.py` (new)
+2. `tests/tools/alpha/test_alpha_hunter.py` (new; trimmed real-identity fixtures inline)
+3. `docs/alpha_hunter_contract.md` (new)
+4. `docs/status_entries/S10-HERMES-ALPHA-HUNTER-01.md` (new)
+5. `docs/deferred_items_log.md` (append rows only)
+6. `docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_prompt.txt`
+7. `docs/wp_specs/S10-HERMES-ALPHA-HUNTER-01/wp_spec.json`
+
+Every other path is prohibited, including all of `src/**`, `tools/alpha/run_shadow_alpha_cycle.py`,
+`tools/alpha/run_shadow_alpha_auto.py`, `tools/alpha/run_s10_alpha_real_01.py`,
+`tests/test_architecture_boundaries.py`, `.github/**`, `pyproject.toml`, locks, `config/**`,
+`local_data/**`. Do not add an allowlist exception. If a requirement cannot be met inside
+these seven paths, STOP with `ALPHA_HUNTER_BLOCKED:<exact reason>`.
+
+# 4. Hard merge and collision preflight (hard stops)
+
+Hard stop before branch creation if any of: local `main` != `origin/main`; `origin/main` is not
+`f0184b5d6ea1319884e403aeeb2b4ea026ec5650` or a descendant whose diff touches any section-3
+path or any reused native seam listed in section 5; working tree dirty; generated-artifact
+folders visible; an open PR or remote branch already uses this WP ID; native readiness is not
+`IMPLEMENTATION_READY`; Karl's implementation authorization is absent. Hard stop during
+implementation if: a reused seam would need modification; any step needs a credential, OAuth,
+account read, paid inference without explicit budget, POST/PUT/DELETE, or a host outside the
+allowlist; changed files differ from section 3.
+
+# 5. Reuse map (compose; do not rebuild)
+
+- PIT: `src.data_layer.point_in_time_market_research` (`initialize_point_in_time_record_store`,
+  `build_market_observation`, `append_point_in_time_records`), written per operation exactly as
+  `run_shadow_alpha_cycle.native_discovery` does but with the true category label per market.
+- Discovery: `alpha_discovery.build_alpha_universe_snapshot`, `build_pre_allocation_triage_bases`,
+  `allocate_and_finalize_research_queue`. The queue snapshot is RECORDED in the manifest; it does
+  not gate the funnel and its order is research priority, never value.
+- NBA source/probability: `run_shadow_alpha_cycle.rule`, `matched_event`, `probability`,
+  `fresh_source`, `DISCOVERY_URL`, `ESPN` imported unchanged.
+- Rain rule: `qualification_data_readiness.parse_rain_slug` and `parse_rule` imported unchanged
+  (merged, tested; verified to parse the live 2026-10-28 KNYC rule). Required semantics:
+  `finality_policy == "LAST_BEFORE_1400_ET"`, `trace_qualifies is False`, threshold `0.01`;
+  `resolutionSource` must be `https://forecast.weather.gov/product.php` whose query keys are
+  exactly {product, issuedby} or {site, product, issuedby} with `product=CLI`, `site=NWS` when
+  present, and `issuedby == station_id[1:]` (both forms occur in repo fixtures). Anything else
+  -> RULE_UNSUPPORTED.
+- Weather station/time: `nws_ndfd_history.parse_nws_station`, `standard_utc_offset_minutes`,
+  `climate_day_window` (pure; importing them loads no ecCodes). The station document is decoded
+  so that `parse_nws_station` receives numeric coordinates (the shadow `decode` keeps floats as
+  strings; convert the two coordinates with `float()` from their decoded text first).
+- Venue: `src.execution_feasibility.public_market.normalize_gamma_market`,
+  `normalize_clob_book`, `clob_book_url`; `evaluator._sweep`, `evaluator._taker_fee` (already
+  used by the merged shadow operator). `ExecutionIntent` / `assess_execution_feasibility` are NOT
+  used: they require a real StrategyVersion binding.
+- Transport/journal helpers from `run_shadow_alpha_cycle`: `bounded_body`, `NoRedirect`,
+  `SECRET`, `operation_lock`, `put`, `read`, `decode`, `canonical`, `digest`, `need`, `Stop`.
+  The hunter has its own allowlist check, own `begin`/config handling and own fetcher, because
+  the shadow `Fetcher` allowlist is NBA-only and shadow `begin` binds the shadow config.
+- Alpha memory: `alpha_factory.build_opportunity_candidate`, `build_hypothesis_family`,
+  `build_research_episode`, `build_research_source_reference`;
+  `alpha_factory_registry.append_alpha_factory_records`, `load_and_verify_alpha_factory_registry`.
+- Hermes: `controller.run_controlled_hermes_research`; `runner.FakeHermesBackend`,
+  `runner.ExternalHermesCliBackend`; ALPHA-REAL-01 `CaptureBackend`, `revalidate_full_draft`
+  and `sanitized_receipt` are reused unchanged. `map_sources` is NOT reused because it hard-codes
+  the ALPHA-REAL-01 provenance prefix; the hunter has an equivalent mapper (same class map, same
+  duplicate/unmapped exclusions) with provenance `S10-HERMES-ALPHA-HUNTER-01 hermes receipt <id>`. ALPHA-REAL-01 `build_episode` is NOT reusable (it hard-codes that WP's
+  question, thesis, scope and regime); the hunter builds episodes through the native builder.
+
+# 6. Implementation contract
+
+Interface (absolute paths only; no defaults, no auto-discovery):
+`run --scratch-dir ABS --alpha-registry ABS --categories nba,rain
+ [--research-budget ABS_JSON --hermes-executable ABS --hermes-home ABS]` and
+`verify --scratch-dir ABS`. `--alpha-registry` must be an existing verified Alpha Factory
+registry (the operator never initializes it). The three Hermes flags are all-or-nothing; any of
+them without the others, or present with a zero budget, is a usage error. Scratch config is
+created on first `run` and must match byte-for-byte afterwards. One invocation = one
+STARTED-first operation under the kernel lock. Public-acquisition ceilings: 64 GETs, 180 s
+wall clock, NBA <= 8 events, rain <= 6 markets. The Hermes phase is bounded separately by
+runs x per-run `max_wall_seconds`. Clocks: `anchor_utc_date` is taken once at operation start
+and fixes the rain target dates; `cutoff` is taken after all source and Gamma GETs and before
+the CLOB book GETs, which are fetched last; book age is measured against the book receipt time
+and must be <= 30 s at the economics evaluation.
+
+6.1 Fixed public GET allowlist (exact templates; no redirect; anything else refused):
+- NBA: shadow `DISCOVERY_URL`, `ESPN` scoreboard/summary templates, native CLOB book URL.
+- Rain: `https://gamma-api.polymarket.com/events/slug/where-will-it-rain-on-<month>-<d>-<yyyy>`;
+  `https://api.weather.gov/stations/K[A-Z0-9]{3}`;
+  `https://api.weather.gov/points/<lat 4dp>,<lon 4dp>` (coordinates rounded half-even to 4 dp,
+  then trailing zeros and a trailing dot stripped; non-normalized forms trigger a 301 that
+  NoRedirect turns into SOURCE_UNAVAILABLE);
+  `https://api.weather.gov/gridpoints/[A-Z]{3}/[0-9]{1,3},[0-9]{1,3}` (must equal the points
+  document `forecastGridData`); native CLOB book URL.
+Rain target dates: the two dates after `anchor_utc_date` (two event GETs). Markets
+are taken in ascending (target_date, gamma_market_id) order, first six that pass the rule and
+protocol filters. Categories are acquired and capped independently, so one cannot crowd out
+the other.
+
+6.2 Rain probability (method `nws-gridpoint-pop-climate-day-v1`, Decimal only). Window =
+`climate_day_window(target_day, standard_utc_offset_minutes(tz, target_day))`. Require
+`probabilityOfPrecipitation.uom == "wmoUnit:percent"`, every value an integer 0..100 with
+p = value/100 (else PROBABILITY_INVALID); gridpoint `updateTime` <= cutoff and cutoff -
+`updateTime` <= 6 h (else SOURCE_STALE / LOOKAHEAD); cutoff < window start (else
+EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED); overlapping intervals cover the whole window (else
+SOURCE_COVERAGE_INCOMPLETE); every overlapping interval start and both window edges fall on a
+whole UTC hour (else SOURCE_COVERAGE_INCOMPLETE). With overlapping intervals i (value p_i, overlap hours h_i,
+duration hours d_i):
+- lower = max p_i over intervals FULLY inside the window, or 0 if none;
+- upper = min(1, sum p_i * ceil(h_i));
+- point = 1 - prod(1 - p_i * h_i / d_i), clamped into [lower, upper].
+The upper bound holds whether a run-length value is an interval PoP or a repeated hourly PoP.
+Labels: `uncertainty_kind=BOUNDS_OVER_POP_INTERVALS`,
+`interval_semantics=RUN_LENGTH_VALUE_ASSUMED_INTERVAL_POP`,
+`point_assumption=INTERVAL_INDEPENDENCE_AND_UNIFORM_WITHIN_INTERVAL`,
+`spatial_assumption=GRID_CELL_EQUALS_STATION`,
+`resolution_risk=CLI_PUBLICATION_DEADLINE_UNMODELLED`,
+`accumulation_risk=SUB_THRESHOLD_INTERVAL_SUMS_UNMODELLED`, `calibration=UNPROVEN`.
+For the NO token: p_no = 1 - point, lower_no = 1 - upper, upper_no = 1 - lower.
+
+6.3 NBA probability: unchanged `probability()`; the payout hull keeps the 0.5 cancellation value.
+
+6.4 Venue economics (taker only; one generalized function). Protocol-V2 (`positionIds` equal to
+`clobTokenIds`, or a `polyv2-` market or event slug) -> PROTOCOL_UNSUPPORTED before any book GET.
+Live check 2026-10-27 (amendment A3): all 55 open NBA moneyline CTF markets carry `positionIds`
+that differ from `clobTokenIds`, while the `polyv2-` rain twin has them equal; mere presence of
+`positionIds` is therefore not a V2 marker. Require Gamma/CLOB identity,
+equal tick, neg-risk equality, active/accepting/order-book flags, two-sided book, prices on
+tick, book age <= 30 s. Fixed research quantity q = 10 shares, never scaled up. Minimum order
+follows repo truth exactly as `evaluator._minimum_order` (S10-LIVE-ORCH-01 repair): both values
+must exist, q >= CLOB `min_order_size` (shares) AND fill notional >= Gamma `orderMinSize`
+(`gamma_min_order_notional_usd`, USD) (else VENUE_MINIMUM_OR_DEPTH_UNSUPPORTED). The official
+order docs describe size in shares; that semantic dispute is recorded in
+`docs/deferred_items_log.md`, not resolved by reinterpretation here. Full q must fill within
+best-ask depth. Fee: `fees_enabled` absent or `feeSchedule` incomplete -> FEES_UNKNOWN;
+`fees_enabled` false -> fee 0; otherwise native `_taker_fee` with the Gamma rate and exponent,
+quantized up to 0.00001. When the Gamma rate differs from the documented category taker rate
+(docs.polymarket.com/trading/fees, read 2026-10-27: Sports 0.05, Weather 0.05) the row carries
+`FEE_RATE_SOURCE_DISAGREEMENT`, the point margin uses the Gamma fee and the conservative margin
+uses the larger of the two fees computed with the Gamma exponent. Residual 0.005/share.
+`estimated_after_cost_margin = q*p - notional - fee - residual`; `conservative_margin` uses the
+lower payout bound and larger fee; `optimistic_margin` the upper bound. All Decimal.
+`fill_probability = null` (`UNMEASURED`); `restricted` recorded as `restriction_observed`.
+Expected consequence documented in the contract: with q = 10 and a USD 5 Gamma minimum, tokens
+priced below about 0.50 fail the notional minimum, so many NO/underdog tokens are
+VENUE_MINIMUM_OR_DEPTH_UNSUPPORTED; this follows repo truth and is reported, not worked around.
+
+6.4b Small-order fit (RESEARCH-ONLY hypothetical; not execution feasibility). For each
+RESEARCH_CANDIDATE token, with a = best ask and D = size at the best-ask level (the same single
+level the 10-share economics sweeps), the cap fee is the larger of the Gamma-rate fee and the
+documented-rate fee when FEE_RATE_SOURCE_DISAGREEMENT is set, else the Gamma-rate fee. Search
+domain: q_s in {0.01 k : 0 < q_s <= min(D, floor_0.01(5.00 / a))} (size decimals 2 for every
+tick, mirroring `gate_c._SDK_ROUNDING_BY_TICK`, restated as a constant, not imported). Choose
+the largest q_s in that domain with `cost(q_s) = a*q_s + cap_fee(q_s) <= 5.00` (cost is monotone
+in q_s; binary search). Closed sub-reasons, first failing in order:
+SMALL_ORDER_DEPTH_BELOW_FLOOR (no q_s exists, or cost(q_s) < 2.00);
+SMALL_ORDER_GAMMA_MIN_NOTIONAL_NOT_MET_WITHIN_CAP (a*q_s < Gamma `orderMinSize`);
+SMALL_ORDER_CLOB_MIN_SHARES_NOT_MET_WITHIN_CAP (q_s < CLOB `min_order_size`);
+SMALL_ORDER_MARGIN_NONPOSITIVE (`small_order_estimated_margin = q_s*p - a*q_s - gamma_fee(q_s) -
+0.005*q_s <= 0`). `small_order_conservative_margin` uses the lower payout bound and the cap fee,
+exactly as `conservative_margin` does in 6.4. Expected consequence, documented in the contract:
+with a USD 5 Gamma minimum and any positive cap fee no fee-inclusive order <= USD 5 can fit, so
+the selected set is often empty; this is reported, never worked around. Output
+fields: `small_order_fit`, `small_order_reason`, `small_order_shares`, `small_order_cost_usd`,
+`small_order_estimated_margin`, `small_order_conservative_margin`, labelled
+`HYPOTHETICAL_RESEARCH_ONLY_FULL_FILL_ASSUMED_FILL_PROBABILITY_UNKNOWN`. The 10-share figures stay
+as the numeric-parity research fixture. No live policy or risk constant is read or changed.
+
+6.5 Classification and closed reasons. Classes are exactly RESEARCH_CANDIDATE and NO_TRADE.
+The class is fixed by the stages up to and including NO_POSITIVE_ESTIMATED_AFTER_COST_MARGIN:
+RESEARCH_CANDIDATE iff the token passed all of them and `estimated_after_cost_margin > 0`; a
+negative conservative margin is reported, not a veto. SMALL_ORDER_UNFIT, HERMES_CONTRARY_EVIDENCE
+and CAPACITY_NOT_SELECTED are non-selection reasons on RESEARCH_CANDIDATE rows only; they never
+change the class. Independence: the probability source host
+must be the method host (`site.api.espn.com` or `api.weather.gov`), never a Polymarket host, and
+source bytes must not equal any venue payload (else INDEPENDENCE_INVALID). Every non-selected
+row carries exactly one reason: the FIRST failing stage in this closed order.
+Market level (M): PROTOCOL_UNSUPPORTED, RULE_UNSUPPORTED, ACQUISITION_CAPACITY_EXCEEDED,
+IDENTITY_MISMATCH, DUPLICATE_MARKET_CONFLICT, SOURCE_UNAVAILABLE, LOOKAHEAD, SOURCE_STALE,
+EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED, SOURCE_COVERAGE_INCOMPLETE, PROBABILITY_INVALID,
+INDEPENDENCE_INVALID, MARKET_UNAVAILABLE.
+Token level (T): IDENTITY_MISMATCH, BOOK_STALE, BOOK_INCOMPLETE, TICK_MISMATCH, PRICE_OFF_TICK,
+FEES_UNKNOWN, VENUE_MINIMUM_OR_DEPTH_UNSUPPORTED, NO_POSITIVE_ESTIMATED_AFTER_COST_MARGIN,
+SMALL_ORDER_UNFIT, HERMES_CONTRARY_EVIDENCE, CAPACITY_NOT_SELECTED.
+IDENTITY_MISMATCH is M for Gamma/event/source mismatches and T for a CLOB book whose market or
+asset id differs. ACQUISITION_CAPACITY_EXCEEDED marks eligible markets beyond the NBA 8-event or
+rain 6-market caps. Fixed mapping of reused native `Stop` codes: every `rule()` code ->
+RULE_UNSUPPORTED; EVENT_NOT_UNIQUELY_MATCHED, SOURCE_TEAM_MISMATCH, SOURCE_EVENT_INVALID,
+VENUE_IDENTITY_OR_SHAPE_INVALID -> IDENTITY_MISMATCH; PROBABILITY_UNAVAILABLE ->
+SOURCE_UNAVAILABLE; SOURCE_LOOKAHEAD -> LOOKAHEAD; SOURCE_STALE, SOURCE_HTTP_STALE,
+SOURCE_HTTP_CLOCK_UNKNOWN -> SOURCE_STALE; PREDICTION_NOT_PREGAME ->
+EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED; PROBABILITY_INVALID, MARKET_UNAVAILABLE, BOOK_STALE,
+BOOK_INCOMPLETE, TICK_MISMATCH, PRICE_OFF_TICK, FEES_UNKNOWN keep their names. Further fixed
+per-market mappings (never fatal): a non-family rain slug (`parse_rain_slug` None) and every
+`parse_rule` RuleExclusion code (RULE_STATION_MISSING, RULE_STATION_AMBIGUOUS,
+RULE_THRESHOLD_MISSING, RULE_CLIMATE_DAY_MISSING, RULE_SEMANTICS_UNSUPPORTED) -> RULE_UNSUPPORTED
+(M); NdfdError STATION_ID_MISMATCH -> IDENTITY_MISMATCH (M); NdfdError STATION_METADATA_INVALID
+and STATION_OFFSET_UNDERIVABLE -> SOURCE_UNAVAILABLE (M); NUMBER_INVALID raised in
+`probability()` -> PROBABILITY_INVALID (M); CLOCK_INVALID raised in `matched_event` or
+`probability` outside `rule()` -> SOURCE_UNAVAILABLE (M); KeyError, TypeError or ValueError raised
+inside a reused source function -> SOURCE_UNAVAILABLE (M), mirroring the shadow `analyze` catch;
+any `normalize_gamma_market` exception -> IDENTITY_MISMATCH (M); any `normalize_clob_book`
+exception -> IDENTITY_MISMATCH (T). `UNMAPPED_NATIVE_CODE` (fatal for the invocation) is reserved
+for codes raised outside these listed functions. The NBA 8-event cap counts matched events, so
+for NBA ACQUISITION_CAPACITY_EXCEEDED is assigned after `matched_event`; any market failing the
+category/family filter is RULE_UNSUPPORTED so the observed -> eligible drop is fully named.
+
+6.6 Funnel and ranking. Market level: observed >= eligible_for_research (category, rule and
+protocol filters passed) >= source_supported >= probability_assessed. Drop membership:
+observed->eligible: PROTOCOL_UNSUPPORTED, RULE_UNSUPPORTED, ACQUISITION_CAPACITY_EXCEEDED;
+eligible->source_supported: IDENTITY_MISMATCH, DUPLICATE_MARKET_CONFLICT, SOURCE_UNAVAILABLE,
+LOOKAHEAD, SOURCE_STALE, EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED;
+source_supported->probability_assessed: SOURCE_COVERAGE_INCOMPLETE, PROBABILITY_INVALID,
+INDEPENDENCE_INVALID, MARKET_UNAVAILABLE. Bridge: assessed_tokens =
+2 x probability_assessed. Token level: assessed_tokens >= venue_feasible >=
+positive_estimated_margin (= RESEARCH_CANDIDATE) >= small_order_fit >= not_contested >= selected. Rejected-reason counts at each level sum exactly to the
+level's drop. Provisional rank key over RESEARCH_CANDIDATE tokens: (estimated_after_cost_margin / notional
+desc, conservative_margin desc, category, gamma_market_id, token_id). Final rank key prepends the
+research tier: 0 = HERMES_CORROBORATED, 1 = NOT_RESEARCHED_OR_UNINFLUENTIAL, 2 =
+HERMES_CONTESTED. Selected = top 10 by final key among RESEARCH_CANDIDATE tokens that are
+small-order-fit and not tier 2; non-selection reason precedence on RESEARCH_CANDIDATE rows is
+SMALL_ORDER_UNFIT, then HERMES_CONTRARY_EVIDENCE, then CAPACITY_NOT_SELECTED. A non-finite or missing ranking input is fatal for the
+invocation (RANKING_INPUT_INVALID; terminal recorded, nothing ranked).
+
+6.7 Hermes research stage. Absent budget -> zero dispatch, state `HERMES_NOT_RUN_BUDGET_ZERO`.
+Budget file fields: `provider_label`, `model_label`, `ledger_scratch_dir` (must equal
+`--scratch-dir`, so the rolling 7-day ledger cannot be reset by a fresh directory without
+editing the budget file), `max_runs_per_invocation` (<=3), `max_usd_per_run` (<=0.50),
+`max_runs_per_7d` (<=20), `max_usd_per_7d` (<=5.00); values above ceilings reject. For
+RESEARCH_CANDIDATE tokens in provisional rank order (before final selection; small-order fit is
+not required for research) while budget remains,
+build one `HermesResearchRunRequest`
+(category `event_outcome`, public context only, templated falsification question,
+`allowed_research_scope = ["public_web", "public_news", "public_reference"]`,
+`required_source_types = ["official", "news"]`, `max_sources = 5`, `max_wall_seconds = 300`,
+`max_output_bytes = 65536`, `max_accepted_estimated_cost_usd = max_usd_per_run`,
+`context_mode=False` (public market context is plain request text, not context mode); the controller
+makes zero automatic retries, so one dispatch = one reservation) and call the merged controller once with
+`--hermes-executable`/`--hermes-home`, through ALPHA-REAL-01 `CaptureBackend` (its exclusive
+sentinel `<op>/hermes-<NN>.sentinel.json`, unique per dispatch, written immediately before the one
+delegation and carrying `reserved_usd`, is the STARTED-first reservation counted by the 7-day
+ledger even after a crash) and
+`revalidate_full_draft` (the only source of `evidence_for`, `evidence_against`,
+`known_missing_data` and titled source references; raw model text is never read). Reservation = that cost, journaled STARTED-first and
+counted even after a crash. Origin: `FakeHermesBackend` -> `OFFLINE_FIXTURE_MODEL_ORIGIN_UNVERIFIED`;
+`ExternalHermesCliBackend` with receipt verified provider/model equal to the request ->
+`REAL_PROVIDER_REPORTED` (provider-reported, not attested); any other backend -> reject.
+`hermes_flag`: CONTRARY_EVIDENCE_REPORTED iff validated `evidence_against` is non-empty;
+NO_CONTRARY_EVIDENCE_REPORTED if it is empty and the run is valid; RESEARCH_FAILED on any
+controller failure; NOT_RUN otherwise. Hermes episode `result_state`: NO_EDGE_CURRENTLY if
+`evidence_against` non-empty, else RESEARCH_SUPPORTIVE if `evidence_for` non-empty, else
+DATA_INSUFFICIENT if `known_missing_data` non-empty, else no episode (RESEARCH_FAILED); its
+`predecessor_episode_id` is the deterministic episode appended for the same market in the same
+run. Influence (applied before final selection, deterministic): a finding influences the research
+tier only if its origin is `REAL_PROVIDER_REPORTED`, the controller run and revalidation
+succeeded, its receipt `end_utc` lies between the operation start and the moment influence is
+evaluated, its request binds this token's gamma_market_id/condition_id/token_id/category, and the
+hunter source mapper yields >= 1 usable source. Then
+CONTRARY_EVIDENCE_REPORTED -> tier 2 (HERMES_CONTESTED); NO_CONTRARY_EVIDENCE_REPORTED with
+non-empty `evidence_for` -> tier 0 (HERMES_CORROBORATED); anything else -> tier 1. Every other
+finding (fixture/unverified origin, no usable source, failed run) is recorded with
+`influence=NONE` and the reason, and leaves tier 1. Hermes never changes p, bounds, margins,
+small-order fields or the NO_TRADE classification, and never makes a NO_TRADE token selectable.
+Manifest `run_mode`: `PUBLIC_SCREENER_NO_HERMES` (no budget), `HERMES_ATTEMPTED_NO_INFLUENCE`, or
+`HERMES_INFLUENCED`; `hermes_alpha_hunter_milestone` is `SATISFIED_REAL_PROVIDER_INFLUENCE` only
+when >= 1 REAL_PROVIDER_REPORTED finding changed a tier, else
+`UNSATISFIED_REAL_INFERENCE_NOT_DEMONSTRATED`.
+
+6.8 Records and identity. OpportunityCandidate inputs are a pure function of (category,
+method_id, gamma_market_id, condition_id, rule_text_sha256), with rule_text_sha256 also in the
+novelty `subject_keys` so a Gamma rule edit yields a distinct novelty fingerprint: no time,
+price or probability field, so reruns reproduce the same candidate id and are idempotent. One HypothesisFamily per
+method_id. Per supported market and run: one DETERMINISTIC_ANALYSIS ResearchEpisode
+(RESEARCH_SUPPORTIVE if any token is a RESEARCH_CANDIDATE, else EXECUTION_UNECONOMIC if
+probability was assessed, else DATA_INSUFFICIENT) whose `predecessor_episode_id` is the current
+leaf for that (candidate, family) or null; `deterministic_evidence_refs` hold manifest digests.
+No economic or authority field name enters Alpha records. The scratch manifest
+(content-addressed canonical JSON) holds forecasts, economics, funnel, ranking, discovery queue
+and Hermes receipts; `verify` re-derives it cold with zero network and zero dispatch and fails
+on any byte change.
+
+# 7. Negative test matrix
+
+Single test file `tests/tools/alpha/test_alpha_hunter.py`; one named node per requirement.
+Negative groups: R005 (market price as probability, Polymarket-host source), R006 (lookahead,
+stale source/book, 5-dp coordinates/redirect, non-percent PoP unit, token/condition mismatch, conflicting duplicate market, Protocol-V2,
+unsupported rule text, climate day started, incomplete coverage), R007 (non-finite ranking
+input, tie order), R008 (unknown backend, synthetic/OAuth output offered as research, Hermes
+attempt to change probability; A1 influence guards: fixture-origin finding cannot change tier,
+request bound to the wrong token or condition, `end_utc` outside the operation, zero usable
+sources, revalidation mismatch, contested token never selected, Hermes on a NO_TRADE token has no
+effect; the REAL_PROVIDER positive path uses a test-only `ExternalHermesCliBackend` subclass with
+scripted outcomes, never a real process), R004 (A1 small-order: cost exactly 5.00 fits and
+5.00001 does not, cost floor 2.00, each sub-reason in order, depth-limited book, fee-source
+disagreement uses the larger cap fee, class unchanged by small-order outcome), R009 (zero default, ceiling breach, exhaustion, crash
+reservation), R010 (lock contention, tamper, rerun duplicate), R011 (authority key in Alpha
+record), R012 (POST, unallowlisted host, credential env read, forbidden import).
+NOT_APPLICABLE policy categories: forbidden wording/typo/case variants (13, 14) — the hunter
+adds no wording filter; it reuses native Alpha/Hermes validators unchanged.
+
+# 8. Evidence plan / requirement mapping and completion
+
+R001-R012 map 1:1 to spec `evidence_plan` nodes (R003 parity with shadow `economics()` is numeric only - notional, fee, residual, point, lower, upper - on tokens admissible under both; the action rule intentionally differs and the hunter compares the Gamma minimum with fill notional where shadow uses best ask x shares); R013 is one full repository suite on the
+stable head. Adjacent unchanged suites: `tests/tools/alpha/test_shadow_alpha_cycle.py`,
+`tests/tools/alpha/test_shadow_alpha_auto.py`, `tests/tools/alpha/test_run_s10_alpha_real_01.py`,
+`tests/research_runtime/hermes_controlled_runtime/test_controller.py`.
+Gates: `python tools/wp/wp_readiness_gate.py --wp ... --spec ... --check-diff --base <base>
+--head <head>`, `tools/git/diff_scope_summary.py --require-exact-scope`, `git diff --check`,
+exact-head hosted CI, one independent implementation reviewer (RUNTIME track).
+One bounded real public run (outside the checkout, research budget absent so Hermes is not
+dispatched, <=64 GETs) demonstrates both categories or records the honest reason a category
+had no eligible market; `verify` is then re-run offline.
+
+Post-WP operational proof (NOT part of this WP, separately authorized): one real controlled
+Hermes research run on a ranked candidate with an owner-approved budget. Blockers recorded in
+`docs/deferred_items_log.md`: pinned Hermes web toolset dependency (`firecrawl-py`) state,
+provider credential setup by the owner, and the owner budget decision.
+
+# 9. Successor boundary
+
+`S10-ALPHA-HUNTER-PILOT-02` (WP2) is separately gated and PROTECTED: owner policy for
+USD 2-5 fee-inclusive orders, 7-day loss/exposure caps, reserve, signer/Session-Key design,
+Gate C/LIVE-ORCH admission of hunter candidates. Nothing in this WP implements, configures or
+pre-authorizes it.
+
+# 10. Report-back and result vocabulary
+
+Return `ALPHA_HUNTER_PR_READY_FOR_REVIEW`, `ALPHA_HUNTER_NATIVE_ALREADY_SUFFICIENT` or
+`ALPHA_HUNTER_BLOCKED:<reason>`, with PR URL and head, exact changed files, focused/adjacent/
+full-suite counts, readiness output, real-run funnel per category, Hermes state (expected
+`HERMES_NOT_RUN_BUDGET_ZERO`, run_mode `PUBLIC_SCREENER_NO_HERMES`, milestone
+`UNSATISFIED_REAL_INFERENCE_NOT_DEMONSTRATED` - never claimed satisfied by a fixture or zero-budget
+run), small-order fit counts and sub-reasons, and network wording that separates workflow network (git, PR,
+CI) from the bounded public research GETs. Merge, deployment and trading remain NOT AUTHORIZED.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|category|supported_pair|every_invocation|REQUIRE|two_independent_source_methods|category.support|R001
+NR002|source|rain_probability|overlapping_pop_intervals|REQUIRE|frechet_bounds_with_labels|weather.probability|R002
+NR003|venue|economics|every_outcome_token|REQUIRE|native_fee_minimum_depth_parity|venue.economics|R003
+NR004|candidate|classification|positive_estimated_margin|ACCEPT|research_candidate_not_trade_permit|candidate.classification|R004
+NR005|source|independence|probability_from_market_or_venue_host|REJECT|independence_invalid|source.independence|R005
+NR006|source|identity_and_time|lookahead_stale_mismatch_or_unsupported|REJECT|closed_reason_no_trade|source.identity_time|R006
+NR007|ranking|order_and_funnel|every_invocation|PRESERVE_EXACT|deterministic_total_order_and_exact_denominators|ranking.funnel|R007
+NR008|hermes|origin_and_authority|any_hermes_output|FORBID|probability_margin_or_classification_change|hermes.origin|R008
+NR009|hermes|budget|absent_or_exhausted|FORBID|dispatch_without_budget|hermes.budget|R009
+NR010|restart|operation_journal|rerun_crash_or_tamper|REQUIRE|cold_verify_zero_dispatch_idempotent|restart.integrity|R010
+NR011|memory|alpha_records|economic_or_authority_field|FORBID|authority_in_research_memory|memory.alpha_records|R011
+NR012|authority|economic_and_authenticated_paths|any_invocation|FORBID|zero_economic_or_authenticated_calls|authority.zero_economic|R012
+END_NORMATIVE_RULE_MATRIX_V1
