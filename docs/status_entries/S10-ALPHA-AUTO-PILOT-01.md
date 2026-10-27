@@ -33,9 +33,36 @@ Both scans: exit 0, zero findings, zero parser errors. Each used:
 
 `semgrep scan --config /rules.yaml --metrics=off --disable-version-check --no-git-ignore --include '*.py' --max-target-bytes 20000000 --json --error --jobs 1 --timeout 60 /targets`
 
-The six scanned files were byte-compared with the current worktree. Full suite,
-Gitleaks, dependency audit, native final-diff readiness and hosted exact-head CI
-remain pending; no final review-readiness claim yet.
+The six scanned files were byte-compared with the current worktree. At implementation
+commit fc1131e217a4580ba0aeaa8388c65dfab9ced9c6, native --check-diff readiness and
+exact-scope helper passed with the unchanged14 paths and exact certified artifacts.
+Gitleaks8.27.2 changed-commit scan and full fetched history scan both returned
+exit0/no leaks (one candidate commit and583 history commits respectively).
+Binary-backed Gitleaks detection suite:46passed,0skipped,exit0,15.87s.
+The isolated Linux69-package dependency audit returned exit0/no unwaived findings,
+only the inherited fsspec CVE-2026-104851 exception; pip check passed. No dependency
+was changed. Scanner-rule fetch and dependency advisory lookup used tooling network.
+
+Full-suite command in the isolated LinuxCPython3.12.14 sandbox:
+`/usr/local/bin/python -B -m pytest -q -rs -p no:cacheprovider`
+Result:exit1,14167passed,8failed,15skipped,125warnings,1420.05s. This is FAIL,
+not a full-suite PASS. Initial container mount and CRLF-profile collection errors
+were retained externally; exact Git-archive bytes repaired only the disposable
+clone, with the immutable profile hash verified and index tree equal to HEAD.
+
+Six SIWC STORAGE_UNSAFE failures came from HOME=/tmp, whose ancestor is intentionally
+world-writable. A synthetic-only rerun with private /validation-home tmpfs
+(mode700/uid1000/gid1000) returned6passed,18deselected,exit0,3.24s:
+`/usr/local/bin/python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py -k 'siwc_refresh_owner_and_crash or siwc_posix_storage_and_import or siwc_posix_negative_files_and_faults or siwc_posix_import_fault_prefixes or siwc_posix_lock_process_death or siwc_posix_missing_name_after_open_is_not_absence'`
+No SIWC source, policy, OS privilege or test assertion was modified.
+
+Material blocker: two remaining architecture-text comparisons require edits outside
+the certified14-file set. Both tests independently reproduced on Windows (2failed,
+exit1); see deferred D005. The required two-line src/live_pilot approval is the sole
+difference that fails their frozen comparisons. Certified sections3/5 prohibit a
+15th path, so no compatibility fix or changed certificate was applied. Independent
+review confirmed no honest14-path fix. Hosted CI/PR publication are not performed
+while required validation is failing; final acceptance remains BLOCKED_NOT_READY.
 Negative matrix required:YES; evidence R001-R012 is in the certified spec.
 Mandatory skill workflow applied: Ponytail, predraft/reuse/test-plan/one-shot,
 financial/boundary/evidence/sharp-edges, readiness, verification-before-completion;
@@ -47,8 +74,11 @@ Security-review/file/Python references and code-simplifier were applied to actua
 changed source; simplification removed a dummy authority wrapper from fee scoring.
 There is no separate Skill invoker tool; no phantom slash invocation is claimed.
 
-Workflow network: git synchronization and GitHub metadata. Product/provider/venue
+Workflow/tooling network: git synchronization, GitHub metadata, scanner-rule fetch
+and dependency advisory lookup. Product/provider/venue
 network, real credentials/accounts/signing/orders, deployment and capital:0.
 LIVE TRADING STATUS: DISABLED. Implementation does not grant activation or merge.
-Evidence mode: BLOCKED_NOT_READY; Ready for review:NO pending required validation,
-exact-head CI and independent implementation/security/Side22 review.
+Evidence mode: BLOCKED_NOT_READY; Ready for review:NO. Same-WP two-test compatibility
+scope amendment and fresh independent certification are required before completion.
+The requested immediate-successor recommendation is held until Stage2 PR completion,
+per Karl's explicit ordering; it is not a reason to expand this package.

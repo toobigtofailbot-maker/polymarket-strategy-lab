@@ -8,6 +8,7 @@
 | S10-ALPHA-AUTO-PILOT-01-D002 | SEPARATE_CUSTODY_AND_DEPLOYMENT | Native attended TTY only here. Unattended custody adapter, credentials, deployment/timer/host activation and live capital require separately approved successor; no env/file/argv secret mechanism. |
 | S10-ALPHA-AUTO-PILOT-01-D003 | SEPARATE_EXIT_REDEMPTION_SCALING | SELL/exit, redemption, other sports, FAK/maker/partial-fill economics and scaling are out of scope. Native unresolved/unredeemed commitment remains counted; saturation abstains. |
 | S10-ALPHA-AUTO-PILOT-01-D004 | SEPARATE_HERMES_MARKET_SELECTION | Rules-based ESPN NBA selection under a Hermes strategy-level gate; no new provider call, per-market Hermes choice or autonomous/unattended trading claim. |
+| S10-ALPHA-AUTO-PILOT-01-D005 | BLOCKED_CERTIFIED_SCOPE_AMENDMENT | Full suite found two frozen architecture-text compatibility assertions in tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py:426 and tests/research_runtime/test_autonomous_opportunity_cycle.py:302. They reject the required exact pilot approval block, and both files are outside the certified14 paths. Independent reproduction confirms no honest14-path fix. Proposed same-WP16-path amendment preserves all historical equality/sibling/tail checks, removing only the exact new approved block before comparison. Karl approval and fresh independent prompt/spec certificate required before applying. No amendment applied; Ready for review:NO. |
 
 ## S10-LIVE-CANARY-SIWC-01 bounded follow-up
 
