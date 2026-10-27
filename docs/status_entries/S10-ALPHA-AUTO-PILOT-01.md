@@ -1,93 +1,100 @@
-# S10-ALPHA-AUTO-PILOT-01 â€” default-off attended NBA pilot
+# S10-ALPHA-AUTO-PILOT-01 — dormant attended NBA pilot
 
-Base9d0df2ea8c9502b55cb29e4c1a78af0168b3a196, merged PR255;
-branch codex/s10-alpha-auto-pilot-01. Karl explicitly authorized implementation of
-the original certified14-path WP, subsequently expanded by Karl to exactly16 paths, offline validation, security review and one PR.
-PROTECTED/risk4/L. Certified prompt/spec/certificate are imported unchanged;
-native pre-implementation readiness returned IMPLEMENTATION_READY, hash-bound.
+## Identity and owner authority
 
-One composer, one default-None native hook/call site, three test surfaces, five
-contract/status/deferral documents and three governed artifacts, plus two owner-approved historical compatibility tests: exactly16 paths.
-Native risk/caps, GateB/C, ledger schema, feeder, dependencies/workflows and live
-status are unchanged. No source implementation outside those paths is authorized. The two added tests change only exact historical approval recognition.
+Branch: codex/s10-alpha-auto-pilot-01. PR and current live PR head: see GitHub PR
+metadata and current PR body. Base:9d0df2ea8c9502b55cb29e4c1a78af0168b3a196,
+merged PR255. Validated implementation commit:360b890370ffc2c78174d611eb632568abe53d2d.
+Later changes restore UTF8 documentation and update evidence only; exact-head hosted
+results and final posted-evidence mode belong in the PR body. This record is stable,
+non-self-referential and grants no merge or activation authority.
 
-Stable-source validation: the following command returned exit 0, 173 passed,
-0 failed, 0 skipped, no warning summary, 76.19 seconds:
+Karl authorized the original14-path software WP, then explicitly approved the same
+WP expansion to exactly16 paths, solely adding two historical compatibility tests.
+PROTECTED/risk4/L. Fresh /root/amendment16_certifier separate-context certification
+passed all12lenses and implementability BEFORE those tests were modified. The exact
+reviewer-issued certificate was copied unchanged; issuer selected UTF8/LF bytes.
+Prompt SHA256:65bdd22fdae9e012dfa56a362fd23758e4013c18f482a9f733e4b61cf390fb1b.
+Spec SHA256:4c7ae5393483c36584b4c4ad8da42416720ebc9fd8ecb08be58dfa027b5ccafb.
+Certificate SHA256:8b168604585be91ed857fff518390cbd1a641ad1654db216e23ce5e6f3981972.
 
-`python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py tests/execution_gateway/test_live_orch.py tests/test_architecture_boundaries.py tests/test_no_live_mode_by_default.py`
+## Implementation and scope
 
-Independent separate-context implementation/security review by
-`/root/implementation_review` found four issues, corrected together in the same
-pilot/test scope: final file-I/O deadlines, native refusal/result preservation,
-PR254 HTTP-date freshness, and the exact conditional stress label. Its actual
-reread found no remaining material issue; independent pilot/native 133 passed and
-boundary 40 passed. These overlap the 173 above and are not added as unique tests.
+Single finite composer, exact native attended provider, dedicated kernel-held run
+lock before gateway opening, raw-source forecast/rule reconstruction, best-ask FOK
+exact-share sizing, native permit/feasibility/reconciliation and one optional in-lock
+admission hook. The closure rechecks owner/policy, kill, exact market/permit/current
+lifecycle/Hermes, rolling admissions, native commitment/loss and final deadlines.
+The non-None native block resamples time after guard I/O and rejects expired permits.
+Default None preserves native behavior and measured clock-call sequence. Terminals
+retain bounded native refusal/reference and conditional-stress labels; unconditional
+order EV remains UNKNOWN, realized profit null. No fallback/reprice/order retry.
 
-Actual-surface Semgrep CE 1.176.1 (image SHA256
-7f1e1b6711ec37be9e66717ac155778c2dae06205521ef85c7886ac28864c14e)
-scanned all six changed Python files read-only, non-root, network none, metrics
-off, no credentials or upload. Exact p/python and p/security-audit rule hashes:
-de5bc79d074c3b4146338a0bf95830406f169bd91ac590a2f1ef111f162e23f5 and
-83d7cde9157b3c79cc5cfaea26e7bd2ba9c740f2ba07635ad475b2585556c32d.
-Both scans: exit 0, zero findings, zero parser errors. Each used:
+Exactly16 changed paths. Two additional tests count/remove only the exact approved
+pilot block before original full historical comparisons. Original frozen Git SHAs,
+all equality, hostile-sibling, filesystem/source and architecture-tail checks remain.
+No GateB/C, risk/capital constant, ledger schema, feeder, dependency or workflow edit.
+LIVE TRADING STATUS: DISABLED. Credentials/accounts/orders/capital/deployment:0.
 
-`semgrep scan --config /rules.yaml --metrics=off --disable-version-check --no-git-ignore --include '*.py' --max-target-bytes 20000000 --json --error --jobs 1 --timeout 60 /targets`
+## Actual validation
 
-The six scanned files were byte-compared with the current worktree. At implementation
-commit fc1131e217a4580ba0aeaa8388c65dfab9ced9c6, native --check-diff readiness and
-exact-scope helper passed with the unchanged14 paths and exact certified artifacts.
-Gitleaks8.27.2 changed-commit scan and full fetched history scan both returned
-exit0/no leaks (one candidate commit and583 history commits respectively).
-Binary-backed Gitleaks detection suite:46passed,0skipped,exit0,15.87s.
-The isolated Linux69-package dependency audit returned exit0/no unwaived findings,
-only the inherited fsspec CVE-2026-104851 exception; pip check passed. No dependency
-was changed. Scanner-rule fetch and dependency advisory lookup used tooling network.
+- Full isolated LinuxCPython3.12.14 suite:exit0,14175passed,15skipped,125warnings,
+  507.94s. Exact snapshot matches committed Git tree; non-root/cap-drop/read-only,
+  network none/private-home tmpfs. `/usr/local/bin/python -B -m pytest -q -rs -p no:cacheprovider`.
+  Skips: strict-hosted DuckDB1, unavailable pinned native Hermes6, Windows-only2,
+  Gitleaks binary5, frontend Node1. These are qualified skips, not passing assertions.
+- Windows focused/adjacent:exit0,189passed,0skipped,68.45s. Exact command:
+  `python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_pilot.py tests/execution_gateway/test_live_orch.py tests/test_architecture_boundaries.py tests/test_no_live_mode_by_default.py tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py tests/research_runtime/test_autonomous_opportunity_cycle.py`.
+- Gitleaks8.27.2 binary-backed tests:46passed,0skipped,exit0,12.68s:
+  `python -B -m pytest -q -rA -p no:cacheprovider tests/test_gitleaks_secret_scan_gate.py`.
+  Full fetched history585commits:exit0/no leaks. A final-head history scan is required
+  before publication; actual count/head are recorded in the PR body.
+- Semgrep CE1.176.1, pinned image7f1e1b6711ec37be9e66717ac155778c2dae06205521ef85c7886ac28864c14e,
+  actually scanned all8changedPython files as byte-identical mapped flat copies to
+  avoid default test-directory ignores. p/python151rules:exit0,0findings/0errors.
+  p/security-audit79applicable rules:rawexit1,2exec warnings/0errors. Independent
+  fp-check/security review classified both exact findings FALSE POSITIVE for
+  exploitable injection: unchanged test helpers execute fixed trusted historical
+  Git source, never external/model/policy text. No suppression or dropped target.
+  Original partial3-target scans and wrapper stdout-encoding failure are retained
+  externally, not described as complete coverage. Final command for each rulepack:
+  `semgrep scan --config /rules.yaml --metrics=off --disable-version-check --no-git-ignore --include '*.py' --max-target-bytes 20000000 --json --error --jobs 1 --timeout 60 /targets`.
+- Exact69-package isolated inventory audit:exit0,0unwaived findings, only inherited
+  fsspec CVE-2026-104851 exception. pip check passed; no dependency change. Exact
+  requirementsSHA256:6f45e65ec97c6c964f3d01654412e6997b22b7ca06639950eb091a10590492a0.
+- Native spec guard, certificate-bound readiness/check-diff, exact16scope helper,
+  generated-artifact guard and diff-check passed. Commands/results on final head
+  are recorded in the PR body. Technical readiness is not owner/live authorization.
 
-Full-suite command in the isolated LinuxCPython3.12.14 sandbox:
-`/usr/local/bin/python -B -m pytest -q -rs -p no:cacheprovider`
-Result:exit1,14167passed,8failed,15skipped,125warnings,1420.05s. This is FAIL,
-not a full-suite PASS. Initial container mount and CRLF-profile collection errors
-were retained externally; exact Git-archive bytes repaired only the disposable
-clone, with the immutable profile hash verified and index tree equal to HEAD.
+## Independent review, skills and preserved history
 
-Six SIWC STORAGE_UNSAFE failures came from HOME=/tmp, whose ancestor is intentionally
-world-writable. A synthetic-only rerun with private /validation-home tmpfs
-(mode700/uid1000/gid1000) returned6passed,18deselected,exit0,3.24s:
-`/usr/local/bin/python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py -k 'siwc_refresh_owner_and_crash or siwc_posix_storage_and_import or siwc_posix_negative_files_and_faults or siwc_posix_import_fault_prefixes or siwc_posix_lock_process_death or siwc_posix_missing_name_after_open_is_not_absence'`
-No SIWC source, policy, OS privilege or test assertion was modified.
+Separate /root/implementation_review inspected actual source, all compatibility
+checks and security dataflows; independent42compatibility/boundary tests and four
+negative mutation oracles passed. Earlier four implementation findings were fixed
+in-scope; final review must include exact-head hosted CI and posted evidence.
+Negative matrix required:YES; R001-R012 map exact test nodes in the spec. Covers
+malformed/type/null/empty/duplicate/unknown/nonfinite/future inputs, full owner
+digests/windows, caps/concurrency/kill/currentness/deadlines, precision/minimum/depth,
+single-transmit replay and no-echo terminals. No free-text wording filter introduced.
 
-Historical material blocker: two remaining architecture-text comparisons required edits outside
-the certified14-file set. Both tests independently reproduced on Windows (2failed,
-exit1); see deferred D005. The required two-line src/live_pilot approval is the sole
-difference that fails their frozen comparisons. Certified sections3/5 prohibit a
-15th path, so no compatibility fix or changed certificate was applied. Independent
-review confirmed no honest14-path fix. Those failures are retained as historical evidence, not a final PASS.
-Negative matrix required:YES; evidence R001-R012 is in the certified spec.
-Mandatory skill workflow applied: Ponytail, predraft/reuse/test-plan/one-shot,
-financial/boundary/evidence/sharp-edges, readiness, verification-before-completion;
-All eight installed native-locator skills actually ran with Python -P -B and
-returned SOURCE_LOCATED/exit 0; -P avoids their inspect.py/stdlib import collision.
-Ponytail applied before coding and after review: single composer, existing kernel,
-no new scheduler, signer, scoring service, persistence engine or dependency.
-Security-review/file/Python references and code-simplifier were applied to actual
-changed source; simplification removed a dummy authority wrapper from fee scoring.
-There is no separate Skill invoker tool; no phantom slash invocation is claimed.
+All8installed locator skills actually executed with python-P-B and returned
+SOURCE_LOCATED/exit0. Ponytail applied before and after changes: one native composer,
+no new scheduler/signer/scoring/persistence service/dependency. Hermes/Alpha reuse,
+financial invariants, authority boundary, canonical evidence, minimum test plan,
+one-shot/readiness, security-review/sharp-edges/code-simplifier and verification
+were applied to actual files. No separate Skill invoker exists; none is invented.
 
-Workflow/tooling network: git synchronization, GitHub metadata, scanner-rule fetch
-and dependency advisory lookup. Product/provider/venue
-network, real credentials/accounts/signing/orders, deployment and capital:0.
-LIVE TRADING STATUS: DISABLED. Implementation does not grant activation or merge.
-Evidence mode: BLOCKED_NOT_READY; Ready for review:NO pending final validation/hosted CI and independent exact-head review.
+Earlier full run:14167passed/8failed/15skipped/125warnings. SixSIWC failures resolved
+with private HOME, without changing native storage checks; two frozen-comparison
+failures resolved only after Karl's16path amendment and fresh certification(D005).
+Initial Windows-clone CRLF profile and container mount errors were fixed only in
+disposable validation state. No test/security guard was weakened. All failure logs
+remain external. D001-D004 activation/custody/exit/redemption/Hermes successors stay
+separately gated; D005 is resolved. Follow-up correction required:NO known software
+defect after local review; exact-head CI and final independent PR review remain gates.
 
-Karl explicitly authorized the same-WP14-to16-path amendment. Fresh separate-context
-review by /root/amendment16_certifier passed all12lenses and implementability before
-the two tests were modified. Prompt SHA25665bdd22fdae9e012dfa56a362fd23758e4013c18f482a9f733e4b61cf390fb1b;
-spec SHA2564c7ae5393483c36584b4c4ad8da42416720ebc9fd8ecb08be58dfa027b5ccafb;
-reviewer-issued certificate SHA2568b168604585be91ed857fff518390cbd1a641ad1654db216e23ce5e6f3981972.
-The executor copied certificate bytes unchanged. Native readiness passed16paths,
-12evidence nodes,14normative rules, PROTECTED/INDEPENDENT_CERTIFICATE. The two added
-files retain every historical baseSHA and full equality/sibling/tail assertion; only
-a count-checked exact pilot block is additionally removed before comparison.
-Final amendment validation is in progress; no new product behavior was added.
-The requested immediate-successor recommendation is held until Stage2 PR completion,
-per Karl's explicit ordering; it is not a reason to expand this package.
+Workflow/tooling network: git sync/push/PR/CI metadata, rulepack fetch and dependency
+advisory lookup. Product/provider/venue traffic, real credential/account/wallet/signing,
+orders, capital, host/deployment/live activation and merge:0. Future approved runtime
+calls reuse native public/private boundaries; no operation occurred in this WP.
+Final readiness/evidence mode: see current PR body; no premature hosted PASS claim.
