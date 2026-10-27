@@ -141,13 +141,20 @@ class Fetcher:
         try:
             opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), S.NoRedirect())
             request = urllib.request.Request(url, headers={'Accept': 'application/json', 'User-Agent': USER_AGENT})
-            deadline = time.monotonic() + 20
+            deadline = min(time.monotonic() + 20, self.started + CONFIG['max_acquisition_seconds'])
             with opener.open(request, timeout=20) as response:
-                # shortcut: shadow bounded_body probes the raw socket, which live (Windows) is often
-                # already gone (WinError 10038) and the failed probe empties the body; one byte-capped
-                # read bounded by the 20 s socket timeout instead of a per-chunk deadline.
-                raw = response.read(S.MAX_BYTES + 1)
-                need(len(raw) <= S.MAX_BYTES and time.monotonic() <= deadline, 'PUBLIC_BODY_LIMIT')
+                # Shadow bounded_body probes the raw socket, which live (Windows) is often already
+                # gone (WinError 10038) and the failed probe empties the body; chunked read1 calls
+                # with a monotonic deadline per chunk instead (each read also has the socket timeout).
+                raw = bytearray()
+                while True:
+                    need(time.monotonic() <= deadline, 'NETWORK_DEADLINE')
+                    chunk = response.read1(65536)
+                    if not chunk:
+                        break
+                    raw.extend(chunk)
+                    need(len(raw) <= S.MAX_BYTES, 'PUBLIC_BODY_LIMIT')
+                raw = bytes(raw)
                 need(response.status == 200 and not S.SECRET.search(raw), 'PUBLIC_BODY_INVALID')
                 S.decode(raw)
                 receipt['http_date'] = response.headers.get('Date')
@@ -232,7 +239,10 @@ def duration_hours(text):
     match = _DURATION_RE.fullmatch(text)
     if match is None or not any(match.groups()):
         fail('SOURCE_COVERAGE_INCOMPLETE')
-    return int(match.group(1) or 0) * 24 + int(match.group(2) or 0)
+    hours = int(match.group(1) or 0) * 24 + int(match.group(2) or 0)
+    if not 0 < hours <= 31 * 24:  # bounded: a malformed huge duration is a coverage defect, not fatal
+        fail('SOURCE_COVERAGE_INCOMPLETE')
+    return hours
 
 
 def rain_probability(grid, window, source_cutoff):
@@ -252,12 +262,11 @@ def rain_probability(grid, window, source_cutoff):
     if source_cutoff >= int(start.timestamp()) * 1_000_000_000:
         fail('EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED')
     pop = props.get('probabilityOfPrecipitation')
-    if not isinstance(pop, dict) or pop.get('uom') != 'wmoUnit:percent' or not isinstance(pop.get('values'), list):
-        fail('PROBABILITY_INVALID')
-    if start.minute or start.second or end.minute or end.second:
+    values = pop.get('values') if isinstance(pop, dict) else None
+    if not isinstance(values, list) or start.minute or start.second or end.minute or end.second:
         fail('SOURCE_COVERAGE_INCOMPLETE')
     intervals = []
-    for item in pop['values']:
+    for item in values:  # structure and coverage first; unit and values after (closed order)
         if not isinstance(item, dict) or not isinstance(item.get('validTime'), str) or '/' not in item['validTime']:
             fail('SOURCE_COVERAGE_INCOMPLETE')
         begin_text, span = item['validTime'].split('/', 1)
@@ -271,14 +280,11 @@ def rain_probability(grid, window, source_cutoff):
         finish = begin + timedelta(hours=hours)
         if finish <= start or begin >= end:
             continue
-        if begin.minute or begin.second or begin.microsecond or hours <= 0:
+        if begin.minute or begin.second or begin.microsecond:
             fail('SOURCE_COVERAGE_INCOMPLETE')
-        value = item.get('value')
-        if type(value) is not int or not 0 <= value <= 100:
-            fail('PROBABILITY_INVALID')
-        overlap = (min(finish, end) - max(begin, start)).total_seconds() / 3600
-        intervals.append((begin, finish, D(value) / 100, D(int(overlap)), D(hours)))
-    intervals.sort()
+        overlap = D(int((min(finish, end) - max(begin, start)).total_seconds())) / 3600
+        intervals.append((begin, finish, item.get('value'), overlap.to_integral_value(rounding=ROUND_CEILING), D(hours)))
+    intervals.sort(key=lambda x: (x[0], x[1]))
     cursor = start
     for begin, finish, *_ in intervals:
         if begin > cursor:
@@ -286,6 +292,9 @@ def rain_probability(grid, window, source_cutoff):
         cursor = max(cursor, finish)
     if not intervals or cursor < end:
         fail('SOURCE_COVERAGE_INCOMPLETE')
+    if pop.get('uom') != 'wmoUnit:percent' or any(type(v) is not int or not 0 <= v <= 100 for _, _, v, _, _ in intervals):
+        fail('PROBABILITY_INVALID')
+    intervals = [(b, f, D(v) / 100, h, d) for b, f, v, h, d in intervals]
     lower = max((p for b, f, p, _, _ in intervals if b >= start and f <= end), default=D(0))
     upper = min(D(1), sum(p * h for _, _, p, h, _ in intervals))
     survive = D(1)
@@ -441,18 +450,15 @@ def analyze_nba(op, receipts, clocks):
     markets = data(op, urls.get(S.DISCOVERY_URL)) or []
     if not isinstance(markets, list):
         markets = []
-    events, seen = [], {}
+    seen = {}
     for receipt in receipts:
         if receipt['url'].startswith(S.ESPN + 'scoreboard?'):
             board = data(op, receipt)
             for event in (board or {}).get('events', []):
                 seen.setdefault(event.get('id'), event)
     events = list(seen.values())
-    copies = {}
-    for market in markets:
-        copies.setdefault(str(market.get('id')), set()).add(canonical(market))
     rows, matched = [], set()
-    for market in markets:
+    for _, mid, market, conflict in unique_markets((None, m) for m in markets):
         row = market_row('SPORTS_NBA_MONEYLINE', market, rule_sha256=None, forecast=None, tokens=None)
         rows.append(row)
         try:
@@ -462,7 +468,7 @@ def analyze_nba(op, receipts, clocks):
                 outcomes, tokens, start = S.rule(market)
             except Exception:
                 fail('RULE_UNSUPPORTED')
-            if len(copies[row['gamma_market_id']]) > 1:
+            if conflict:
                 fail('DUPLICATE_MARKET_CONFLICT')
             event_id = S.matched_event(market, events)
             if event_id in matched:
@@ -482,7 +488,7 @@ def analyze_nba(op, receipts, clocks):
             forecast = S.probability(market, summary, receipt, cutoff)
             independence(receipt, receipts, 'site.api.espn.com')
             row['forecast'] = forecast
-            row['gamma'] = gamma_state(market, row['gamma_market_id'], market['conditionId'], tokens[0])
+            row['gamma'] = gamma_state(market, mid, market['conditionId'], tokens[0])
         except Exception as error:
             row['reason'] = mapped(error, 'SOURCE_UNAVAILABLE')
     return rows
@@ -504,29 +510,15 @@ def station_doc(document):
 
 def analyze_rain(op, receipts, clocks):
     urls, cutoff = by_url(receipts), clocks['source_cutoff_ns']
-    anchor = date.fromisoformat(clocks['anchor_utc_date'])
-    candidates = []
-    for offset in (1, 2):
-        day = anchor + timedelta(days=offset)
-        event = data(op, urls.get(rain_event_url(day)))
-        for market in (event or {}).get('markets', []) if isinstance(event, dict) else []:
-            candidates.append((day, str(market.get('id')), market, event.get('slug', '')))
-    candidates.sort(key=lambda item: (item[0], int(item[1]) if item[1].isdigit() else 0, item[1]))
-    copies = {}
-    for _, mid, market, _ in candidates:
-        copies.setdefault(mid, set()).add(canonical(market))
-    rows, taken, done = [], 0, set()
-    for day, mid, market, slug in candidates:
-        if mid in done:
-            continue
-        done.add(mid)
+    rows, taken = [], 0
+    for (day, slug), mid, market, conflict in rain_candidates(op, urls, clocks):
         row = market_row('WEATHER_US_DAILY_RAIN', market, rule_sha256=None, forecast=None, tokens=None)
         rows.append(row)
         try:
             if is_v2(market, slug):
                 fail('PROTOCOL_UNSUPPORTED')
-            target, semantics, tokens = rain_rule(market, day) if len(copies[mid]) == 1 else (None, None, None)
-            if target is None:
+            target, semantics, tokens = rain_rule(market, day)
+            if conflict:
                 fail('DUPLICATE_MARKET_CONFLICT')
             if taken >= CONFIG['rain_markets']:
                 fail('ACQUISITION_CAPACITY_EXCEEDED')
@@ -651,10 +643,9 @@ def pit_discovery(op, markets, observed_ns, *, create):
     if create:
         need(PIT.initialize_point_in_time_record_store(path).is_valid, 'NATIVE_PIT_INVALID')
         records = []
-        unique = {(category, digest(canonical(market))): (category, market) for category, market in markets}
-        for category, market in unique.values():
-            mid = str(market.get('id'))
-            if not re.fullmatch(r'[0-9]{1,32}', mid):
+        # Conflicting copies stay out of PIT (their rows already carry DUPLICATE_MARKET_CONFLICT).
+        for category, mid, market, conflict in unique_markets(markets):
+            if conflict or not re.fullmatch(r'[0-9]{1,32}', mid):
                 continue
             try:
                 outcomes, tokens = S.array(market.get('outcomes')), S.array(market.get('clobTokenIds'))
@@ -735,16 +726,20 @@ def analyze(op, receipts, clocks, findings, categories, *, create=False):
 def load_budget(path, scratch):
     if path is None:
         return None
-    raw = Path(path).read_bytes()
+    budget_file = S.safe(Path(path))
+    need(budget_file.is_absolute() and budget_file.is_file(), 'BUDGET_INVALID')
     try:
-        value = json.loads(raw, parse_float=D, object_pairs_hook=S.venue._no_duplicates)
+        value = json.loads(budget_file.read_bytes(), parse_float=D, object_pairs_hook=S.venue._no_duplicates)
     except Exception:
         raise Stop('BUDGET_INVALID') from None
     need(isinstance(value, dict) and set(value) == BUDGET_KEYS, 'BUDGET_INVALID')
+    need(all(isinstance(value[k], str) and value[k] for k in ('provider_label', 'model_label', 'ledger_scratch_dir')),
+         'BUDGET_INVALID')
     need(Path(value['ledger_scratch_dir']) == Path(scratch), 'BUDGET_LEDGER_MISMATCH')
     for key, ceiling in BUDGET_CEILINGS.items():
         number = value[key]
-        need(not isinstance(number, bool) and isinstance(number, (int, D)) and 0 <= D(str(number)) <= ceiling,
+        kinds = (int,) if key.startswith('max_runs') else (int, D)
+        need(not isinstance(number, bool) and isinstance(number, kinds) and 0 <= D(str(number)) <= ceiling,
              'BUDGET_CEILING_EXCEEDED')
     need(value['max_runs_per_invocation'] > 0 and D(str(value['max_usd_per_run'])) > 0, 'BUDGET_ZERO')
     return value
@@ -865,26 +860,30 @@ def hermes_stage(root, op, budget, backend, executable, home, manifest, clock_ns
 
 
 def influence(findings, tokens, started_ns, evaluated_ns):
+    """Deterministic, re-derivable: flags and tiers from stored findings and two stored clocks."""
     rows = {t['token_id']: t for t in tokens}
     for finding in findings:
-        if finding.get('state') in ('VALID', 'RESEARCH_FAILED') and finding['token_id'] in rows:
+        state = finding.get('state')
+        projection = finding.get('projection') or {}
+        finding['hermes_flag'] = ('RESEARCH_FAILED' if state == 'RESEARCH_FAILED' else 'NOT_RUN' if state != 'VALID'
+                                  else 'CONTRARY_EVIDENCE_REPORTED' if projection.get('evidence_against')
+                                  else 'NO_CONTRARY_EVIDENCE_REPORTED')
+        if state in ('VALID', 'RESEARCH_FAILED') and finding['token_id'] in rows:
             finding['influence'], finding['influence_reason'] = judge(finding, rows[finding['token_id']],
                                                                       started_ns, evaluated_ns)
         else:
-            finding.setdefault('influence', 'NONE')
-            finding.setdefault('influence_reason', finding.get('state', 'NOT_RUN'))
+            finding['influence'], finding['influence_reason'] = 'NONE', state or 'NOT_RUN'
     return findings
 
 
 # ---------------------------------------------------------------- Alpha lineage
 
 def alpha_records(manifest, registry):
-    """Candidate per market (pure identity), one family per method, one chained episode per run."""
+    """Candidate per market (pure identity), one family per method, chained episodes per run."""
     loaded = AFR.load_and_verify_alpha_factory_registry(str(registry))
     need(loaded.is_valid and loaded.snapshot is not None, 'ALPHA_REGISTRY_INVALID')
     existing = [entry.record for entry in loaded.snapshot.entries]
-    records, tokens = [], manifest['tokens']
-    families = {}
+    records, tokens, families, hermes_states = [], manifest['tokens'], {}, []
     for market in manifest['markets']:
         if market['reason'] in M_BUCKETS['eligible'] or market.get('rule_sha256') is None:
             continue
@@ -941,11 +940,18 @@ def alpha_records(manifest, registry):
             'creation_provenance': WP_ID, 'human_review_required': True}))
         need(episode.is_valid, 'ALPHA_EPISODE_INVALID')
         records.append(episode.record)
+        for finding in manifest['hermes_findings']:
+            if (finding.get('binding') or {}).get('gamma_market_id') == mid and finding['binding']['category'] == category:
+                extra, problem = hermes_episode(finding, candidate.record.candidate_id, family,
+                                                episode.record.research_episode_id, lane)
+                records.extend(extra)
+                hermes_states.append(problem or 'EPISODE_APPENDED')
     if records:
         result = AFR.append_alpha_factory_records(str(registry), records)
         need(result.is_valid, 'ALPHA_APPEND_INVALID')
-        return {'inserted': len(result.inserted_record_ids), 'idempotent': len(result.idempotent_record_ids)}
-    return {'inserted': 0, 'idempotent': 0}
+        return {'inserted': len(result.inserted_record_ids), 'idempotent': len(result.idempotent_record_ids),
+                'hermes_episodes': hermes_states}
+    return {'inserted': 0, 'idempotent': 0, 'hermes_episodes': hermes_states}
 
 
 # ---------------------------------------------------------------- operations
@@ -962,12 +968,6 @@ def root_init(root):
 
 def begin(root, clock_ns):
     operations = sorted(root.glob('op-*'))
-    for prior in operations:
-        S.safe(prior, directory=True)
-        need(re.fullmatch(r'op-[0-9]{6}', prior.name), 'JOURNAL_INVALID')
-        if not (prior / 'terminal.json').exists():
-            need((prior / 'started.json').is_file(), 'JOURNAL_INVALID')
-            S.put(prior / 'terminal.json', {'status': 'INTERRUPTED_OR_UNKNOWN'})
     path = root / f'op-{len(operations) + 1:06d}'
     path.mkdir()
     started = clock_ns()
@@ -1003,17 +1003,20 @@ def acquire(fetcher, categories, anchor, started_ns):
                 fetcher.get(S.ESPN + 'summary?event=' + event_id)
             yield from (t for _, tokens in matched for t in tokens)
     if 'rain' in categories:
-        found = []
+        entries = []
         for offset in (1, 2):
             day = anchor + timedelta(days=offset)
             event = fetcher.get(rain_event_url(day))
             for market in (event or {}).get('markets', []) if isinstance(event, dict) else []:
-                try:
-                    if not is_v2(market, event.get('slug', '')):
-                        found.append((day, int(market['id']), market, rain_rule(market, day)))
-                except Exception:
-                    continue
-        found.sort(key=lambda item: (item[0], item[1]))
+                entries.append(((day, event.get('slug', '')), market))
+        entries.sort(key=lambda item: (item[0][0], int(str(item[1].get('id'))) if str(item[1].get('id')).isdigit() else 0))
+        found = []  # same order, rule, V2 and conflict filters as analyze_rain, so capacity agrees
+        for (day, slug), _, market, conflict in unique_markets(entries):
+            try:
+                if not conflict and not is_v2(market, slug):
+                    found.append((day, None, market, rain_rule(market, day)))
+            except Exception:
+                continue
         stations = {}
         for day, _, market, (_, semantics, tokens) in found[:CONFIG['rain_markets']]:
             if semantics.station_id not in stations:
@@ -1029,6 +1032,80 @@ def acquire(fetcher, categories, anchor, started_ns):
             yield from tokens
 
 
+TERMINAL_STATES = ('COMPLETED', 'BLOCKED', 'INTERRUPTED_OR_UNKNOWN')
+
+
+def unique_markets(entries):
+    """Collapse byte-identical copies; flag ids with conflicting copies (both categories alike)."""
+    contents, order = {}, []
+    for key, market in entries:
+        mid = str(market.get('id'))
+        if mid not in contents:
+            order.append((key, mid, market))
+        contents.setdefault(mid, set()).add(canonical(market))
+    return [(key, mid, market, len(contents[mid]) > 1) for key, mid, market in order]
+
+
+def rain_candidates(op, urls, clocks):
+    anchor = date.fromisoformat(clocks['anchor_utc_date'])
+    found = []
+    for offset in (1, 2):
+        day = anchor + timedelta(days=offset)
+        event = data(op, urls.get(rain_event_url(day)))
+        for market in (event or {}).get('markets', []) if isinstance(event, dict) else []:
+            found.append(((day, event.get('slug', '')), market))
+    found.sort(key=lambda item: (item[0][0], int(str(item[1].get('id'))) if str(item[1].get('id')).isdigit() else 0))
+    return unique_markets(found)
+
+
+def hermes_episode(finding, candidate_id, family, predecessor_id, lane):
+    """Section 6.7 mapping; returns (records, None) or ([], reason) when the builder rejects it."""
+    projection = finding.get('projection')
+    if finding.get('state') != 'VALID' or not projection:
+        return [], 'RESEARCH_FAILED'
+    against, support, missing = projection['evidence_against'], projection['evidence_for'], projection['known_missing_data']
+    state = ('NO_EDGE_CURRENTLY' if against else 'RESEARCH_SUPPORTIVE' if support
+             else 'DATA_INSUFFICIENT' if missing else None)
+    if state is None:
+        return [], 'RESEARCH_FAILED'
+    receipt = finding['receipt']
+    sources = map_hermes_sources(projection, receipt['receipt_id'], receipt['end_utc'])
+    lists = {name: list(projection.get(name, [])) for name in AF._EPISODE_LIST_FIELDS if name != 'material_change_basis'}
+    lists['material_change_basis'] = []
+    lists['tested_assumptions'] = ['Public web research only; provider-reported origin ' + finding['origin'] + '.']
+    built = AF.build_research_episode(dict(lists, **{
+        'episode_version': '1', 'candidate_id': candidate_id, 'hypothesis_family_id': family.hypothesis_family_id,
+        'predecessor_episode_id': predecessor_id, 'reopened_episode_id': None, 'result_state': state,
+        'confidence_label': projection['confidence_label'], 'evidence_lanes': [lane],
+        'exact_scope': {k: finding['binding'][k] for k in ('category', 'gamma_market_id', 'condition_id')},
+        'evidence_regime': {'producer': 'HERMES_CONTROLLED_RESEARCH', 'origin': finding['origin']},
+        'research_question': 'What public evidence contradicts or supports the independent probability for this outcome?',
+        'thesis': projection['research_summary'],
+        'source_reference_ids': [s.source_reference_id for s in sources],
+        'deterministic_evidence_refs': ['alphahunter:sha256:' + digest(canonical(finding['binding']))],
+        'producer_type': 'HERMES_CONTROLLED_RESEARCH', 'producer_version': 'hermes-controlled-research',
+        'producer_receipt_ref': receipt['receipt_id'], 'research_as_of': receipt['end_utc'],
+        'creation_provenance': WP_ID, 'human_review_required': True}))
+    if not built.is_valid:
+        return [], 'EPISODE_REJECTED'
+    return [*sources, built.record], None
+
+
+def mark_interrupted(root):
+    for prior in sorted(root.glob('op-*')):
+        S.safe(prior, directory=True)
+        need(re.fullmatch(r'op-[0-9]{6}', prior.name), 'JOURNAL_INVALID')
+        if not (prior / 'terminal.json').exists():
+            S.put(prior / 'terminal.json', {'status': 'INTERRUPTED_OR_UNKNOWN'})
+
+
+def hermes_inputs(op, tokens, clocks):
+    """Re-derive flags and influence from the stored raw findings and stored clocks."""
+    stored = S.read(op / 'hermes.json')
+    findings = [{k: v for k, v in f.items() if k not in ('influence', 'influence_reason', 'hermes_flag')}
+                for f in stored['findings']]
+    return influence(findings, tokens, clocks['started_ns'], stored['influence_evaluated_ns'])
+
 def run(scratch, registry, categories, *, budget_path=None, executable=None, home=None,
         fetcher_type=Fetcher, backend=None, clock_ns=time.time_ns, controller=run_controlled_hermes_research):
     hermes_flags = (budget_path, executable, home)
@@ -1041,6 +1118,7 @@ def run(scratch, registry, categories, *, budget_path=None, executable=None, hom
     if budget is not None:
         need(Path(executable).is_absolute() and Path(home).is_absolute(), 'HERMES_PATH_INVALID')
     with S.operation_lock(root):
+        mark_interrupted(root)
         verify(root)
         op, started = begin(root, clock_ns)
         fetcher = fetcher_type(op)
@@ -1058,9 +1136,9 @@ def run(scratch, registry, categories, *, budget_path=None, executable=None, hom
             if budget is not None and manifest['provisional_order']:
                 findings = hermes_stage(root, op, budget, backend or ExternalHermesCliBackend(), executable,
                                         home, manifest, clock_ns, controller)
-                influence(findings, manifest['tokens'], started, clock_ns())
-                S.put(op / 'hermes.json', findings)
-                manifest = analyze(op, fetcher.receipts, clocks, findings, categories)
+                S.put(op / 'hermes.json', {'influence_evaluated_ns': clock_ns(), 'findings': findings})
+                manifest = analyze(op, fetcher.receipts, clocks, hermes_inputs(op, manifest['tokens'], clocks),
+                                   categories)
             S.put(op / 'manifest.json', manifest)
             alpha = alpha_records(manifest, registry)
             result = {'status': 'COMPLETED', 'manifest_sha256': digest((op / 'manifest.json').read_bytes()),
@@ -1073,29 +1151,40 @@ def run(scratch, registry, categories, *, budget_path=None, executable=None, hom
             result = {'status': 'BLOCKED', 'reason': 'INPUT_OR_NATIVE_INVALID'}
         result.update(network_attempts=len(fetcher.receipts), account_attempts=0, order_attempts=0)
         inputs = {p.name: digest(p.read_bytes()) for p in sorted(op.iterdir())
-                  if p.is_file() and p.name not in ('terminal.json',) and not p.name.startswith('pit.sqlite3')}
+                  if p.is_file() and p.name != 'terminal.json' and not p.name.startswith('pit.sqlite3')}
         S.put(op / 'terminal.json', dict(result, inputs_sha256=inputs, categories=sorted(categories)))
+        S.put(root / f'index-{op.name}.json', {'operation': op.name, 'status': result['status'],
+                                                'terminal_sha256': digest((op / 'terminal.json').read_bytes())})
         return result
 
 
 def verify(root):
-    """Cold re-derivation of every completed operation; zero network, zero Hermes dispatch."""
+    """Cold re-derivation of every operation; zero network, zero Hermes dispatch."""
     root = S.safe(root, directory=True)
     need(S.read(root / 'config.json') == json.loads(canonical(CONFIG)), 'CONFIG_INVALID')
-    checked = 0
-    for op in sorted(root.glob('op-*')):
+    checked, operations = 0, sorted(root.glob('op-*'))
+    indexes = {p.name for p in root.glob('index-op-*.json')}
+    need(indexes <= {f'index-{op.name}.json' for op in operations}, 'VERIFY_INDEX_ORPHAN')
+    for op in operations:
         S.safe(op, directory=True)
-        terminal = op / 'terminal.json'
-        if not terminal.exists():
+        record = S.read(op / 'terminal.json') if (op / 'terminal.json').exists() else None
+        need(record is not None and record.get('status') in TERMINAL_STATES, 'VERIFY_TERMINAL_INVALID')
+        index = root / f'index-{op.name}.json'
+        if record['status'] == 'INTERRUPTED_OR_UNKNOWN':
+            need(not index.exists(), 'VERIFY_INDEX_MISMATCH')
             continue
-        record = S.read(terminal)
-        if record.get('status') != 'COMPLETED':
+        need(index.exists() and S.read(index) == {'operation': op.name, 'status': record['status'],
+             'terminal_sha256': digest((op / 'terminal.json').read_bytes())}, 'VERIFY_INDEX_MISMATCH')
+        if record['status'] != 'COMPLETED':
             continue
         for name, sha in record['inputs_sha256'].items():
             need(digest(S.safe(op / name).read_bytes()) == sha, 'VERIFY_INPUT_CHANGED')
         receipts = [S.read(p) for p in sorted(op.glob('receipt-*.json'))]
         clocks = S.read(op / 'clocks.json')
-        findings = S.read(op / 'hermes.json') if (op / 'hermes.json').exists() else []
+        findings = []
+        if (op / 'hermes.json').exists():
+            provisional = analyze(op, receipts, clocks, [], set(record['categories']))
+            findings = hermes_inputs(op, provisional['tokens'], clocks)
         manifest = analyze(op, receipts, clocks, findings, set(record['categories']))
         need(canonical(manifest) + b'\n' == (op / 'manifest.json').read_bytes(), 'VERIFY_MANIFEST_MISMATCH')
         checked += 1

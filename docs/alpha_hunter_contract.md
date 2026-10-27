@@ -15,8 +15,14 @@ DISABLED (`docs/live_trading_authorization.md`).
 Paths must be absolute and outside the checkout. The Alpha registry must already exist (the
 operator never initializes it). The three Hermes flags are all-or-nothing. `run` is one finite
 STARTED-first operation under the kernel lock with at most 64 public GETs and 180 s of
-acquisition. `verify` re-derives every completed manifest from stored bytes with zero network and
-zero Hermes dispatch, and fails on any changed input byte.
+acquisition. `run` first marks any unterminated earlier operation `INTERRUPTED_OR_UNKNOWN`; each
+finished operation writes `terminal.json` plus a write-once root `index-<op>.json` binding its
+status and terminal hash. `verify` requires a closed terminal state for every operation and a
+matching index for every COMPLETED/BLOCKED one, then re-derives every completed manifest from
+stored bytes (including Hermes influence, from the stored raw findings and the stored
+`influence_evaluated_ns`) with zero network and zero Hermes dispatch, and fails on any changed
+input byte or forged-but-rehashed manifest. Deleting an operation directory together with its
+index is not detectable by design (evidence deletion, not tampering).
 
 ## 2. Categories and independent sources
 
@@ -94,8 +100,16 @@ on the wrapped backend: `FakeHermesBackend` -> `OFFLINE_FIXTURE_MODEL_ORIGIN_UNV
 REAL_PROVIDER_REPORTED finding whose `end_utc` lies between operation start and influence
 evaluation changes the research tier (contrary evidence -> contested, never selected; non-empty
 `evidence_for` without contrary -> corroborated). Hermes never changes probability, bounds,
-margins, small-order fields or class. Sources are mapped with this WP's provenance prefix (not the
-ALPHA-REAL-01 `map_sources` prefix). Milestone `SATISFIED_REAL_PROVIDER_INFLUENCE` only when a
+margins, small-order fields or class. Each finding carries `hermes_flag`
+(CONTRARY_EVIDENCE_REPORTED iff validated `evidence_against` is non-empty,
+NO_CONTRARY_EVIDENCE_REPORTED, RESEARCH_FAILED, or NOT_RUN). A valid finding is appended as a
+HERMES_CONTROLLED_RESEARCH episode (NO_EDGE_CURRENTLY if contrary evidence, else
+RESEARCH_SUPPORTIVE if `evidence_for`, else DATA_INSUFFICIENT if `known_missing_data`) whose
+predecessor is the same run's deterministic episode for that market; a builder rejection is
+reported, never fatal. Sources are mapped with this WP's provenance prefix (not the ALPHA-REAL-01
+`map_sources` prefix). The budget file must be an absolute path outside the checkout; run counts
+must be integers. The request context names market id and outcome index only (not condition or
+token id); the binding check therefore guards the hunter's own token selection. Milestone `SATISFIED_REAL_PROVIDER_INFLUENCE` only when a
 REAL_PROVIDER_REPORTED finding changed a tier; otherwise `UNSATISFIED_REAL_INFERENCE_NOT_DEMONSTRATED`.
 
 ## 6. Alpha lineage
@@ -109,5 +123,8 @@ digest. No economic field names enter Alpha records.
 
 The shadow `bounded_body` probes the raw socket; on this Windows host api.weather.gov and small
 CLOB responses expose none (WinError 10038) and the failed probe empties the body. The hunter
-therefore uses one byte-capped read bounded by the 20 s socket timeout (deferred-log row records the
-shadow observation; the shadow operator is unchanged).
+therefore reads with chunked `read1` calls, checking a monotonic deadline before every chunk
+(min of 20 s per request and the 180 s acquisition ceiling) and the 2 MB body cap after every
+chunk; each socket read additionally has the 20 s timeout, so one stalled read can overrun the
+deadline by at most that timeout (deferred-log row records the shadow observation; the shadow
+operator is unchanged). Rain NWS durations above 31 days are SOURCE_COVERAGE_INCOMPLETE.

@@ -252,6 +252,9 @@ def test_candidate_classification_no_edge_and_restriction_distinctions():
         'SMALL_ORDER_CLOB_MIN_SHARES_NOT_MET_WITHIN_CAP'
     assert H.small_order(D('0.50'), D('100'), fees_enabled=False, **dict(args, p=D('0.50')))['small_order_reason'] == \
         'SMALL_ORDER_MARGIN_NONPOSITIVE'
+    over = H.small_order(D('0.50'), D('100'), fees_enabled=True, **dict(args, rate=D('0.000004'), cap_rate=D('0.000004')))
+    assert D(over['small_order_shares']) == D('9.99')  # q=10 would cost exactly 5.00001
+    assert H.small_order.__doc__ and D('0.5') * 10 + H.taker_fee(D('0.5'), D(10), D('0.000004'), 1) == D('5.00001')
     # Fee-source disagreement: the larger documented fee is the cap fee.
     cap = H.small_order(D('0.50'), D('100'), fees_enabled=True, **dict(args, cap_rate=D('0.05')))
     assert D(cap['small_order_shares']) < 10
@@ -303,7 +306,7 @@ WINDOW = (datetime(2026, 10, 28, 5, tzinfo=timezone.utc), datetime(2026, 10, 29,
     (grid([{'validTime': '2026-10-28T00:00:00+00:00/P2DT1M', 'value': 1}]), NOW, 'SOURCE_COVERAGE_INCOMPLETE'),
     (grid([{'validTime': '2026-10-28T00:00:00+00:00/P2D', 'value': 101}]), NOW, 'PROBABILITY_INVALID'),
 ])
-def test_lookahead_stale_identity_protocol_and_rule_rejections(payload, cutoff, code):
+def test_lookahead_stale_identity_protocol_and_rule_rejections(payload, cutoff, code, tmp_path):
     with pytest.raises(H.Mapped, match=code):
         H.rain_probability(payload, WINDOW, cutoff)
     day = date(2026, 10, 28)
@@ -323,18 +326,41 @@ def test_lookahead_stale_identity_protocol_and_rule_rejections(payload, cutoff, 
     assert H.points_url('40.78333', '-73.96667') == H.NWS + 'points/40.7833,-73.9667'
     assert H.points_url('40.70000', '-74.00004') == H.NWS + 'points/40.7,-74'
     market = rain_market()
-    for change, code in ((dict(asset_id=RAIN_TOKENS[0]), 'IDENTITY_MISMATCH'),
+    for change, cause in ((dict(asset_id=RAIN_TOKENS[0]), 'IDENTITY_MISMATCH'),
                          (dict(timestamp=str((NOW - 31_000_000_000) // 1_000_000)), 'BOOK_STALE'),
                          (dict(asks=[]), 'BOOK_INCOMPLETE'), (dict(tick_size='0.01'), 'TICK_MISMATCH')):
         bad = dict(book(market, RAIN_TOKENS[1]), **change)
-        with pytest.raises(H.Mapped, match=code):
+        with pytest.raises(H.Mapped, match=cause):
             H.economics('WEATHER_US_DAILY_RAIN', *gamma(market), bad, {'p': '0.01', 'stress_lower': '0', 'stress_upper': '0.06'},
                         1, RAIN_TOKENS[1], market['conditionId'], NOW)
+    with pytest.raises(H.Mapped, match='SOURCE_COVERAGE_INCOMPLETE'):  # closed order beats PROBABILITY_INVALID
+        H.rain_probability(grid([{'validTime': '2026-10-28T00:00:00+00:00/PT8H', 'value': 150}]), WINDOW, NOW)
+    with pytest.raises(H.Mapped, match='SOURCE_COVERAGE_INCOMPLETE'):
+        H.rain_probability(grid([{'validTime': '2026-10-28T00:00:00+00:00/P99999999D', 'value': 1}]), WINDOW, NOW)
+    with pytest.raises(H.Mapped, match='IDENTITY_MISMATCH'):
+        H.gamma_state(rain_market(), rain_market()['id'], '0x' + 'b' * 64, RAIN_TOKENS[0])
     assert H.mapped(S.Stop('PREDICTION_NOT_PREGAME'), 'X') == 'EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED'
     assert H.mapped(H.NDFD.NdfdError('STATION_ID_MISMATCH'), 'X') == 'IDENTITY_MISMATCH'
     assert H.mapped(KeyError('x'), 'SOURCE_UNAVAILABLE') == 'SOURCE_UNAVAILABLE'
     with pytest.raises(S.Stop, match='UNMAPPED_NATIVE_CODE'):
         H.mapped(S.Stop('SOMETHING_NEW'), 'X')
+    if code != 'LOOKAHEAD':
+        return  # the end-to-end cases below run once
+    data = payloads()
+    started = dict(nba_market(), gameStartTime='2026-10-27 11:00:00+00', slug='nba-sac-sas-2026-10-27',
+                   description=NBA_DESC.replace('October 27 at 8:00PM ET', 'October 27 at 7:00AM ET'))
+    conflict = dict(rain_market(), question='Will it rain in New York, NY on October 28? ')
+    data[S.DISCOVERY_URL] = [started]
+    comp = deepcopy(nba_summary()['header']['competitions'])
+    comp[0]['date'] = '2026-10-27T11:00Z'
+    data[S.ESPN + 'scoreboard?dates=20261027'] = {'events': [{'id': '401900001', 'competitions': comp}]}
+    data[H.rain_event_url(date(2026, 10, 28))] = {'slug': 'where-will-it-rain-on-october-28-2026',
+                                                   'markets': [rain_market(), conflict]}
+    root, _, result = run(tmp_path, data)
+    assert result['status'] == 'COMPLETED', result
+    reasons = {(m['category'], m['gamma_market_id']): m['reason'] for m in manifest(root)['markets']}
+    assert reasons[('SPORTS_NBA_MONEYLINE', '6000460')] == 'EVENT_OR_CLIMATE_DAY_STARTED_UNSUPPORTED'
+    assert reasons[('WEATHER_US_DAILY_RAIN', '6296029')] == 'DUPLICATE_MARKET_CONFLICT'
 
 
 # ------------------------------------------------------------------ R007
@@ -351,6 +377,19 @@ def test_funnel_denominators_and_deterministic_ranking():
     assert provisional == final == ['t0', 't1', 't9', 't2']
     with pytest.raises(S.Stop, match='RANKING_INPUT_INVALID'):
         H.assign([row('A', '1', 't1', 'NaN')], [])
+    tokens = [row('A', '1', 't1', '0.3'), row('A', '2', 't2', '0.1')]
+    _, final = H.assign(tokens, [{'token_id': 't2', 'influence': 'CORROBORATED'}])
+    assert final == ['t2', 't1']
+    data = payloads()
+    many = [dict(rain_market(), id=str(6296029 + n), slug=f'where-will-it-rain-on-october-28-2026-new-york-ny{n}')
+            for n in range(7)]
+    data[H.rain_event_url(date(2026, 10, 28))] = {'slug': 'where-will-it-rain-on-october-28-2026', 'markets': many}
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        root, _, result = run(Path(tmp), data)
+        rain = [m for m in manifest(root)['markets'] if m['category'] == 'WEATHER_US_DAILY_RAIN']
+    assert [m['reason'] for m in rain].count('ACQUISITION_CAPACITY_EXCEEDED') == 1
+    assert rain[-1]['reason'] == 'ACQUISITION_CAPACITY_EXCEEDED'
     funnel = manifest_rows_funnel()
     assert funnel['observed'] == 2 and funnel['assessed_tokens'] == 4
     drops = sum(sum(funnel[name + '_drops'].values()) for name in
@@ -447,6 +486,17 @@ def test_hermes_research_origin_labels_and_no_probability_authority(tmp_path, of
     tokens = deepcopy(base['tokens'])
     H.assign(tokens, [dict(good, token_id=no_trade['token_id'], influence='CORROBORATED')])
     assert next(t for t in tokens if t['token_id'] == no_trade['token_id'])['research_class'] == 'NO_TRADE'
+    assert contested[0]['hermes_flag'] == 'CONTRARY_EVIDENCE_REPORTED'
+    assert corroborated[0]['hermes_flag'] == 'NO_CONTRARY_EVIDENCE_REPORTED'
+    registry = tmp_path / 'alpha-h.sqlite3'
+    assert AFR.initialize_alpha_factory_registry(str(registry)).is_valid
+    summary = H.alpha_records(dict(base, hermes_findings=contested), registry)
+    assert summary['hermes_episodes'] == ['EPISODE_APPENDED']
+    records = [e.record for e in AFR.load_and_verify_alpha_factory_registry(str(registry)).snapshot.entries]
+    hermes_ep = next(r for r in records if isinstance(r, AF.ResearchEpisode) and r.producer_type == 'HERMES_CONTROLLED_RESEARCH')
+    parent = next(r for r in records if isinstance(r, AF.ResearchEpisode) and r.research_episode_id == hermes_ep.predecessor_episode_id)
+    assert hermes_ep.result_state == 'NO_EDGE_CURRENTLY' and parent.producer_type == 'DETERMINISTIC_ANALYSIS'
+    assert hermes_ep.source_reference_ids and hermes_ep.producer_receipt_ref == contested[0]['receipt']['receipt_id']
     with pytest.raises(S.Stop, match='HERMES_BACKEND_UNSUPPORTED'):
         H.hermes_stage(tmp_path, tmp_path, BUDGET, object(), '/opt/hermes', None, deepcopy(base), clock())
 
@@ -472,12 +522,20 @@ def test_research_budget_zero_default_caps_and_exhaustion(tmp_path, offline):
     budget = dict(provider_label='p', model_label='m', ledger_scratch_dir=str(root), max_runs_per_invocation=1,
                   max_usd_per_run=0.5, max_runs_per_7d=20, max_usd_per_7d=5)
     for change, code in ((dict(max_usd_per_run=0.51), 'BUDGET_CEILING_EXCEEDED'), (dict(max_runs_per_invocation=4), 'BUDGET_CEILING_EXCEEDED'),
+                         (dict(max_runs_per_invocation=2.0), 'BUDGET_CEILING_EXCEEDED'), (dict(ledger_scratch_dir=7), 'BUDGET_INVALID'),
                          (dict(ledger_scratch_dir=str(tmp_path)), 'BUDGET_LEDGER_MISMATCH'), (dict(extra=1), 'BUDGET_INVALID'),
                          (dict(max_runs_per_invocation=0), 'BUDGET_ZERO')):
         path = tmp_path / 'budget.json'
         path.write_text(json.dumps(dict(budget, **change)))
         with pytest.raises(S.Stop, match=code):
             H.load_budget(path, root)
+    capped = tmp_path / 'capped'
+    capped.mkdir()
+    m2 = deepcopy(manifest_full())
+    assert len(m2['provisional_order']) >= 2
+    one = H.hermes_stage(capped, capped, BUDGET, FakeHermesBackend.from_transcript(b'{}', usage_file_bytes=usage()),
+                         '/opt/hermes', None, m2, clock())
+    assert len(one) == 1  # max_runs_per_invocation = 1 although two research candidates exist
     op = root / 'op-000001'
     op.mkdir()
     for n in range(20):  # crashed reservations: sentinel present, no finding
@@ -503,12 +561,30 @@ def test_restart_duplicate_and_cold_verify_immutability(tmp_path, offline):
     assert sum(e.predecessor_episode_id is not None for e in episodes) == 2
     (root / 'op-000003').mkdir()
     S.put(root / 'op-000003' / 'started.json', {'schema': H.SCHEMA})
-    assert H.verify(root)['operations'] == 2
+    with pytest.raises(S.Stop, match='VERIFY_TERMINAL_INVALID'):
+        H.verify(root)
     assert H.run(root, registry, {'rain'}, fetcher_type=replica(payloads()), clock_ns=clock())['status'] == 'COMPLETED'
     assert S.read(root / 'op-000003' / 'terminal.json') == {'status': 'INTERRUPTED_OR_UNKNOWN'}
-    source = root / 'op-000001' / 'source-01.json'
-    source.write_bytes(source.read_bytes() + b' ')
-    with pytest.raises(S.Stop, match='VERIFY_INPUT_CHANGED'):
+    assert H.verify(root)['operations'] == 3
+    # Forgery that keeps every hash consistent is still caught by cold re-derivation.
+    op = root / 'op-000001'
+    forged = S.read(op / 'manifest.json')
+    forged['run_mode'] = 'HERMES_INFLUENCED'
+    (op / 'manifest.json').write_bytes(S.canonical(forged) + b'\n')
+    terminal = S.read(op / 'terminal.json')
+    terminal['inputs_sha256']['manifest.json'] = S.digest((op / 'manifest.json').read_bytes())
+    (op / 'terminal.json').write_bytes(S.canonical(terminal) + b'\n')
+    index = root / 'index-op-000001.json'
+    index.write_bytes(S.canonical(dict(S.read(index), terminal_sha256=S.digest((op / 'terminal.json').read_bytes()))) + b'\n')
+    with pytest.raises(S.Stop, match='VERIFY_MANIFEST_MISMATCH'):
+        H.verify(root)
+    # Hiding an operation by downgrading its terminal status breaks the index binding.
+    terminal['status'] = 'BLOCKED'
+    (op / 'terminal.json').write_bytes(S.canonical(terminal) + b'\n')
+    with pytest.raises(S.Stop, match='VERIFY_INDEX_MISMATCH'):
+        H.verify(root)
+    (root / 'op-000002' / 'terminal.json').unlink()
+    with pytest.raises(S.Stop, match='VERIFY_TERMINAL_INVALID|VERIFY_INDEX_MISMATCH'):
         H.verify(root)
     with S.operation_lock(root):
         with pytest.raises((S.Stop, PermissionError, OSError)):
