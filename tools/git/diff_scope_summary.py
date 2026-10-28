@@ -6,6 +6,7 @@ Does not replace pytest, security checks, preflight tools, or human review.
 """
 
 import argparse
+import functools
 import importlib.util
 import json
 import os
@@ -669,6 +670,9 @@ def build_summary(
             and not diff_check_errors
             and git_operations_succeeded
         )
+        if exact_scope_required and not exact_pass:
+            # main() returns 1 in this case; never print a contradicting exit line.
+            summary["exit_behavior"] = "Exit 1 (exact scope required but not satisfied)."
         summary.update({
             "wp_spec_path": _norm(wp_spec_path),
             "wp_spec_schema_version": wp_spec_schema_version,
@@ -695,7 +699,7 @@ def _authority_for_path(path: str) -> list[str] | None:
         requirements.append("source_runtime")
     elif p.startswith(".github/workflows/"):
         requirements.append("workflow_files")
-    elif p.startswith("tools/"):
+    elif p.startswith("tools/") or p in _security_scan_config_paths():
         requirements.append("local_offline_tooling")
     elif is_dependency_or_lock(p):
         requirements.append("dependencies")
@@ -1044,16 +1048,30 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def _read_wp_spec_scope(path: str):
-    """Load the sibling guard without changing this module's public imports."""
+@functools.lru_cache(maxsize=1)
+def _spec_guard_module():
+    """Load the sibling canonical guard once, without changing this module's public imports."""
     guard_path = pathlib.Path(__file__).resolve().parents[1] / "wp" / "wp_spec_guard.py"
     module_spec = importlib.util.spec_from_file_location(
         "_wp159_wp_spec_guard", guard_path
     )
     if module_spec is None or module_spec.loader is None:
-        return None, ()
+        return None
     module = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(module)
+    return module
+
+
+def _security_scan_config_paths() -> tuple[str, ...]:
+    """Exact root secret-scan config paths from the canonical guard (none if unavailable: fail closed)."""
+    module = _spec_guard_module()
+    return tuple(getattr(module, "SECURITY_SCAN_CONFIG_PATHS", ())) if module else ()
+
+
+def _read_wp_spec_scope(path: str):
+    module = _spec_guard_module()
+    if module is None:
+        return None, ()
     return module.read_and_validate_spec_scope(path)
 
 
