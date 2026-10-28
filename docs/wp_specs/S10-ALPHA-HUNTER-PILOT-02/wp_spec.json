@@ -18,7 +18,7 @@
     "objective": "Add one finite default-off versioned hunter pilot cycle that takes a per-wallet run lock, reconciles first and performs at most one economic mutation: one reduce-only FOK SELL exit of a reconciled pilot position or one dynamically sized fee-inclusive USD 2-5 FOK BUY of one verified NBA or rain Alpha Hunter candidate with real Hermes evidence, through native Gate C, LIVE-ORCH and Gate B under the opt-in HUNTER_PILOT_02 capital profile; commitment releases only by reconciliation; the signer may be an unattended Session Key read only from a systemd credential directory; dormant, zero economic activity in this WP; V3 adds a custody-bound SESSION_KEY identity route, an additive reduce-only SELL transmit contract in gate_c.py, and a never-underestimating fee and minimum feasibility rule; under the unchanged 5 USD cap NBA/rain BUYs are expected to abstain at Gamma min 5 USD (owner decision O3)",
     "capital_at_risk_usd": 0,
     "xl_explicit_authorization": true,
-    "xl_authorization_basis": "Karl explicitly authorized on 2026-10-28 a narrow 21-path XL amendment of the certified 19-path V3.1 package, limited to resolving D009: the pinned gitleaks 8.27.2 default generic-api-key rule reports identifier text in the frozen V3.1 wp_spec.json line 211 committed in fd010ef88c87dd452309962bb3b7ed6e4a4acb4d, the hosted full-history scan fails closed, and history may not be rewritten. Path 20 .gitleaksignore gains only that one exact fingerprint; path 21 tests/test_gitleaks_secret_scan_gate.py changes only EXPECTED_FINGERPRINT_COUNT from 20 to 21. Existing implementation, economic limits, authority boundaries and Git history are unchanged. No 22nd path, broad exclusion, rule weakening, merge, credentials, provider spend, deployment, capital or live trading is authorized."
+    "xl_authorization_basis": "Karl explicitly authorized on 2026-10-28 narrow XL amendments of the certified 19-path V3.1 package. V3.2 (21 paths, D009): .gitleaksignore appends only the exact frozen-spec false-positive fingerprint and tests/test_gitleaks_secret_scan_gate.py changes only EXPECTED_FINGERPRINT_COUNT 20 -> 21. V3.3 (23 paths, D011): tools/git/diff_scope_summary.py reuses the canonical wp_spec_guard SECURITY_SCAN_CONFIG_PATHS so exactly those root secret-scan paths require local_offline_tooling, and its printed exit line reports the real exit code; tests/tools/git/test_diff_scope_summary.py adds focused positive/negative regressions. Implementation, economics, authority boundaries, gitleaks detection and Git history are unchanged. No 24th path, broad exclusion, rule weakening, merge, credentials, provider spend, deployment, capital or live trading is authorized."
   },
   "scope": {
     "required_changed_files": [
@@ -42,7 +42,9 @@
       "src/execution_gateway/gate_c.py",
       "tests/execution_gateway/test_gate_c.py",
       ".gitleaksignore",
-      "tests/test_gitleaks_secret_scan_gate.py"
+      "tests/test_gitleaks_secret_scan_gate.py",
+      "tools/git/diff_scope_summary.py",
+      "tests/tools/git/test_diff_scope_summary.py"
     ],
     "allowed_changed_files": [
       "src/execution_gateway/live_orch.py",
@@ -65,7 +67,9 @@
       "src/execution_gateway/gate_c.py",
       "tests/execution_gateway/test_gate_c.py",
       ".gitleaksignore",
-      "tests/test_gitleaks_secret_scan_gate.py"
+      "tests/test_gitleaks_secret_scan_gate.py",
+      "tools/git/diff_scope_summary.py",
+      "tests/tools/git/test_diff_scope_summary.py"
     ],
     "forbidden_prefixes": [
       ".github/",
@@ -84,10 +88,10 @@
       "src/execution_feasibility/",
       "src/operator_cockpit_frontend/"
     ],
-    "max_changed_files": 21,
+    "max_changed_files": 23,
     "exact_scope_required": true,
     "historical_compatibility_edits": [],
-    "rollback_surface": "Revert the 21 paths; V1_CANARY default profile and default None hook keep every existing caller, v1 pilot and canary unchanged; additive SELL and CLOSED_RECONCILED states are unreachable without HUNTER_PILOT_02; no dependency, workflow or deployment change; OWNER signer_type default and unchanged BUY inspector keep existing Gate B and Gate C callers identical",
+    "rollback_surface": "Revert the 23 paths; V1_CANARY default profile and default None hook keep every existing caller, v1 pilot and canary unchanged; additive SELL and CLOSED_RECONCILED states are unreachable without HUNTER_PILOT_02; no dependency, workflow or deployment change; OWNER signer_type default and unchanged BUY inspector keep existing Gate B and Gate C callers identical",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -478,7 +482,7 @@
       {
         "from_state": "AUTHORIZED",
         "to_state": "IMPLEMENTED_LOCAL",
-        "condition": "Exact 21 paths, negative matrix, v1 regression, full suite and hosted CI pass with zero orders and credentials",
+        "condition": "Exact 23 paths, negative matrix, v1 regression, full suite and hosted CI pass with zero orders and credentials",
         "failure_category": "SEMANTIC_CONTRADICTION"
       }
     ]
