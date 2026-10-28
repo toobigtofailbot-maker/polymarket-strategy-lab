@@ -7,7 +7,7 @@
 - Base: `e3696526ae66675d725415ca5aecc89957349034` (PR #257 merge; predecessor head `4aa8b5ed41bab48b37a092048a5590066a681359` contained in main).
 - Validated implementation commit: `df3a913` (implementation; the frozen package commit is `fd010ef88c87dd452309962bb3b7ed6e4a4acb4d`).
 - This is a stable non-self-referential evidence record. Exact-head hosted CI, posted evidence mode and the live review-readiness decision belong to the PR body.
-- Package: PROTECTED_DORMANT_UNATTENDED_CAPABLE_MULTI_CATEGORY_LIVE_PILOT; L; risk 4; PROTECTED; exact 19 paths. Independent V3.1 certificate (12/12 lenses PASS, no unresolved decisions). Karl authorized zero-economic implementation, including the section 4.1 dormant loosenings, on 2026-10-27.
+- Package: PROTECTED_DORMANT_UNATTENDED_CAPABLE_MULTI_CATEGORY_LIVE_PILOT; L; risk 4; PROTECTED; originally L / exact 19 paths under the independent V3.1 certificate, amended to XL / exact 21 paths under the independent V3.2 certificate (12/12 lenses PASS, no unresolved decisions). Karl authorized zero-economic implementation, including the section 4.1 dormant loosenings, on 2026-10-27.
 - Not authorized: merge, real credentials, Session Key/Builder creation, account access, provider (Hermes/Firecrawl) spend, deployment, timer, capital, any real order, Gate C/A3 activation, or a change to `LIVE TRADING STATUS: DISABLED`. O3 not approved; the USD 5 fee-inclusive cap is unchanged.
 - Protected boundary groups: `docs/ai/codex/PROTECTED_PATHS.md` Centralized Boundary Group Reference; only the certified paths were changed.
 
@@ -16,13 +16,14 @@
 - `wp_prompt.txt` SHA-256 `c20a9aa5ea7477bb5979c4cab4bbcf2da1a7f3583c4a958e1c688b0d8b5102ed`; `wp_spec.json` `5147de8163029fed827bd75749792060b389b5ce715b83ddb815c61929588768`; `draftability_certificate.json` `bc5538cc44573675b46c727ff9afcc625442a4d5f4d90e7f575b6d3cd704fe90`. Installed byte-exact; committed blob hashes re-verified.
 - Pre-implementation native readiness with `--certificate`: exit 0, IMPLEMENTATION_READY, `certificate_hash_bound: true`, PROTECTED, 19 scope files / 17 evidence items / 17 rules.
 
-## Exact scope (19 files)
+## Exact scope (21 files)
 
 - `src/execution_gateway/live_orch.py`, `src/execution_gateway/gateway.py`, `src/execution_gateway/gate_b.py`, `src/execution_gateway/gate_c.py`
 - `src/live_pilot/hunter_cycle.py`, `tools/alpha/run_hunter_pilot.py`
 - `tests/live_pilot/test_hunter_cycle.py`, `tests/execution_gateway/test_live_orch.py`, `tests/execution_gateway/test_gateway.py`, `tests/execution_gateway/test_gate_b.py`, `tests/execution_gateway/test_gate_c.py`
 - `docs/live_pilot_contract.md`, `docs/live_orchestration_contract.md`, `docs/live_trading_authorization.md`, `docs/deferred_items_log.md`, `docs/status_entries/S10-ALPHA-HUNTER-PILOT-02.md`
 - `docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_prompt.txt`, `wp_spec.json`, `draftability_certificate.json`
+- `.gitleaksignore`, `tests/test_gitleaks_secret_scan_gate.py` (V3.2 D009 amendment only)
 
 ## Implementation summary
 
@@ -45,9 +46,13 @@
 - The credential-directory path is read with `os.getenv`: the existing gateway architecture guard forbids the `os.environ` literal. No secret value comes from the environment.
 - Rain eligibility uses a conservative 00:00 UTC cutoff of the target day. The resolved-payout source defaults to UNKNOWN, counted as zero (a loss). `CLOSED_RECONCILED` requires an explicit zero-size position row.
 
-## Blocker
+## D009 resolution (V3.2, 21-path XL amendment)
 
-- S10-ALPHA-HUNTER-PILOT-02-D009: the frozen certified `wp_spec.json` line 211 contains identifier text that the pinned gitleaks default `generic-api-key` rule reports. The fail-closed hosted full-history scan will reject it. Classifying it needs `.gitleaksignore` (a 20th path) or a re-frozen recertified spec; both are outside this implementation's authority. This is a defined hard stop. No suppression, rule or workflow change was made.
+- Karl explicitly authorized on 2026-10-28 a narrow 21-path XL amendment limited to D009; package re-frozen as V3.2 (prompt `58b2c1c81ad476a26ce012f390a899dda658e741f1b84b1abe7e9d801384b6bf`, spec `16b8b6f687e253864da109f3ea5c5e0fdfb75269bc22fb7be586b1694a05456d`).
+- A first fresh independent certifier refused at `781bbca` on one stale stop sentence (K2, prompt line 112 "20th path"); fixed at `79acaef`. A second fresh independent certifier issued PASS (12/12 lenses, implementability PASS, no unresolved decisions); certificate raw sha256 `a85cececba4ab89f4bec6a1e7430a0e5c10422648bf26c3f0532f5efdbd5f138`, installed byte-exact at path 17. The implementing session issued no certificate.
+- Native readiness with the installed certificate: exit 0, IMPLEMENTATION_READY, `certificate_hash_bound: true`, PROTECTED, 21 scope files / 17 evidence items / 17 rules.
+- Correction: `.gitleaksignore` appends only `fd010ef88c87dd452309962bb3b7ed6e4a4acb4d:docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_spec.json:generic-api-key:211`; `tests/test_gitleaks_secret_scan_gate.py` changes only `EXPECTED_FINGERPRINT_COUNT = 20` to `21`. No rule, allowlist, workflow, history, implementation, economics or authority change. Scope is now 21 files.
+- Product code and its tests are byte-identical to the validated implementation commit `df3a913`; earlier full-suite evidence is reused for them, and current affected-check and exact-head CI results are in the PR body.
 
 ## Limits
 

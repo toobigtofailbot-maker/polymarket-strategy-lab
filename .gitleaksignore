@@ -22,3 +22,4 @@ c2acdd607b6695be1de3aed1050f73cc0fe72c1c:docs/long_term_bot_completion_roadmap.m
 dddacb7c0b0c9a72756a13ed93f9092e42411ddb:tests/tools/validation/test_validation_output_summary.py:private-key:553
 f5b2dee31e7b6b0aeb1441252b4ef20b58625439:tests/tools/advisory/test_local_advisory_consumer.py:generic-api-key:294
 f5b2dee31e7b6b0aeb1441252b4ef20b58625439:tests/tools/advisory/test_local_advisory_consumer.py:generic-api-key:309
+fd010ef88c87dd452309962bb3b7ed6e4a4acb4d:docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_spec.json:generic-api-key:211
