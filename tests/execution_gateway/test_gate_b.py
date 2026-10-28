@@ -1770,3 +1770,136 @@ def test_fee_enabled_standard_market_metadata_usable_for_live_orch():
     # Gamma market id, condition id and token id stay distinct.
     assert (metadata.market_id, metadata.condition_id, metadata.token_id) == (
         "516710", "condition-a", TOKEN)
+
+
+# --------------------------------------------------------------------------- S10-ALPHA-HUNTER-PILOT-02
+
+# Synthetic, non-secret 0x-prefixed 64-hex sentinel (never a real key).
+SESSION_SENTINEL = "0x" + "5e55" * 16
+
+
+def _write_key(directory: Path, raw: bytes, mode: int = 0o600) -> Path:
+    import os
+
+    path = directory / "polymarket-session-key"
+    path.write_bytes(raw)
+    os.chmod(path, mode)
+    return path
+
+
+def test_credential_directory_session_key_provider_fail_closed(tmp_path, monkeypatch):
+    import os
+
+    from src.execution_gateway.gate_b import CredentialDirectorySessionKeyProvider
+
+    provider = CredentialDirectorySessionKeyProvider()
+    assert "CREDENTIALS_DIRECTORY" not in repr(provider) and SESSION_SENTINEL not in repr(provider)
+    # Non-POSIX hosts refuse before any environment or file access.
+    monkeypatch.setattr(gate_b_mod.os, "name", "nt")
+    monkeypatch.setenv("CREDENTIALS_DIRECTORY", str(tmp_path))
+    with pytest.raises(GatewayError, match="SECRET_INPUT_UNAVAILABLE"):
+        provider.acquire()
+    monkeypatch.undo()
+    if os.name != "posix":
+        pytest.skip("POSIX credential-file checks (O_NOFOLLOW/fstat owner/mode) run on POSIX hosts only")
+    credentials = tmp_path / "credentials"
+    credentials.mkdir()
+    monkeypatch.delenv("CREDENTIALS_DIRECTORY", raising=False)
+    with pytest.raises(GatewayError, match="SECRET_INPUT_UNAVAILABLE"):
+        provider.acquire()
+    monkeypatch.setenv("CREDENTIALS_DIRECTORY", "relative/credentials")
+    with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID"):
+        provider.acquire()
+    monkeypatch.setenv("CREDENTIALS_DIRECTORY", str(credentials))
+    with pytest.raises(GatewayError, match="SECRET_INPUT_UNAVAILABLE"):
+        provider.acquire()  # missing file
+    path = _write_key(credentials, SESSION_SENTINEL.encode() + b"\n")
+    lease = provider.acquire()  # synthetic non-secret positive control
+    assert lease.reveal() == SESSION_SENTINEL and SESSION_SENTINEL not in repr(lease)
+    lease.close()
+    cases = [
+        (0o640, SESSION_SENTINEL.encode()), (0o604, SESSION_SENTINEL.encode()), (0o610, SESSION_SENTINEL.encode()),
+        (0o600, SESSION_SENTINEL.encode() + b"\n" * 2), (0o600, SESSION_SENTINEL[2:].encode()),
+        (0o600, SESSION_SENTINEL[:-1].encode()), (0o600, (SESSION_SENTINEL + "\n" + SESSION_SENTINEL).encode()),
+        (0o600, SESSION_SENTINEL.upper().encode()), (0o600, b" " + SESSION_SENTINEL.encode()),
+        (0o600, b"x" * 129), (0o600, b""), (0o600, SESSION_SENTINEL.encode() + b"\x00"),
+    ]
+    for mode, raw in cases:
+        path.unlink()
+        _write_key(credentials, raw, mode)
+        with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID") as error:
+            provider.acquire()
+        assert SESSION_SENTINEL not in str(error.value) and SESSION_SENTINEL not in repr(error.value)
+    path.unlink()
+    target = _write_key(tmp_path, SESSION_SENTINEL.encode())
+    os.symlink(target, path)
+    with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID"):
+        provider.acquire()  # symlink is never followed
+    path.unlink()
+    path.mkdir()
+    with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID"):
+        provider.acquire()  # not a regular file
+    path.rmdir()
+    _write_key(credentials, SESSION_SENTINEL.encode())
+    other_uid = os.geteuid() + 1
+    monkeypatch.setattr(gate_b_mod.os, "geteuid", lambda: other_uid)
+    with pytest.raises(GatewayError, match="SECRET_INPUT_INVALID"):
+        provider.acquire()  # wrong owner
+    monkeypatch.undo()
+    monkeypatch.setenv("CREDENTIALS_DIRECTORY", str(credentials))
+    # Signer mismatch: a valid key whose client signer differs from policy refuses (no order).
+    policy = GateBIdentityPolicy(SIGNER, WALLET, signer_type="SESSION_KEY")
+    with pytest.raises(GatewayError, match="SIGNER_MISMATCH"):
+        GateBSession.authenticate(provider, policy, client_factory=_factory(
+            FakeClient(signer="0x" + "c" * 40, signer_type="SESSION_KEY")))
+
+
+def test_session_key_identity_bound_to_custody_policy(tmp_path, monkeypatch):
+    from src.execution_gateway.gate_b import CredentialDirectorySessionKeyProvider
+    from src.execution_gateway import live_orch as LO_SRC
+    from tests.execution_gateway import test_gateway as TG
+    from tests.execution_gateway import test_live_orch as LO
+    from tests.exploratory_gate_c import test_exploratory_gate_c as XG
+    from tests.live_pilot import test_hunter_cycle as HC
+
+    acquired = []
+    monkeypatch.setattr(CredentialDirectorySessionKeyProvider, "acquire",
+                        lambda self: acquired.append(1) or GateBSecretLease(SESSION_SENTINEL))
+    session_policy = GateBIdentityPolicy(SIGNER, WALLET, signer_type="SESSION_KEY")
+    # OWNER policy + an owner key paired with a non-derived wallet (SDK classifies SESSION_KEY).
+    with pytest.raises(GatewayError, match="SIGNING_IDENTITY_INVALID"):
+        _session(FakeClient(signer_type="SESSION_KEY"))
+    # SESSION_KEY policy + OWNER-classified client.
+    with pytest.raises(GatewayError, match="SIGNING_IDENTITY_INVALID"):
+        GateBSession.authenticate(CredentialDirectorySessionKeyProvider(), session_policy,
+                                  client_factory=_factory(FakeClient(signer_type="OWNER")))
+    # SESSION_KEY policy with a non-allowlisted provider refuses before acquire().
+    interactive = InteractiveGateBSecretProvider()
+    monkeypatch.setattr(interactive, "acquire", lambda: pytest.fail("acquire before custody check"))
+    for provider in (interactive, _provider()):
+        with pytest.raises(GatewayError, match="SIGNING_IDENTITY_INVALID"):
+            GateBSession.authenticate(provider, session_policy, client_factory=_factory(
+                FakeClient(signer_type="SESSION_KEY")))
+    for bad in ("session_key", "", None, "SESSION-KEY"):
+        with pytest.raises(GatewayError, match="SIGNING_IDENTITY_INVALID"):
+            GateBIdentityPolicy(SIGNER, WALLET, signer_type=bad).validate()
+    # Synthetic SESSION_KEY positive control authenticates; OWNER default is unchanged.
+    acquired.clear()
+    session = GateBSession.authenticate(CredentialDirectorySessionKeyProvider(), session_policy,
+                                        client_factory=_factory(FakeClient(signer_type="SESSION_KEY")))
+    assert acquired == [1] and session.public_signer == SIGNER and GateBIdentityPolicy(SIGNER, WALLET).signer_type == "OWNER"
+    _session(FakeClient())
+    test_non_owner_signer_type_rejected()
+    # SESSION_KEY under V1_CANARY refuses before any secret request or ledger write.
+    world = XG.make_world(tmp_path / "world")
+    harness = LO.Harness(tmp_path / "v1", world)
+    deps = harness.deps()
+    deps.signer_type = "SESSION_KEY"
+    result = LO_SRC.LiveOrchestrator(harness.config(), dependencies=deps).reconcile()
+    assert (result.status, result.code) == ("BLOCKED", "SIGNING_IDENTITY_INVALID")
+    assert harness.secret_requests == 0 and not harness.orchestrator().store_path.exists()
+    # Read adapter default rejects SESSION_KEY; owner-record attestation and suspension latch.
+    TG.test_read_adapter_accepted_signer_type_defaults_to_owner(monkeypatch)
+    monkeypatch.undo()
+    with pytest.MonkeyPatch.context() as patch:
+        assert HC.session_key_attestation_matrix(tmp_path / "hunter", patch)

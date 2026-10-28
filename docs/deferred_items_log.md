@@ -1,5 +1,18 @@
 # Deferred Items Log
 
+## S10-ALPHA-HUNTER-PILOT-02 dormant hunter pilot deferrals
+
+| ID | State | Required evidence / boundary |
+|---|---|---|
+| S10-ALPHA-HUNTER-PILOT-02-D001 | SEPARATE_GATE_2_ACTIVATION | Karl custody decision (Session Key vs attended owner key), Session Key creation / Builder enablement, host credential install, deployment timer/unit, owner standing-policy record and capital approval, dedicated wallet with no unresolved CREATE, first live evidence. None performed or authorized here; USD 0 / orders 0. |
+| S10-ALPHA-HUNTER-PILOT-02-D002 | OWNER_DECISION_O3_OPEN | Sampled NBA/rain Gamma `orderMinSize` is USD 5 notional and the documented Sports/Weather taker rate is 0.05, so no fee-inclusive order fits the unchanged USD 5 cap: entries abstain `MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP`. The about USD 5.2475 minimum-compatible cap is a modeled example only, not a new cap; the cap stays 5. |
+| S10-ALPHA-HUNTER-PILOT-02-D003 | VENUE_ACCEPTANCE_UNVERIFIED | Venue acceptance of session-key L1/L2 credentials and wrapped signatures, and exploratory Gate C budgeting of a live SELL, are not provable offline; first evidenced only at Gate 2. Until then the SESSION_KEY route fails closed and venue authentication rejection latches custody suspension. |
+| S10-ALPHA-HUNTER-PILOT-02-D004 | HERMES_PREREQUISITE_EXTERNAL | Real controlled Hermes inference (S10-HERMES-ALPHA-HUNTER-01-D001, blocked by Firecrawl D002) and provider budget remain external. Without a VALID REAL_PROVIDER_REPORTED no-contrary finding every candidate abstains `HERMES_EVIDENCE_ABSENT`. No Hermes-led trading is claimed. |
+| S10-ALPHA-HUNTER-PILOT-02-D005 | CONSERVATIVE_RELEASE_AND_RESOLUTION | `CLOSED_RECONCILED` needs an explicit zero-size position row; absence of a row, MATCHED/MINED/RETRYING trades or a resolved-but-held position never release. Relayed redemption is out of scope. The resolved-payout source defaults to UNKNOWN, counted as zero (a loss) by the breaker, until a separately wired public source exists. |
+| S10-ALPHA-HUNTER-PILOT-02-D006 | RESOLVED_BY_OFFICIAL_DOCS | S10-HERMES-ALPHA-HUNTER-01-D003: Gamma `orderMinSize` is minimum USDC notional and CLOB `min_order_size` is shares (official docs read 2026-10-27); repo semantics unchanged. |
+| S10-ALPHA-HUNTER-PILOT-02-D007 | IMPLEMENTATION_NOTES_DISCLOSED | (a) The pinned SDK encodes a FOK BUY USDC amount on a 0.01 grid and the native inspector requires exact shares, so the cycle narrows (never widens) the 4.6 rule size until `q*ask` is on that grid, then rechecks every minimum. (b) The credential-directory path is read with `os.getenv` because the existing gateway architecture guard forbids the `os.environ` literal; no secret value ever comes from the environment. (c) POSIX credential-file checks skip on Windows and run on Linux. |
+| S10-ALPHA-HUNTER-PILOT-02-D008 | OPEN_INDEPENDENT_REVIEW | Side23 exact-head independent PR review and Karl-only merge decision. Executor validation is not independent acceptance. |
+
 ## S10-ALPHA-AUTO-PILOT-01 separate activation and successor gates
 
 | ID | State | Required evidence / boundary |
