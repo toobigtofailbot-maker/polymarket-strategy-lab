@@ -1,0 +1,140 @@
+# SIDE23 — S10-ALPHA-NEAR-TERM-02
+## Bounded Gamma near-term discovery + category/fee evidence correction
+
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+WP ID: S10-ALPHA-NEAR-TERM-02
+Frozen planning base / required predecessor merge SHA: d0765424ecfa1857770ba8cc5d23f577e9bf05fb
+Predecessor: PR #259; head 9a05ced41186c4d6805ad86f98e4308d4032f63e
+Suggested branch: codex/s10-alpha-near-term-02
+Package class: NEAR_TERM_DISCOVERY_SOURCE_AND_FEE_EVIDENCE_CORRECTION
+Governance track expected: RUNTIME
+Package class size: M (seven exact files)
+Risk level: 3
+Capital at risk: USD 0
+Status of this external draft: NATIVE_REPOSITORY_VALIDATION_PENDING; implementation authorized only through owner-sent BOOTSTRAP after native draftability PASS.
+Product / network impact: updates one optional foreground GET-only research operator, with real market acquisition separately gated after merge.
+Source runtime / credentials / paper / live / scheduler / trading impact: NONE.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## 1. Owner decision, objective and target outcome
+Karl has authorized ONE contained corrective implementation after the observed public scan returned 300 distinct Gamma records across three pages, zero inside the 120-minute metadata window, zero top-level category fields, zero books, and one offset300 transport unavailability. Preserve this as observed bounded evidence, not a universal negative market result.
+
+Implement the smallest repair of the EXISTING tool; do not start a replacement scanner or Alpha Factory. The corrected tool must locally discover and mechanically assess supported near-term binary CTF markets without a missing top-level `category` being an unconditional mechanical showstopper. All decisions remain research-only and explicit about source confidence.
+
+## 2. Mandatory startup and actual skill invocation
+Complete: AGENTS.md -> AI_CODING_AGENT_START_HERE.md -> CODEX_START_HERE.md -> docs/project_status.md -> docs/repo_truth_index.md -> docs/deferred_items_log.md -> docs/ai/codex/README.md -> docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md. Read TOKEN_EFFICIENCY_OPERATING_MODEL.md and only directly applicable source/contract/security standards.
+
+FIRST ACTUAL SKILL INVOCATION on EACH new Codex execution or corrective continuation: `$ponytail` LITE. Read installed instructions first. If unavailable, honestly report PONYTAIL_UNAVAILABLE rather than claiming a phantom invocation. It must produce a reuse/prune plan focused on one existing tool and seven paths.
+
+Then: `$wp-predraft-inspector`, `$hermes-alpha-reuse-check`, `$wp-minimum-test-plan`, `$financial-invariant-check`, `$dimensional-analysis`, `$canonical-evidence-audit`, `$runtime-authority-boundary-review`, `$security-review`, `$wp-readiness-preflight`, `$wp-one-shot-review` (independent consolidated frozen drafting review), `$verification-before-completion`. During/after code: `$code-simplifier`, `$ponytail-review`, `$find-bugs`, `$spec-to-code-compliance`, `$pr-evidence-reconcile`. Conditionally: `$systematic-debugging`, `$post-patch-validation` if actual patch/reproduced bug, `$secret-serialization` if stored sensitive material might be exposed. Report USED/NOT_USED/UNAVAILABLE + concrete contribution. No skill theater, installers, paid providers, frontend/migration skills without need. See SKILL_ROUTING.md.
+
+## 3. Read-only repo base gate before branch
+`git fetch origin --prune`; `git checkout main`; `git pull --ff-only origin main`; `git rev-parse HEAD`; `git status --short --branch`; verify actual PR #259 merged and 9a05ced41186c4d6805ad86f98e4308d4032f63e ancestor of HEAD, main==origin/main clean and expected base d0765424ecfa1857770ba8cc5d23f577e9bf05fb before branch. If the base advanced, reconcile to live source truth and STOP if material to contracts; never blindly overwrite or rebase. Confirm no overlapping active WP/PR. No merge authority.
+
+## 4. Freeze the native package before implementation
+This is a supplied DRAFT pair. Install/copy it to exact two WP paths and run **certificate-free RUNTIME** schema/scope/readiness per docs/ai/codex/WP_SPEC_STANDARD.md and docs/ai/codex/WP_DRAFTING_STANDARD.md. The standalone spec-guard CLI may need a certificate argument; do not fabricate a PROTECTED certificate for RUNTIME. Correct ordinary same-scope format/semantic defects in ONE batch, run native readiness exit0 and ONE independent one-shot drafting review. If a new boundary needs PROTECTED or an 8th path, STOP for owner decision. Once this owner-authorized seven-file draft passes, independently execute implementation without asking routine approval again. Keep a hash/identity ledger of final frozen prompt/spec bytes and ensure they match committed files.
+
+## 5. Technical implementation — minimum complete contract
+### R001 — Time-filtered category-neutral Gamma discovery
+Official docs support `GET /markets` `end_date_min`, `end_date_max`, `limit`, `offset`, `order`, `ascending`, `closed`. Use the fixed documented query `closed=false` + `end_date_min` = captured as_of UTC + `end_date_max` = as_of+7200s UTC + `limit=100` + `offset` in [0,1900] step100. Strictly bound and RFC3339 encode the two UTC instants deterministically; do not use any undocumented server sort or numeric secondary candidate selection. Local acceptance still requires `0 < endDate - captured as_of <=7200s`. The server filter is discovery help only, not a time or completeness authority: out-of-window returned rows are retained as FILTER_MISMATCH, not silently discarded. Date-only and missing timestamps stay UNKNOWN; no title/slug inference. No category allowlist. Preserve current max 20 pages/2000 raw rows, <=10 selected binary CTF markets / 20 token books, <=64 hard GETs, 2MiB max per response, 15s socket, 240s acquisition and no retries. If the selected API rejects the documented filter, report SOURCE_UNAVAILABLE/FILTER_CONTRACT_UNVERIFIED; do not automatically retry another endpoint.
+
+### R002 — Category provenance and defensible fee bound
+Last public capture had 300/300 missing top-level `category`, while most markets contained `feeSchedule` and `feeType`; market metadata category cannot be assumed present. Keep truthful `UNKNOWN` market taxonomy; event tags/title/slug are NOT an authoritative fee-category mapping. Preserve source field origin and category UNKNOWN counts.
+
+Use exact verified top-level recognized fee category when present. When category missing: permit a *research-only conservative upper-bound* fee rate **only** after the actual official fees page + existing Gamma `feeSchedule` semantics demonstrate that the current highest applicable **standard binary CTF taker rate is 0.07** and the market carries compatible validated feeSchedule + known standard feeType + protocol, feesEnabled, takerOnly/exponent, non-combo/non-V2 identity. Use max(Gamma nonnegative rate if enabled, 0.07) with upward fee rounding and bound metadata marked `DOCUMENTED_WORST_CASE_CATEGORY_UNKNOWN`; do not invent actual category or lower fees. If compatibility, source rate, current documented fee max, market fee class, or policy expiry is uncertain -> `FEE_UNKNOWN`, never a mechanical PASS. If actual Gamma declared rate exceeds the documented maximum, use the higher validated rate or fail closed, never understate. This is conditional conservative research accounting, NOT a universal live fee policy or authorization to trade. Keep date-bounded documentation version and existing 2026-11-04T00:00:00Z expiry, do NOT extend expiry or silently refresh docs. If a defensible upper bound is not provable, report BLOCKER_FEE_CATEGORY_EVIDENCE and retain fail-closed existing behavior instead of guessing.
+
+### R003 — Safe source-failure diagnostics
+Retain exact fixed-domain allowlist, no proxy discovery/redirect, GET only and strict body/clock caps. Refine transport classification minimally (timeout, HTTP class, redirect, other connection/TLS/DNS unavailable, oversize, malformed response) using closed statuses/subcodes and no exception strings or source content in stdout/structured evidence. One request -> one STARTED receipt -> one terminal status; absence is not empty success. If a receipt schema change is required, version it explicitly and update cold verification without affecting preexisting v1 bytes or replay provenance.
+
+### R004 — Native mechanics invariants
+Keep `src/execution_feasibility/public_market.py` normalizers and `src/live_pilot/hunter_cycle.py` pure size_order/fee_max logic. Preserve Gamma minimum in USDC principal vs CLOB minimum shares; USD2 floor / USD5 fee-inclusive cap; fee round-up; tick, depth, valid book within30s of recorded evaluation, zero delay, two-sided selection, native SDK amount grid; no weakening/waiver or automatic score. Unknown/stale/unsupported/failure dimension outranks minimum infeasible conclusion, and insufficient depth cannot falsely prove minimum infeasibility. No models/Hermes/fair price or independent probability in this WP.
+
+### R005 — Historical evidence/cold replay compatibility
+Preserve original raw byte SHA256s, STARTED/receipt/manifest/terminal/index graph, write-once outside-checkout security, no echo, zero-network verify. New query semantics and fee-classification rules may require a new versioned scratch schema. Existing v1 evidence must remain independently verifiable either via a native version-specific offline verifier or a provably reproducible pinned previous tool version with hash + documented command; never rewrite/delete previous scratch. Offline replay of new version must detect forged/rehashed state, altered query timestamp/offset, missing/extra files, unknown category method or mismatched fee provenance. No id/hash circularity.
+
+### R006 — Offline empirical regression proof
+The attached `reference/SIDE23_NEAR_TERM_OP_01_EVIDENCE.zip` is historical real public evidence; use ONLY its three captured pages + unavailable fourth receipt for offline fixture replay, not as live observations. Reproduce 300 unique markets; 300 missing category; zero in 120m; no books; source unavailable at offset300; no dishonest negative market inference. Separately inject frozen synthetic near-term, missing-category, valid recognized non-combo CTF fee schedule and valid books: prove both YES and NO route through mechanically conservative screening; a 5-USDC min+positive-fee case must fail, while genuinely low-minimum/ample-depth positive fixture can pass only if all authoritative dimensions pass. Test initial offset filter return out-of-window, malformed/empty pages, order drift, timeout, fee unknown, expiry, no echo and cold replay consistency. Synthetic PASS is not a real-world alpha/profit claim.
+
+### R007 — Zero-authority expansion
+Do not modify src/**, live pilot, gateway, risk, account, wallet, PIT/ALPHA canonical stores, Hermès, workflow, dependency, provider, scheduler or deployment. `network:true` means only future **separately authorized** public GET research capability—not real market acquisition during implementation/tests/CI. No new PII/credentials, orders, paper, inference or capital. No changes to market cap, number of requests, economic cap, fee expiry, or defaults without separate owner decision.
+
+### R008 — Exact denominators and status semantics
+Track source pages/requests, raw/unique/conflict, in-window/out-of-window/unknown, taxonomy known/UNKNOWN/opaque, fee method/bound known/UNKNOWN, selected/not acquired, order books fresh/stale/missing, mechanical states and excluded reasons. Keep source/evaluation timestamps and exact raw evidence refs. Coverage `external_universe_completeness=UNPROVEN` always. `endDate` means metadata only, never verified outcome resolution or settlement. `EVIDENCE_INCOMPLETE` may coexist with successful run/verify. Do not equate mechanical feasible with fair probability, edge, fill or profitability.
+
+## 6. Exact changed-path scope (M, seven)
+1. `tools/alpha/run_near_term_market_screener.py`
+2. `tests/tools/alpha/test_near_term_market_screener.py`
+3. `docs/near_term_market_screener_contract.md`
+4. `docs/deferred_items_log.md`
+5. `docs/status_entries/S10-ALPHA-NEAR-TERM-02.md`
+6. `docs/wp_specs/S10-ALPHA-NEAR-TERM-02/wp_prompt.txt`
+7. `docs/wp_specs/S10-ALPHA-NEAR-TERM-02/wp_spec.json`
+
+Forbidden: .github/**, src/**, any dependency/lock, generated artifacts, config/**, credentials/**, secrets/**, agent_memory/**, agent_runtime/**, tools/hermes/**, tools/execution/**, tools/deployment/** and any unrelated current policy. docs/deferred_items_log.md append truthful correction/limitations only; status fragment stable and non-self-referential. If scope truly demands an eighth file or a protected path, STOP with evidence; do not bypass the guard.
+
+## 7. Tests and one-shot verification, without bloat
+Required named pytest nodes R001..R008 in existing test file:
+- R001 test_documented_time_filtered_gamma_discovery
+- R002 test_missing_category_and_conservative_fee_bound_provenance
+- R003 test_transport_failure_classification_and_sanitized_receipts
+- R004 test_native_fee_inclusive_mechanics_after_filtered_discovery
+- R005 test_cold_replay_schema_and_legacy_evidence_compatibility
+- R006 test_prior_public_scan_replay_and_near_term_counterexample
+- R007 test_authority_and_existing_hunter_unchanged
+- R008 test_denominator_and_non_claim_integrity
+
+Write red failing offline tests first for the actual prior defect; implement minimum fix; run focused+negative matrix; run affected adjacent native Hunter, live_pilot, execution feasibility, Alpha discovery, repo-truth/architecture/no-live tests. Use normal native schema/readiness + scope guards, generated artifact guard, security/lint scans (Semgrep/Gitleaks as applicable). Do not broaden into entire security redesign.
+
+ONE authoritative local full suite on stable candidate head; then ONE exact-head hosted required CI run under existing base-owned Tier plan, with 11 expanded jobs inspected if routed. If any source changes after full suite/CI, rerun affected validation required by governance; don't claim stale head PASS. Independent combined implementation review and one-shot scope check. Truthfully disclose existing warnings/skip/audit exceptions and previous false alarms; never falsify completion.
+
+## 8. PR publication and exact evidence
+Publish one PR, initially DRAFT while editing, then promote for review only after local gates. Complete frozen spec prompts as committed, exact head/baseline, requirement→actual test, scope, security and full/hosted CI facts, skill contributions, real network vs zero product network, and honest evidence mode. Run existing PR evidence consistency guard on drafted and re-fetched posted PR body. A posted comment is optional after WP91. No merge; Karl retains decision.
+
+## 9. Hard stops and reporting
+Routine in-scope defects can be fixed autonomously in ONE consolidated batch followed by fresh checks. Stop ONLY if a real protected-path/eighth-file/credential/paper/live/Hermes provider/unproven fee safety/canonical migration/new dependency/material API incompatibility forces scope change. No additional public product run or auth. Provide `READY_FOR_SIDE23_REVIEW` only with real exact-head evidence; else `MATERIAL_BLOCKER` with exact cause and best supported partial. No unnecessary follow-up WPs or recurring approval loops.
+
+## 10. Context budget / known decisions
+Read scope: this seven-file set, docs/near_term_market_screener_contract.md, existing public_market.py, live_pilot/hunter_cycle.py sizing, existing Gamma client, repo native WP readiness standard, prior evidence ZIP and official public docs. Do not inspect unrelated perps repo or every skill file. Do not invent an external model provider check. Existing public evidence was a historical sample, not current. Fee docs time-bound; retain current expiry. Existing ALPHA-02 owns canonical observed-universe logic and stays unchanged. No time-of-resolution claims or user-directed trading orders.
+
+## 11. Authority / Non-Authority Posture
+Implementation authority: owner-authorized only after certificate-free RUNTIME native readiness and the independent consolidated drafting review succeed. Base branch: main. Report/export authority: scoped docs and external logs. Canonical evidence authority: scratch-only versioned research records; no PIT/Alpha canonical writes. Network authority: future separately authorized public GET capability only; development permits official documentation research and Git/PR workflow traffic, not market acquisition. Dependency-change authority: NONE. Credential, execution, live, paper, Hermes/provider, runtime/scheduler and deployment authority: NONE. Centralized boundary group names in docs/ai/codex/PROTECTED_PATHS.md govern; reading pure helpers does not authorize editing protected source.
+
+## 12. Compatibility / Impossibility Check and Hard Merge Gate
+Before implementation record exact clean fetched main, PR259 merge/head ancestry and absence of a conflicting WP/PR using section3 commands. Check the existing scanner/native normalizers and all seven paths against each required behavior. Discovery filters, closed transport diagnostics and versioned external replay fit the existing tool surface; no protected edits are permitted. The R002 missing-category fee fallback additionally requires authoritative evidence linking an accepted exact feeType to a standard non-combo binary CTF fee class and a compatible feeSchedule. An observed string or its spelling alone is insufficient. STOP if that fee-class applicability cannot be proven, because a synthetic fixture cannot establish a safe source contract. Record BLOCKER_FEE_CATEGORY_EVIDENCE and retain existing fail-closed source. No declaration of readiness or schema success overrides this substantive stop.
+
+## 13. Negative-test matrix and requirement mapping / evidence plan
+R001-R008 in section7 are the mandatory requirement-to-evidence traceability. Applicable negatives include missing/null/wrong-type/empty fee and identity fields, stale/future time, malformed/oversize/noncanonical source, duplicate/conflicting rows, unknown feeType/protocol, unsupported combo state, altered filter times/offsets, rehashed provenance, missing/extra/reparse files and no-echo outputs. Positive allowed cases must also pass. Free-text wording/typo filters are not introduced; source text must not become structured output. Document any narrower not-applicable category explicitly in the contract and PR body. Existing full/local/hosted and security requirements remain unchanged.
+
+## 14. Successor boundary and report back
+The successor boundary remains separately authorized research after this WP is accepted and merged; no follow-up operation, implementation or trading action is granted here. Report back READY_FOR_SIDE23_REVIEW only after all actual gates pass, otherwise MATERIAL_BLOCKER with exact evidence, retained failures, actual skill contributions and unavailable checks. No merge authority. Hard stop if an eighth path, protected change or unsupported fee-class assumption is necessary. The committed status fragment and appended deferred entry must preserve a material stop truthfully, without claiming implementation or tests completed.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|discovery|gamma_query|any_relevant_input|REQUIRE|bounded_near_term_time_filter|requirements.r001|R001
+NR002|fee|category_unknown|any_relevant_input|REQUIRE|safe_unknown_fee_envelope|requirements.r002|R002
+NR003|transport|source_failure|any_relevant_input|REQUIRE|closed_failure_codes|requirements.r003|R003
+NR004|mechanics|token_books|any_relevant_input|REQUIRE|native_fee_inclusive_constraints|requirements.r004|R004
+NR005|evidence|cold_verify|any_relevant_input|REQUIRE|versioned_immutable_replay|requirements.r005|R005
+NR006|regression|offline_fixture|any_relevant_input|REQUIRE|prior_public_and_synthetic_proof|requirements.r006|R006
+NR007|authority|protected_scope|any_relevant_input|REQUIRE|zero_authority_expansion|requirements.r007|R007
+NR008|coverage|denominators|any_relevant_input|REQUIRE|complete_unknown_truth|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1

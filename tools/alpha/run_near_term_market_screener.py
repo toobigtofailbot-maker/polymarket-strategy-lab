@@ -11,10 +11,12 @@ import os
 from pathlib import Path
 import re
 import stat
+import socket
 import sys
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 
 REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
@@ -23,10 +25,10 @@ from src.execution_feasibility import public_market as venue  # noqa: E402
 from src.live_pilot.hunter_cycle import fee_max, size_order  # noqa: E402
 from tools.alpha.run_alpha_hunter import is_v2  # noqa: E402
 
-SCHEMA = 'near-term-market-screen@1.0.0'
+SCHEMA = 'near-term-market-screen@2.0.0'
 NS = 10**9
 D = Decimal
-FEE_POLICY = 'documented-fees-20261028'
+FEE_POLICY = 'documented-fees-20261028-near-term-02'
 FEE_EXPIRY = 1793750400 * NS  # 2026-11-04T00:00:00Z
 FEE_RATES = dict(crypto='0.07', sports='0.05', finance='0.04', politics='0.04',
                  economics='0.05', culture='0.05', weather='0.05', mentions='0.04',
@@ -52,15 +54,15 @@ FIELDS = {
                  'mechanics_evaluated_ns','fee_policy_version','sources','coverage','categories','markets','tokens','summary'),
     'coverage': ('pages_requested','available','unavailable','invalid','raw_rows','unique_ids',
                  'identical_duplicates','conflicting_ids','stop_reason','external_universe_completeness',
-                 'status_counts','protocol_counts','time_counts','selection_counts','book_counts'),
+                 'status_counts','protocol_counts','time_counts','selection_counts','book_counts','filter_counts','fee_method_counts'),
     'category': ('category_key','label','market_count','malformed_count'),
     'market': ('market_id','source_request_index','source_row_index','category_key','protocol_state',
-               'status_state','time_state','end_time_utc','selection_state','reason_codes'),
+               'status_state','time_state','end_time_utc','selection_state','reason_codes','filter_state','category_origin'),
     'token': ('market_id','token_id','outcome_index','source_request_index','state','first_reason',
               'dimension_codes','gamma_notional_min_usd','clob_min_shares','best_ask','best_ask_depth_shares',
               'gamma_tick','clob_tick','seconds_delay','book_timestamp_ns','age_ns_at_evaluation',
               'fee_rate_bound','fee_exponent','shares','principal_usd','fee_bound_usd','all_in_usd',
-              'sdk_grid_state','derived_gamma_sha256'),
+              'sdk_grid_state','derived_gamma_sha256','fee_method','fee_class','fee_policy_expiry_utc'),
     'summary': ('assessment','category_count','market_count','in_window_count','selected_market_count',
                 'unacquired_market_count','book_count','fresh_book_count','possible_count','minimum_failure_count',
                 'inconclusive_count','resolution_within_120m_confirmed_count','external_universe_completeness','claim'),
@@ -177,13 +179,23 @@ def time_bucket(value, as_of):
     return ('EXPIRED' if end<=as_of else 'FUTURE_OUTSIDE' if end-as_of>7200*NS else 'IN_WINDOW'), end
 
 
-def discovery_url(offset):
+def discovery_url(offset, as_of):
     require(type(offset) is int and 0<=offset<=1900 and offset%100==0)
-    return f'https://gamma-api.polymarket.com/markets?closed=false&limit=100&offset={offset}'
+    require(type(as_of) is int and as_of>=0)
+    query=urllib.parse.urlencode((('closed','false'),('end_date_min',utc(as_of)),
+        ('end_date_max',utc(as_of+7200*NS)),('limit','100'),('offset',str(offset))))
+    return 'https://gamma-api.polymarket.com/markets?'+query
 
 
-def checked_url(url):
-    if url in {discovery_url(i*100) for i in range(20)}:
+def checked_url(url, as_of=None):
+    require(type(url) is str and len(url)<=512)
+    if url.startswith('https://gamma-api.polymarket.com/markets?'):
+        query=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query,strict_parsing=True)
+        require(set(query)=={'closed','end_date_min','end_date_max','limit','offset'}
+            and all(len(v)==1 for v in query.values()))
+        begin=timestamp(query['end_date_min'][0])
+        require(as_of is None or begin==as_of)
+        require(url==discovery_url(int(query['offset'][0]),begin))
         return url
     match = re.fullmatch(r'https://clob\.polymarket\.com/book\?token_id=([0-9]{1,100})', url)
     require(match is not None and venue.clob_book_url(match[1]) == url)
@@ -219,6 +231,10 @@ def public_read(url, timeout, maximum):
         return ('REDIRECT_REFUSED' if 300<=error.code<400 else 'HTTP_4XX' if 400<=error.code<500 else 'HTTP_5XX'), None
     except RedirectRefused:
         return 'REDIRECT_REFUSED', None
+    except (TimeoutError, socket.timeout):
+        return 'TIMEOUT', None
+    except urllib.error.URLError as error:
+        return ('TIMEOUT' if isinstance(error.reason, TimeoutError) else 'TRANSPORT_UNAVAILABLE'), None
     except (OSError, ValueError):
         return 'TRANSPORT_UNAVAILABLE', None
 
@@ -275,7 +291,7 @@ def catalog(receipts, body, as_of):
     stop = 'SOURCE_UNAVAILABLE'
     for r in pages:
         if r['body_state']!='AVAILABLE':
-            stop = 'SOURCE_INVALID' if r['body_state'] in ('INVALID','OVERSIZE') else 'SOURCE_UNAVAILABLE'
+            stop = 'SOURCE_INVALID' if r['body_state'] in ('INVALID','OVERSIZE') else 'FILTER_CONTRACT_UNVERIFIED' if r['status_class']=='HTTP_4XX' else 'SOURCE_UNAVAILABLE'
             break
         rows = source_body(r, body)
         raw_rows += len(rows)
@@ -300,7 +316,9 @@ def catalog(receipts, body, as_of):
             row = record('market',market_id=mid if valid_id else None,
                 source_request_index=r['request_index'],source_row_index=ordinal,category_key=ckey,
                 protocol_state=protocol,status_state=status(market),time_state=bucket,
-                end_time_utc=None if end is None else utc(end),selection_state='INELIGIBLE',reason_codes=[])
+                end_time_utc=None if end is None else utc(end),selection_state='INELIGIBLE',reason_codes=[],
+                filter_state='MATCH' if bucket=='IN_WINDOW' else 'FILTER_MISMATCH' if bucket in ('EXPIRED','FUTURE_OUTSIDE') else 'UNKNOWN',
+                category_origin='MISSING' if market.get('category') is None else 'MALFORMED' if malformed else 'TOP_LEVEL')
             item = (market,row,tokens,end,label,malformed)
             seen[key]=(fingerprint,item)
             entries.append(item)
@@ -319,8 +337,9 @@ def catalog(receipts, body, as_of):
         if row['protocol_state']!='CTF': reasons.append('PROTOCOL_UNSUPPORTED')
         if market.get('negRisk') is not False: reasons.append('NEG_RISK_UNSUPPORTED')
         if row['time_state']!='IN_WINDOW': reasons.append('TIME_UNKNOWN_OR_OUTSIDE')
+        if row['filter_state']=='FILTER_MISMATCH': reasons.append('FILTER_MISMATCH')
         if not reasons: row['selection_state']='NOT_ACQUIRED'
-    candidates = sorted((e for e in entries if not e[1]['reason_codes']),key=lambda e:(e[3],int(e[1]['market_id'])))
+    candidates = sorted((e for e in entries if not e[1]['reason_codes']),key=lambda e:e[3])
     selected=candidates[:10]
     for item in selected:
         item[1]['selection_state']='SELECTED'
@@ -346,7 +365,8 @@ def economics(item, token, outcome, receipt, body, evaluated):
     row={key:None for key in FIELDS['token']}
     row.update(market_id=mrow['market_id'],token_id=token,outcome_index=outcome,
         source_request_index=None if receipt is None else receipt['request_index'],state=UNKNOWN,
-        first_reason='BOOK_NOT_ACQUIRED',dimension_codes={k:'UNKNOWN' for k in DIMENSIONS},sdk_grid_state='UNKNOWN')
+        first_reason='BOOK_NOT_ACQUIRED',dimension_codes={k:'UNKNOWN' for k in DIMENSIONS},sdk_grid_state='UNKNOWN',
+        fee_method='UNKNOWN',fee_class='UNKNOWN',fee_policy_expiry_utc=utc(FEE_EXPIRY))
     dimensions=row['dimension_codes']
     if receipt is None or receipt['body_state']!='AVAILABLE':
         row['first_reason']='BOOK_NOT_ACQUIRED' if receipt is None else 'BOOK_UNAVAILABLE'
@@ -383,14 +403,27 @@ def economics(item, token, outcome, receipt, body, evaluated):
         gamma_min=decimal(snapshot.gamma_min_order_notional_usd,positive=True)
         book_min=decimal(snapshot.book_min_order_size_raw,positive=True)
         key=market.get('category')
-        require(type(key) is str and key.casefold() in FEE_RATES and evaluated<FEE_EXPIRY
-            and type(snapshot.fees_enabled) is bool and snapshot.fee_taker_only is True
-            and decimal(snapshot.fee_exponent)==1)
+        require(evaluated<FEE_EXPIRY and type(snapshot.fees_enabled) is bool
+            and snapshot.fee_taker_only is True and decimal(snapshot.fee_exponent)==1)
         gamma_rate=decimal(snapshot.fee_rate)
         require(gamma_rate<=1 and (snapshot.fees_enabled or gamma_rate==0))
-        rate=max(gamma_rate if snapshot.fees_enabled else D(0),D(FEE_RATES[key.casefold()]))
+        # Dated upstream production-fee fixture supports only this exact fallback
+        # class. A feeType suffix is not protocol evidence; zero_fees is unknown.
+        if type(key) is str and key.casefold() in FEE_RATES:
+            require(market.get('comboStatus') in (None,'disabled'))
+            bound=D(FEE_RATES[key.casefold()])
+            method='TOP_LEVEL_CATEGORY'
+            fee_class='RECOGNIZED_CATEGORY'
+        else:
+            require(key is None and market.get('feeType')=='politics_fees'
+                and market.get('version')=='v1' and market.get('comboStatus')=='disabled'
+                and mrow.get('protocol_state')=='CTF')
+            bound=D('0.07')
+            method='DOCUMENTED_WORST_CASE_CATEGORY_UNKNOWN'
+            fee_class='POLITICS_STANDARD'
+        rate=max(gamma_rate if snapshot.fees_enabled else D(0),bound)
         dimensions['fee']='PASS'
-        row.update(fee_rate_bound=str(rate),fee_exponent=1)
+        row.update(fee_rate_bound=str(rate),fee_exponent=1,fee_method=method,fee_class=fee_class)
         # Unknown dimensions dominate; a stale source never proves a current negative.
         if any(dimensions[k]!='PASS' for k in ('identity','status','freshness','tick','delay')):
             row['first_reason']='SOURCE_OR_VENUE_DIMENSION_INVALID'
@@ -453,6 +486,8 @@ def analyze(root,started,receipts,evaluated):
         protocol_counts=counts(rows,'protocol_state',('CTF','V2','UNKNOWN')),
         time_counts=counts(rows,'time_state',TIME_STATES),
         selection_counts=counts(rows,'selection_state',('SELECTED','NOT_ACQUIRED','INELIGIBLE')),
+        filter_counts=counts(rows,'filter_state',('MATCH','FILTER_MISMATCH','UNKNOWN')),
+        fee_method_counts=counts(tokens,'fee_method',('TOP_LEVEL_CATEGORY','DOCUMENTED_WORST_CASE_CATEGORY_UNKNOWN','UNKNOWN')),
         book_counts=dict(AVAILABLE=sum(r['body_state']=='AVAILABLE' for r in books),
             FRESH=sum(t['dimension_codes']['freshness']=='PASS' for t in tokens),
             STALE=sum(t['dimension_codes']['freshness']=='FAIL' for t in tokens),
@@ -462,6 +497,7 @@ def analyze(root,started,receipts,evaluated):
     incomplete=(coverage['stop_reason']!='PAGE_BOUND_REACHED' or coverage['conflicting_ids']
         or any(r['body_state']!='AVAILABLE' for r in receipts)
         or any(t['state']==UNKNOWN for t in tokens)
+        or any(r['filter_state']!='MATCH' for r in rows)
         or any(r['selection_state']=='NOT_ACQUIRED' or r['time_state'] in TIME_STATES[:4]
                or r['status_state']=='UNKNOWN' or r['protocol_state']=='UNKNOWN' for r in rows)
         or any(r['time_state']=='IN_WINDOW' and r['selection_state']=='INELIGIBLE' for r in rows))
@@ -504,7 +540,7 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
 
         def collect(kind,url):
             require(len(receipts)<64 and monotonic()<deadline)
-            checked_url(url)
+            checked_url(url,as_of)
             i=len(receipts)+1
             start=utc(clock_ns()//1000*1000);sm=int(monotonic()*NS)
             request=record('request',schema_version=SCHEMA,request_index=i,endpoint_kind=kind,
@@ -515,7 +551,7 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
                 remaining=deadline-monotonic()
                 require(remaining>0)
                 status_class,raw=(transport or public_read)(url,min(15,remaining),CONFIG['max_body_bytes'])
-                require(status_class in ('HTTP_2XX','HTTP_4XX','HTTP_5XX','REDIRECT_REFUSED','TRANSPORT_UNAVAILABLE','OVERSIZE'))
+                require(status_class in ('HTTP_2XX','HTTP_4XX','HTTP_5XX','REDIRECT_REFUSED','TRANSPORT_UNAVAILABLE','TIMEOUT','OVERSIZE'))
             except Exception:
                 status_class,raw='TRANSPORT_UNAVAILABLE',None
             state='UNAVAILABLE';name=sha=None;size=0
@@ -540,7 +576,7 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
         page_hashes=set()
         for offset in range(0,2000,100):
             if monotonic()>=deadline:break
-            receipt=collect('DISCOVERY',discovery_url(offset))
+            receipt=collect('DISCOVERY',discovery_url(offset,as_of))
             if receipt['body_state']!='AVAILABLE':break
             page=source_body(receipt,lambda n:read_bytes(op/n,CONFIG['max_body_bytes']))
             page_hash=digest(canonical(page))
@@ -600,16 +636,16 @@ def verify(scratch_dir):
             require(type(receipt['request_index']) is int and receipt['request_index']==i
                 and receipt['schema_version']==SCHEMA and receipt['endpoint_kind'] in ('DISCOVERY','BOOK'))
             if receipt['endpoint_kind']=='DISCOVERY':
-                require(not books and not discovery_stopped and pages<20 and receipt['url']==discovery_url(pages*100));pages+=1
+                require(not books and not discovery_stopped and pages<20 and receipt['url']==discovery_url(pages*100,started['as_of_ns']));pages+=1
             else:books=True
-            checked_url(receipt['url'])
+            checked_url(receipt['url'],started['as_of_ns'])
             require(started['as_of_ns']<=timestamp(receipt['started_utc'])<=timestamp(receipt['received_utc'])<=evaluated)
             require(type(receipt['started_monotonic_ns']) is int and type(receipt['received_monotonic_ns']) is int
                 and previous_received<=receipt['started_monotonic_ns']<=receipt['received_monotonic_ns'])
             require(receipt['received_monotonic_ns']-receipt['started_monotonic_ns']<=30*NS
                 and receipt['received_monotonic_ns']-started['started_monotonic_ns']<=255*NS)
             previous_received=receipt['received_monotonic_ns']
-            require(receipt['status_class'] in ('HTTP_2XX','HTTP_4XX','HTTP_5XX','REDIRECT_REFUSED','TRANSPORT_UNAVAILABLE','OVERSIZE'))
+            require(receipt['status_class'] in ('HTTP_2XX','HTTP_4XX','HTTP_5XX','REDIRECT_REFUSED','TRANSPORT_UNAVAILABLE','TIMEOUT','OVERSIZE'))
             require(receipt['body_state'] in ('AVAILABLE','UNAVAILABLE','INVALID','OVERSIZE'))
             require(receipt['started_monotonic_ns']-started['started_monotonic_ns']<240*NS)
             request={k:receipt[k] for k in FIELDS['request']}

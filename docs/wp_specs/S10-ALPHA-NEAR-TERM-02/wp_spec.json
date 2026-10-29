@@ -1,0 +1,470 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-NEAR-TERM-02",
+    "title": "Bounded Near-Term Gamma Discovery, Source Fee Provenance and Transport Evidence Correction",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "NEAR_TERM_DISCOVERY_SOURCE_AND_FEE_EVIDENCE_CORRECTION",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-alpha-near-term-02",
+    "required_predecessor": {
+      "pr_number": 259,
+      "head_sha": "9a05ced41186c4d6805ad86f98e4308d4032f63e",
+      "merge_sha": "d0765424ecfa1857770ba8cc5d23f577e9bf05fb"
+    },
+    "objective": "Correct the merged category-neutral 120-minute scratch research scanner after one public run observed 300 older long-dated markets, 300 absent top-level categories, no books and offset300 transport unavailable. Add time-filtered Gamma discovery using documented end_date_min/end_date_max, truthful metadata/category/economic evidence fallback, safer bounded transport failure classes and cold replay with legacy evidence provenance. Keep USD2-5 fee-inclusive cap, 120-minute metadata-only semantics, no real acquisition during implementation, no provider/trading/canonical writes.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/tools/alpha/test_near_term_market_screener.py",
+      "docs/near_term_market_screener_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-NEAR-TERM-02.md",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-02/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-02/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/tools/alpha/test_near_term_market_screener.py",
+      "docs/near_term_market_screener_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-NEAR-TERM-02.md",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-02/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-02/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "config/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exact seven changed paths to predecessor merge sha; keep any preexisting external scratch and prior operation receipts unchanged. No change to execution, risk, canonical stores, legacy provenance or live defaults.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Amend one existing optional foreground run/verify CLI and its approved fixed public GET URL patterns; no canonical API or trading path change.",
+    "items": [
+      {
+        "surface": "run_near_term_market_screener run CLI",
+        "before": "Unfiltered Gamma offset pages first yielded 300 older long-dated markets; no 120-minute shortlist; 300 missing category",
+        "after": "Same CLI with documented near-term end_date_min/end_date_max query, locally verified time cutoff, bounded category-neutral selection, conservative venue-fee evidence when taxonomy absent",
+        "change_authorized": true,
+        "compatibility_requirement": "Keep one external scratch-only finite run; no generic endpoint/URL/CLI config, 2-5 fee-inclusive cap, no canonical or trading impact",
+        "authority": "PUBLIC_GET_ONLY_RESEARCH_AFTER_SEPARATE_OWNER_RUN_AUTHORIZATION"
+      },
+      {
+        "surface": "run_near_term_market_screener verify CLI",
+        "before": "Cold v1 immutable scratch evidence replay and fixed receipts",
+        "after": "Strict offline replay for new version and documented backward-compatible verification of previous v1 scratch observations (or explicitly preserve pinned original version verification without rewriting bytes)",
+        "change_authorized": true,
+        "compatibility_requirement": "No rewriting previously captured evidence; zero external GET/provider/wallet/trade and no old receipt hash mutation",
+        "authority": "OFFLINE_RESEARCH_EVIDENCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight isolated requirement groups capture the correction and map one-to-one to tests and normative rules; scoped code/docs only.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Documented near-term Gamma filter: fixed HTTPS /markets?closed=false&end_date_min=<as_of_UTC>&end_date_max=<as_of_plus_7200_UTC>&limit=100&offset=N (or same parameters deterministic order), never category filter or unverified sort; timestamp parsing and strict local 0<delta<=7200; at most20 pages/2000rows/64 requests; failed/empty/truncated/unstable responses and API filter mismatch are explicit coverage states, not no-market truth.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Documented near-term Gamma filter: fixed HTTPS /markets?closed=false&end_date_min=<as_of_UTC>&end_date_max=<as_of_plus_7200_UTC>&limit=100&offset=N (or same parameters deterministic order), never category filter or unverified sort; timestamp parsing and strict local 0<delta<=7200; at most20 pages/2000rows/64 requests; failed/empty/truncated/unstable responses and API filter mismatch are explicit coverage states, not no-market truth.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Category provenance must reflect missing top-level category as UNKNOWN; do not guess from title/slug/tags. For approved binary CTF v1 standard markets, if exact top-level fee category is absent, any alternative conservative fee envelope must be independently justified by dated official fee category maximum (.07 as checked 2026-10-28), a valid market-specific feeSchedule and known standard feeType/protocol; use max(authoritative Gamma rate, dated documented maximum) and preserve provenance/expiry. Unknown version/type/feeSchedule or out-of-policy date -> FEE_UNKNOWN; no synthetic category assignment.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Category provenance must reflect missing top-level category as UNKNOWN; do not guess from title/slug/tags. For approved binary CTF v1 standard markets, if exact top-level fee category is absent, any alternative conservative fee envelope must be independently justified by dated official fee category maximum (.07 as checked 2026-10-28), a valid market-specific feeSchedule and known standard feeType/protocol; use max(authoritative Gamma rate, dated documented maximum) and preserve provenance/expiry. Unknown version/type/feeSchedule or out-of-policy date -> FEE_UNKNOWN; no synthetic category assignment.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Transport preserves fixed public GET-only hosts/paths, no redirect/proxy/retry; bounded safe failure classification distinguishes timeout, HTTP_4XX/HTTP_5XX, redirect, response invalid/oversize and other transport unavailable without raw exception/secret/URL echo. Preserve STARTED before dispatch and no swallowed failure presented as empty result; <=2MiB response, 15s socket timeout, 240s acquisition.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Transport preserves fixed public GET-only hosts/paths, no redirect/proxy/retry; bounded safe failure classification distinguishes timeout, HTTP_4XX/HTTP_5XX, redirect, response invalid/oversize and other transport unavailable without raw exception/secret/URL echo. Preserve STARTED before dispatch and no swallowed failure presented as empty result; <=2MiB response, 15s socket timeout, 240s acquisition.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Native source validation, both binary token books and size_order/fee_max unchanged: minimum Gamma USDC principal, CLOB shares, tick, 30s freshness, depth, zero delay, SDK .01 amount grid, 2-5 USD all-in and fee bound; UNKNOWN/unsupported precedes minimum-negative, and mechanics possible does not imply edge, settlement or live admission.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native source validation, both binary token books and size_order/fee_max unchanged: minimum Gamma USDC principal, CLOB shares, tick, 30s freshness, depth, zero delay, SDK .01 amount grid, 2-5 USD all-in and fee bound; UNKNOWN/unsupported precedes minimum-negative, and mechanics possible does not imply edge, settlement or live admission.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "New scratch schema and cold verifier rederive source raw hashes, exact query with captured as_of, fee policy identity, category method, provenance, request order and bounded statuses offline, with zero network and write; previously captured v1 evidence remains independently verifiable without mutation using a clearly documented compatible historical path/fixture. Rehashed altered receipts, source states and sort/filter timestamps must fail closed.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "New scratch schema and cold verifier rederive source raw hashes, exact query with captured as_of, fee policy identity, category method, provenance, request order and bounded statuses offline, with zero network and write; previously captured v1 evidence remains independently verifiable without mutation using a clearly documented compatible historical path/fixture. Rehashed altered receipts, source states and sort/filter timestamps must fail closed.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reproduce last public operation from archived three real source pages offline with 300 distinct IDs, absent top-level category, no in-window, transport unavailable at offset300, no books; prove new near-term synthetic source with no category can reach both CTF books and conservative mechanical evaluation without treating synthetic evidence as real market observation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reproduce last public operation from archived three real source pages offline with 300 distinct IDs, absent top-level category, no in-window, transport unavailable at offset300, no books; prove new near-term synthetic source with no category can reach both CTF books and conservative mechanical evaluation without treating synthetic evidence as real market observation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Do not modify canonical PIT/ALPHA/other Hunter, execution/gateway/risk/fee constants, scheduler/provider, credentials or trading; no real product network during implementation/tests/CI. Keep exact7 scope; deterministic native RUNTIME readiness, baseline regressions, full stable-head suite, honest head-bound PR evidence and independent combined review.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Do not modify canonical PIT/ALPHA/other Hunter, execution/gateway/risk/fee constants, scheduler/provider, credentials or trading; no real product network during implementation/tests/CI. Keep exact7 scope; deterministic native RUNTIME readiness, baseline regressions, full stable-head suite, honest head-bound PR evidence and independent combined review.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Complete original and new exact denominators: source pages requested/available/unavailable; category UNKNOWN vs fee provenance; time in/out/unknown; selected/unacquired; book attempts vs no book; fee known/unknown and mechanics possible/minimum/inconclusive; external universe completeness always UNPROVEN. No false all-market, 120m resolution or profitability claim; category and fee classification may be distinct.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Complete original and new exact denominators: source pages requested/available/unavailable; category UNKNOWN vs fee provenance; time in/out/unknown; selected/unacquired; book attempts vs no book; fee known/unknown and mechanics possible/minimum/inconclusive; external universe completeness always UNPROVEN. No false all-market, 120m resolution or profitability claim; category and fee classification may be distinct.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 evidence-backed PASS or closed blocked state",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical ID algorithm; stable hash/source and scratch identities reuse native canonical JSON and raw SHA256, with new versioned record semantics only.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME requires deterministic preimplementation source readiness and owner authorization before one implementation/PR; no live states or protected certificate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native schema/spec/scope/readiness success on exact final prompt/spec bytes and one independent consolidated drafting review",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorizes this RUNTIME scoped implementation with his attached bootstrap; no source authority until readiness",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly seven scoped paths, R001-R008 and adjacent regressions, one authoritative stable-head full suite, independent review and exact-head CI pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new identity derivation rule; offline positive and hostile negative market cases are specified by R001-R008 named pytest nodes.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight named offline requirement tests, plus current-head baseline/readiness/full-suite/hosted truth and evidence body.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_documented_time_filtered_gamma_discovery",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_documented_time_filtered_gamma_discovery",
+        "expected_result": "Documented near-term Gamma filter: fixed HTTPS /markets?closed=false&end_date_min=<as_of_UTC>&end_date_max=<as_of_plus_7200_UTC>&limit=100&offset=N (or same parameters deterministic order), never category filter or unverified sort; timestamp parsing and strict local 0<delta<=7200; at most20 pages/2000rows/64 requests; failed/empty/truncated/unstable responses and API filter mismatch are explicit coverage states, not no-market truth."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_missing_category_and_conservative_fee_bound_provenance",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_missing_category_and_conservative_fee_bound_provenance",
+        "expected_result": "Category provenance must reflect missing top-level category as UNKNOWN; do not guess from title/slug/tags. For approved binary CTF v1 standard markets, if exact top-level fee category is absent, any alternative conservative fee envelope must be independently justified by dated official fee category maximum (.07 as checked 2026-10-28), a valid market-specific feeSchedule and known standard feeType/protocol; use max(authoritative Gamma rate, dated documented maximum) and preserve provenance/expiry. Unknown version/type/feeSchedule or out-of-policy date -> FEE_UNKNOWN; no synthetic category assignment."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_transport_failure_classification_and_sanitized_receipts",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_transport_failure_classification_and_sanitized_receipts",
+        "expected_result": "Transport preserves fixed public GET-only hosts/paths, no redirect/proxy/retry; bounded safe failure classification distinguishes timeout, HTTP_4XX/HTTP_5XX, redirect, response invalid/oversize and other transport unavailable without raw exception/secret/URL echo. Preserve STARTED before dispatch and no swallowed failure presented as empty result; <=2MiB response, 15s socket timeout, 240s acquisition."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_native_fee_inclusive_mechanics_after_filtered_discovery",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_native_fee_inclusive_mechanics_after_filtered_discovery",
+        "expected_result": "Native source validation, both binary token books and size_order/fee_max unchanged: minimum Gamma USDC principal, CLOB shares, tick, 30s freshness, depth, zero delay, SDK .01 amount grid, 2-5 USD all-in and fee bound; UNKNOWN/unsupported precedes minimum-negative, and mechanics possible does not imply edge, settlement or live admission."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_cold_replay_schema_and_legacy_evidence_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_cold_replay_schema_and_legacy_evidence_compatibility",
+        "expected_result": "New scratch schema and cold verifier rederive source raw hashes, exact query with captured as_of, fee policy identity, category method, provenance, request order and bounded statuses offline, with zero network and write; previously captured v1 evidence remains independently verifiable without mutation using a clearly documented compatible historical path/fixture. Rehashed altered receipts, source states and sort/filter timestamps must fail closed."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_prior_public_scan_replay_and_near_term_counterexample",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_prior_public_scan_replay_and_near_term_counterexample",
+        "expected_result": "Reproduce last public operation from archived three real source pages offline with 300 distinct IDs, absent top-level category, no in-window, transport unavailable at offset300, no books; prove new near-term synthetic source with no category can reach both CTF books and conservative mechanical evaluation without treating synthetic evidence as real market observation."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_authority_and_existing_hunter_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_authority_and_existing_hunter_unchanged",
+        "expected_result": "Do not modify canonical PIT/ALPHA/other Hunter, execution/gateway/risk/fee constants, scheduler/provider, credentials or trading; no real product network during implementation/tests/CI. Keep exact7 scope; deterministic native RUNTIME readiness, baseline regressions, full stable-head suite, honest head-bound PR evidence and independent combined review."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_denominator_and_non_claim_integrity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_denominator_and_non_claim_integrity",
+        "expected_result": "Complete original and new exact denominators: source pages requested/available/unavailable; category UNKNOWN vs fee provenance; time in/out/unknown; selected/unacquired; book attempts vs no book; fee known/unknown and mechanics possible/minimum/inconclusive; external universe completeness always UNPROVEN. No false all-market, 120m resolution or profitability claim; category and fee classification may be distinct."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-NEAR-TERM-03",
+    "next_title": "Separately Authorized Public Near-Term Market Capture / Rule-Time Evidence After Observed Source Correction",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-NEAR-TERM-02",
+    "forbidden_in_this_wp": [
+      "Any real Polymarket market acquisition in implementation, testing, independent review or hosted CI; owner must authorize separately after merge",
+      "Any Hermes/Firecrawl/paid provider inference, wallet, credentials, account, StrategyVersion, Gate C permit, paper/live orders, capital or deployment",
+      "Any USD 2-5 fee-inclusive bounds change, active trading or pilot-source change",
+      "Any claim endDate is settlement or outcome resolution within 120 minutes",
+      "Any assumption that one bounded filtered Gamma sample captures every Polymarket market or every next-120-minute opportunity",
+      "Any maker rebate, unknown market class, unverified fee schedule or category label used as a free-fee shortcut",
+      "Any new canonical PIT/ALPHA registry/schema or historical evidence deletion/mutation",
+      "Any new dependencies, workflows, scheduler, broad scraper, second trading engine or direct product action",
+      "Any 8th file or protected path, scope-guard waiver, fabricated independent certificate or self-authorized merge"
+    ]
+  }
+}
