@@ -1091,3 +1091,101 @@ def test_live_orch_confirmed_trade_evidence_is_final(tmp_path: Path) -> None:
             _lo_record(gateway, "LIVE_ORCH_RECONCILED", [nonterminal])
     finally:
         gateway.close()
+
+
+# ---------------------------------------------------------------------------
+# S10-ALPHA-HUNTER-PILOT-02: additive opt-in SELL episodes and CLOSED_RECONCILED
+# ---------------------------------------------------------------------------
+
+
+def _hunter_episode(n: int, *, side: str = "BUY", closes: str | None = None, **binding_changes) -> dict:
+    from src.execution_gateway.gateway import live_orch_episode_id
+
+    episode = _lo_episode(n)
+    binding = dict(episode["binding"], capital_profile="HUNTER" + "_PILOT_02", closes_episode_id=closes,
+                   side=side)
+    binding.update(binding_changes)
+    episode["binding"] = binding
+    episode["episode_id"] = live_orch_episode_id(binding, episode["admission"]["admission_id"])
+    return episode
+
+
+def _known(episode: dict, *, state: str = "TERMINAL_KNOWN_POSITION") -> dict:
+    value = _lo_started(episode, outcome="DEFINITIVE_ACCEPTED", state=state, venue="0x" + "e" * 64)
+    value["reconciliation"].update(order_live=False, fee_state="RECONCILED", actual_fee_usd="0.05",
+                                   trades=[{"trade_id": "trade-1", "status": "CONFIRMED",
+                                            "shares": "8", "principal_usd": "4.4"}])
+    return value
+
+
+def test_live_orch_hunter_sell_and_closed_reconciled_ledger_rules(tmp_path: Path) -> None:
+    from src.execution_gateway.gateway import validate_live_orch_checkpoint, LIVE_ORCH_CHECKPOINT_SCHEMA
+
+    def checkpoint(*episodes):
+        return {"schema_version": LIVE_ORCH_CHECKPOINT_SCHEMA, "episodes": list(episodes),
+                "restart_reconciliation_required": False}
+
+    buy = _hunter_episode(1)
+    sell = _hunter_episode(2, side="SELL", closes=buy["episode_id"])
+    validate_live_orch_checkpoint(checkpoint(_known(buy), sell))
+    # V1 episodes keep the exact binding set and may never SELL or close as CLOSED_RECONCILED.
+    v1_sell = _lo_episode(3)
+    v1_sell["binding"]["side"] = "SELL"
+    invalid = [
+        checkpoint(v1_sell),
+        checkpoint(_known(_lo_episode(4), state="CLOSED_RECONCILED")),
+        checkpoint(sell),  # SELL before (without) its BUY
+        checkpoint(_known(buy), _hunter_episode(5, side="SELL", closes=None)),
+        checkpoint(_hunter_episode(6, closes=buy["episode_id"])),  # BUY that closes
+        checkpoint(_known(buy), _hunter_episode(7, side="SELL", closes=buy["episode_id"], token_id="1")),
+        checkpoint(_hunter_episode(8, capital_profile="V1_CANARY")),
+        checkpoint(_hunter_episode(9, capital_profile="hunter")),
+        checkpoint(_hunter_episode(10, order_type="FAK")),
+        checkpoint(_known(_hunter_episode(11, side="SELL", closes=buy["episode_id"]), state="CLOSED_RECONCILED")),
+    ]
+    for value in invalid:
+        with pytest.raises(GatewayError, match="STATE_INVALID"):
+            validate_live_orch_checkpoint(value)
+    unfinal = _known(buy, state="CLOSED_RECONCILED")
+    unfinal["reconciliation"]["trades"][0]["status"] = "MINED"
+    ambiguous = _known(buy, state="CLOSED_RECONCILED")
+    ambiguous["reconciliation"].update(fee_state="AMBIGUOUS", actual_fee_usd=None)
+    for value in (unfinal, ambiguous):
+        with pytest.raises(GatewayError, match="STATE_INVALID"):
+            validate_live_orch_checkpoint(checkpoint(value))
+    # Replay: CLOSED_RECONCILED only from TERMINAL_KNOWN_POSITION and then final.
+    gateway = ProtectedExecutionGateway.create(tmp_path / "liveorch.sqlite3", created_time_ns=1)
+    try:
+        _lo_record(gateway, "LIVE_ORCH_ADMITTED", [buy])
+        _lo_record(gateway, "LIVE_ORCH_CREATE_STARTED", [_lo_started(buy)])
+        accepted = _lo_started(buy, outcome="DEFINITIVE_ACCEPTED", state="CREATE_ACCEPTED", venue="0x" + "e" * 64)
+        _lo_record(gateway, "LIVE_ORCH_CREATE_OUTCOME", [accepted])
+        with pytest.raises(GatewayError, match="LIVE_ORCH_TRANSITION_INVALID"):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [_known(buy, state="CLOSED_RECONCILED")])
+        _lo_record(gateway, "LIVE_ORCH_RECONCILED", [_known(buy)])
+        _lo_record(gateway, "LIVE_ORCH_RECONCILED", [_known(buy, state="CLOSED_RECONCILED")])
+        with pytest.raises(GatewayError, match="LIVE_ORCH_TRANSITION_INVALID"):
+            _lo_record(gateway, "LIVE_ORCH_RECONCILED", [_known(buy)])
+    finally:
+        gateway.close()
+
+
+def test_read_adapter_accepted_signer_type_defaults_to_owner(monkeypatch: pytest.MonkeyPatch) -> None:
+    client = object.__new__(SecureClient)
+    context = SimpleNamespace(environment_config=SimpleNamespace(chain_id=137), signer_type="SESSION_KEY")
+    monkeypatch.setattr(SecureClient, "_ctx", property(lambda self: context))
+    monkeypatch.setattr(SecureClient, "environment", property(lambda self: SimpleNamespace(name="production")))
+    monkeypatch.setattr(SecureClient, "signer", property(lambda self: "0x" + "1" * 40))
+    monkeypatch.setattr(SecureClient, "wallet", property(lambda self: "0x" + "2" * 40))
+    monkeypatch.setattr(SecureClient, "wallet_type", property(lambda self: "DEPOSIT_WALLET"))
+    for kwargs in ({"gate_c_deposit_wallet": True}, {"accepted_signer_type": "SESSION_KEY"},
+                   {"gate_c_deposit_wallet": True, "accepted_signer_type": "session_key"},
+                   {"gate_c_deposit_wallet": True, "accepted_signer_type": "OWNER"}):
+        with pytest.raises(GatewayError, match="AUTHENTICATED_READ_ADAPTER_INVALID"):
+            OfficialSdkAuthenticatedReadAdapter(client, observed_time_ns=2, order_identity_by_venue_id={}, **kwargs)
+    OfficialSdkAuthenticatedReadAdapter(client, observed_time_ns=2, order_identity_by_venue_id={},
+                                        gate_c_deposit_wallet=True, accepted_signer_type="SESSION_KEY")
+    context.signer_type = "OWNER"
+    with pytest.raises(GatewayError, match="AUTHENTICATED_READ_ADAPTER_INVALID"):
+        OfficialSdkAuthenticatedReadAdapter(client, observed_time_ns=2, order_identity_by_venue_id={},
+                                            gate_c_deposit_wallet=True, accepted_signer_type="SESSION_KEY")

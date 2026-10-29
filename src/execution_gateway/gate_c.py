@@ -1836,6 +1836,108 @@ def inspect_live_orch_signed_buy(
     )
 
 
+@dataclass(frozen=True)
+class LiveOrchSellSpec:
+    """S10-ALPHA-HUNTER-PILOT-02 reduce-only FOK SELL of a reconciled pilot position.
+
+    LIVE-ORCH bounds ``shares`` by the reconciled unreserved position before it
+    builds this spec; nothing here may widen that bound.
+    """
+
+    token_id: str
+    order_type: str
+    shares: str
+    min_price: str
+    tick_size: str
+    closes_episode_id: str
+    fee_reserve_usd: str
+
+    def validate(self) -> None:
+        _nonempty_label(self.token_id, "ORDER_ENCODING_UNSUPPORTED")
+        _nonempty_label(self.closes_episode_id, "ORDER_ENCODING_UNSUPPORTED")
+        if self.order_type != "FOK":
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        shares = _decimal(self.shares, positive=True)
+        price = _decimal(self.min_price, positive=True)
+        fee = _decimal(self.fee_reserve_usd)
+        tick = _decimal(self.tick_size, positive=True)
+        if (
+            price >= 1
+            or fee < 0
+            or (shares * 100) % 1 != 0
+            or (fee * 100_000) % 1 != 0
+            or tick not in _SDK_ROUNDING_BY_TICK
+            or price % tick != 0
+        ):
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+
+
+def inspect_live_orch_signed_sell(
+    signed: object, spec: LiveOrchSellSpec, *, public_wallet: str
+) -> LiveOrchSignedEconomics:
+    """Exact post-construction inspection of one reduce-only FOK SELL.
+
+    The pinned SDK sells ``maker_amount == shares x 10^6`` units and asks at
+    least ``floor(shares x min_price x 10^6)`` USDC units; any other encoding,
+    side, signer, builder or order type fails closed before admission.
+    """
+    spec.validate()
+    if type(signed) is not SignedOrder:
+        raise GatewayError("SIGNING_FAILED")
+    try:
+        maker = str(signed.maker).lower()
+        signer = str(signed.signer).lower()
+        builder = int(str(signed.builder), 16)
+        maker_amount = int(signed.maker_amount)
+        taker_amount = int(signed.taker_amount)
+        expiration = int(signed.expiration)
+        token_id = str(signed.token_id)
+        side = str(signed.side)
+        order_type = str(signed.order_type)
+        signature_type = int(signed.signature_type)
+        post_only = bool(signed.post_only)
+    except (AttributeError, TypeError, ValueError, OverflowError):
+        raise GatewayError("SIGNING_FAILED") from None
+    if (
+        token_id != spec.token_id
+        or side != "SELL"
+        or maker != public_wallet
+        or signer != public_wallet
+        or signature_type != 3
+        or builder != 0
+    ):
+        raise GatewayError("SIGNED_ORDER_IDENTITY_MISMATCH")
+    shares = Decimal(spec.shares)
+    minimum = int((shares * Decimal(spec.min_price) * _USDC_UNITS).to_integral_value(rounding=ROUND_FLOOR))
+    if (
+        order_type != "FOK"
+        or post_only is not False
+        or expiration != 0
+        or maker_amount != int(shares * _USDC_UNITS)
+        or taker_amount < minimum
+        or taker_amount <= 0
+    ):
+        raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+    economics = {
+        "side": "SELL",
+        "maker_amount": maker_amount,
+        "taker_amount": taker_amount,
+        "order_type": order_type,
+        "expiration": expiration,
+        "post_only": post_only,
+        "token_id": spec.token_id,
+        "public_wallet": public_wallet,
+    }
+    return LiveOrchSignedEconomics(
+        _id("liveorchsignedorder:sha256:", economics),
+        maker_amount,
+        taker_amount,
+        order_type,
+        expiration,
+        post_only,
+    )
+
+
 def classify_live_orch_create_response(
     response: object,
 ) -> dict[str, object]:
@@ -1962,6 +2064,30 @@ class LiveOrchMutationBoundary:
                 order_type=spec.order_type,
             )
         economics = inspect_live_orch_signed_buy(
+            signed, spec, public_wallet=self._gate_b.public_wallet
+        )
+        return PreparedLiveOrchCreate(spec, economics, permit, handle, signed, attempt_id)
+
+    def prepare_sell(self, spec: LiveOrchSellSpec, *, attempt_seed: str) -> PreparedLiveOrchCreate:
+        """S10-ALPHA-HUNTER-PILOT-02: locally build and inspect one reduce-only SELL.
+
+        Same issuer, Gate-B ownership lock and single-use Gate-C permit as BUY;
+        it reuses ``admit_and_transmit`` and the native ledger unchanged.
+        """
+        if type(spec) is not LiveOrchSellSpec:
+            raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+        spec.validate()
+        _nonempty_label(attempt_seed)
+        attempt_id = _id("liveorchsell:sha256:", {"seed": attempt_seed, "spec": asdict(spec)})
+        permit = GateCLivePermit._issue(_GATE_C_ISSUER, attempt_id)
+        handle = self._gate_b.gate_c_transport(permit)
+        signed = handle.build_aggressive_sell(
+            asset_id=spec.token_id,
+            shares=Decimal(spec.shares),
+            min_price=Decimal(spec.min_price),
+            order_type=spec.order_type,
+        )
+        economics = inspect_live_orch_signed_sell(
             signed, spec, public_wallet=self._gate_b.public_wallet
         )
         return PreparedLiveOrchCreate(spec, economics, permit, handle, signed, attempt_id)

@@ -227,7 +227,7 @@ WP14_PROSE = (
 WP14_HISTORICAL_FINGERPRINT = (
     "70136bc4ad74eae69a0c0ee960a12a0f852e4df5:docs/deferred_items_log.md:generic-api-key:49"
 )
-EXPECTED_FINGERPRINT_COUNT = 20
+EXPECTED_FINGERPRINT_COUNT = 21
 FINGERPRINT_RE = re.compile(
     r"[0-9a-f]{40}:(?:docs|tests|tools)/[A-Za-z0-9_./-]+:"
     r"(?:generic-api-key|private-key|jwt):[1-9][0-9]*"

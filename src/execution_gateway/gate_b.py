@@ -24,6 +24,7 @@ import inspect
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 from typing import Callable, Mapping, Protocol, Sequence
 
@@ -182,6 +183,61 @@ class InteractiveGateBSecretProvider:
         return GateBSecretLease(raw.strip())
 
 
+_SESSION_KEY_FILE = "polymarket-session-key"
+_SESSION_KEY_RE = re.compile(rb"0x[0-9a-fA-F]{64}\n?")
+
+
+class CredentialDirectorySessionKeyProvider:
+    """S10-ALPHA-HUNTER-PILOT-02 unattended Session Key custody (dormant).
+
+    Reads exactly ``<CREDENTIALS_DIRECTORY>/polymarket-session-key`` (a systemd
+    credential directory). The environment supplies a directory path only, never
+    a secret value. The file is opened without following symlinks and its
+    identity, type, owner, mode and size are verified on the opened descriptor,
+    so it cannot be swapped between check and read. Failures never echo input.
+    """
+
+    def acquire(self) -> GateBSecretLease:
+        if os.name != "posix" or not hasattr(os, "O_NOFOLLOW"):
+            raise GatewayError("SECRET_INPUT_UNAVAILABLE")
+        # The systemd credential directory path only; never a secret value.
+        directory = os.getenv("CREDENTIALS_DIRECTORY")
+        if not directory:
+            raise GatewayError("SECRET_INPUT_UNAVAILABLE")
+        if not os.path.isabs(directory):
+            raise GatewayError("SECRET_INPUT_INVALID")
+        try:
+            fd = os.open(
+                os.path.join(directory, _SESSION_KEY_FILE),
+                os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_NONBLOCK", 0),
+            )
+        except FileNotFoundError:
+            raise GatewayError("SECRET_INPUT_UNAVAILABLE") from None
+        except OSError:
+            # ELOOP (symlink), EACCES and every other open failure.
+            raise GatewayError("SECRET_INPUT_INVALID") from None
+        try:
+            info = os.fstat(fd)
+            if (
+                not stat.S_ISREG(info.st_mode)
+                or info.st_uid != os.geteuid()
+                or info.st_mode & 0o077
+                or info.st_size > 128
+            ):
+                raise GatewayError("SECRET_INPUT_INVALID")
+            raw = os.read(fd, 129)
+        except GatewayError:
+            raise
+        except OSError:
+            raise GatewayError("SECRET_INPUT_INVALID") from None
+        finally:
+            os.close(fd)
+        if len(raw) > 128 or _SESSION_KEY_RE.fullmatch(raw) is None:
+            raise GatewayError("SECRET_INPUT_INVALID")
+        return GateBSecretLease(raw.decode("ascii").strip())
+
+
 # ---------------------------------------------------------------------------
 # Deposit Wallet identity policy
 # ---------------------------------------------------------------------------
@@ -197,10 +253,14 @@ class GateBIdentityPolicy:
     signature_type: str = _DEPOSIT_SIGNATURE_TYPE
     chain_id: int = _CHAIN_ID
     environment: str = _PRODUCTION_ENVIRONMENT
+    # S10-ALPHA-HUNTER-PILOT-02: the SDK-classified signer type must EQUAL this.
+    signer_type: str = "OWNER"
 
     def validate(self) -> None:
         _public_address(self.expected_signer, "SIGNING_IDENTITY_INVALID")
         _public_address(self.expected_wallet, "SIGNING_IDENTITY_INVALID")
+        if self.signer_type not in ("OWNER", "SESSION_KEY"):
+            raise GatewayError("SIGNING_IDENTITY_INVALID")
         if self.wallet_type != _DEPOSIT_WALLET_TYPE:
             raise GatewayError("WALLET_TYPE_UNSUPPORTED")
         if self.signature_type != _DEPOSIT_SIGNATURE_TYPE:
@@ -454,6 +514,36 @@ class _ProductionSdkMutationTransport:
                             "amount": amount,
                             "max_spend": max_spend,
                             "max_price": max_price,
+                            "order_type": order_type,
+                        }
+                    )
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("SIGNING_FAILED") from None
+
+            def build_aggressive_sell(
+                self,
+                *,
+                asset_id: str,
+                shares: Decimal,
+                min_price: Decimal,
+                order_type: str,
+            ) -> object:
+                """S10-ALPHA-HUNTER-PILOT-02: local reduce-only SELL FOK signing only.
+
+                Uses the pinned SDK market-order constructor with ``shares`` and a
+                protected ``min_price``; Gate-C inspects the signed economics.
+                """
+                if order_type != "FOK":
+                    raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+                try:
+                    return self._build_market(
+                        **{
+                            self._asset_keyword: asset_id,
+                            "side": "SELL",
+                            "shares": shares,
+                            "min_price": min_price,
                             "order_type": order_type,
                         }
                     )
@@ -970,6 +1060,8 @@ class GateBSession:
         wallet_lock: WalletSessionLock | None = None,
     ) -> "GateBSession":
         policy.validate()
+        if policy.signer_type == "SESSION_KEY" and type(provider) is not CredentialDirectorySessionKeyProvider:
+            raise GatewayError("SIGNING_IDENTITY_INVALID")
         lease = provider.acquire()
         if not isinstance(lease, GateBSecretLease) or not lease.active:
             raise GatewayError("SECRET_INPUT_UNAVAILABLE")
@@ -1010,7 +1102,9 @@ class GateBSession:
             raise GatewayError("AUTHENTICATION_FAILED") from None
         if wallet_type != _DEPOSIT_WALLET_TYPE:
             raise GatewayError("WALLET_TYPE_UNSUPPORTED")
-        if signer_type != "OWNER":
+        # Equality, not membership: the SDK classifies an owner key paired with a
+        # non-derived wallet as SESSION_KEY, which an OWNER policy must reject.
+        if signer_type != policy.signer_type:
             raise GatewayError("SIGNING_IDENTITY_INVALID")
         if environment != _PRODUCTION_ENVIRONMENT or chain_id != _CHAIN_ID:
             raise GatewayError("SIGNING_IDENTITY_INVALID")
@@ -1064,6 +1158,7 @@ class GateBSession:
             order_identity_by_venue_id=order_identity_by_venue_id,
             gate_c_deposit_wallet=True,
             geoblock_eligible=geoblock_eligible,
+            accepted_signer_type=self._policy.signer_type,
         )
 
     def gate_c_market_metadata(

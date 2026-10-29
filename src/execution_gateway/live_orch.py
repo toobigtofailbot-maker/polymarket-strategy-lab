@@ -64,6 +64,7 @@ from .gate_c import (
     GateCGeoblockProof,
     LiveOrchMutationBoundary,
     LiveOrchOrderSpec,
+    LiveOrchSellSpec,
     query_geoblock,
 )
 from .gateway import (
@@ -126,6 +127,48 @@ def _text(value: Decimal) -> str:
     return _canonical_decimal(value)
 
 
+V1_CANARY_PROFILE = "V1_CANARY"
+HUNTER_PILOT_02_PROFILE = "HUNTER_PILOT_02"
+_PROFILE_NOT_APPLIED = "NOT_APPLIED"
+_ENVELOPE_LIMIT_KEYS = (
+    "authorized_account_capital_usd",
+    "single_order_worst_case_max_usd",
+    "max_total_early_commitment_usd",
+    "min_free_collateral_reserve_usd",
+    "max_observed_realized_pnl_loss_usd",
+    "max_observed_position_pnl_drawdown_usd",
+    "max_observed_cumulative_canary_loss_usd",
+)
+# Exact versioned capital profiles.  V1_CANARY is the unchanged default; the
+# S10-ALPHA-HUNTER-PILOT-02 profile is opt-in only and its loosenings (reserve
+# 70 -> 50, observed-loss stops -> owner net-loss budget enforced by the hunter
+# cycle) are dormant code maxima, not economic permission.
+CAPITAL_PROFILES: Mapping[str, Mapping[str, Decimal | None]] = {
+    V1_CANARY_PROFILE: {
+        "authorized_account_capital_usd": AUTHORIZED_ACCOUNT_CAPITAL_USD,
+        "single_order_worst_case_max_usd": SINGLE_ORDER_WORST_CASE_MAX_USD,
+        "max_total_early_commitment_usd": MAX_TOTAL_EARLY_COMMITMENT_USD,
+        "min_free_collateral_reserve_usd": MIN_FREE_COLLATERAL_RESERVE_USD,
+        "max_observed_realized_pnl_loss_usd": MAX_OBSERVED_REALIZED_PNL_LOSS_USD,
+        "max_observed_position_pnl_drawdown_usd": MAX_OBSERVED_POSITION_PNL_DRAWDOWN_USD,
+        "max_observed_cumulative_canary_loss_usd": MAX_OBSERVED_CUMULATIVE_CANARY_LOSS_USD,
+        "single_order_floor_usd": None,
+        "net_loss_budget_usd": None,
+    },
+    HUNTER_PILOT_02_PROFILE: {
+        "authorized_account_capital_usd": Decimal("100"),
+        "single_order_worst_case_max_usd": Decimal("5"),
+        "max_total_early_commitment_usd": Decimal("30"),
+        "min_free_collateral_reserve_usd": Decimal("50"),
+        "max_observed_realized_pnl_loss_usd": None,
+        "max_observed_position_pnl_drawdown_usd": None,
+        "max_observed_cumulative_canary_loss_usd": None,
+        "single_order_floor_usd": Decimal("2"),
+        "net_loss_budget_usd": Decimal("30"),
+    },
+}
+
+
 @dataclass(frozen=True)
 class LiveOrchCapitalEnvelope:
     """Hard Karl risk envelope; validation rejects any widened value."""
@@ -138,23 +181,38 @@ class LiveOrchCapitalEnvelope:
     max_observed_realized_pnl_loss_usd: str = "5"
     max_observed_position_pnl_drawdown_usd: str = "7.5"
     max_observed_cumulative_canary_loss_usd: str = "10"
+    profile: str = V1_CANARY_PROFILE
 
-    def validate(self) -> None:
-        expected = {
-            "authorized_account_capital_usd": AUTHORIZED_ACCOUNT_CAPITAL_USD,
-            "single_order_worst_case_max_usd": SINGLE_ORDER_WORST_CASE_MAX_USD,
-            "max_total_early_commitment_usd": MAX_TOTAL_EARLY_COMMITMENT_USD,
-            "min_free_collateral_reserve_usd": MIN_FREE_COLLATERAL_RESERVE_USD,
-            "max_observed_realized_pnl_loss_usd": MAX_OBSERVED_REALIZED_PNL_LOSS_USD,
-            "max_observed_position_pnl_drawdown_usd": MAX_OBSERVED_POSITION_PNL_DRAWDOWN_USD,
-            "max_observed_cumulative_canary_loss_usd": MAX_OBSERVED_CUMULATIVE_CANARY_LOSS_USD,
-        }
+    @classmethod
+    def hunter_pilot_02(cls) -> "LiveOrchCapitalEnvelope":
+        """The exact opt-in HUNTER_PILOT_02 envelope (no observed-loss stops)."""
+        return cls(
+            min_free_collateral_reserve_usd="50",
+            max_observed_realized_pnl_loss_usd=_PROFILE_NOT_APPLIED,
+            max_observed_position_pnl_drawdown_usd=_PROFILE_NOT_APPLIED,
+            max_observed_cumulative_canary_loss_usd=_PROFILE_NOT_APPLIED,
+            profile=HUNTER_PILOT_02_PROFILE,
+        )
+
+    def validate(self) -> Mapping[str, Decimal | None]:
+        """Exact equality to the selected profile table; returns its limits."""
+        expected = (
+            CAPITAL_PROFILES.get(self.profile) if isinstance(self.profile, str) else None
+        )
+        if expected is None:
+            raise GatewayError("CAPITAL_ENVELOPE_INVALID")
         try:
-            widened = any(_d(getattr(self, key)) != value for key, value in expected.items())
+            widened = any(
+                getattr(self, key) != _PROFILE_NOT_APPLIED
+                if expected[key] is None
+                else _d(getattr(self, key)) != expected[key]
+                for key in _ENVELOPE_LIMIT_KEYS
+            )
         except Exception:
             widened = True
         if widened or self.auto_scaling is not False or AUTO_SCALING is not False:
             raise GatewayError("CAPITAL_ENVELOPE_INVALID")
+        return expected
 
 
 # ---------------------------------------------------------------------------
@@ -299,13 +357,49 @@ def verify_permit_authority(
     now_ns: int,
 ) -> PermitAuthority:
     """Consume the exact current permit read-only and revalidate its lineage."""
+    _time(now_ns)
+    validated = check_first_canary_side(permit)
+    return _verified_authority(
+        validated, intent, lifecycle_store_path=lifecycle_store_path,
+        hermes_store_path=hermes_store_path, now_ns=now_ns,
+    )
+
+
+def verify_sell_permit_authority(
+    permit: object,
+    intent: object,
+    *,
+    lifecycle_store_path: Path,
+    hermes_store_path: Path,
+    now_ns: int,
+) -> PermitAuthority:
+    """S10-ALPHA-HUNTER-PILOT-02: the same exact lineage checks for a reduce-only SELL."""
+    _time(now_ns)
+    try:
+        validated = validate_exploratory_gate_c_permit(permit)
+    except ExploratoryGateCError:
+        raise GatewayError("PERMIT_INVALID") from None
+    if validated.side != "SELL":
+        raise GatewayError("SIDE_UNSUPPORTED_FIRST_CANARY")
+    return _verified_authority(
+        validated, intent, lifecycle_store_path=lifecycle_store_path,
+        hermes_store_path=hermes_store_path, now_ns=now_ns,
+    )
+
+
+def _verified_authority(
+    validated: ExploratoryGateCPermit,
+    intent: object,
+    *,
+    lifecycle_store_path: Path,
+    hermes_store_path: Path,
+    now_ns: int,
+) -> PermitAuthority:
     from src.research_runtime.hermes_controlled_runtime.strategy_manager import (
         load_hermes_strategy_manager_store,
     )
     from src.strategy_lifecycle import load_strategy_lifecycle_store
 
-    _time(now_ns)
-    validated = check_first_canary_side(permit)
     if type(intent) is not ExecutionIntent:
         raise GatewayError("EXECUTION_INTENT_INVALID")
     if validated.exact_intent_only is not True:
@@ -463,6 +557,28 @@ def worst_case_fee_reserve(
     return max(_d(assessment.fee_upper_bound_usd), full)
 
 
+def worst_case_sell_fee_reserve(
+    authority: PermitAuthority,
+    snapshot: PublicExecutionVenueSnapshot,
+    assessment: ExecutionFeasibilityAssessment,
+) -> Decimal:
+    """Reduce-only SELL fee bound: worst p(1-p) over every price >= the protected minimum."""
+    exactness = assessment.fee_exactness
+    if exactness in ("EXACT_ZERO_NO_FEES", "EXACT_ZERO_MAKER"):
+        return Decimal(0)
+    if exactness != "CONSERVATIVE_5DP_UPPER_BOUND" or assessment.fee_upper_bound_usd is None:
+        raise GatewayError("FEE_CONFIGURATION_UNKNOWN")
+    if snapshot.fee_rate is None or snapshot.fee_exponent is None:
+        raise GatewayError("FEE_CONFIGURATION_UNKNOWN")
+    rate, exponent = _d(snapshot.fee_rate), int(_d(snapshot.fee_exponent))
+    worst_price = max(_d(authority.intent.price_limit), Decimal("0.5"))
+    factor = (worst_price * (1 - worst_price)) ** exponent if exponent else Decimal(1)
+    full = (_d(authority.intent.requested_shares) * rate * factor).quantize(
+        _USD_QUANTUM, rounding=ROUND_CEILING
+    )
+    return max(_d(assessment.fee_upper_bound_usd), full)
+
+
 # ---------------------------------------------------------------------------
 # Authoritative reconciliation of one episode (one closed transition per step)
 # ---------------------------------------------------------------------------
@@ -521,13 +637,14 @@ def _discover_unattributed_orders(
     token = binding["token_id"]
     limit = _d(binding["price_limit"])
     requested = _d(binding["requested_shares"])
+    sell = binding.get("side") == "SELL"
     found: set[str] = set()
     for order in truth.open_orders:
         if (
             order.venue_order_id not in attributed
             and order.token_id == token
-            and order.side == "BUY"
-            and _d(order.price) <= limit
+            and order.side == ("SELL" if sell else "BUY")
+            and (_d(order.price) >= limit if sell else _d(order.price) <= limit)
             and _d(order.original_size) <= requested
         ):
             found.add(order.venue_order_id)
@@ -560,11 +677,13 @@ def _fee_reconciliation(
         recon["fee_state"], recon["actual_fee_usd"] = "RECONCILED", "0"
         return
     # Attribute an actual fee only from dedicated-account pre/post collateral,
-    # the confirmed principal and the absence of any concurrent mutation.
+    # the confirmed principal and the absence of any concurrent mutation.  A
+    # reduce-only SELL receives its confirmed proceeds instead of paying them.
+    sign = -1 if episode["binding"].get("side") == "SELL" else 1
     delta = (
         _d(episode["admission"]["collateral_before_usd"])
         - _d(truth.collateral_balance)
-        - confirmed_principal
+        - sign * confirmed_principal
     )
     if not concurrent and Decimal(0) <= delta <= reserve:
         recon["fee_state"], recon["actual_fee_usd"] = "RECONCILED", _text(delta)
@@ -580,13 +699,32 @@ def reconcile_episode_step(
     order_lookup: Callable[[str], LiveOrchOpenOrder],
     concurrent: bool,
     now_ns: int,
+    pending_sell_tokens: frozenset[str] = frozenset(),
 ) -> dict:
     """Return the episode after exactly one legal closed transition (or unchanged)."""
     new = _copy(episode)
     state = new["state"]
     recon = new["reconciliation"]
     binding = new["binding"]
+    sell = binding.get("side") == "SELL"
     if state in LIVE_ORCH_CLEAN_TERMINAL_STATES:
+        return new
+    if state == "TERMINAL_KNOWN_POSITION" and binding.get("capital_profile") == HUNTER_PILOT_02_PROFILE:
+        # Release only on positive reconciled evidence: zero reported position,
+        # every trade on the token final, no open order or open SELL on it and
+        # a final fee state.  Absence of a position row, MATCHED/MINED trades or
+        # a resolved-but-still-held position never release the commitment.
+        token = binding["token_id"]
+        token_positions = [item for item in truth.positions if item.token_id == token]
+        if (
+            token_positions
+            and all(_d(item.current_size) == 0 for item in token_positions)
+            and all(t.status in ("CONFIRMED", "FAILED") for t in truth.trades if t.token_id == token)
+            and not any(order.token_id == token for order in truth.open_orders)
+            and token not in pending_sell_tokens
+            and recon["fee_state"] in ("NOT_REQUIRED", "RECONCILED")
+        ):
+            new["state"] = "CLOSED_RECONCILED"
         return new
     if state == "ADMITTED":
         # No durable CREATE_STARTED means no transmit could have happened.
@@ -640,8 +778,12 @@ def reconcile_episode_step(
             return _blocked(new, "ORDER_STATE_UNKNOWN")
     if (
         order.token_id != binding["token_id"]
-        or order.side != "BUY"
-        or _d(order.price) > _d(binding["price_limit"])
+        or order.side != ("SELL" if sell else "BUY")
+        or (
+            _d(order.price) < _d(binding["price_limit"])
+            if sell
+            else _d(order.price) > _d(binding["price_limit"])
+        )
         or _d(order.original_size) > _d(binding["requested_shares"])
     ):
         return _blocked(new, "ORDER_IDENTITY_MISMATCH")
@@ -678,11 +820,11 @@ def reconcile_episode_step(
         Decimal(0),
     )
     requested = _d(binding["requested_shares"])
-    if (
-        confirmed_shares + pending_shares + (remainder if live else 0) > requested
-        or principal_total + remainder * _d(binding["price_limit"]) > _d(
-            binding["authorized_order_notional_usd"]
-        )
+    if confirmed_shares + pending_shares + (remainder if live else 0) > requested or (
+        # SELL proceeds at or above the protected minimum are not a commitment.
+        not sell
+        and principal_total + remainder * _d(binding["price_limit"])
+        > _d(binding["authorized_order_notional_usd"])
     ):
         return _blocked(new, "ACCOUNT_COMMITMENT_INCONSISTENT")
     recon["trades"] = trades
@@ -693,7 +835,7 @@ def reconcile_episode_step(
         new["state"] = "RESTING"
     elif pending_shares > 0 or missing_response_trades:
         new["state"] = "SETTLEMENT_PENDING"
-    elif confirmed_shares > 0:
+    elif confirmed_shares > 0 and not sell:
         new["state"] = "TERMINAL_KNOWN_POSITION"
     else:
         new["state"] = "TERMINAL_NO_POSITION"
@@ -771,6 +913,12 @@ def evaluate_account(
             blocks.append("RECONCILIATION_REQUIRED")
         if recon["fee_state"] == "AMBIGUOUS":
             blocks.append("FEE_RECONCILIATION_AMBIGUOUS")
+        if binding.get("side") == "SELL":
+            # Reduce-only: only the fee reserve is committed; unconfirmed
+            # proceeds are never counted as available collateral.
+            if recon["fee_state"] in ("RESERVED", "AMBIGUOUS"):
+                undebited += _d(admission["worst_case_fee_reserve_usd"])
+            continue
         remainder = _d(recon["open_remainder_shares"]) * _d(binding["price_limit"])
         filled = sum(
             (
@@ -849,28 +997,36 @@ def check_admission_risk(
     fee_reserve: Decimal,
     evaluation: AccountEvaluation,
 ) -> AdmissionRisk:
-    """Independent hard pre-CREATE checks; unknown input fails closed."""
-    envelope.validate()
+    """Independent hard pre-CREATE checks; unknown input fails closed.
+
+    Every limit is read from the validated capital profile, so the V1_CANARY
+    decisions are identical to the module constants.
+    """
+    limits = envelope.validate()
     if evaluation.blocking_codes:
         raise GatewayError(evaluation.blocking_codes[0])
     proposed = principal + fee_reserve
     if principal <= 0 or fee_reserve < 0:
         raise GatewayError("ORDER_ECONOMICS_INVALID")
-    if proposed > SINGLE_ORDER_WORST_CASE_MAX_USD:
+    if proposed > limits["single_order_worst_case_max_usd"]:
         raise GatewayError("SINGLE_ORDER_LIMIT_EXCEEDED")
-    if evaluation.total_commitment + proposed > MAX_TOTAL_EARLY_COMMITMENT_USD:
+    floor = limits["single_order_floor_usd"]
+    if floor is not None and proposed < floor:
+        raise GatewayError("ORDER_BELOW_PROFILE_FLOOR")
+    if evaluation.total_commitment + proposed > limits["max_total_early_commitment_usd"]:
         raise GatewayError("AGGREGATE_COMMITMENT_LIMIT_EXCEEDED")
     projected_free = evaluation.collateral - evaluation.undebited_commitment - proposed
-    if projected_free < MIN_FREE_COLLATERAL_RESERVE_USD:
+    if projected_free < limits["min_free_collateral_reserve_usd"]:
         raise GatewayError("FREE_COLLATERAL_RESERVE_VIOLATED")
     debited = evaluation.total_commitment - evaluation.undebited_commitment
-    if evaluation.collateral + max(debited, Decimal(0)) > AUTHORIZED_ACCOUNT_CAPITAL_USD:
+    if evaluation.collateral + max(debited, Decimal(0)) > limits["authorized_account_capital_usd"]:
         raise GatewayError("ACCOUNT_CAPITAL_BASIS_EXCEEDED")
-    if (
-        evaluation.observed_realized_pnl_loss > MAX_OBSERVED_REALIZED_PNL_LOSS_USD
-        or evaluation.observed_position_pnl_drawdown > MAX_OBSERVED_POSITION_PNL_DRAWDOWN_USD
-        or evaluation.observed_cumulative_canary_loss > MAX_OBSERVED_CUMULATIVE_CANARY_LOSS_USD
-    ):
+    observed = (
+        (evaluation.observed_realized_pnl_loss, "max_observed_realized_pnl_loss_usd"),
+        (evaluation.observed_position_pnl_drawdown, "max_observed_position_pnl_drawdown_usd"),
+        (evaluation.observed_cumulative_canary_loss, "max_observed_cumulative_canary_loss_usd"),
+    )
+    if any(limits[key] is not None and value > limits[key] for value, key in observed):
         raise GatewayError("OBSERVED_PNL_GUARD_EXCEEDED")
     if evaluation.allowance is None or evaluation.allowance < proposed:
         raise GatewayError("ALLOWANCE_INSUFFICIENT")
@@ -930,6 +1086,9 @@ class LiveOrchDependencies:
     pause: Callable[[float], None] = _bounded_pause
     permit_authority: Callable[..., PermitAuthority] = verify_permit_authority
     admission_guard: Callable[[Mapping[str, object], AccountEvaluation, AdmissionRisk], None] | None = None
+    # S10-ALPHA-HUNTER-PILOT-02 (default OWNER; SESSION_KEY only with HUNTER_PILOT_02).
+    signer_type: str = "OWNER"
+    sell_permit_authority: Callable[..., PermitAuthority] = verify_sell_permit_authority
 
 
 class _Session:
@@ -1002,6 +1161,8 @@ class LiveOrchestrator:
         return snapshot, revalidate_venue(authority, snapshot, evaluated_at_ns=self._now())
 
     def _open_session(self) -> _Session:
+        if self._deps.signer_type != "OWNER" and self._envelope.profile != HUNTER_PILOT_02_PROFILE:
+            raise GatewayError("SIGNING_IDENTITY_INVALID")
         path = self.store_path
         session = _Session()
         session.gateway = session.lock = session.gate_b = session.boundary = None
@@ -1015,6 +1176,7 @@ class LiveOrchestrator:
             policy = GateBIdentityPolicy(
                 expected_signer=self._config.expected_signer.lower(),
                 expected_wallet=self._config.expected_wallet.lower(),
+                signer_type=self._deps.signer_type,
             )
             session.gate_b = GateBSession.authenticate(
                 self._deps.secret_provider_factory(),
@@ -1073,6 +1235,9 @@ class LiveOrchestrator:
                 if episode["state"] not in LIVE_ORCH_CLEAN_TERMINAL_STATES
             ]
             concurrent = len([e for e in open_states if e["state"] != "TERMINAL_KNOWN_POSITION"]) > 1
+            pending_sell_tokens = frozenset(
+                e["binding"]["token_id"] for e in open_states if e["binding"].get("side") == "SELL"
+            )
             changed = False
             now = self._now()
             for index, episode in enumerate(episodes):
@@ -1084,6 +1249,7 @@ class LiveOrchestrator:
                     order_lookup=lookup,
                     concurrent=concurrent,
                     now_ns=now,
+                    pending_sell_tokens=pending_sell_tokens,
                 )
                 if updated != _copy(episode):
                     updated["reconciliation"]["last_reconciled_time_ns"] = now
@@ -1224,6 +1390,10 @@ class LiveOrchestrator:
         finally:
             store.close()
 
+    def ledger(self) -> Mapping[str, object]:
+        """Read-only validated LIVE-ORCH checkpoint (no authentication, no write)."""
+        return self._read_ledger()
+
     def reconcile(self) -> LiveOrchResult:
         """Risk-reducing recovery only: never creates new exposure."""
         session: _Session | None = None
@@ -1239,6 +1409,8 @@ class LiveOrchestrator:
                 details={
                     "episode_states": states,
                     "total_commitment_usd": _text(evaluation.total_commitment),
+                    "collateral_usd": _text(evaluation.collateral),
+                    "undebited_commitment_usd": _text(evaluation.undebited_commitment),
                 },
             )
         except GatewayError as exc:
@@ -1275,6 +1447,11 @@ class LiveOrchestrator:
                 evaluation=evaluation,
             )
             intent_value = authority.intent
+            hunter = self._envelope.profile == HUNTER_PILOT_02_PROFILE
+            if hunter and (
+                intent_value.execution_style, intent_value.order_type, intent_value.post_only
+            ) != ("AGGRESSIVE_TAKER", "FOK", False):
+                raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
             spec = LiveOrchOrderSpec(
                 token_id=intent_value.token_id,
                 execution_style=intent_value.execution_style,
@@ -1318,6 +1495,7 @@ class LiveOrchestrator:
                 risk=risk,
                 prepared=prepared,
                 admitted_time_ns=now,
+                **({"capital_profile": HUNTER_PILOT_02_PROFILE} if hunter else {}),
             )
             episode_id = str(episode["episode_id"])
             try:
@@ -1345,6 +1523,157 @@ class LiveOrchestrator:
                 self._close_session(session)
 
 
+    def exit_sell(self, permit: object, intent: object, *, closes_episode_id: str) -> LiveOrchResult:
+        """S10-ALPHA-HUNTER-PILOT-02: at most one reduce-only FOK SELL of a reconciled pilot position.
+
+        Only under the opt-in HUNTER_PILOT_02 profile.  ``shares`` may never
+        exceed the reconciled position of the pilot-owned BUY episode; aggregate,
+        reserve and budget checks do not apply (reduce-only); the commitment is
+        the fee reserve only.  The BUY principal is released solely by a later
+        CLOSED_RECONCILED reconciliation.
+        """
+        session: _Session | None = None
+        transmits = 0
+        episode_id: str | None = None
+        try:
+            if self._envelope.profile != HUNTER_PILOT_02_PROFILE:
+                raise GatewayError("SIDE_UNSUPPORTED_FIRST_CANARY")
+            self._envelope.validate()
+            authority = self._deps.sell_permit_authority(
+                permit,
+                intent,
+                lifecycle_store_path=self._config.lifecycle_store_path,
+                hermes_store_path=self._config.hermes_store_path,
+                now_ns=self._now(),
+            )
+            if type(authority) is not PermitAuthority or authority.permit.side != "SELL":
+                raise GatewayError("PERMIT_INVALID")
+            intent_value = authority.intent
+            if (intent_value.execution_style, intent_value.order_type, intent_value.post_only) != (
+                "AGGRESSIVE_TAKER", "FOK", False
+            ):
+                raise GatewayError("ORDER_ENCODING_UNSUPPORTED")
+            self._host_current()
+            self._geoblock()
+            session = self._open_session()
+            checkpoint = self._recover_all(session)
+            episodes = list(checkpoint["episodes"])
+            if any(
+                episode["binding"]["exploratory_permit_id"] == authority.permit.permit_id
+                for episode in episodes
+            ):
+                raise GatewayError("PERMIT_ALREADY_CONSUMED")
+            truth = self._truth(session)
+            evaluation = evaluate_account(truth, checkpoint)
+            if evaluation.blocking_codes:
+                raise GatewayError(evaluation.blocking_codes[0])
+            shares = _d(intent_value.requested_shares)
+            token = intent_value.token_id
+            closed = [e for e in episodes if e["episode_id"] == closes_episode_id]
+            if (
+                len(closed) != 1
+                or closed[0]["binding"].get("capital_profile") != HUNTER_PILOT_02_PROFILE
+                or closed[0]["binding"]["side"] != "BUY"
+                or closed[0]["state"] != "TERMINAL_KNOWN_POSITION"
+                or closed[0]["binding"]["token_id"] != token
+            ):
+                raise GatewayError("SELL_NOT_PILOT_OWNED")
+            token_episodes = [e for e in episodes if e["binding"]["token_id"] == token]
+            if (
+                any(
+                    trade["status"] not in ("CONFIRMED", "FAILED")
+                    for e in token_episodes
+                    for trade in e["reconciliation"]["trades"]
+                )
+                or any(t.status not in ("CONFIRMED", "FAILED") for t in truth.trades if t.token_id == token)
+            ):
+                raise GatewayError("SELL_TRADES_NOT_FINAL")
+            if any(order.token_id == token for order in truth.open_orders):
+                raise GatewayError("SELL_OPEN_ORDER_PRESENT")
+            pending = [
+                e for e in token_episodes
+                if e["binding"]["side"] == "SELL" and e["state"] not in LIVE_ORCH_CLEAN_TERMINAL_STATES
+            ]
+            if pending:
+                raise GatewayError("SELL_ALREADY_PENDING")
+            positions = [item for item in truth.positions if item.token_id == token]
+            held = sum((_d(item.current_size) for item in positions), Decimal(0))
+            pending_shares = sum((_d(e["binding"]["requested_shares"]) for e in pending), Decimal(0))
+            if shares <= 0 or (shares * 100) % 1 != 0 or shares > held - pending_shares:
+                raise GatewayError("SELL_EXCEEDS_RECONCILED_POSITION")
+            snapshot, assessment = self._fresh_venue(authority)
+            fee = worst_case_sell_fee_reserve(authority, snapshot, assessment)
+            projected_free = evaluation.collateral - evaluation.undebited_commitment - fee
+            if projected_free < 0:
+                raise GatewayError("FREE_COLLATERAL_RESERVE_VIOLATED")
+            risk = AdmissionRisk(fee, projected_free)
+            spec = LiveOrchSellSpec(
+                token_id=token,
+                order_type=intent_value.order_type,
+                shares=intent_value.requested_shares,
+                min_price=intent_value.price_limit,
+                tick_size=str(snapshot.book_tick_size),
+                closes_episode_id=closes_episode_id,
+                fee_reserve_usd=_text(fee),
+            )
+            prepared = session.boundary.prepare_sell(spec, attempt_seed=authority.permit.permit_id)
+            host_id = self._host_current()
+            geoblock = self._geoblock()
+            now = self._now()
+            if not authority.permit.issued_at_ns <= now < authority.permit.valid_until_ns:
+                raise GatewayError("PERMIT_EXPIRED")
+            if self._deps.admission_guard is not None:
+                try:
+                    if self._deps.admission_guard(checkpoint, evaluation, risk) is not None:
+                        raise GatewayError("PILOT_GUARD_REFUSED")
+                except GatewayError:
+                    raise
+                except Exception:
+                    raise GatewayError("PILOT_GUARD_REFUSED") from None
+                now = self._now()
+                if not authority.permit.issued_at_ns <= now < authority.permit.valid_until_ns:
+                    raise GatewayError("PERMIT_EXPIRED")
+            episode = build_admitted_episode(
+                authority,
+                snapshot=snapshot,
+                assessment=assessment,
+                release_sha=self._config.host.expected_release_sha,
+                host_currentness_id=host_id,
+                geoblock=geoblock,
+                truth=truth,
+                evaluation=evaluation,
+                fee_reserve=fee,
+                risk=risk,
+                prepared=prepared,
+                admitted_time_ns=now,
+                capital_profile=HUNTER_PILOT_02_PROFILE,
+                closes_episode_id=closes_episode_id,
+            )
+            episode_id = str(episode["episode_id"])
+            try:
+                outcome = session.boundary.admit_and_transmit(prepared, episode, now_ns=now)
+            except GatewayError as exc:
+                if exc.code == "LIVE_ORCH_OUTCOME_PERSISTENCE_FAILED":
+                    transmits = 1
+                raise
+            transmits = 1
+            state = str(outcome["state"])
+            if state != "CREATE_REJECTED":
+                state = self._observe(session, episode_id)
+            return LiveOrchResult(
+                "exit", "EXIT_COMPLETE", "ONE_SELL_ATTEMPTED",
+                episode_id=episode_id, episode_state=state, create_transmits=transmits,
+                details={"create_outcome": outcome["outcome"]},
+            )
+        except GatewayError as exc:
+            return LiveOrchResult(
+                "exit", "BLOCKED", exc.code, episode_id=episode_id, create_transmits=transmits,
+            )
+        finally:
+            if session is not None:
+                self._close_session(session)
+
+
 def build_admitted_episode(
     authority: PermitAuthority,
     *,
@@ -1359,6 +1688,8 @@ def build_admitted_episode(
     risk: AdmissionRisk,
     prepared: object,
     admitted_time_ns: int,
+    capital_profile: str | None = None,
+    closes_episode_id: str | None = None,
 ) -> dict:
     """Sanitized durable LIVE_ORCH_ADMISSION evidence bound before CREATE_STARTED."""
     permit, intent = authority.permit, authority.intent
@@ -1382,6 +1713,10 @@ def build_admitted_episode(
         "public_signer": truth.public_signer,
         "public_wallet": truth.public_wallet,
     }
+    if capital_profile is not None:
+        # Opt-in profile episodes only; a V1 binding keeps its exact key set.
+        binding["capital_profile"] = capital_profile
+        binding["closes_episode_id"] = closes_episode_id
     economics = prepared.economics
     admission = {
         "decision": "ADMITTED",

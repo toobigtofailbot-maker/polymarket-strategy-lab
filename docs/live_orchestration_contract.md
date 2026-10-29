@@ -277,6 +277,53 @@ requires its separate owner-policy record and exact native attended TTY provider
 and does not grant activation. See docs/live_pilot_contract.md and its exact
 certified package. LIVE TRADING STATUS remains DISABLED.
 
+
+### S10-ALPHA-HUNTER-PILOT-02 versioned profile, reduce-only SELL, reconciled release, custody
+
+**Capital profile.** `LiveOrchCapitalEnvelope` gains `profile` (default `V1_CANARY`); `validate()` requires
+exact equality with the selected `CAPITAL_PROFILES` table and returns it; `check_admission_risk` reads every
+limit from it, so V1 values and decisions are unchanged. Opt-in `HUNTER_PILOT_02`: USD 100 basis, order
+<= 5 and >= 2 (`ORDER_BELOW_PROFILE_FLOOR`), aggregate 30, free collateral after admission >= 50, no
+observed 5/7.5/10 stops (the owner net-loss budget is enforced by the hunter cycle guard). An unknown or
+non-exact profile is `CAPITAL_ENVELOPE_INVALID`. Only `live_orch.py` and `hunter_cycle.py` name the profile.
+These dormant maxima are not economic permission.
+
+**Reduce-only SELL.** `LiveOrchestrator.exit_sell(permit, intent, *, closes_episode_id)` exists only under
+`HUNTER_PILOT_02` (otherwise `SIDE_UNSUPPORTED_FIRST_CANARY`). It revalidates an exact current SELL
+exploratory permit (`verify_sell_permit_authority`, same lineage checks), host, geoblock, fresh venue and
+minimums, and requires: a pilot-owned BUY episode in `TERMINAL_KNOWN_POSITION` for the same token, every
+trade on the token CONFIRMED/FAILED, no open order on it, no non-terminal SELL, and
+`shares <= reconciled position - pending SELL shares` (`SELL_EXCEEDS_RECONCILED_POSITION`). It is FOK
+taker only. Its commitment is the worst-case fee reserve only, at the worst `p(1-p)` over every price at or
+above the protected minimum; aggregate, reserve and budget checks do not apply. Gate C adds
+`LiveOrchSellSpec`, `inspect_live_orch_signed_sell` (side SELL, maker == signer == wallet, signature type 3,
+builder 0, FOK, not post-only, expiration 0, maker amount == shares x 10^6, taker amount >=
+floor(shares x min_price x 10^6)) and `LiveOrchMutationBoundary.prepare_sell`. Gate B adds
+`build_aggressive_sell` (local signing only). SELL reuses the same issuer, ownership lock, single-use
+permit, ledger and `admit_and_transmit`; the BUY spec, inspector and prepare are unchanged. A crash after a
+durable CREATE_STARTED SELL never re-transmits and stays ambiguous until reconciled. SELL proceeds are
+never counted before confirmed collateral.
+
+**Ledger.** Opt-in episodes carry two additive binding keys, `capital_profile` and `closes_episode_id`; V1
+bindings keep the exact key set and can never be SELL. A SELL must close an earlier opt-in BUY of the same
+token, wallet and signer. A terminal SELL is `TERMINAL_NO_POSITION`.
+
+**Release.** The additive clean terminal state `CLOSED_RECONCILED` is entered only by reconciliation of an
+opt-in BUY in `TERMINAL_KNOWN_POSITION` when the token position row shows size 0, every trade on the token
+is CONFIRMED/FAILED, no open order or open SELL exists on it and the fee state is final. Absence of a
+position row, MATCHED/MINED/RETRYING trades, a mark-to-market gain or a resolved-but-held position never
+release the commitment. The V1 `TERMINAL_KNOWN_POSITION -> TERMINAL_NO_POSITION` rule is unchanged for V1.
+
+**Custody.** `GateBIdentityPolicy.signer_type` (default `OWNER`) must EQUAL the SDK-classified signer type.
+`SESSION_KEY` requires `type(provider) is CredentialDirectorySessionKeyProvider` before `acquire()`, and
+LIVE-ORCH accepts it only with `HUNTER_PILOT_02` (else `SIGNING_IDENTITY_INVALID`). The read adapter gains
+`accepted_signer_type` (default `OWNER`, `SESSION_KEY` only on the Deposit Wallet route). The provider reads
+exactly `<CREDENTIALS_DIRECTORY>/polymarket-session-key` (a directory path only) on POSIX with a no-follow
+open and verifies regular file, owner == euid, `mode & 0o077 == 0`, size <= 128 bytes and one 0x-prefixed
+64-hex key on the opened descriptor; any failure is `SECRET_INPUT_UNAVAILABLE`/`SECRET_INPUT_INVALID` with
+no echo. Venue acceptance of a session key is UNKNOWN until Gate 2. This contract never authorizes a real
+order; `LIVE TRADING STATUS: DISABLED` remains.
+
 Economic SELL CREATE; Session Keys / Builder keys; SDK upgrade; heartbeat daemon; user-WebSocket
 recovery authority; automatic CREATE retry; auto scaling; neg-risk / delayed markets; redemption;
 funding/withdrawal/bridge; wallet deployment / approval automation; arbitrary busy-account

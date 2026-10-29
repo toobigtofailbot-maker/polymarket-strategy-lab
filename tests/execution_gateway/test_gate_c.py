@@ -1073,3 +1073,114 @@ def test_s10_live_canary_ua_01_geoblock_has_no_implicit_or_overridable_headers(
     assert not sent["user-agent"].startswith("Python-urllib/")
     assert "injected-value" not in sent.values()
     assert "authorization" not in sent and "cookie" not in sent
+
+
+# ---------------------------------------------------------------------------
+# S10-ALPHA-HUNTER-PILOT-02: additive LIVE-ORCH reduce-only FOK SELL contract (R016)
+# ---------------------------------------------------------------------------
+
+
+def test_live_orch_reduce_only_sell_contract(tmp_path) -> None:
+    from src.execution_gateway.gate_c import (
+        LiveOrchSellSpec, inspect_live_orch_signed_buy, inspect_live_orch_signed_sell,
+    )
+    from tests.execution_gateway import test_live_orch as LO
+    from tests.exploratory_gate_c import test_exploratory_gate_c as XG
+
+    venue = LO.FakeVenue()
+    wallet = LO.WALLET
+    closes = "liveorchepisode:sha256:" + "1" * 64
+    spec = LiveOrchSellSpec(token_id=LO.TOKEN, order_type="FOK", shares="8", min_price="0.5", tick_size="0.01",
+                            closes_episode_id=closes, fee_reserve_usd="0.0666")
+    signed = venue.create_market_order(token_id=LO.TOKEN, side="SELL", shares=Decimal("8"),
+                                       min_price=Decimal("0.5"), order_type="FOK")
+    economics = inspect_live_orch_signed_sell(signed, spec, public_wallet=wallet)
+    assert (economics.maker_amount, economics.taker_amount) == (8_000_000, 4_000_000)
+    other = "0x" + "c" * 40
+    mismatches = {
+        "SIGNED_ORDER_IDENTITY_MISMATCH": [dict(side="BUY"), dict(maker=other), dict(signer=other),
+                                           dict(signature_type=2), dict(builder="0x" + "0" * 63 + "1"),
+                                           dict(token_id="1")],
+        "ORDER_ENCODING_UNSUPPORTED": [dict(order_type="FAK"), dict(post_only=True), dict(expiration=1),
+                                       dict(maker_amount=8_000_001), dict(maker_amount=7_990_000),
+                                       dict(taker_amount=3_999_999), dict(taker_amount=0)],
+    }
+    for code, changes in mismatches.items():
+        for change in changes:
+            with pytest.raises(GatewayError, match=code):
+                inspect_live_orch_signed_sell(replace(signed, **change), spec, public_wallet=wallet)
+    for bad in (dict(order_type="FAK"), dict(shares="8.001"), dict(shares="0"), dict(min_price="1"),
+                dict(min_price="0.505"), dict(tick_size="0.02"), dict(fee_reserve_usd="-0.1"),
+                dict(fee_reserve_usd="0.000001"), dict(closes_episode_id="")):
+        with pytest.raises(GatewayError):
+            inspect_live_orch_signed_sell(signed, replace(spec, **bad), public_wallet=wallet)
+    # The BUY inspector is unchanged: a signed SELL never passes it.
+    with pytest.raises(GatewayError, match="SIGNED_ORDER_IDENTITY_MISMATCH"):
+        inspect_live_orch_signed_buy(signed, LO._spec(), public_wallet=wallet)
+
+    world = XG.make_world(tmp_path / "world")
+
+    def position(name, **fill):
+        harness = LO.Harness(tmp_path / name, world)
+        permit, intent = LO.make_permit(world)
+        harness.venue.on_post = LO._accept_fill(**fill)
+        result = LO.hunter_orchestrator(harness).canary(permit, intent)
+        return harness, result.episode_id
+
+    def sell(harness, buy_id, **permit_kw):
+        permit, intent = LO.sell_permit(world, **permit_kw)
+        return LO.hunter_orchestrator(harness).exit_sell(permit, intent, closes_episode_id=buy_id), permit, intent
+
+    # Valid synthetic SELL admits once; the same permit never transmits twice.
+    harness, buy_id = position("valid")
+    harness.venue.on_post = lambda v, s: v.fill_sell(s, shares="8", price="0.5")
+    result, permit, intent = sell(harness, buy_id)
+    assert (result.status, result.create_transmits) == ("EXIT_COMPLETE", 1)
+    replay = LO.hunter_orchestrator(harness).exit_sell(permit, intent, closes_episode_id=buy_id)
+    assert replay.code == "PERMIT_ALREADY_CONSUMED" and replay.create_transmits == 0
+    assert [p.side for p in harness.venue.posts] == ["BUY", "SELL"]
+    sell_episode = harness.ledger()["episodes"][1]
+    assert sell_episode["binding"]["closes_episode_id"] == buy_id and sell_episode["binding"]["side"] == "SELL"
+    assert sell_episode["admission"]["worst_case_commitment_usd"] == sell_episode["admission"]["worst_case_fee_reserve_usd"]
+
+    # Second SELL while one is non-terminal, then shares above reconciled minus pending SELL.
+    harness, buy_id = position("pending")
+    harness.venue.on_post = lambda v, s: v.fill_sell(s, shares="5", price="0.5", status="MINED", remaining="8")
+    first, *_ = sell(harness, buy_id, shares="5")
+    assert first.create_transmits == 1 and first.episode_state == "SETTLEMENT_PENDING"
+    for shares in ("6", "7"):  # 8 held - 5 pending: both exceed the unreserved 3
+        result, *_ = sell(harness, buy_id, shares=shares)
+        assert result.status == "BLOCKED" and result.create_transmits == 0
+        assert result.code in ("SETTLEMENT_NONTERMINAL", "SELL_ALREADY_PENDING")
+    assert len(harness.venue.posts) == 2
+
+    # Unconfirmed BUY trade and an open order on the token both refuse before signing.
+    harness, buy_id = position("unconfirmed", status="MINED")
+    result, *_ = sell(harness, buy_id)
+    assert result.status == "BLOCKED" and result.create_transmits == 0 and len(harness.venue.posts) == 1
+    harness, buy_id = position("open")
+    harness.venue.orders[LO.oid(77)] = {"id": LO.oid(77), "price": "0.6", "size": "5", "type": "GTC",
+                                        "status": "LIVE", "side": "SELL"}
+    result, *_ = sell(harness, buy_id)
+    assert result.status == "BLOCKED" and result.create_transmits == 0 and len(harness.venue.posts) == 1
+
+    # Crash after a durable CREATE_STARTED SELL: replay never re-transmits; it stays ambiguous.
+    harness, buy_id = position("crash")
+    original = ProtectedExecutionGateway.record_live_orch_event
+
+    def crash(self, event_type, *a, **kw):
+        value = original(self, event_type, *a, **kw)
+        if event_type == "LIVE_ORCH_CREATE_STARTED" and "SELL" in json.dumps(a[0] if a else kw):
+            raise RuntimeError("synthetic crash")
+        return value
+    ProtectedExecutionGateway.record_live_orch_event = crash
+    try:
+        with pytest.raises(RuntimeError):
+            sell(harness, buy_id)
+    finally:
+        ProtectedExecutionGateway.record_live_orch_event = original
+    assert len(harness.venue.posts) == 1
+    result, *_ = sell(harness, buy_id)
+    assert result.status == "BLOCKED" and result.create_transmits == 0 and len(harness.venue.posts) == 1
+    states = [e["state"] for e in harness.ledger()["episodes"]]
+    assert states == ["TERMINAL_KNOWN_POSITION", "CREATE_AMBIGUOUS"]

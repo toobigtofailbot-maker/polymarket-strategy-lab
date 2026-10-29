@@ -1179,3 +1179,78 @@ def test_dependency_classifier_parity_uses_dependency_authority(path):
     assert dss.is_dependency_or_lock(path)
     assert not dss.is_protected_builtin(path)
     assert not dss.is_generated_artifact(path)
+
+
+# ── S10-ALPHA-HUNTER-PILOT-02 D011: canonical root secret-scan authority parity ──
+
+
+def _root_config_summary(path, *, local_offline_tooling=True):
+    return _spec_summary(
+        allowed_files=["docs/a.md", path],
+        required_changed_files=("docs/a.md", path),
+        entries=[
+            {"status": "M", "status_detail": "M", "path": "docs/a.md"},
+            {"status": "M", "status_detail": "M", "path": path},
+        ],
+        authority={"docs": True, "tests": True, "local_offline_tooling": local_offline_tooling},
+    )
+
+
+@pytest.mark.parametrize("path", sorted(guard.SECURITY_SCAN_CONFIG_PATHS))
+def test_root_security_scan_config_paths_follow_canonical_guard_authority(path):
+    assert set(guard.SECURITY_SCAN_CONFIG_PATHS) == {".gitleaks.toml", ".gitleaksignore"}
+    assert dss._authority_for_path(path) == ["local_offline_tooling"]
+    assert tuple(dss._authority_for_path(path)) == guard._authority_requirements(path, "WP159")
+    allowed = _root_config_summary(path)
+    assert allowed["exact_scope_pass"] is True and allowed["warning_count"] == 0
+    assert allowed["exit_behavior"].startswith("Exit 0")
+    denied = _root_config_summary(path, local_offline_tooling=False)
+    assert denied["exact_scope_pass"] is False
+    assert any("contradict declared authority" in warning for warning in denied["warnings"])
+    assert denied["exit_behavior"] == "Exit 1 (exact scope required but not satisfied)."
+
+
+@pytest.mark.parametrize(
+    "path",
+    [".gitleaksignore.bak", ".GITLEAKSIGNORE", "gitleaksignore", ".gitleaks.toml.orig",
+     "sub/.gitleaksignore", "README.md", ".gitattributes"],
+)
+def test_root_security_scan_lookalikes_remain_unauthorized(path):
+    assert dss._authority_for_path(path) is None
+    assert guard._authority_requirements(path, "WP159") is None
+    summary = _root_config_summary(path)
+    assert summary["exact_scope_pass"] is False
+    assert any("contradict declared authority" in warning for warning in summary["warnings"])
+
+
+def test_security_scan_paths_fail_closed_without_canonical_guard(monkeypatch):
+    monkeypatch.setattr(dss, "_spec_guard_module", lambda: None)
+    assert dss._security_scan_config_paths() == ()
+    assert dss._authority_for_path(".gitleaksignore") is None
+
+
+def test_printed_exit_line_matches_actual_exit_code(monkeypatch, capsys):
+    scope = {
+        "schema_version": "1.0.0",
+        "package_class": "GOVERNANCE",
+        "required_changed_files": ("docs/a.md", ".gitleaksignore"),
+        "allowed_changed_files": ("docs/a.md", ".gitleaksignore"),
+        "forbidden_prefixes": (),
+        "max_changed_files": 2,
+        "exact_scope_required": True,
+        "authority": {"docs": True, "local_offline_tooling": True},
+    }
+    entries = [{"status": "M", "status_detail": "M", "path": p} for p in ("docs/a.md", ".gitleaksignore")]
+    monkeypatch.setattr(dss, "_read_wp_spec_scope", lambda path: (scope, ()))
+    monkeypatch.setattr(dss, "_get_name_status_spec", lambda base, head: (entries, None))
+    monkeypatch.setattr(dss, "get_diff_stat", lambda base, head: ("", None))
+    monkeypatch.setattr(dss, "get_diff_check", lambda base, head: ([], None))
+    monkeypatch.setattr(dss, "_get_untracked_spec", lambda: ([], None))
+    assert dss.main(["--wp-spec", "spec.json"]) == 0
+    out = capsys.readouterr().out
+    assert "Exact scope pass: true" in out and "Exit 0 (summary generated, no warnings)." in out
+    scope["authority"] = {"docs": True, "local_offline_tooling": False}
+    assert dss.main(["--wp-spec", "spec.json"]) == 1
+    out = capsys.readouterr().out
+    assert "Exact scope pass: false" in out
+    assert "Exit 1 (exact scope required but not satisfied)." in out and "Exit 0" not in out

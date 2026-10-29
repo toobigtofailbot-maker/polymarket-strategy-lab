@@ -497,10 +497,17 @@ class OfficialSdkAuthenticatedReadAdapter:
         order_identity_by_venue_id: Mapping[str, str],
         gate_c_deposit_wallet: bool = False,
         geoblock_eligible: bool = False,
+        accepted_signer_type: str = "OWNER",
     ):
         if type(client) is not SecureClient:
             raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
         _time(observed_time_ns)
+        # S10-ALPHA-HUNTER-PILOT-02: a Gate-B-verified SESSION_KEY identity is
+        # accepted only on the Deposit Wallet route; every default stays OWNER.
+        if accepted_signer_type not in ("OWNER", "SESSION_KEY") or (
+            accepted_signer_type != "OWNER" and not gate_c_deposit_wallet
+        ):
+            raise GatewayError("AUTHENTICATED_READ_ADAPTER_INVALID")
         try:
             context = client._ctx
             config = context.environment_config
@@ -511,7 +518,7 @@ class OfficialSdkAuthenticatedReadAdapter:
                 or config.chain_id != 137
                 or client.wallet_type
                 not in (("DEPOSIT_WALLET",) if gate_c_deposit_wallet else ("EOA",))
-                or context.signer_type != "OWNER"
+                or context.signer_type != accepted_signer_type
                 or _ADDRESS_RE.fullmatch(signer) is None
                 or _ADDRESS_RE.fullmatch(funder) is None
             ):
@@ -1295,10 +1302,13 @@ LIVE_ORCH_EPISODE_STATES = (
     "TERMINAL_NO_POSITION",
     "TERMINAL_KNOWN_POSITION",
     "RECONCILIATION_BLOCKED",
+    # S10-ALPHA-HUNTER-PILOT-02: reconciled release of an opt-in-profile BUY
+    # position (zero position, every trade final, no open order, fee final).
+    "CLOSED_RECONCILED",
 )
 # ADMISSION_PENDING is the in-memory pre-durable state; it is never persisted.
 LIVE_ORCH_PERSISTED_STATES = LIVE_ORCH_EPISODE_STATES[1:]
-LIVE_ORCH_CLEAN_TERMINAL_STATES = ("CREATE_REJECTED", "TERMINAL_NO_POSITION")
+LIVE_ORCH_CLEAN_TERMINAL_STATES = ("CREATE_REJECTED", "TERMINAL_NO_POSITION", "CLOSED_RECONCILED")
 LIVE_ORCH_EVENTS = (
     "LIVE_ORCH_ADMITTED",
     "LIVE_ORCH_CREATE_STARTED",
@@ -1357,7 +1367,9 @@ _LIVE_ORCH_TRANSITIONS: dict[str, dict[str, tuple[str, ...]]] = {
         "RECONCILING": _RECONCILED_TARGETS,
         "SETTLEMENT_PENDING": _RECONCILED_TARGETS,
         "RECONCILIATION_BLOCKED": _RECONCILED_TARGETS,
-        "TERMINAL_KNOWN_POSITION": ("TERMINAL_KNOWN_POSITION", "TERMINAL_NO_POSITION"),
+        "TERMINAL_KNOWN_POSITION": (
+            "TERMINAL_KNOWN_POSITION", "TERMINAL_NO_POSITION", "CLOSED_RECONCILED",
+        ),
     },
 }
 _LIVE_ORCH_BINDING_KEYS = frozenset(
@@ -1382,6 +1394,11 @@ _LIVE_ORCH_BINDING_KEYS = frozenset(
         "public_wallet",
     }
 )
+# Additive binding keys carried only by opt-in capital-profile episodes; V1 bindings
+# keep the exact set above.
+_HUNTER_BINDING_KEYS = _LIVE_ORCH_BINDING_KEYS | {"capital_profile", "closes_episode_id"}
+_EPISODE_ID_RE = re.compile(r"liveorchepisode:sha256:[0-9a-f]{64}")
+_PROFILE_RE = re.compile(r"[A-Z][A-Z0-9_]{0,63}")
 _LIVE_ORCH_ADMISSION_KEYS = frozenset(
     {
         "admission_id",
@@ -1486,18 +1503,39 @@ def _validate_live_orch_episode(episode: object) -> Mapping[str, object]:
         raise GatewayError("STATE_INVALID")
     binding = episode["binding"]
     admission = episode["admission"]
+    hunter = isinstance(binding, Mapping) and set(binding) == _HUNTER_BINDING_KEYS
     if (
         episode["state"] not in LIVE_ORCH_PERSISTED_STATES
         or not isinstance(binding, Mapping)
-        or set(binding) != _LIVE_ORCH_BINDING_KEYS
+        or set(binding) not in (_LIVE_ORCH_BINDING_KEYS, _HUNTER_BINDING_KEYS)
         or not isinstance(admission, Mapping)
         or set(admission) != _LIVE_ORCH_ADMISSION_KEYS
         or admission["decision"] != "ADMITTED"
-        or binding["side"] != "BUY"
+        or binding["side"] not in (("BUY", "SELL") if hunter else ("BUY",))
         or binding["execution_style"] not in ("AGGRESSIVE_TAKER", "PASSIVE_MAKER")
         or binding["order_type"] not in ("FOK", "FAK", "GTC", "GTD")
         or type(binding["post_only"]) is not bool
     ):
+        raise GatewayError("STATE_INVALID")
+    if hunter and (
+        # LIVE-ORCH, the sole issuer, binds the exact opt-in profile name.
+        not isinstance(binding["capital_profile"], str)
+        or _PROFILE_RE.fullmatch(binding["capital_profile"]) is None
+        or binding["capital_profile"] == "V1_CANARY"
+        or (binding["execution_style"], binding["order_type"], binding["post_only"])
+        != ("AGGRESSIVE_TAKER", "FOK", False)
+        # A reduce-only SELL always closes one BUY episode; a BUY never does.
+        or (binding["side"] == "SELL") != (binding["closes_episode_id"] is not None)
+        or (
+            binding["closes_episode_id"] is not None
+            and (
+                not isinstance(binding["closes_episode_id"], str)
+                or _EPISODE_ID_RE.fullmatch(binding["closes_episode_id"]) is None
+            )
+        )
+    ):
+        raise GatewayError("STATE_INVALID")
+    if episode["state"] == "CLOSED_RECONCILED" and not (hunter and binding["side"] == "BUY"):
         raise GatewayError("STATE_INVALID")
     for key in (
         "exploratory_permit_id",
@@ -1646,11 +1684,15 @@ def _validate_live_orch_episode(episode: object) -> Mapping[str, object]:
         trade_seen.add(str(trade["trade_id"]))
         _nonneg_text(trade["shares"])
         _nonneg_text(trade["principal_usd"])
-    if state in ("TERMINAL_NO_POSITION", "TERMINAL_KNOWN_POSITION") and (
+    if state in ("TERMINAL_NO_POSITION", "TERMINAL_KNOWN_POSITION", "CLOSED_RECONCILED") and (
         recon["order_live"] is True
         or any(
             trade["status"] not in ("CONFIRMED", "FAILED") for trade in trades
         )
+    ):
+        raise GatewayError("STATE_INVALID")
+    if state == "CLOSED_RECONCILED" and (
+        create is None or recon["fee_state"] not in ("NOT_REQUIRED", "RECONCILED")
     ):
         raise GatewayError("STATE_INVALID")
     return episode
@@ -1679,14 +1721,26 @@ def _validate_live_orch_checkpoint(checkpoint: object) -> Mapping[str, object]:
         raise GatewayError("STATE_INVALID")
     episode_ids: set[str] = set()
     permit_ids: set[str] = set()
+    buys: dict[str, Mapping[str, object]] = {}
     for episode in checkpoint["episodes"]:
         _validate_live_orch_episode(episode)
         episode_id = str(episode["episode_id"])
-        permit_id = str(episode["binding"]["exploratory_permit_id"])
+        binding = episode["binding"]
+        permit_id = str(binding["exploratory_permit_id"])
         # One permit may appear in at most one episode, so it can never reach a
         # second CREATE_STARTED.
         if episode_id in episode_ids or permit_id in permit_ids:
             raise GatewayError("STATE_INVALID")
+        closes = binding.get("closes_episode_id")
+        if closes is not None:
+            # A reduce-only SELL closes an earlier pilot BUY of the same token/wallet.
+            buy = buys.get(str(closes))
+            if buy is None or any(
+                buy[key] != binding[key] for key in ("token_id", "public_wallet", "public_signer")
+            ):
+                raise GatewayError("STATE_INVALID")
+        elif "capital_profile" in binding and binding["side"] == "BUY":
+            buys[episode_id] = binding
         episode_ids.add(episode_id)
         permit_ids.add(permit_id)
     return checkpoint

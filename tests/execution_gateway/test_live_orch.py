@@ -102,7 +102,7 @@ class FakeVenue:
     def _order_model(self, row: dict) -> OpenOrder:
         return OpenOrder.model_validate({
             "id": row["id"], "market": COND, "asset_id": row.get("token", TOKEN),
-            "owner": "owner", "maker_address": WALLET, "side": "BUY", "price": row["price"],
+            "owner": "owner", "maker_address": WALLET, "side": row.get("side", "BUY"), "price": row["price"],
             "original_size": row["size"], "size_matched": row.get("matched", "0"),
             "outcome": "Yes", "order_type": row["type"], "status": row["status"],
             "created_at": 1760000000,
@@ -127,10 +127,10 @@ class FakeVenue:
         return False
 
     # local signing (never posts) -----------------------------------------
-    def _signed(self, *, maker, taker, order_type, expiration=0, post_only=False):
+    def _signed(self, *, maker, taker, order_type, expiration=0, post_only=False, side="BUY"):
         return SignedOrder(
             builder=ZERO32, expiration=expiration, maker=WALLET, maker_amount=maker,
-            metadata=ZERO32, order_type=order_type, salt=7, side="BUY",
+            metadata=ZERO32, order_type=order_type, salt=7, side=side,
             signature="0xsignaturebytesneverpersisted", signature_type=3, signer=WALLET,
             taker_amount=taker, timestamp=1, token_id=TOKEN, post_only=post_only,
         )
@@ -147,6 +147,13 @@ class FakeVenue:
     def create_market_order(self, *, asset_id=None, token_id=None, side, amount=None,
                             shares=None, max_spend=None, max_price=None, min_price=None,
                             order_type="FAK", builder_code=None):
+        if side == "SELL":  # S10-ALPHA-HUNTER-PILOT-02 reduce-only exit (pinned 0.10.0 math)
+            assert shares is not None and min_price is not None and amount is None
+            maker, taker = _compute_market_order_amounts(
+                amount=Decimal(shares), price=Decimal(min_price), side="SELL",
+                tick_size=Decimal("0.01"), protect_price=True,
+            )
+            return self._signed(maker=maker, taker=taker, order_type=order_type, side="SELL")
         assert side == "BUY" and max_price is not None and max_spend is not None
         if self.market_amount_override is not None:
             amount = self.market_amount_override
@@ -208,10 +215,25 @@ class FakeVenue:
                              making_amount=str(principal), taking_amount=shares,
                              trade_ids=(trade_id,), transactions_hashes=())
 
-    def add_trade(self, trade_id, *, taker, shares, price, status):
+    def fill_sell(self, signed, *, shares: str, price: str, status: str = "CONFIRMED",
+                  trade_id: str = "trade-sell-1", fee: str = "0", remaining: str = "0") -> AcceptedOrder:
+        order_id = oid(self.next_order)
+        self.next_order += 1
+        self.orders[order_id] = {"id": order_id, "price": price, "size": shares, "matched": shares,
+                                 "type": signed.order_type, "status": "MATCHED", "side": "SELL"}
+        self.add_trade(trade_id, taker=order_id, shares=shares, price=price, status=status, side="SELL")
+        proceeds = Decimal(shares) * Decimal(price)
+        if status == "CONFIRMED":
+            self.balance += proceeds - Decimal(fee)
+            row = next(r for r in self.positions if r["token_id"] == TOKEN)
+            self.set_position(shares=remaining, cost=row["entry_cost_usdc"], fees=row["entry_fees_usdc"])
+        return AcceptedOrder(order_id=order_id, status="matched", making_amount=shares,
+                             taking_amount=str(proceeds), trade_ids=(trade_id,), transactions_hashes=())
+
+    def add_trade(self, trade_id, *, taker, shares, price, status, side="BUY"):
         self.trades.append({
             "id": trade_id, "market": COND, "asset_id": TOKEN, "owner": "owner",
-            "maker_address": WALLET, "taker_order_id": taker, "side": "BUY",
+            "maker_address": WALLET, "taker_order_id": taker, "side": side,
             "trader_side": "TAKER", "price": price, "size": shares, "outcome": "Yes",
             "status": status, "fee_rate_bps": "0", "bucket_index": 0,
             "transaction_hash": "0x" + "9" * 64,
@@ -1197,7 +1219,9 @@ def test_live_orch_source_has_no_raw_client_daemon_or_ui_surface() -> None:
     assert set(LIVE_ORCH_EPISODE_STATES) == {
         "ADMISSION_PENDING", "ADMITTED", "CREATE_STARTED", "CREATE_REJECTED", "CREATE_ACCEPTED",
         "CREATE_AMBIGUOUS", "RESTING", "CANCEL_STARTED", "RECONCILING", "SETTLEMENT_PENDING",
-        "TERMINAL_NO_POSITION", "TERMINAL_KNOWN_POSITION", "RECONCILIATION_BLOCKED"}
+        "TERMINAL_NO_POSITION", "TERMINAL_KNOWN_POSITION", "RECONCILIATION_BLOCKED",
+        # S10-ALPHA-HUNTER-PILOT-02 additive opt-in-profile release state.
+        "CLOSED_RECONCILED"}
 
 
 # ---------------------------------------------------------------------------
@@ -1311,3 +1335,217 @@ def test_live_orch_post_only_canary_without_gamma_delay(harness, world) -> None:
     rejected = harness.orchestrator().canary(second, second_intent)
     assert rejected.create_transmits == 1 and rejected.episode_state == "CREATE_REJECTED"
     assert harness.venue.trades == [] and harness.venue.positions == []
+
+
+# ---------------------------------------------------------------------------
+# S10-ALPHA-HUNTER-PILOT-02: versioned capital profile, reduce-only SELL, release
+# ---------------------------------------------------------------------------
+
+
+def hunter_orchestrator(harness, deps=None) -> L.LiveOrchestrator:
+    return L.LiveOrchestrator(harness.config(), dependencies=deps or harness.deps(),
+                              envelope=L.LiveOrchCapitalEnvelope.hunter_pilot_02())
+
+
+def hunter_position(harness, world, *, shares="8", price="0.52"):
+    """One synthetic HUNTER_PILOT_02 BUY fill reconciled to TERMINAL_KNOWN_POSITION."""
+    permit, intent = make_permit(world)
+    harness.venue.on_post = _accept_fill(shares=shares, price=price)
+    result = hunter_orchestrator(harness).canary(permit, intent)
+    assert result.episode_state == "TERMINAL_KNOWN_POSITION", result
+    return result.episode_id
+
+
+def sell_permit(world, *, shares="8", price="0.5"):
+    return make_permit(world, side="SELL", price_limit=price, requested_shares=shares)
+
+
+def _risk_eval(**changes):
+    values = dict(collateral=Decimal("100"), total_commitment=Decimal("0"), undebited_commitment=Decimal("0"),
+                  observed_realized_pnl_loss=Decimal("0"), observed_position_pnl_drawdown=Decimal("0"),
+                  observed_cumulative_canary_loss=Decimal("0"), allowance=Decimal("100"), blocking_codes=())
+    values.update(changes)
+    return L.AccountEvaluation(**values)
+
+
+def test_capital_profile_v1_default_unchanged_and_unknown_rejected(harness, world) -> None:
+    v1 = L.LiveOrchCapitalEnvelope()
+    assert v1.profile == "V1_CANARY" and dict(v1.validate()) == dict(L.CAPITAL_PROFILES["V1_CANARY"])
+    assert (v1.authorized_account_capital_usd, v1.single_order_worst_case_max_usd,
+            v1.max_total_early_commitment_usd, v1.min_free_collateral_reserve_usd,
+            v1.max_observed_realized_pnl_loss_usd, v1.max_observed_position_pnl_drawdown_usd,
+            v1.max_observed_cumulative_canary_loss_usd) == ("100", "5", "30", "70", "5", "7.5", "10")
+    hunter = L.LiveOrchCapitalEnvelope.hunter_pilot_02()
+    assert hunter.validate()["min_free_collateral_reserve_usd"] == Decimal("50")
+    for bad in (dict(profile="UNKNOWN"), dict(profile="hunter_pilot_02"), dict(profile=None),
+                dict(min_free_collateral_reserve_usd="50"),  # V1 widened toward the hunter value
+                dict(profile=L.HUNTER_PILOT_02_PROFILE),  # hunter name with V1 loss stops
+                dict(max_observed_realized_pnl_loss_usd="NOT_APPLIED")):
+        with pytest.raises(GatewayError, match="CAPITAL_ENVELOPE_INVALID"):
+            L.LiveOrchCapitalEnvelope(**bad).validate()
+    for bad in (dict(min_free_collateral_reserve_usd="49"), dict(single_order_worst_case_max_usd="5.00001"),
+                dict(max_total_early_commitment_usd="31"), dict(max_observed_realized_pnl_loss_usd="5")):
+        with pytest.raises(GatewayError, match="CAPITAL_ENVELOPE_INVALID"):
+            replace(hunter, **bad).validate()
+    # V1 decisions are the module constants: free below 70 rejects under V1 only.
+    tight = _risk_eval(collateral=Decimal("74.99999"))
+    with pytest.raises(GatewayError, match="FREE_COLLATERAL_RESERVE_VIOLATED"):
+        L.check_admission_risk(v1, principal=Decimal("5"), fee_reserve=Decimal("0"), evaluation=tight)
+    L.check_admission_risk(hunter, principal=Decimal("5"), fee_reserve=Decimal("0"), evaluation=tight)
+    L.check_admission_risk(v1, principal=Decimal("5"), fee_reserve=Decimal("0"),
+                           evaluation=_risk_eval(collateral=Decimal("75")))
+    with pytest.raises(GatewayError, match="OBSERVED_PNL_GUARD_EXCEEDED"):
+        L.check_admission_risk(v1, principal=Decimal("4"), fee_reserve=Decimal("0"),
+                               evaluation=_risk_eval(observed_realized_pnl_loss=Decimal("5.01")))
+    L.check_admission_risk(hunter, principal=Decimal("4"), fee_reserve=Decimal("0"),
+                           evaluation=_risk_eval(observed_realized_pnl_loss=Decimal("5.01")))
+    # HUNTER_PILOT_02 order bounds: exactly 5 accepts, 5.00001 rejects, below the 2 floor rejects.
+    L.check_admission_risk(hunter, principal=Decimal("4.9"), fee_reserve=Decimal("0.1"), evaluation=_risk_eval())
+    with pytest.raises(GatewayError, match="SINGLE_ORDER_LIMIT_EXCEEDED"):
+        L.check_admission_risk(hunter, principal=Decimal("4.9"), fee_reserve=Decimal("0.10001"),
+                               evaluation=_risk_eval())
+    with pytest.raises(GatewayError, match="ORDER_BELOW_PROFILE_FLOOR"):
+        L.check_admission_risk(hunter, principal=Decimal("1.9"), fee_reserve=Decimal("0.09999"),
+                               evaluation=_risk_eval())
+    # The V1 canary itself is unchanged and its binding keeps the exact V1 key set.
+    permit, intent = make_permit(world)
+    harness.venue.on_post = _accept_fill()
+    result = harness.orchestrator().canary(permit, intent)
+    binding = harness.ledger()["episodes"][0]["binding"]
+    assert result.create_transmits == 1 and "capital_profile" not in binding and "closes_episode_id" not in binding
+
+
+def test_hunter_profile_net_loss_budget_and_reserve_boundaries(tmp_path) -> None:
+    from src.live_pilot import hunter_cycle as H
+
+    hunter = L.LiveOrchCapitalEnvelope.hunter_pilot_02()
+    # Native projected free: exactly 50 accepts, 49.99999 rejects.
+    L.check_admission_risk(hunter, principal=Decimal("5"), fee_reserve=Decimal("0"),
+                           evaluation=_risk_eval(collateral=Decimal("55")))
+    with pytest.raises(GatewayError, match="FREE_COLLATERAL_RESERVE_VIOLATED"):
+        L.check_admission_risk(hunter, principal=Decimal("5"), fee_reserve=Decimal("0"),
+                               evaluation=_risk_eval(collateral=Decimal("54.99999")))
+    # Aggregate 30 includes pending/ambiguous reserves (undebited commitment).
+    with pytest.raises(GatewayError, match="AGGREGATE_COMMITMENT_LIMIT_EXCEEDED"):
+        L.check_admission_risk(hunter, principal=Decimal("5"), fee_reserve=Decimal("0"),
+                               evaluation=_risk_eval(total_commitment=Decimal("25.00001"),
+                                                     undebited_commitment=Decimal("25.00001")))
+    # Hunter in-lock budget: projected free >= max(50, E0 - 30), worst case.
+    policy = {"valid_from_utc": "2026-01-01T00:00:00Z", "valid_until_utc": "2099-01-01T00:00:00Z",
+              "_owner_window": (0, 2**62), "_initial_equity": Decimal("90"), "min_order_commitment_usd": "2",
+              "max_order_commitment_usd": "5", "max_simultaneous_exposure_usd": "30",
+              "min_free_collateral_after_admission_usd": "50", "net_loss_budget_usd": "30",
+              "lifecycle_store_path": str(tmp_path), "hermes_store_path": str(tmp_path),
+              "max_hunter_age_s": 1800, "max_hermes_assessment_age_s": 86400}
+    candidate = {"gamma_market_id": X.GAMMA_ID, "condition_id": X.COND, "token_id": TOKEN,
+                 "deadline_ns": X.AT + 10**12, "deadline_code": "PILOT_EVENT_STARTED",
+                 "evaluated_ns": X.AT, "hermes_end_ns": X.AT}
+    intent = type("I", (), dict(gamma_market_id=X.GAMMA_ID, condition_id=X.COND, token_id=TOKEN, side="BUY",
+                                requested_shares="9", price_limit="0.5"))()
+    deps = type("D", (), {"clock_ns": staticmethod(lambda: X.AT + 1)})()
+    guard = H._guard(policy, "h", lambda now: (policy, "h"), deps, candidate, None, intent, lambda: False,
+                     side="BUY", hunter_fee=Decimal("0.11"), authority=lambda *a, **k: None)
+    risk = L.AdmissionRisk(Decimal("4.6"), Decimal("0"))
+    guard({}, _risk_eval(collateral=Decimal("64.61")), risk)  # 64.61 - 4.61 = 60 = 90 - 30
+    for evaluation in (_risk_eval(collateral=Decimal("64.60999")),
+                       _risk_eval(collateral=Decimal("70"), undebited_commitment=Decimal("5.39001"))):
+        with pytest.raises(GatewayError, match="NET_LOSS_BUDGET"):
+            guard({}, evaluation, risk)
+    with pytest.raises(GatewayError, match="EXPOSURE"):
+        guard({}, _risk_eval(total_commitment=Decimal("25.39001")), risk)
+    # Unverified initial equity: collateral below E0 or an existing pilot episode refuses.
+    reconciled = L.LiveOrchResult("reconcile", "NO_NEW_EXPOSURE_READY", "RECONCILED",
+                                  details={"collateral_usd": "89.99999"})
+    with pytest.raises(GatewayError, match="INITIAL_EQUITY_UNVERIFIED"):
+        H._latch_equity(tmp_path, policy, "a" * 64, reconciled, {"episodes": []})
+    assert not (tmp_path / ("hunter-pilot-equity-" + "a" * 64 + ".json")).exists()
+    pilot_episode = {"binding": {"capital_profile": L.HUNTER_PILOT_02_PROFILE, "side": "BUY"}}
+    with pytest.raises(GatewayError, match="INITIAL_EQUITY_UNVERIFIED"):
+        H._latch_equity(tmp_path, policy, "a" * 64, replace(reconciled, details={"collateral_usd": "90"}),
+                        {"episodes": [pilot_episode]})
+    H._latch_equity(tmp_path, policy, "a" * 64, replace(reconciled, details={"collateral_usd": "90"}),
+                    {"episodes": []})
+    with pytest.raises(GatewayError, match="INITIAL_EQUITY_UNVERIFIED"):
+        H._latch_equity(tmp_path, dict(policy, _initial_equity=Decimal("80")), "a" * 64, reconciled,
+                        {"episodes": []})
+
+
+def test_reduce_only_sell_exit_bounds(harness, world) -> None:
+    buy_id = hunter_position(harness, world)
+    posts = len(harness.venue.posts)
+    # V1 profile never SELLs; a non-pilot (unknown) episode is refused; size above the position refuses.
+    permit, intent = sell_permit(world)
+    v1 = harness.orchestrator().exit_sell(permit, intent, closes_episode_id=buy_id)
+    assert (v1.status, v1.code, v1.create_transmits) == ("BLOCKED", "SIDE_UNSUPPORTED_FIRST_CANARY", 0)
+    cases = [
+        (sell_permit(world, shares="8.01"), buy_id, "SELL_EXCEEDS_RECONCILED_POSITION"),
+        (sell_permit(world), "liveorchepisode:sha256:" + "0" * 64, "SELL_NOT_PILOT_OWNED"),
+        (make_permit(world), buy_id, "SIDE_UNSUPPORTED_FIRST_CANARY"),  # a BUY permit never sells
+    ]
+    for (permit, intent), closes, code in cases:
+        result = hunter_orchestrator(harness).exit_sell(permit, intent, closes_episode_id=closes)
+        assert (result.status, result.code, result.create_transmits) == ("BLOCKED", code, 0), result
+    # SELL below the fresh CLOB minimum (shares) refuses natively; the cycle holds before a permit.
+    harness.book = X.book_doc(min_order_size="9")
+    permit, intent = sell_permit(world)
+    result = hunter_orchestrator(harness).exit_sell(permit, intent, closes_episode_id=buy_id)
+    assert (result.code, result.create_transmits) == ("MINIMUM_ORDER_NOT_MET", 0)
+    harness.book = X.book_doc()
+    from src.live_pilot import hunter_cycle as H
+    candidate = {"gamma_market_id": X.GAMMA_ID, "condition_id": X.COND, "token_id": TOKEN,
+                 "category": "SPORTS_NBA_MONEYLINE", "payout_lower": Decimal("0")}
+    with pytest.raises(GatewayError, match="MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP"):
+        H.exit_economics(candidate, X.snap(gamma=GAMMA), world.version, Decimal("4.99"), X.AT)
+    assert len(harness.venue.posts) == posts
+    # A V1 canary BUY position is not pilot-owned.
+    other = Harness(harness.tmp / "v1", world)
+    permit, intent = make_permit(world)
+    other.venue.on_post = _accept_fill()
+    v1_buy = other.orchestrator().canary(permit, intent).episode_id
+    permit, intent = sell_permit(world)
+    result = hunter_orchestrator(other).exit_sell(permit, intent, closes_episode_id=v1_buy)
+    assert result.code == "SELL_NOT_PILOT_OWNED" and len(other.venue.posts) == 1
+    # Hold when no fresh hunter row: the cycle never builds a SELL without one.
+    from tests.live_pilot import test_hunter_cycle as HC
+    assert HC.exit_holds_without_fresh_row(harness.tmp / "hold")
+
+
+def test_closed_reconciled_release_only_after_confirmation(harness, world) -> None:
+    buy_id = hunter_position(harness, world)
+
+    def states(h=harness):
+        return {e["episode_id"]: e["state"] for e in h.ledger()["episodes"]}
+
+    # Mark-to-market gain or a non-zero position never releases the commitment.
+    harness.venue.set_position(shares="8", cost="4.16", value="7.9", total="3.7")
+    assert hunter_orchestrator(harness).reconcile().details["total_commitment_usd"] == "4.16"
+    assert states()[buy_id] == "TERMINAL_KNOWN_POSITION"
+    for status in ("MATCHED", "MINED", "RETRYING"):
+        h = Harness(harness.tmp / status, world)
+        bid = hunter_position(h, world)
+        permit, intent = sell_permit(world)
+        h.venue.on_post = (lambda st: lambda venue, signed: venue.fill_sell(
+            signed, shares="8", price="0.50", status=st))(status)
+        result = hunter_orchestrator(h).exit_sell(permit, intent, closes_episode_id=bid)
+        assert result.create_transmits == 1 and result.episode_state == "SETTLEMENT_PENDING", result
+        h.venue.set_position(shares="0", cost="4.16")
+        assert hunter_orchestrator(h).reconcile().status == "BLOCKED"
+        assert states(h)[bid] == "TERMINAL_KNOWN_POSITION"
+    # Confirmed SELL and zero position: release exactly once.
+    permit, intent = sell_permit(world)
+    harness.venue.on_post = lambda venue, signed: venue.fill_sell(signed, shares="8", price="0.50")
+    result = hunter_orchestrator(harness).exit_sell(permit, intent, closes_episode_id=buy_id)
+    assert (result.status, result.create_transmits, result.episode_state) == (
+        "EXIT_COMPLETE", 1, "TERMINAL_NO_POSITION"), result
+    after = hunter_orchestrator(harness).reconcile()
+    assert after.status == "NO_NEW_EXPOSURE_READY" and after.details["total_commitment_usd"] == "0"
+    assert states()[buy_id] == "CLOSED_RECONCILED"
+    episodes = harness.ledger()["episodes"]
+    assert hunter_orchestrator(harness).reconcile().status == "NO_NEW_EXPOSURE_READY"
+    assert harness.ledger()["episodes"] == episodes  # released exactly once; terminal is final
+    # A resolved-but-still-held (non-zero) position stays counted.
+    h = Harness(harness.tmp / "held", world)
+    bid = hunter_position(h, world)
+    h.venue.set_position(shares="8", cost="4.16", status="CLOSED")
+    assert hunter_orchestrator(h).reconcile().details["total_commitment_usd"] == "4.16"
+    assert states(h)[bid] == "TERMINAL_KNOWN_POSITION"

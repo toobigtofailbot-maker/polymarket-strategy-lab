@@ -1,0 +1,720 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-HUNTER-PILOT-02",
+    "title": "Dormant Unattended-Capable NBA/Rain Hunter Live Pilot with Versioned Envelope, Reduce-Only Exit and Reconciled Release",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_DORMANT_UNATTENDED_CAPABLE_MULTI_CATEGORY_LIVE_PILOT",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "suggested_branch": "claude/s10-alpha-hunter-pilot-02",
+    "required_predecessor": {
+      "pr_number": 257,
+      "head_sha": "4aa8b5ed41bab48b37a092048a5590066a681359",
+      "merge_sha": "e3696526ae66675d725415ca5aecc89957349034"
+    },
+    "objective": "Add one finite default-off versioned hunter pilot cycle that takes a per-wallet run lock, reconciles first and performs at most one economic mutation: one reduce-only FOK SELL exit of a reconciled pilot position or one dynamically sized fee-inclusive USD 2-5 FOK BUY of one verified NBA or rain Alpha Hunter candidate with real Hermes evidence, through native Gate C, LIVE-ORCH and Gate B under the opt-in HUNTER_PILOT_02 capital profile; commitment releases only by reconciliation; the signer may be an unattended Session Key read only from a systemd credential directory; dormant, zero economic activity in this WP; V3 adds a custody-bound SESSION_KEY identity route, an additive reduce-only SELL transmit contract in gate_c.py, and a never-underestimating fee and minimum feasibility rule; under the unchanged 5 USD cap NBA/rain BUYs are expected to abstain at Gamma min 5 USD (owner decision O3)",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl explicitly authorized on 2026-10-28 narrow XL amendments of the certified 19-path V3.1 package. V3.2 (21 paths, D009): .gitleaksignore appends only the exact frozen-spec false-positive fingerprint and tests/test_gitleaks_secret_scan_gate.py changes only EXPECTED_FINGERPRINT_COUNT 20 -> 21. V3.3 (23 paths, D011): tools/git/diff_scope_summary.py reuses the canonical wp_spec_guard SECURITY_SCAN_CONFIG_PATHS so exactly those root secret-scan paths require local_offline_tooling, and its printed exit line reports the real exit code; tests/tools/git/test_diff_scope_summary.py adds focused positive/negative regressions. Implementation, economics, authority boundaries, gitleaks detection and Git history are unchanged. No 24th path, broad exclusion, rule weakening, merge, credentials, provider spend, deployment, capital or live trading is authorized."
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/execution_gateway/live_orch.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/gate_b.py",
+      "src/live_pilot/hunter_cycle.py",
+      "tools/alpha/run_hunter_pilot.py",
+      "tests/live_pilot/test_hunter_cycle.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "docs/live_pilot_contract.md",
+      "docs/live_orchestration_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-HUNTER-PILOT-02.md",
+      "docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_spec.json",
+      "docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/draftability_certificate.json",
+      "src/execution_gateway/gate_c.py",
+      "tests/execution_gateway/test_gate_c.py",
+      ".gitleaksignore",
+      "tests/test_gitleaks_secret_scan_gate.py",
+      "tools/git/diff_scope_summary.py",
+      "tests/tools/git/test_diff_scope_summary.py"
+    ],
+    "allowed_changed_files": [
+      "src/execution_gateway/live_orch.py",
+      "src/execution_gateway/gateway.py",
+      "src/execution_gateway/gate_b.py",
+      "src/live_pilot/hunter_cycle.py",
+      "tools/alpha/run_hunter_pilot.py",
+      "tests/live_pilot/test_hunter_cycle.py",
+      "tests/execution_gateway/test_live_orch.py",
+      "tests/execution_gateway/test_gateway.py",
+      "tests/execution_gateway/test_gate_b.py",
+      "docs/live_pilot_contract.md",
+      "docs/live_orchestration_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-HUNTER-PILOT-02.md",
+      "docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/wp_spec.json",
+      "docs/wp_specs/S10-ALPHA-HUNTER-PILOT-02/draftability_certificate.json",
+      "src/execution_gateway/gate_c.py",
+      "tests/execution_gateway/test_gate_c.py",
+      ".gitleaksignore",
+      "tests/test_gitleaks_secret_scan_gate.py",
+      "tools/git/diff_scope_summary.py",
+      "tests/tools/git/test_diff_scope_summary.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "tools/hermes/",
+      "tools/deployment/",
+      "src/data_layer/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/strategy_lifecycle/",
+      "src/exploratory_gate_c/",
+      "src/execution_feasibility/",
+      "src/operator_cockpit_frontend/"
+    ],
+    "max_changed_files": 23,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert the 23 paths; V1_CANARY default profile and default None hook keep every existing caller, v1 pilot and canary unchanged; additive SELL and CLOSED_RECONCILED states are unreachable without HUNTER_PILOT_02; no dependency, workflow or deployment change; OWNER signer_type default and unchanged BUY inspector keep existing Gate B and Gate C callers identical",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": true,
+    "paper": false,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Six narrow protected surfaces plus one new composer API and one CLI.",
+    "items": [
+      {
+        "surface": "LiveOrchCapitalEnvelope.profile and check_admission_risk",
+        "before": "equality-only envelope; risk checks read module constants",
+        "after": "profile field default V1_CANARY with identical values; checks read the validated profile; opt-in HUNTER_PILOT_02",
+        "change_authorized": true,
+        "compatibility_requirement": "V1 callers and values unchanged",
+        "authority": "VERSIONED_OPT_IN_NEVER_SILENT"
+      },
+      {
+        "surface": "LIVE-ORCH reduce-only SELL episode and CLOSED_RECONCILED",
+        "before": "BUY-only canary; filled principal counted until clean terminal",
+        "after": "SELL only under HUNTER_PILOT_02, bounded by reconciled pilot position; additive clean state entered only from reconciliation",
+        "change_authorized": true,
+        "compatibility_requirement": "V1 checkpoints and BUY canary unchanged",
+        "authority": "REDUCE_ONLY_NEVER_WIDEN"
+      },
+      {
+        "surface": "gate_b.CredentialDirectorySessionKeyProvider",
+        "before": "interactive TTY provider only",
+        "after": "additional non-interactive provider reading one fixed file in the systemd credential directory with strict file checks",
+        "change_authorized": true,
+        "compatibility_requirement": "InteractiveGateBSecretProvider and v1 pilot allowlist unchanged",
+        "authority": "FAIL_CLOSED_NO_ECHO"
+      },
+      {
+        "surface": "src/live_pilot/hunter_cycle run_hunter_cycle_once and tools/alpha/run_hunter_pilot.py",
+        "before": "absent",
+        "after": "run_hunter_cycle_once(*, policy_path, owner_record_path, owner_record_sha256, state_root, hunter_scratch_dir, hunter_operation, dependencies=None) and a foreground CLI that runs hunter verify then the cycle; one terminal; at most one mutation",
+        "change_authorized": true,
+        "compatibility_requirement": "No existing caller",
+        "authority": "PROPOSE_THROUGH_NATIVE_KERNEL_ONLY"
+      },
+      {
+        "surface": "GateBIdentityPolicy.signer_type, _verify_identity and OfficialSdkAuthenticatedReadAdapter accepted_signer_type",
+        "before": "OWNER-only signer type at gate_b.py:1013 and gateway.py:514",
+        "after": "exact equality between SDK-classified signer_type and policy signer_type (default OWNER); SESSION_KEY only with CredentialDirectorySessionKeyProvider, HUNTER_PILOT_02 and policy custody SESSION_KEY_CREDENTIAL_DIRECTORY",
+        "change_authorized": true,
+        "compatibility_requirement": "Every existing caller and test_non_owner_signer_type_rejected keep OWNER-only behavior",
+        "authority": "CUSTODY_BOUND_FAIL_CLOSED"
+      },
+      {
+        "surface": "gate_c.py LiveOrchSellSpec, inspect_live_orch_signed_sell, LiveOrchMutationBoundary.prepare_sell and Gate B build_aggressive_sell",
+        "before": "LIVE-ORCH transmit surface BUY-only",
+        "after": "additive FOK reduce-only SELL with exact signed-order inspection, reusing admit_and_transmit, the ownership lock and the native ledger",
+        "change_authorized": true,
+        "compatibility_requirement": "LiveOrchOrderSpec, inspect_live_orch_signed_buy and BUY prepare unchanged; exploratory Gate C and EXEC-FEAS unchanged",
+        "authority": "REDUCE_ONLY_NEVER_WIDEN"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Each protected behavior maps to one semantic path.",
+    "items": [
+      {
+        "path": "caps.profile",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "LiveOrchCapitalEnvelope gains profile default V1_CANARY with exact current values; validate requires exact equality to the selected profile table; check_admission_risk reads every limit from the validated profile; HUNTER_PILOT_02 is opt-in only (basis 100, order max 5 fee-inclusive, floor 2, aggregate 30, free collateral after admission 50, net-loss budget 30, no observed 5/7.5/10 guards); unknown or widened profile raises CAPITAL_ENVELOPE_INVALID",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "LiveOrchCapitalEnvelope gains profile default V1_CANARY with exact current values; validate requires exact equality to the selected profile table; check_admission_risk reads every limit from the validated profile; HUNTER_PILOT_02 is opt-in only (basis 100, order max 5 fee-inclusive, floor 2, aggregate 30, free collateral after admission 50, net-loss budget 30, no observed 5/7.5/10 guards); unknown or widened profile raises CAPITAL_ENVELOPE_INVALID",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "caps.net_loss_budget",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Under HUNTER_PILOT_02 BUY admission requires projected_free = collateral - undebited - proposed >= max(50, E0 - 30) with open positions and pending/ambiguous reserves valued at zero; E0 latched only on a clean first reconcile with collateral >= E0; never mark-to-market upward; native basis and allowance checks unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Under HUNTER_PILOT_02 BUY admission requires projected_free = collateral - undebited - proposed >= max(50, E0 - 30) with open positions and pending/ambiguous reserves valued at zero; E0 latched only on a clean first reconcile with collateral >= E0; never mark-to-market upward; native basis and allowance checks unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "policy.authority",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Policy polymarket-hunter-pilot-policy@2.0.0 and owner record polymarket-hunter-pilot-owner-activation@2.0.0 reuse the v1 strict canonical JSON exact-key raw-digest window and no-echo rules; ceilings order 2..5, exposure <= 30, free collateral >= 50, net-loss budget <= 30, consecutive loss limit 1..5, pause >= 7200 s, hunter age <= 1800 s, Hermes age <= 86400 s, margin >= 0; owner record binds initial_equity_usd (0 < E0 <= 100) and dedicated_wallet true; any failure zero native calls; nothing clamped",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Policy polymarket-hunter-pilot-policy@2.0.0 and owner record polymarket-hunter-pilot-owner-activation@2.0.0 reuse the v1 strict canonical JSON exact-key raw-digest window and no-echo rules; ceilings order 2..5, exposure <= 30, free collateral >= 50, net-loss budget <= 30, consecutive loss limit 1..5, pause >= 7200 s, hunter age <= 1800 s, Hermes age <= 86400 s, margin >= 0; owner record binds initial_equity_usd (0 < E0 <= 100) and dedicated_wallet true; any failure zero native calls; nothing clamped",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "economics.sizing",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "price_limit is the fresh best ask only; q is the largest 0.01-share quantity with q*ask + fee_max(q) <= max order commitment where fee_max uses the 4.6 rule (max of Gamma and documented category rate, Gamma exponent, rounded up); require cost >= min order commitment, q*ask >= Gamma orderMinSize, q >= CLOB min_order_size, full depth and secondsDelay 0; else abstain with the exact closed reason; stress EV q*payout_lower - q*ask - fee_max(q) - 0.005*q strictly above margin; deterministic selection; native check_admission_risk remains the enforcement authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "price_limit is the fresh best ask only; q is the largest 0.01-share quantity with q*ask + fee_max(q) <= max order commitment where fee_max uses the 4.6 rule (max of Gamma and documented category rate, Gamma exponent, rounded up); require cost >= min order commitment, q*ask >= Gamma orderMinSize, q >= CLOB min_order_size, full depth and secondsDelay 0; else abstain with the exact closed reason; stress EV q*payout_lower - q*ask - fee_max(q) - 0.005*q strictly above margin; deterministic selection; native check_admission_risk remains the enforcement authority",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "intake.hunter",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "The tools CLI runs merged hunter verify with zero network and zero Hermes dispatch; src re-reads terminal, manifest and index, requires COMPLETED and matching sha256 bindings, binds rows to manifest bytes, rejects V2 and crypto, requires Hermes finding VALID with NO_CONTRARY_EVIDENCE_REPORTED and receipts, hunter age within bound and pre-deadline; hunter output is input never authority",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The tools CLI runs merged hunter verify with zero network and zero Hermes dispatch; src re-reads terminal, manifest and index, requires COMPLETED and matching sha256 bindings, binds rows to manifest bytes, rejects V2 and crypto, requires Hermes finding VALID with NO_CONTRARY_EVIDENCE_REPORTED and receipts, hunter age within bound and pre-deadline; hunter output is input never authority",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "lineage.authority",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse the FRESH_NATIVE_PERMIT sequence with one whitelisted StrategyVersion per category and the unchanged PR #256 admission_guard hook; the guard re-verifies native permit authority, freshness, kill, policy/owner and the net-loss budget inside the native lock; no substitute permit; no second candidate after failure",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuse the FRESH_NATIVE_PERMIT sequence with one whitelisted StrategyVersion per category and the unchanged PR #256 admission_guard hook; the guard re-verifies native permit authority, freshness, kill, policy/owner and the net-loss budget inside the native lock; no substitute permit; no second candidate after failure",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "custody.provider",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "CredentialDirectorySessionKeyProvider reads exactly CREDENTIALS_DIRECTORY/polymarket-session-key where the environment supplies only a directory path; requires POSIX, absolute directory, regular non-symlink file, owner equal to euid, mode & 0o077 == 0, size <= 128 bytes and one 0x-prefixed 64-hex key; failure raises SECRET_INPUT_UNAVAILABLE or SECRET_INPUT_INVALID with no echo; hunter cycle allows exactly the interactive and credential-directory providers by exact type selected by policy custody; signer must equal policy public_signer; v1 pilot allowlist unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "CredentialDirectorySessionKeyProvider reads exactly CREDENTIALS_DIRECTORY/polymarket-session-key where the environment supplies only a directory path; requires POSIX, absolute directory, regular non-symlink file, owner equal to euid, mode & 0o077 == 0, size <= 128 bytes and one 0x-prefixed 64-hex key; failure raises SECRET_INPUT_UNAVAILABLE or SECRET_INPUT_INVALID with no echo; hunter cycle allows exactly the interactive and credential-directory providers by exact type selected by policy custody; signer must equal policy public_signer; v1 pilot allowlist unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exit.sell",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "LIVE-ORCH SELL is allowed only under HUNTER_PILOT_02, FOK taker, shares <= reconciled position of a pilot-owned episode token, commitment = fee reserve only, aggregate/reserve/budget checks not applied, closes_episode_id linked; hunter cycle sells iff bid*s - fee_max(s) >= s*payout_lower_current with s = reconciled size floored to 0.01 meeting both venue minimums, else holds; SELL reconciled like BUY",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "LIVE-ORCH SELL is allowed only under HUNTER_PILOT_02, FOK taker, shares <= reconciled position of a pilot-owned episode token, commitment = fee reserve only, aggregate/reserve/budget checks not applied, closes_episode_id linked; hunter cycle sells iff bid*s - fee_max(s) >= s*payout_lower_current with s = reconciled size floored to 0.01 meeting both venue minimums, else holds; SELL reconciled like BUY",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "release.reconciled",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Episode becomes CLOSED_RECONCILED, an additive clean terminal state validated by gateway checkpoint rules, only when reconciliation shows position size 0, every BUY/SELL trade CONFIRMED or FAILED, no open order and reconciled fees; resolved-unredeemed positions remain counted; V1 checkpoints validate unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Episode becomes CLOSED_RECONCILED, an additive clean terminal state validated by gateway checkpoint rules, only when reconciliation shows position size 0, every BUY/SELL trade CONFIRMED or FAILED, no open order and reconciled fees; resolved-unredeemed positions remain counted; V1 checkpoints validate unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "control.breaker",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Lifecycle net uses confirmed SELL proceeds minus fees minus BUY cost, or public Gamma resolved payout minus cost; consecutive_loss_limit consecutive completed net-losing lifecycles write a validated loss-diagnosis record and refuse new exposure for loss_pause_s; resume requires the diagnosis record; exits remain allowed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Lifecycle net uses confirmed SELL proceeds minus fees minus BUY cost, or public Gamma resolved payout minus cost; consecutive_loss_limit consecutive completed net-losing lifecycles write a validated loss-diagnosis record and refuse new exposure for loss_pause_s; resume requires the diagnosis record; exits remain allowed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "control.kill",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Manual PILOT_KILL flag is latched and blocks every mutation while reconcile still runs; automatic stops (breaker, budget, native PAUSE_NEW_EXPOSURE/REVOKE) block new exposure only and allow reduce-only exits",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Manual PILOT_KILL flag is latched and blocks every mutation while reconcile still runs; automatic stops (breaker, budget, native PAUSE_NEW_EXPOSURE/REVOKE) block new exposure only and allow reduce-only exits",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "restart.single_mutation",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Kernel-held run lock before any native call; at most one economic mutation per invocation (a transmitted exit ends the invocation); crash after admission never causes a second transmit; ambiguous episodes block and are counted",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Kernel-held run lock before any native call; at most one economic mutation per invocation (a transmitted exit ends the invocation); crash after admission never causes a second transmit; ambiguous episodes block and are counted",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R012 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "report.terminal",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One durable exclusive JSON terminal per invocation labelled POSITIVE_AFTER_COST_FULL_FILL_STRESS_SCENARIO / RESEARCH_ONLY with order EV UNKNOWN; never claims robust EV, fill probability, profit or Hermes-led trading without a bound VALID Hermes finding; sanitized no-echo codes",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One durable exclusive JSON terminal per invocation labelled POSITIVE_AFTER_COST_FULL_FILL_STRESS_SCENARIO / RESEARCH_ONLY with order EV UNKNOWN; never claims robust EV, fill probability, profit or Hermes-led trading without a bound VALID Hermes finding; sanitized no-echo codes",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R013 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "authority.boundary",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "LIVE TRADING STATUS stays DISABLED; src/live_pilot/pilot.py, live_canary, exploratory Gate C, existing gate_c.py BUY and legacy behavior (only the additive SELL contract is allowed), EXEC-FEAS, strategy lifecycle, Hermes runtime and hunter tool unchanged; no order literal outside gate_b; no timer, loop or dependency",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "LIVE TRADING STATUS stays DISABLED; src/live_pilot/pilot.py, live_canary, exploratory Gate C, existing gate_c.py BUY and legacy behavior (only the additive SELL contract is allowed), EXEC-FEAS, strategy lifecycle, Hermes runtime and hunter tool unchanged; no order literal outside gate_b; no timer, loop or dependency",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R014 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "custody.signer_identity",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "GateBIdentityPolicy.signer_type defaults OWNER and accepts only OWNER or SESSION_KEY; _verify_identity requires SDK-classified signer_type equal to the policy value plus unchanged deposit wallet, production, chain 137, signer and wallet checks; SESSION_KEY requires the exact CredentialDirectorySessionKeyProvider type before acquire, profile HUNTER_PILOT_02 and policy custody SESSION_KEY_CREDENTIAL_DIRECTORY; read adapter accepted_signer_type defaults OWNER; owner record attests session_key_address, scopes exactly CLOB or ALL and valid_until with a 86400 s margin, required iff custody is SESSION_KEY_CREDENTIAL_DIRECTORY and forbidden otherwise; venue auth rejection latches custody suspension until a new owner record digest; venue acceptance unknown fails closed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "GateBIdentityPolicy.signer_type defaults OWNER and accepts only OWNER or SESSION_KEY; _verify_identity requires SDK-classified signer_type equal to the policy value plus unchanged deposit wallet, production, chain 137, signer and wallet checks; SESSION_KEY requires the exact CredentialDirectorySessionKeyProvider type before acquire, profile HUNTER_PILOT_02 and policy custody SESSION_KEY_CREDENTIAL_DIRECTORY; read adapter accepted_signer_type defaults OWNER; owner record attests session_key_address, scopes exactly CLOB or ALL and valid_until with a 86400 s margin, required iff custody is SESSION_KEY_CREDENTIAL_DIRECTORY and forbidden otherwise; venue auth rejection latches custody suspension until a new owner record digest; venue acceptance unknown fails closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R015 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "exit.sell_contract",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Additive gate_c.py LiveOrchSellSpec, inspect_live_orch_signed_sell and LiveOrchMutationBoundary.prepare_sell plus Gate B build_aggressive_sell: FOK SELL only, side SELL, maker equal signer equal public wallet, signature type 3, builder 0, post_only false, expiration 0, maker_amount equal shares units, taker_amount at least floor(shares x min_price units); admission requires reconciled pilot-owned position, all trades CONFIRMED or FAILED, no open order, no non-terminal SELL and shares within reconciled minus pending SELL; reuse admit_and_transmit and the native ledger; BUY contract unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Additive gate_c.py LiveOrchSellSpec, inspect_live_orch_signed_sell and LiveOrchMutationBoundary.prepare_sell plus Gate B build_aggressive_sell: FOK SELL only, side SELL, maker equal signer equal public wallet, signature type 3, builder 0, post_only false, expiration 0, maker_amount equal shares units, taker_amount at least floor(shares x min_price units); admission requires reconciled pilot-owned position, all trades CONFIRMED or FAILED, no open order, no non-terminal SELL and shares within reconciled minus pending SELL; reuse admit_and_transmit and the native ledger; BUY contract unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R016 verified or typed blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "economics.fee_truth",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "fee_max(q) = q x r x (ask x (1-ask))^e rounded up to 0.00001 with r = max(Gamma rate, documented category rate Sports 0.05 Weather 0.05) and Gamma exponent e; r = 0 only when both sources are zero; missing or non-taker-only fee config abstains FEE_CONFIG_UNKNOWN; Gamma orderMinSize is USD notional and CLOB min_order_size is shares per official docs (D003 resolved); at Gamma min 5 with r > 0 abstain MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP; the 5 USD cap and 2 USD floor are unchanged and an expected zero-BUY outcome is reported truthfully",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "fee_max(q) = q x r x (ask x (1-ask))^e rounded up to 0.00001 with r = max(Gamma rate, documented category rate Sports 0.05 Weather 0.05) and Gamma exponent e; r = 0 only when both sources are zero; missing or non-taker-only fee config abstains FEE_CONFIG_UNKNOWN; Gamma orderMinSize is USD notional and CLOB min_order_size is shares per official docs (D003 resolved); at Gamma min 5 with r > 0 abstain MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP; the 5 USD cap and 2 USD floor are unchanged and an expected zero-BUY outcome is reported truthfully",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R017 verified or typed blocked",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical identity derivation over semantic fields: policy_sha256 and owner_record_sha256 are lowercase sha256 of exact raw file bytes (file-content digests, as bind_stage_a stage_a_authorization_sha256), canonical JSON form is a validity precondition, and native PR254 receipts and LIVE-ORCH ids are reused unchanged.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "PROTECTED readiness and authorization chain; activation is separate.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Independent PROTECTED certificate hash-binds exact prompt and spec on a clean nonconflicting base; native readiness passes",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl separate explicit zero-economic implementation authorization including the section 4.1 dormant loosenings; no Gate 2 economic or custodial action",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exact 23 paths, negative matrix, v1 regression, full suite and hosted CI pass with zero orders and credentials",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Conform to repository fixed schema precedence; no raw user inputs in diagnostics.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new schema identity derivation or standalone validator example schema; acceptance evidence is concrete tests and bounded public receipts.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "One test node per protected requirement plus PROTECTED stable-candidate checks. V2 skills-first execution auditing is a process requirement referenced in prompt section 0; it does not replace test evidence or change R001–R017. V3 adds R015-R017 for the three independently refused blockers.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_capital_profile_v1_default_unchanged_and_unknown_rejected",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_capital_profile_v1_default_unchanged_and_unknown_rejected",
+        "expected_result": "V1 envelope values and V1 canary admission decisions identical to merged main; unknown or widened profile rejects; HUNTER_PILOT_02 order 5 accepts and 5.00001 rejects"
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_hunter_profile_net_loss_budget_and_reserve_boundaries",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_hunter_profile_net_loss_budget_and_reserve_boundaries",
+        "expected_result": "projected free exactly 50 accepts and 49.99999 rejects; E0 - 30 boundary enforced; unverified initial equity refuses; ambiguous reserve counted"
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_policy_and_owner_record_v2_strict_canonical_and_ceilings",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_policy_and_owner_record_v2_strict_canonical_and_ceilings",
+        "expected_result": "Every above-ceiling, missing, malformed, non-canonical, digest-prefix, window, wallet, signer or dedicated_wallet false case refuses with zero native calls; valid canonical positive control passes"
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_dynamic_fee_inclusive_sizing_market_minimums",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_dynamic_fee_inclusive_sizing_market_minimums",
+        "expected_result": "Gamma 5 USD minimum with positive fee inside a 5 USD cap abstains MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP; Gamma min below 5 sizes dynamically; Gamma rate 0 vs documented 0.05 uses 0.05; stress EV equal to margin rejects; tie-breaks deterministic and one pair only"
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_hunter_intake_requires_verified_operation_and_real_hermes",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_hunter_intake_requires_verified_operation_and_real_hermes",
+        "expected_result": "Tampered or rehashed terminal/manifest/index, BLOCKED or INTERRUPTED operation, V2 or crypto row, Hermes NOT_RUN/RESEARCH_FAILED/CONTRARY, stale or future evaluated_ns and started NBA game each yield durable NO_TRADE; verify failure in the CLI yields no src call"
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_native_authority_reverified_at_latest_point",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_native_authority_reverified_at_latest_point",
+        "expected_result": "Late pause, revoke, policy or allocation change, superseding Hermes assessment, deadline crossing or kill during authentication/prepare yields zero admission and zero transmit"
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_credential_directory_session_key_provider_fail_closed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_b.py::test_credential_directory_session_key_provider_fail_closed",
+        "expected_result": "Absent variable, relative directory, symlink, group/other-readable mode, wrong owner, oversize, malformed key, non-POSIX host and signer mismatch each refuse with no order and no echoed text; synthetic non-secret positive control passes"
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_reduce_only_sell_exit_bounds",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_reduce_only_sell_exit_bounds",
+        "expected_result": "SELL above reconciled size, SELL of a non-pilot token, SELL under V1 profile and SELL below the CLOB minimum each refuse with no transmit; hold when no fresh hunter row"
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_closed_reconciled_release_only_after_confirmation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_live_orch.py::test_closed_reconciled_release_only_after_confirmation",
+        "expected_result": "MATCHED, MINED or RETRYING trades, a nonzero position or mark-to-market gains never release commitment; confirmed zero-position close releases exactly once; V1 checkpoints still validate"
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_consecutive_loss_breaker_pause_and_diagnosis",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_consecutive_loss_breaker_pause_and_diagnosis",
+        "expected_result": "limit-1 losses continue; limit losses pause; missing or invalid diagnosis blocks resume; exact pause end resumes; a winning lifecycle resets the count"
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_manual_and_automatic_stops_are_separate",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_manual_and_automatic_stops_are_separate",
+        "expected_result": "Manual kill at start, after preflight and inside the guard refuses entry and exit with reconcile run; automatic stop refuses entry and permits an exit"
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_single_mutation_run_lock_and_crash_replay",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_single_mutation_run_lock_and_crash_replay",
+        "expected_result": "Concurrent invocation returns PILOT_RUN_BUSY with zero native calls; exit plus entry in one invocation impossible; replay after crash transmits nothing"
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_terminal_truthful_no_edge_or_hermes_claim",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_terminal_truthful_no_edge_or_hermes_claim",
+        "expected_result": "Terminal for NO_TRADE, refused, exit and entry carries only closed codes and the research label; forbidden claims absent"
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_authority_boundary_preserved",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_authority_boundary_preserved",
+        "expected_result": "Status line exact DISABLED; v1 pilot and canary tests pass unchanged; source guards pass with no new order literal"
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_session_key_identity_bound_to_custody_policy",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_b.py::test_session_key_identity_bound_to_custody_policy",
+        "expected_result": "OWNER policy with SESSION_KEY-classified client, SESSION_KEY policy with OWNER-classified client, SESSION_KEY with interactive provider or V1_CANARY, read adapter default with SESSION_KEY, bad scopes, expired or in-margin valid_until, address mismatch and missing attestation each refuse with no order; venue auth rejection latches custody suspension; synthetic SESSION_KEY positive control authenticates; test_non_owner_signer_type_rejected unchanged"
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_live_orch_reduce_only_sell_contract",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/execution_gateway/test_gate_c.py::test_live_orch_reduce_only_sell_contract",
+        "expected_result": "Every signed SELL field mismatch, non-FOK, post_only, maker or taker amount mismatch, shares above reconciled minus pending SELL, second non-terminal SELL, open order, unconfirmed BUY trade and crash replay of CREATE_STARTED SELL refuse with no transmit; synthetic valid SELL admits once; BUY inspector regression unchanged"
+      },
+      {
+        "requirement_id": "R017",
+        "source": "pytest",
+        "test": "test_fee_truth_and_min_order_feasibility_matrix",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_hunter_cycle.py::test_fee_truth_and_min_order_feasibility_matrix",
+        "expected_result": "min 1 with r 0.05 at ask 0.50 sizes q 9.75 cost 4.99688; both-sources-zero min 5 at ask 0.50 sizes q 10.00 and at ask 0.90 abstains; min 5 with r 0.03 or 0.05 abstains MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP; Gamma rate 0 or fees disabled with documented 0.05 uses 0.05; missing fee config abstains FEE_CONFIG_UNKNOWN; cap 5 and floor 2 unchanged"
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-HUNTER-PILOT-02-ACT",
+    "next_title": "Owner Custody, Provider Budget, Deployment and Standing Capital Activation of the Hunter Pilot",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-HUNTER-PILOT-02-ACT",
+    "forbidden_in_this_wp": [
+      "Any real Polymarket CREATE CANCEL or SELL during implementation or PR",
+      "Session Key creation, Builder request, credential install or read of a real secret",
+      "Deployment unit timer host change or LIVE TRADING STATUS change",
+      "Change to pilot.py live_canary exploratory Gate C existing gate_c.py BUY or legacy behavior EXEC-FEAS strategy lifecycle Hermes runtime hunter tool or V1 envelope values",
+      "Hermes or Firecrawl provider invocation or dependency change",
+      "Claim of Hermes-led trading without a bound VALID real Hermes finding",
+      "Policy value above the hard ceilings or any silent clamp",
+      "Relayed redemption, FAK maker partial-fill, V2 or crypto support",
+      "Claim of robust positive order EV fill probability or profit",
+      "Raising the 5 USD fee-inclusive cap or lowering any fee bound (owner decision O3 is outside this WP)",
+      "Treating Builder-profile fee fields or SDK client-side support as venue fee or session-key acceptance evidence"
+    ]
+  }
+}
