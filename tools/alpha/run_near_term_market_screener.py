@@ -107,12 +107,18 @@ def record(kind, **values):
 def safe(path):
     path = Path(path)
     require(path.is_absolute() and '..' not in path.parts and not path.is_relative_to(REPO))
+    existing=None
     for part in (path, *path.parents):
         try:
             info = part.lstat()
         except FileNotFoundError:
             continue
+        if existing is None:
+            existing=part
         require(not stat.S_ISLNK(info.st_mode) and not getattr(info, 'st_file_attributes', 0) & 0x400)
+    # Resolve an existing ancestor: resolving a nonexistent Windows child can
+    # retain trailing-space aliases instead of canonicalizing its parent.
+    require(existing is not None and not existing.resolve(strict=True).is_relative_to(REPO.resolve(strict=True)))
     return path
 
 

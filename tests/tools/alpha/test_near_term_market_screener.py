@@ -329,3 +329,17 @@ def test_malformed_identity_preserves_unknown_denominator(tmp_path,tokens):
     assert m['coverage']['protocol_counts']['UNKNOWN']==1
     assert m['summary']['assessment']=='EVIDENCE_INCOMPLETE'
     assert N.verify(root)['status']=='VERIFIED'
+
+
+def test_resolved_scratch_ancestor_cannot_alias_checkout(tmp_path,monkeypatch):
+    import os
+    if os.name=='nt':
+        for suffix in ['.',' ']:
+            with pytest.raises(N.Refused):
+                N.safe(Path(str(N.REPO)+suffix)/'never-created')
+    original=Path.resolve
+    def alias(path,*args,**kwargs):
+        return N.REPO if path==tmp_path else original(path,*args,**kwargs)
+    monkeypatch.setattr(Path,'resolve',alias)
+    with pytest.raises(N.Refused):
+        N.safe(tmp_path/'never-created')

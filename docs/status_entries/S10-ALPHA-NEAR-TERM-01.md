@@ -21,12 +21,16 @@ Red phase: missing operator import failed as expected before implementation.
 Initial fixture corrections were a missing required native book field and oversized
 pytest parameter IDs on Windows; source guards were not loosened.
 
-Focused offline verification: 59 passed, exit 0. Adjacent unchanged regressions
+Initial focused offline verification: 59 passed, exit 0. Adjacent unchanged regressions
 and repo-truth checks: 272 passed, exit 0. Native certificate-free source readiness:
 IMPLEMENTATION_READY, 7 scope / 7 evidence / 7 rules, exit 0. Frozen hashes match.
 Review corrections include unknown book versions, malformed native identity
 exceptions, pre-dispatch budget exhaustion, bounded scalar canonicalization,
 sequential receipt clocks and separate provenance for equal raw bodies.
+Final boundary review found Windows checkout aliases bypassing the lexical scratch
+check. A failing read-only regression proves it; resolving the existing ancestor
+closes dot/space/short-name aliases within the same scope. Refreshed focused/full,
+security/review/readiness and exact-head hosted results belong in the PR body.
 Validation is recorded in the canonical PR body after stable-head execution;
 this fragment does not pin its own commit or predict CI results. Independent
 combined implementation review and full/local/hosted gates must pass before ready.

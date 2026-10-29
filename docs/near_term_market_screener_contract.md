@@ -13,6 +13,8 @@ and `verify --scratch-dir ABS`. There are no other options, clock override,
 provider flags or configurable endpoints. Tests inject clock/transport into `run`.
 Scratch is an absolute new/empty directory outside the checkout, with no symlink
 or reparse components. One operation only; no resume, retry, overwrite or repair.
+The nearest existing ancestor is also resolved before writes, so Windows trailing
+dot/space or short-name aliases cannot disguise the checkout as external scratch.
 
 Discovery uses exactly `/markets?closed=false&limit=100&offset=N`, offsets
 0..1900 in steps of 100. First short/empty, failed/invalid or repeated full page
