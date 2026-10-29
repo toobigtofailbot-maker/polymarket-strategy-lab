@@ -1,0 +1,451 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-NEAR-TERM-01",
+    "title": "Bounded Category-Neutral Next-120-Minute Public Market Discovery and Mechanical Feasibility Research",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_CROSS_CATEGORY_NEAR_TERM_PUBLIC_RESEARCH",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-alpha-near-term-01",
+    "required_predecessor": {
+      "pr_number": 258,
+      "head_sha": "b1d18e623546c4664694e1272e5c7d349518e9cc",
+      "merge_sha": "b6dd574ff16a831e71505eae4ffef44dc6d50d0f"
+    },
+    "objective": "One finite category-neutral scratch-only public Gamma offset capture (<=20 pages of100), locally prioritize explicit endDate metadata within7200s, and conservatively screen selected binary CTF tokens at unchanged USD2-5 fee-inclusive bounds through existing pure native normalization/sizing. Preserve category, protocol, source, time, fee and capacity unknowns; end time never proves resolution/settlement. No canonical population/Alpha mutation, provider, scheduler or trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/tools/alpha/test_near_term_market_screener.py",
+      "docs/near_term_market_screener_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-NEAR-TERM-01.md",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/tools/alpha/test_near_term_market_screener.py",
+      "docs/near_term_market_screener_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-NEAR-TERM-01.md",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "config/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Delete the standalone foreground tool and tests/docs and revert the seven exact changed paths. Existing Hunter, native Gamma/CLOB, PIT, ALPHA-02, economics, gateway, authority and defaults unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One isolated optional foreground tool CLI and offline verifier; no reusable canonical API changes.",
+    "items": [
+      {
+        "surface": "run_near_term_market_screener run CLI",
+        "before": "No category-neutral bounded 120-minute public market operator in merged repo",
+        "after": "One finite scratch-only category-neutral documented offset-list capture, local endDate priority, bounded native mechanics and honest unknown/truncated coverage; no canonical store, provider or orders",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing Alpha Hunter, ALPHA-02 and native public market APIs unchanged; no canonical store write and source boundaries closed",
+        "authority": "PUBLIC_RESEARCH_ONLY"
+      },
+      {
+        "surface": "run_near_term_market_screener verify CLI",
+        "before": "No new scanner receipt graph",
+        "after": "Cold local re-derive the operation from write-once receipts and raw hashes with zero public/provider calls",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing verify operations and journal semantics unchanged; tamper fails closed",
+        "authority": "OFFLINE_EVIDENCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Seven requirement groups bind the bounded research semantics to test evidence.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Fixed documented /markets?closed=false&limit=100&offset=N for <=20 pages/2000 rows; local priority not undocumented server sort; exact duplicate/conflict/truncated coverage; every captured category counted with UNKNOWN preserved.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fixed documented /markets?closed=false&limit=100&offset=N for <=20 pages/2000 rows; local priority not undocumented server sort; exact duplicate/conflict/truncated coverage; every captured category counted with UNKNOWN preserved.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Explicit timezone-aware endDate: 0<end-as_of<=7200 seconds => END_TIME_IN_120M_METADATA_ONLY. Boundaries0/1/7200/7201; absent/date-only/unzoned/malformed/expired unknown or outside. No resolution/settlement claim.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Explicit timezone-aware endDate: 0<end-as_of<=7200 seconds => END_TIME_IN_120M_METADATA_ONLY. Boundaries0/1/7200/7201; absent/date-only/unzoned/malformed/expired unknown or outside. No resolution/settlement claim.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Operator-local allowlisted list/book HTTPS GET adapter only; native decoder bounds unchanged, no proxy discovery/redirect/retry/user URL; <=64 requests/2MiB/15s socket/240s monotonic budget; malformed/oversize/failed source is an evidence gap, never empty success.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Operator-local allowlisted list/book HTTPS GET adapter only; native decoder bounds unchanged, no proxy discovery/redirect/retry/user URL; <=64 requests/2MiB/15s socket/240s monotonic budget; malformed/oversize/failed source is an evidence gap, never empty success.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "<=10 binary CTF markets/20 both-outcome books; pure native normalization,size_order,fee_max; USD2 floor/USD5 cap; separate USDC/share minima, fresh30s book, tick/depth/zero delay/SDK grid; versioned exact category fee bounds and expiry; missing/unsupported takes INCONCLUSIVE precedence; no false minimum-impossibility from depth refusal.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "<=10 binary CTF markets/20 both-outcome books; pure native normalization,size_order,fee_max; USD2 floor/USD5 cap; separate USDC/share minima, fresh30s book, tick/depth/zero delay/SDK grid; versioned exact category fee bounds and expiry; missing/unsupported takes INCONCLUSIVE precedence; no false minimum-impossibility from depth refusal.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Each unique captured documented top-level category and market counted with source pointers; protocol/time/status/capacity/unknown states retained. External completeness always UNPROVEN, resolution-confirmed count0, no unacquired token treated as failed mechanics.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Each unique captured documented top-level category and market counted with source pointers; protocol/time/status/capacity/unknown states retained. External completeness always UNPROVEN, resolution-confirmed count0, no unacquired token treated as failed mechanics.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Write-once acyclic config/STARTED/receipt/raw/manifest/terminal/index graph; exact bytes/hash and recorded clocks; cold replay rejects modified/missing/extra/conflict, zero network/provider/registry writes; exact field-coverage/no-echo scan includes invalid outputs.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Write-once acyclic config/STARTED/receipt/raw/manifest/terminal/index graph; exact bytes/hash and recorded clocks; cold replay rejects modified/missing/extra/conflict, zero network/provider/registry writes; exact field-coverage/no-echo scan includes invalid outputs.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Existing Hunter/PIT/Alpha/native authority unaffected. Only pure sizing imports; no cycle,provider,account,StrategyVersion,ExecutionIntent,permit,canonical-store,dependency,workflow or scheduler operation. Full RUNTIME validation and exact-seven scope remain mandatory after separate implementation authorization.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing Hunter/PIT/Alpha/native authority unaffected. Only pure sizing imports; no cycle,provider,account,StrategyVersion,ExecutionIntent,permit,canonical-store,dependency,workflow or scheduler operation. Full RUNTIME validation and exact-seven scope remain mandatory after separate implementation authorization.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 PASS with exact evidence or closed report blocked",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new canonical record identity or promotion; scratch raw/extracted-object SHA256 commitments and serialization rules are frozen in prompt section13 and verified under R006.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME package requires deterministic readiness and separate owner implementation decision; no new live states.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native spec guard and readiness gate return success on exact current prompt/spec bytes",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl gives explicit bounded zero-economic implementation authority after review",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Exactly seven scoped paths changed and R001-R007 plus required regressions and full suite pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Runtime positive/negative fixtures and expected mechanics outcomes are specified in prompt section6 and implemented by R004/R006; no WP-spec identity derivation example is added.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Seven named positive/negative requirements in one new test file, plus native readiness and stable-head full-suite evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_category_neutral_pagination_and_bounded_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_category_neutral_pagination_and_bounded_denominators",
+        "expected_result": "Fixed documented /markets?closed=false&limit=100&offset=N for <=20 pages/2000 rows; local priority not undocumented server sort; exact duplicate/conflict/truncated coverage; every captured category counted with UNKNOWN preserved."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_two_hour_timestamp_filter_and_resolution_uncertainty",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_two_hour_timestamp_filter_and_resolution_uncertainty",
+        "expected_result": "Explicit timezone-aware endDate: 0<end-as_of<=7200 seconds => END_TIME_IN_120M_METADATA_ONLY. Boundaries0/1/7200/7201; absent/date-only/unzoned/malformed/expired unknown or outside. No resolution/settlement claim."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_fail_closed_transport_and_malformed_market_pages",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_fail_closed_transport_and_malformed_market_pages",
+        "expected_result": "Operator-local allowlisted list/book HTTPS GET adapter only; native decoder bounds unchanged, no proxy discovery/redirect/retry/user URL; <=64 requests/2MiB/15s socket/240s monotonic budget; malformed/oversize/failed source is an evidence gap, never empty success."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_candidate_market_economics_with_native_mechanics",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_candidate_market_economics_with_native_mechanics",
+        "expected_result": "<=10 binary CTF markets/20 both-outcome books; pure native normalization,size_order,fee_max; USD2 floor/USD5 cap; separate USDC/share minima, fresh30s book, tick/depth/zero delay/SDK grid; versioned exact category fee bounds and expiry; missing/unsupported takes INCONCLUSIVE precedence; no false minimum-impossibility from depth refusal."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_all_market_scope_denominator_and_no_false_universe_claim",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_all_market_scope_denominator_and_no_false_universe_claim",
+        "expected_result": "Each unique captured documented top-level category and market counted with source pointers; protocol/time/status/capacity/unknown states retained. External completeness always UNPROVEN, resolution-confirmed count0, no unacquired token treated as failed mechanics."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_cold_verify_tamper_and_replay_no_network",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_cold_verify_tamper_and_replay_no_network",
+        "expected_result": "Write-once acyclic config/STARTED/receipt/raw/manifest/terminal/index graph; exact bytes/hash and recorded clocks; cold replay rejects modified/missing/extra/conflict, zero network/provider/registry writes; exact field-coverage/no-echo scan includes invalid outputs."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_existing_hunter_pilot_and_authority_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_existing_hunter_pilot_and_authority_unchanged",
+        "expected_result": "Existing Hunter/PIT/Alpha/native authority unaffected. Only pure sizing imports; no cycle,provider,account,StrategyVersion,ExecutionIntent,permit,canonical-store,dependency,workflow or scheduler operation. Full RUNTIME validation and exact-seven scope remain mandatory after separate implementation authorization."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-NEAR-TERM-02",
+    "next_title": "Separately Authorized Resolution-Timing Rule Proof or Bounded Operational Pilot After Market Evidence",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-NEAR-TERM-01",
+    "forbidden_in_this_wp": [
+      "Any live/paper/execution/Gate C/credential/account/capital/order authority",
+      "USD 5 fee-inclusive cap increase or economic-profile mutation",
+      "Provider/Hermes/Firecrawl inference or paid search",
+      "Persistent scheduler, cron, worker, background daemon, recurring autonomous run",
+      "Claiming endDate proves outcome resolution or on-chain settlement within 120 minutes",
+      "Universal all-market completeness claim from a bounded paginated sample",
+      "New canonical market registry/PIT schema or migration, ALPHA-02 registry mutation",
+      "Inference of fair probability, profitable edge, guaranteed fill, or qualified strategy",
+      "Workflow/dependency changes, new auth tokens, real provider/network during implementation/CI",
+      "Unapproved external public acquisition before separate operator authorization"
+    ]
+  }
+}
