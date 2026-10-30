@@ -11,6 +11,16 @@ import pytest
 from tools.alpha import run_near_term_market_screener as N
 
 NOW = 1793188800 * 10**9  # 2026-10-28T12:00:00Z
+
+
+def test_all_horizons_is_explicit_bounded_and_cold_replayed(tmp_path):
+    root,result,manifest,calls=execute(tmp_path,[[market(1,delta=86400)]],all_horizons=True)
+    assert result['status']=='COMPLETED' and N.verify(root)['status']=='VERIFIED'
+    assert len(calls)==3 and 'end_date_max' not in calls[0]
+    assert manifest['coverage']['external_universe_completeness']=='UNPROVEN'
+    assert manifest['markets'][0]['selection_state']=='SELECTED'
+    _,_,legacy,_=execute(tmp_path,[[market(1,delta=86400)]])
+    assert legacy['markets'][0]['selection_state']=='INELIGIBLE'
 POSSIBLE = 'MECHANICALLY_POSSIBLE_WITH_BOUNDED_ASSUMPTIONS'
 MINIMUM = 'MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP'
 UNKNOWN = 'INCONCLUSIVE_MECHANICS'
@@ -462,9 +472,12 @@ def test_cold_replay_schema_and_legacy_evidence_compatibility(tmp_path,monkeypat
 
 
 def test_authority_and_existing_hunter_unchanged(tmp_path,monkeypatch,capsys):
-    import hashlib
-    repo=Path(__file__).parents[3]
-    assert hashlib.sha256((repo/'src/live_pilot/hunter_cycle.py').read_bytes().replace(b'\r\n',b'\n')).hexdigest()=='5db1c0509e0777e9878b35ed93f98d44cefa8f9e97c830bbc42909f89dc5f430'
+    # This WP explicitly extends Hunter with a distinct v3 profile. Keep the
+    # historical v2 bounds and scanner's inability to invoke it under test.
+    from src.live_pilot import hunter_cycle as H
+    assert H.POLICY_SCHEMA == ('polymarket-hunter-pilot-policy', '2.0.0')
+    assert H.DECIMAL_BOUNDS['max_order_commitment_usd'] == (Decimal(2),Decimal(5))
+    assert H.DECIMAL_BOUNDS['max_simultaneous_exposure_usd'] == (Decimal('0.00001'),Decimal(30))
     assert N.CONFIG['request_cap']==64 and N.CONFIG['page_cap']==20 and N.CONFIG['market_cap']==10
     assert N.FEE_EXPIRY==1793750400*N.NS
     test_existing_hunter_pilot_and_authority_unchanged(tmp_path,monkeypatch,capsys)

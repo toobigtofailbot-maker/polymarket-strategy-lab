@@ -179,9 +179,13 @@ def time_bucket(value, as_of):
     return ('EXPIRED' if end<=as_of else 'FUTURE_OUTSIDE' if end-as_of>7200*NS else 'IN_WINDOW'), end
 
 
-def discovery_url(offset, as_of):
+def discovery_url(offset, as_of, *, all_horizons=False):
     require(type(offset) is int and 0<=offset<=1900 and offset%100==0)
     require(type(as_of) is int and as_of>=0)
+    require(type(all_horizons) is bool)
+    if all_horizons:
+        return 'https://gamma-api.polymarket.com/markets?'+urllib.parse.urlencode(
+            (('closed','false'),('limit','100'),('offset',str(offset))))
     query=urllib.parse.urlencode((('closed','false'),('end_date_min',utc(as_of)),
         ('end_date_max',utc(as_of+7200*NS)),('limit','100'),('offset',str(offset))))
     return 'https://gamma-api.polymarket.com/markets?'+query
@@ -191,6 +195,10 @@ def checked_url(url, as_of=None):
     require(type(url) is str and len(url)<=512)
     if url.startswith('https://gamma-api.polymarket.com/markets?'):
         query=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query,strict_parsing=True)
+        if set(query) == {'closed', 'limit', 'offset'}:
+            require(all(len(v)==1 for v in query.values()))
+            require(url == discovery_url(int(query['offset'][0]), as_of or 0, all_horizons=True))
+            return url
         require(set(query)=={'closed','end_date_min','end_date_max','limit','offset'}
             and all(len(v)==1 for v in query.values()))
         begin=timestamp(query['end_date_min'][0])
@@ -284,7 +292,7 @@ def category(value):
     return digest(canonical(value)), key.upper() if key in FEE_RATES else 'OPAQUE_CATEGORY', False
 
 
-def catalog(receipts, body, as_of):
+def catalog(receipts, body, as_of, *, all_horizons=False):
     entries, seen, conflicts, page_hashes = [], {}, set(), set()
     pages = [r for r in receipts if r['endpoint_kind']=='DISCOVERY']
     raw_rows = duplicates = 0
@@ -317,7 +325,7 @@ def catalog(receipts, body, as_of):
                 source_request_index=r['request_index'],source_row_index=ordinal,category_key=ckey,
                 protocol_state=protocol,status_state=status(market),time_state=bucket,
                 end_time_utc=None if end is None else utc(end),selection_state='INELIGIBLE',reason_codes=[],
-                filter_state='MATCH' if bucket=='IN_WINDOW' else 'FILTER_MISMATCH' if bucket in ('EXPIRED','FUTURE_OUTSIDE') else 'UNKNOWN',
+                filter_state='MATCH' if all_horizons or bucket=='IN_WINDOW' else 'FILTER_MISMATCH' if bucket in ('EXPIRED','FUTURE_OUTSIDE') else 'UNKNOWN',
                 category_origin='MISSING' if market.get('category') is None else 'MALFORMED' if malformed else 'TOP_LEVEL')
             item = (market,row,tokens,end,label,malformed)
             seen[key]=(fingerprint,item)
@@ -336,10 +344,10 @@ def catalog(receipts, body, as_of):
         if row['status_state']!='ACTIVE': reasons.append('STATUS_NOT_ACTIVE')
         if row['protocol_state']!='CTF': reasons.append('PROTOCOL_UNSUPPORTED')
         if market.get('negRisk') is not False: reasons.append('NEG_RISK_UNSUPPORTED')
-        if row['time_state']!='IN_WINDOW': reasons.append('TIME_UNKNOWN_OR_OUTSIDE')
+        if not all_horizons and row['time_state']!='IN_WINDOW': reasons.append('TIME_UNKNOWN_OR_OUTSIDE')
         if row['filter_state']=='FILTER_MISMATCH': reasons.append('FILTER_MISMATCH')
         if not reasons: row['selection_state']='NOT_ACQUIRED'
-    candidates = sorted((e for e in entries if not e[1]['reason_codes']),key=lambda e:e[3])
+    candidates = sorted((e for e in entries if not e[1]['reason_codes']),key=(lambda e:(e[3] if e[3] is not None and e[3]>as_of else 2**63, e[1]['market_id'])) if all_horizons else (lambda e:e[3]))
     selected=candidates[:10]
     for item in selected:
         item[1]['selection_state']='SELECTED'
@@ -461,8 +469,11 @@ def counts(rows,key,states):
 
 
 def analyze(root,started,receipts,evaluated):
+    config=read_record(root/'config.json')
+    require(config in (CONFIG, dict(CONFIG, window_s=0)))
+    all_horizons=config['window_s']==0
     body=lambda name:read_bytes(root/'op-000001'/name,CONFIG['max_body_bytes'])
-    entries,selected,coverage=catalog(receipts,body,started['as_of_ns'])
+    entries,selected,coverage=catalog(receipts,body,started['as_of_ns'],all_horizons=all_horizons)
     rows=[item[1] for item in entries]
     books=[r for r in receipts if r['endpoint_kind']=='BOOK']
     expected=[venue.clob_book_url(t) for item in selected for t in sorted(item[2],key=int)]
@@ -521,14 +532,15 @@ def terminal(status='BLOCKED',manifest_sha256=None,summary=None):
         error_codes=[] if status=='COMPLETED' else ['CAPTURE_REFUSED'],manifest_sha256=manifest_sha256,summary=summary)
 
 
-def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.monotonic):
+def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.monotonic, all_horizons=False):
     root=None
     owned=False
     try:
         root=safe(scratch_dir)
         if not root.exists(): root.mkdir(mode=0o700)
         require(root.is_dir() and not any(root.iterdir()))
-        write(root/'config.json',CONFIG)
+        require(type(all_horizons) is bool)
+        write(root/'config.json',dict(CONFIG,window_s=0) if all_horizons else CONFIG)
         op=root/'op-000001';op.mkdir(mode=0o700)
         owned=True
         as_of=clock_ns()//1000*1000
@@ -576,13 +588,13 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
         page_hashes=set()
         for offset in range(0,2000,100):
             if monotonic()>=deadline:break
-            receipt=collect('DISCOVERY',discovery_url(offset,as_of))
+            receipt=collect('DISCOVERY',discovery_url(offset,as_of,all_horizons=all_horizons))
             if receipt['body_state']!='AVAILABLE':break
             page=source_body(receipt,lambda n:read_bytes(op/n,CONFIG['max_body_bytes']))
             page_hash=digest(canonical(page))
             if len(page)<100 or page_hash in page_hashes:break
             page_hashes.add(page_hash)
-        _,selected,_=catalog(receipts,lambda n:read_bytes(op/n,CONFIG['max_body_bytes']),as_of)
+        _,selected,_=catalog(receipts,lambda n:read_bytes(op/n,CONFIG['max_body_bytes']),as_of,all_horizons=all_horizons)
         for item in selected:
             if len(receipts)+2>64:break
             for token in sorted(item[2],key=int):
@@ -618,7 +630,9 @@ def verify(scratch_dir):
     try:
         root=safe(scratch_dir);op=root/'op-000001'
         require({p.name for p in root.iterdir()}=={'config.json','op-000001','index-op-000001.json'})
-        require(read_record(root/'config.json')==CONFIG)
+        config=read_record(root/'config.json')
+        require(config in (CONFIG,dict(CONFIG,window_s=0)))
+        all_horizons=config['window_s']==0
         started=read_record(op/'started.json')
         require(set(started)==set(FIELDS['started']) and started['schema_version']==SCHEMA
             and type(started['as_of_ns']) is int and utc(started['as_of_ns'])==started['as_of_utc']
@@ -636,7 +650,7 @@ def verify(scratch_dir):
             require(type(receipt['request_index']) is int and receipt['request_index']==i
                 and receipt['schema_version']==SCHEMA and receipt['endpoint_kind'] in ('DISCOVERY','BOOK'))
             if receipt['endpoint_kind']=='DISCOVERY':
-                require(not books and not discovery_stopped and pages<20 and receipt['url']==discovery_url(pages*100,started['as_of_ns']));pages+=1
+                require(not books and not discovery_stopped and pages<20 and receipt['url']==discovery_url(pages*100,started['as_of_ns'],all_horizons=all_horizons));pages+=1
             else:books=True
             checked_url(receipt['url'],started['as_of_ns'])
             require(started['as_of_ns']<=timestamp(receipt['started_utc'])<=timestamp(receipt['received_utc'])<=evaluated)

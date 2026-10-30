@@ -37,6 +37,8 @@ NS = v1.NS
 DAY = v1.DAY
 PROFILE = native.HUNTER_PILOT_02_PROFILE
 POLICY_SCHEMA = ('polymarket-hunter-pilot-policy', '2.0.0')
+EDGE_POLICY_SCHEMA = ('polymarket-hunter-pilot-policy', '3.0.0')
+EDGE_FIELDS = {'activation_id', 'activation_ledger_head', 'previous_session_sha256', 'provider_max_rolling24h_usd', 'first_canary_receipt_sha256'}
 OWNER_SCHEMA = ('polymarket-hunter-pilot-owner-activation', '2.0.0')
 TERMINAL_SCHEMA = ('polymarket-hunter-pilot-terminal', '2.0.0')
 CATEGORIES = ('SPORTS_NBA_MONEYLINE', 'WEATHER_US_DAILY_RAIN')
@@ -114,8 +116,9 @@ def _load(policy_path, owner_record_path, owner_record_sha256, state_root, now):
     """Strict canonical v2 policy and owner record; refusal before any native call."""
     raw = _read(policy_path)
     policy = v1._json(raw)
-    _require(type(policy) is dict and set(policy) == POLICY_KEYS and _canonical(policy) == raw
-             and (policy['schema_id'], policy['schema_version']) == POLICY_SCHEMA
+    edge = type(policy) is dict and (policy.get('schema_id'), policy.get('schema_version')) == EDGE_POLICY_SCHEMA
+    _require(type(policy) is dict and set(policy) == (POLICY_KEYS | EDGE_FIELDS if edge else POLICY_KEYS) and _canonical(policy) == raw
+             and (policy['schema_id'], policy['schema_version']) in (POLICY_SCHEMA, EDGE_POLICY_SCHEMA)
              and policy['order_type'] == 'FOK' and policy['custody'] in CUSTODY_PROVIDERS, 'PILOT_POLICY_INVALID')
     _require(type(policy['host']) is dict and set(policy['host']) == v1.HOST_KEYS
              and type(policy['host']['ssh_port']) is int and 1 <= policy['host']['ssh_port'] <= 65535,
@@ -136,7 +139,18 @@ def _load(policy_path, owner_record_path, owner_record_sha256, state_root, now):
              and set(versions) == set(categories) and len(set(versions.values())) == len(versions)
              and all(type(v) is str and re.fullmatch(r'strategyversion:sha256:[0-9a-f]{64}', v)
                      for v in versions.values()), 'PILOT_POLICY_INVALID')
-    for key, (low, high) in DECIMAL_BOUNDS.items():
+    bounds = dict(DECIMAL_BOUNDS)
+    if edge:
+        bounds.update(max_order_commitment_usd=(Decimal(2), Decimal(10)),
+                      max_simultaneous_exposure_usd=(Decimal('0.00001'), Decimal(10)),
+                      min_free_collateral_after_admission_usd=(Decimal(90), Decimal(100)),
+                      net_loss_budget_usd=(Decimal('0.00001'), Decimal(10)))
+        for key in ('activation_id', 'activation_ledger_head'):
+            _require(type(policy[key]) is str and re.fullmatch('[0-9a-f]{64}', policy[key]), 'PILOT_POLICY_INVALID')
+        for key in ('previous_session_sha256', 'first_canary_receipt_sha256'):
+            _require(policy[key] is None or type(policy[key]) is str and re.fullmatch('[0-9a-f]{64}', policy[key]), 'PILOT_POLICY_INVALID')
+        _require(0 <= _decimal(policy['provider_max_rolling24h_usd']) <= 2, 'PILOT_POLICY_INVALID')
+    for key, (low, high) in bounds.items():
         _require(low <= _decimal(policy[key]) <= high, 'PILOT_POLICY_INVALID')
     _require(Decimal(2) <= _decimal(policy['min_order_commitment_usd']) <= _decimal(policy['max_order_commitment_usd'])
              and _decimal(policy['experimental_margin_usd']) >= 0, 'PILOT_POLICY_INVALID')
@@ -152,9 +166,9 @@ def _load(policy_path, owner_record_path, owner_record_sha256, state_root, now):
     try:
         record = v1._json(record_raw)
         # Session-key attestation keys are required iff SESSION_KEY custody (exact keys).
-        _require(type(record) is dict and set(record) == (OWNER_FIELDS | SESSION_FIELDS if session else OWNER_FIELDS)
+        _require(type(record) is dict and set(record) == ((OWNER_FIELDS | (EDGE_FIELDS if edge else set())) | (SESSION_FIELDS if session else set()))
                  and _canonical(record) == record_raw
-                 and (record['schema_id'], record['schema_version']) == OWNER_SCHEMA
+                 and (record['schema_id'], record['schema_version']) == (OWNER_SCHEMA[0], '3.0.0' if edge else '2.0.0')
                  and record['dedicated_wallet'] is True
                  and Decimal(0) < _decimal(record['initial_equity_usd']) <= Decimal(100), 'PILOT_OWNER_RECORD_INVALID')
     except Exception:
@@ -166,11 +180,13 @@ def _load(policy_path, owner_record_path, owner_record_sha256, state_root, now):
         _require(start <= a < b <= end and a <= now < b, 'PILOT_OWNER_RECORD_WINDOW_INVALID')
     except Exception:
         raise GatewayError('PILOT_OWNER_RECORD_WINDOW_INVALID') from None
+    if edge:
+        _require(all(record[k] == policy[k] for k in EDGE_FIELDS), 'PILOT_OWNER_RECORD_SCOPE_MISMATCH')
     if session:
         try:
             until = _utc(record['session_key_valid_until_utc'])
             _require(record['session_key_address'] == policy['public_signer']
-                     and record['session_key_scopes'] in (['CLOB'], ['ALL'])
+                     and record['session_key_scopes'] in ((['CLOB'],) if edge else (['CLOB'], ['ALL']))
                      and now < until - SESSION_KEY_MARGIN_NS, 'SESSION_KEY_ATTESTATION_INVALID')
         except Exception:
             raise GatewayError('SESSION_KEY_ATTESTATION_INVALID') from None
@@ -462,9 +478,9 @@ def exit_economics(candidate, snapshot, version, shares, now, documented_rate=No
 
 # --------------------------------------------------------------------------- ledger views
 
-def _pilot_buys(checkpoint):
+def _pilot_buys(checkpoint, *, profile=PROFILE):
     return [e for e in checkpoint['episodes']
-            if e['binding'].get('capital_profile') == PROFILE and e['binding']['side'] == 'BUY']
+            if e['binding'].get('capital_profile') == profile and e['binding']['side'] == 'BUY']
 
 
 def _confirmed(episode, field_name):
@@ -481,7 +497,7 @@ def _fee(episode):
     return Decimal(episode['admission']['worst_case_fee_reserve_usd'])
 
 
-def lifecycles(checkpoint, resolved_payout):
+def lifecycles(checkpoint, resolved_payout, *, profile=PROFILE):
     """Completed pilot lifecycles (CLOSED_RECONCILED BUY episodes) in close order with their net.
 
     net = confirmed SELL proceeds - SELL fees - BUY principal - BUY fee, plus the
@@ -493,7 +509,7 @@ def lifecycles(checkpoint, resolved_payout):
         if closes is not None:
             sells.setdefault(closes, []).append(episode)
     result = []
-    for buy in _pilot_buys(checkpoint):
+    for buy in _pilot_buys(checkpoint, profile=profile):
         if buy['state'] != 'CLOSED_RECONCILED':
             continue
         exits = sells.get(buy['episode_id'], [])
@@ -536,7 +552,7 @@ def breaker(root, policy, checkpoint, resolved_payout, now):
         except Exception:
             continue
     streak, last = [], None
-    for n, item in enumerate(lifecycles(checkpoint, resolved_payout), 1):
+    for n, item in enumerate(lifecycles(checkpoint, resolved_payout, profile=profile_of(policy)), 1):
         # A winning (or break-even) lifecycle resets the count; each trigger starts a new streak.
         streak = streak + [item] if Decimal(item['net_usd']) < 0 else []
         if len(streak) == policy['consecutive_loss_limit']:
@@ -558,13 +574,17 @@ def breaker(root, policy, checkpoint, resolved_payout, now):
 
 def _latch_equity(root, policy, policy_hash, reconciliation, checkpoint):
     """E0 latched once per policy digest, exclusive-create, never rewritten."""
-    path = root / f'hunter-pilot-equity-{policy_hash}.json'
-    expected = {'policy_sha256': policy_hash, 'initial_equity_usd': format(policy['_initial_equity'], 'f')}
+    edge = policy.get('schema_version') == '3.0.0'
+    identity = policy['activation_id'] if edge else policy_hash
+    path = root / f'hunter-pilot-equity-{identity}.json'
+    expected = ({'activation_id': identity, 'activation_ledger_head': policy['activation_ledger_head']}
+                if edge else {'policy_sha256': policy_hash})
+    expected['initial_equity_usd'] = format(policy['_initial_equity'], 'f')
     if path.exists():
         _require(v1._json(_read(path)) == expected, 'INITIAL_EQUITY_UNVERIFIED')
         return
     details = reconciliation.details
-    _require(not _pilot_buys(checkpoint) and reconciliation.status == 'NO_NEW_EXPOSURE_READY'
+    _require((not checkpoint['episodes'] if edge else not _pilot_buys(checkpoint)) and reconciliation.status == 'NO_NEW_EXPOSURE_READY'
              and Decimal(str(details.get('collateral_usd'))) >= policy['_initial_equity'], 'INITIAL_EQUITY_UNVERIFIED')
     _exclusive(path, expected)
 
@@ -601,6 +621,11 @@ def _guard(policy, policy_hash, reload_policy, deps, candidate, permit, intent, 
                  'PILOT_GUARD_REFUSED:ORDER_BOUNDS')
         _require(evaluation.total_commitment + proposed <= _decimal(policy['max_simultaneous_exposure_usd']),
                  'PILOT_GUARD_REFUSED:EXPOSURE')
+        if policy.get('schema_version') == '3.0.0':
+            from src.live_pilot.edge_qualifier import combined_loss
+            verify_activation_baseline(policy)
+            verify_first_canary(policy, checkpoint)
+            combined_loss(checkpoint, evaluation, proposed, activation_ledger_head=policy['activation_ledger_head'])
         # Worst case: every open position and pending/ambiguous reserve valued at zero.
         projected_free = evaluation.collateral - evaluation.undebited_commitment - proposed
         _require(projected_free >= max(_decimal(policy['min_free_collateral_after_admission_usd']),
@@ -658,7 +683,8 @@ def run_hunter_cycle_once(*, policy_path, owner_record_path, owner_record_sha256
             config = native.LiveOrchConfig(state_root=root, expected_signer=policy['public_signer'],
                 expected_wallet=policy['public_wallet'], lifecycle_store_path=Path(policy['lifecycle_store_path']),
                 hermes_store_path=Path(policy['hermes_store_path']), host=host)
-            envelope = native.LiveOrchCapitalEnvelope.hunter_pilot_02()
+            envelope = (native.LiveOrchCapitalEnvelope.autonomous_edge_01() if policy['schema_version'] == '3.0.0'
+                        else native.LiveOrchCapitalEnvelope.hunter_pilot_02())
 
             def orchestrator(guard=None):
                 return native.LiveOrchestrator(config, envelope=envelope,
@@ -693,7 +719,7 @@ def run_hunter_cycle_once(*, policy_path, owner_record_path, owner_record_sha256
                 if episode['binding'].get('closes_episode_id') is not None:
                     sold[episode['binding']['closes_episode_id']] = sold.get(
                         episode['binding']['closes_episode_id'], Decimal(0)) + _confirmed(episode, 'shares')
-            for buy in sorted(_pilot_buys(checkpoint), key=lambda e: e['admission']['admitted_time_ns']):
+            for buy in sorted(_pilot_buys(checkpoint, profile=profile_of(policy)), key=lambda e: e['admission']['admitted_time_ns']):
                 candidate = by_token.get(buy['binding']['token_id'])
                 if buy['state'] != 'TERMINAL_KNOWN_POSITION' or candidate is None:
                     continue  # no fresh verified row: hold to resolution
@@ -785,3 +811,65 @@ def run_hunter_cycle_once(*, policy_path, owner_record_path, owner_record_sha256
             except Exception:
                 pass
         return {'status': 'REFUSED', 'code': 'PILOT_STATE_UNAVAILABLE', 'terminal_persisted': False}
+
+
+def verify_first_canary(policy, checkpoint):
+    """Exact owner-bound original composer/Stage-A records and canonical episode."""
+    from src.execution_gateway import live_canary as attended
+    code = 'PILOT_GUARD_REFUSED:CANARY'
+    _require(policy.get('first_canary_receipt_sha256') is not None, code)
+    raw = _read(_path(Path(policy['state_root'])/'first-canary.json'))
+    _require(_digest(raw) == policy['first_canary_receipt_sha256'], code)
+    record = v1._json(raw)
+    keys = set(attended._receipt('run', False)) | {'receipt_id'}
+    _require(type(record) is dict and set(record) in (keys, keys|{'reconcile_required'}), code)
+    original = {k:v for k,v in record.items() if k != 'receipt_id'}
+    _require(attended._finish(original) == record and record['command'] == 'run'
+             and record['schema_version'] == '1.0.0' and record['schema_id'] == 'polymarket-live-canary-receipt'
+             and record['evidence_class'] == 'NATIVE_PRODUCTION' and record['status'] == 'CANARY_COMPLETE'
+             and record['stage_a_binding'] == attended.STAGE_A_BINDING and record['bridge_status'] == 'PASS', code)
+    _require(type(record['calls']) is dict and set(record['calls']) == {'oauth_dispatch','confirmation_prompt','canary','order'}
+             and all(type(n) is int and n == 1 for n in record['calls'].values()), code)
+    _require(type(record['bridge_receipt_id']) is str and re.fullmatch('[a-z]+:sha256:[0-9a-f]{64}', record['bridge_receipt_id']), code)
+    outcome = record['live_orch']
+    _require(type(outcome) is dict and outcome.get('command') == 'canary'
+             and outcome.get('status') == 'CANARY_COMPLETE' and type(outcome.get('create_transmits')) is int
+             and outcome['create_transmits'] == 1, code)
+    episodes = [e for e in checkpoint['episodes'] if e['episode_id'] == outcome.get('episode_id')]
+    _require(len(episodes) == 1, code)
+    episode = episodes[0]; binding = episode['binding']
+    _require(binding.get('capital_profile') is None and binding['side'] == 'BUY'
+             and record['permit_id'] == binding['exploratory_permit_id']
+             and record['execution_intent_id'] == binding['execution_intent_id']
+             and episode['state'] in ('CLOSED_RECONCILED', 'TERMINAL_KNOWN_POSITION', 'TERMINAL_NO_POSITION')
+             and episode['reconciliation']['fee_state'] in ('NOT_REQUIRED', 'RECONCILED'), code)
+    stage_raw = _read(_path(Path(policy['state_root'])/'first-canary-stage-a.json'))
+    _require(_digest(stage_raw) == record['stage_a_authorization_sha256'], code)
+    stage = v1._json(stage_raw)
+    _require(type(stage) is dict and set(stage) == attended._STAGE_A_KEYS
+             and (stage['schema_id'],stage['schema_version']) == attended.STAGE_A_SCHEMA
+             and stage['deposit_wallet_address'].lower() == policy['public_wallet'].lower()
+             and stage['release_sha'] == binding['release_sha'] and stage['side'] == 'BUY'
+             and type(stage['max_create_attempts']) is int and stage['max_create_attempts'] == 1
+             and _utc(stage['valid_from_utc']) <= episode['admission']['admitted_time_ns'] < _utc(stage['valid_until_utc']), code)
+    _require(any(all(menu[k] == binding[k] for k in ('strategy_version_id','gamma_market_id','condition_id','token_id'))
+                 for menu in stage['approved_menu']), code)
+
+
+def verify_activation_baseline(policy):
+    """A renewal cannot replace or omit the original canonical native ledger history."""
+    from src.execution_gateway.gateway import _validate_replay
+    from src.execution_gateway.store import GatewayStore
+    path = native.canonical_live_orch_store_path(Path(policy['state_root']), policy['public_wallet'])
+    store = GatewayStore(path)
+    try:
+        mapping, head, events = store.load()
+        _require(mapping is not None and _validate_replay(events).to_mapping() == dict(mapping)
+                 and policy['activation_ledger_head'] in {e.event_hash for e in events}, 'PILOT_GUARD_REFUSED:BASELINE')
+        return head
+    finally:
+        store.close()
+
+
+def profile_of(policy):
+    return native.AUTONOMOUS_EDGE_01_PROFILE if policy.get('schema_version') == '3.0.0' else PROFILE

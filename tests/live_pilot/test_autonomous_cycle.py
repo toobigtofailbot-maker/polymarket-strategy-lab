@@ -14,6 +14,8 @@ from tests.tools.alpha import test_alpha_hunter as sources
 from tests.tools.alpha import test_near_term_market_screener as near
 from tests.live_pilot import test_hunter_cycle as native_test
 
+NOW = near.NOW
+
 
 def policy(tmp_path, now=near.NOW, **changes):
     value = dict(schema_id='autonomous-cycle-policy', schema_version='1.0.0', mode='OFF',
@@ -84,6 +86,103 @@ def source_record():
         source_receipts=[dict(source_kind='ESPN', raw_sha256='5'*64, received_ns=9, url_sha256='6'*64)],
         p_point='0.95', p_lower='0.9', p_upper='1', qualification_state='SOURCE_BOUND_ONLY',
         reason_codes=['CALIBRATION_NOT_VERIFIED']), 'record_sha256')
+
+
+def test_bounded_cycle_quota_and_restart(tmp_path, monkeypatch):
+    s = harness(tmp_path,monkeypatch,max_discovery_gets_per_cycle=1)
+    no_wire_hunter(monkeypatch)
+    first = A.run(**s.args)
+    calls = len(s.calls)
+    again = A.run(**s.args)
+    assert first['status'] == again['status'] == 'NO_TRADE'
+    assert len(s.calls) == calls and first['public_gets'] == again['public_gets']
+
+
+def test_unknown_exposure_restart_and_kill(tmp_path, monkeypatch):
+    s = harness(tmp_path,monkeypatch)
+    root=Path(s.policy['state_root']);root.mkdir()
+    (root/'PILOT_KILL').write_text('stop')
+    assert A.run(**s.args)['code'] == 'KILLED' and not s.calls
+    (root/'PILOT_KILL').unlink()
+    assert A.run(**s.args)['code'] == 'KILLED' and not s.calls
+
+
+def test_session_chain_retains_reservations_and_refuses_resets(tmp_path):
+    p=policy(tmp_path,schema_version='2.0.0',max_total_commitment_usd='10',
+        min_free_collateral_usd='90',activation_id='a'*64,activation_ledger_head='b'*64,
+        previous_session_sha256=None,max_provider_cost_usd_total='2',max_provider_calls_total=2)
+    root=tmp_path/'state';root.mkdir()
+    h=A.digest(A.canonical(p))
+    directory,prior=A.session_root(root,p,h,'c'*64,NOW)
+    assert prior==[]
+    A.write(directory/'binding.json',dict(policy_sha256=h,public_wallet=p['public_wallet']))
+    claim=A.seal(dict(schema_id='autonomous-cycle-journal',schema_version='2.0.0',sequence=1,
+        previous_sha256=None,policy_sha256=h,cycle_id=A.cycle_id(p,h,0),cycle_index=0,
+        phase='RESERVED',started_ns=NOW,ended_ns=None,reserved_gets=1,reserved_provider_calls=1,
+        reserved_cost_usd='1.5',actual_gets=0,actual_provider_calls=0,reason=None,
+        scanner_sha256=None,hunter_sha256=None,economic_mutation_id=None),'entry_sha256')
+    A.write(directory/'journal-000001.json',claim)
+    next_p=dict(p,valid_from_ns=NOW+10,valid_until_ns=NOW+1000,previous_session_sha256='d'*64)
+    nh=A.digest(A.canonical(next_p))
+    with pytest.raises(GatewayError):
+        A.session_root(root,next_p,nh,'c'*64,NOW+20)
+    end=A.seal(dict(claim,sequence=2,previous_sha256=claim['entry_sha256'],phase='TERMINAL',
+        ended_ns=NOW+1,reason='NO_CANDIDATES'),'entry_sha256')
+    A.write(directory/'journal-000002.json',end)
+    next_p['previous_session_sha256']=end['entry_sha256'];nh=A.digest(A.canonical(next_p))
+    directory2,prior=A.session_root(root,next_p,nh,'c'*64,NOW+20)
+    assert len(prior)==1 and prior[0]['reserved_cost_usd']=='1.5' and directory2!=directory
+    bad=dict(next_p,activation_id='e'*64)
+    with pytest.raises(GatewayError):
+        A.session_root(root,bad,A.digest(A.canonical(bad)),'c'*64,NOW+21)
+
+
+def test_rolling_budget_counts_late_dispatch_after_cycle_start_expires():
+    start=1000*A.NS
+    entries=[dict(phase='RESERVED',cycle_id='x',started_ns=start,ended_ns=None,reserved_cost_usd='2'),
+             dict(phase='TERMINAL',cycle_id='x',started_ns=start,ended_ns=start+600*A.NS)]
+    reserved=A.provider_reservations(entries)
+    now=start+86401*A.NS
+    assert now-reserved[0]['started_ns']>86400*A.NS
+    assert now-reserved[0]['ended_ns']<86400*A.NS
+    assert sum(Decimal(e['reserved_cost_usd']) for e in reserved
+               if e['ended_ns'] is None or now-e['ended_ns']<86400*A.NS)==2
+    assert A.provider_reservations(entries[:1])[0]['ended_ns'] is None
+
+
+def test_same_policy_resume_rejects_backward_utc_before_new_reservation(tmp_path,monkeypatch):
+    s=harness(tmp_path,monkeypatch,max_cycles=2)
+    no_wire_hunter(monkeypatch)
+    assert A.run(**s.args)['cycles_completed']==1
+    root=Path(s.policy['state_root'])
+    terminal_path=root/'journal-000002.json'
+    end=A.read(terminal_path)
+    start=end['started_ns']
+    # A faithful completed journal from before the clock adjustment.
+    end=A.seal(dict(end,ended_ns=start+600*A.NS),'entry_sha256')
+    terminal_path.write_bytes(A.canonical(end)+b'\n')
+    s.native.harness.now=start+300*A.NS  # Fresh official-access proof after clock adjustment.
+    monkeypatch.setattr(s.native.harness,'clock',lambda:start+300*A.NS)
+    s.args['dependencies'].native.clock_ns=lambda:start+300*A.NS
+    calls=len(s.calls)
+    result=A.run(**s.args)
+    assert result['code']=='JOURNAL_UNVERIFIED' and len(s.calls)==calls
+    assert not (root/'journal-000003.json').exists()
+
+
+def test_in_cycle_backward_utc_stops_next_source_dispatch(tmp_path,monkeypatch):
+    s=harness(tmp_path,monkeypatch)
+    no_wire_hunter(monkeypatch)
+    original=s.args['dependencies'].transport
+    def rewind(url,timeout,maximum):
+        result=original(url,timeout,maximum)
+        now=s.args['dependencies'].native.clock_ns()
+        s.args['dependencies'].native.clock_ns=lambda:now-100*A.NS
+        return result
+    s.args['dependencies'].transport=rewind
+    result=A.run(**s.args)
+    assert len(s.calls)==1 and not s.native.harness.venue.posts
+    assert result['code']=='JOURNAL_UNVERIFIED'
 
 
 def test_real_hermes_evidence_and_no_fake_edge(tmp_path, monkeypatch):
@@ -328,7 +427,9 @@ def test_native_custody_suspension_prevents_authentication(tmp_path, monkeypatch
 def test_exact_output_fields_and_recursive_no_echo(tmp_path, monkeypatch):
     terminal_fields = set(('status code cycles_completed public_gets provider_calls reserved_provider_cost_usd '
         'scanner_sha256 hunter_sha256 forecast_counts economic_mutation_id live_active').split())
-    report_fields = {'disposition', 'live_active', 'account_connected', 'orders', 'blockers'}
+    report_fields = {'disposition', 'live_active', 'account_connected', 'orders', 'blockers',
+        'software_status', 'edge_status', 'accepted_production_methods', 'accepted_production_corpora',
+        'account_status', 'funds_status', 'provider_consent_status', 'first_canary_status', 'unattended_status'}
     assert set(A.terminal('OFF')) == terminal_fields
     assert set(A.activation_report()) == report_fields
     assert set(source_record()) == A.FORECAST_KEYS and len(A.FORECAST_KEYS) == 20

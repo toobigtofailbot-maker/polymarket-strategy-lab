@@ -1,0 +1,732 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-AUTONOMOUS-EDGE-TO-LIVE-01",
+    "title": "Independently Qualified Structural and Statistical Edge to Protected Polymarket Live Pilot",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_QUALIFIED_EDGE_TO_BOUNDED_LIVE",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 261,
+      "head_sha": "8af082ae7c0f94a428ecd56a9e37deaa345a6d94",
+      "merge_sha": "9f82afe00b1c6256c9c48a08cb90d98836ba556a"
+    },
+    "suggested_branch": "codex/s10-autonomous-edge-to-live-01",
+    "objective": "One native-only PROTECTED package qualifying both structural and historical statistical edges, enforcing owner-approved USD100 pilot/fee-inclusive USD10 order/total USD10 worst-case loss and bounded provider spend, reusing current Hermes/Gate C/LIVE-ORCH and setting up an owner-bound canary and supervised bounded sessions without inventing an eligible trade or credential.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl approved the complete recommended configuration on 2026-10-30 and expressly directed one consolidated next WP with all mandatory skills and Ponytail first. This authorizes proposed PROTECTED software implementation after independent exact-byte certificate, not real capital transfer, private-secret possession, self-merge, first-canary auto approval or economic mutation."
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/live_pilot/autonomous_cycle.py",
+      "src/live_pilot/edge_qualifier.py",
+      "src/live_pilot/calibration.py",
+      "src/live_pilot/structural.py",
+      "tests/live_pilot/test_edge_qualifier.py",
+      "tests/live_pilot/test_calibration.py",
+      "tests/live_pilot/test_structural.py",
+      "tests/live_pilot/test_autonomous_cycle.py",
+      "tests/live_pilot/test_autonomous_authority.py",
+      "tools/deployment/run_autonomous_hunter.py",
+      "tests/tools/deployment/test_autonomous_hunter.py",
+      "docs/autonomous_live_pilot_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-AUTONOMOUS-EDGE-TO-LIVE-01.md",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/wp_spec.json",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/draftability_certificate.json",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "src/live_pilot/hunter_cycle.py",
+      "src/execution_gateway/live_orch.py",
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/live_pilot/test_hunter_cycle.py",
+      "tests/tools/alpha/test_near_term_market_screener.py"
+    ],
+    "allowed_changed_files": [
+      "src/live_pilot/autonomous_cycle.py",
+      "src/live_pilot/edge_qualifier.py",
+      "src/live_pilot/calibration.py",
+      "src/live_pilot/structural.py",
+      "tests/live_pilot/test_edge_qualifier.py",
+      "tests/live_pilot/test_calibration.py",
+      "tests/live_pilot/test_structural.py",
+      "tests/live_pilot/test_autonomous_cycle.py",
+      "tests/live_pilot/test_autonomous_authority.py",
+      "tools/deployment/run_autonomous_hunter.py",
+      "tests/tools/deployment/test_autonomous_hunter.py",
+      "docs/autonomous_live_pilot_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-AUTONOMOUS-EDGE-TO-LIVE-01.md",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/wp_spec.json",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/draftability_certificate.json",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "src/live_pilot/hunter_cycle.py",
+      "src/execution_gateway/live_orch.py",
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/live_pilot/test_hunter_cycle.py",
+      "tests/tools/alpha/test_near_term_market_screener.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-02/"
+    ],
+    "max_changed_files": 25,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert changed paths to the exact verified PR261 merge; post-merge service disabled, revoke any actually installed Session Key through official owner-controlled workflow if activation occurred. Never delete live canonical wallet/account ledgers to roll back.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": true
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": true,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": true,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Protected edge, native order and bounded supervisor composition; old public APIs and first canary remain authoritative.",
+    "items": [
+      {
+        "surface": "src.live_pilot.edge_qualifier.qualify_candidate",
+        "before": "Only SOURCE_BOUND_ONLY forecasts on current autonomous adapter",
+        "after": "One method-pinned source-qualified admission result or NO_TRADE; separate structural and historical statistical verification",
+        "change_authorized": true,
+        "compatibility_requirement": "Never accept a caller-asserted calibration badge, Hermes confidence or model p as lower bound; keep category-neutral discovery separate from trading method support",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.live_pilot.calibration.historical_bound",
+        "before": "No independent calibration admitted",
+        "after": "Offline causal market/rule/method grouped historical outcome validation; one-sided Wilson lower-bound, immutable proof and calibrated eligibility or abstention",
+        "change_authorized": true,
+        "compatibility_requirement": "No synthetic/test fixtures or ex-post leakage can mint production qualification",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.live_pilot.structural.verify_complement",
+        "before": "No structural-arbitrage native verifier",
+        "after": "Source-bound complement payoff and all-leg executable-cost verifier; candidate-only unless native safe two-leg execution is actually proven",
+        "change_authorized": true,
+        "compatibility_requirement": "No independent sequential FOK leg submission or direct trading client permitted",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "existing native Gate C LIVE-ORCH Gate B live_canary and hunter_cycle",
+        "before": "Dormant, strict USD5 single-order and other native ceilings; owner first canary remains manually attended",
+        "after": "Optional stricter-or-new separately certified owner USD100/USD10 pilot profile, never weakening core limits; existing owner-bound first-canary path preserved",
+        "change_authorized": true,
+        "compatibility_requirement": "No implicit native gate bypass, real CREATE without exact Stage A/B, or dormant cap raise without explicit risk code/owner record proof",
+        "authority": "SEPARATE_OWNER_ACTIVATION_REQUIRED"
+      },
+      {
+        "surface": "tools.deployment.run_autonomous_hunter",
+        "before": "One foreground finite no-order cycle",
+        "after": "Default-off supervised bounded sessions preserving journal and kill/exposure/budget state, without auto-start/deployment during PR",
+        "change_authorized": true,
+        "compatibility_requirement": "No auto budget refresh, no infinite until-edge loop, no deployment without host owner release",
+        "authority": "PROTECTED_CODE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Sixteen independent requirements are frozen here and map exactly to evidence/test nodes in this same WP; structural and statistical admission are separate.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verify merged PR261 exact head and merge and obtain a separate exact-hash PROTECTED certificate before any source edit.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verify merged PR261 exact head and merge and obtain a separate exact-hash PROTECTED certificate before any source edit.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse native scanner, Hunter, Hermes, StrategyVersion, Gate C, LIVE-ORCH and Gate B; no alternate credentials or direct execution APIs.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuse native scanner, Hunter, Hermes, StrategyVersion, Gate C, LIVE-ORCH and Gate B; no alternate credentials or direct execution APIs.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verify identical condition, exact complementary payout and resolution rules, valid fee book and contemporaneous token snapshots; reject neg-risk, combos, unknown settlement, insufficient source proof.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verify identical condition, exact complementary payout and resolution rules, valid fee book and contemporaneous token snapshots; reject neg-risk, combos, unknown settlement, insufficient source proof.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Two-leg structural BUY requires proven all-or-none native execution semantics or prior executable hedge with a worst-case loss budget; sequential independent FOKs do not qualify. Otherwise research-only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Two-leg structural BUY requires proven all-or-none native execution semantics or prior executable hedge with a worst-case loss budget; sequential independent FOKs do not qualify. Otherwise research-only.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reproduce source forecasts from real pre-event receipts matched to independently verified actual outcomes; chronological holdout, unique cluster groups, fixed decile buckets and one-sided Wilson bound, with all missing/mixed/retrospective data rejected.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reproduce source forecasts from real pre-event receipts matched to independently verified actual outcomes; chronological holdout, unique cluster groups, fixed decile buckets and one-sided Wilson bound, with all missing/mixed/retrospective data rejected.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Qualified probability lower bound requires recalculated verified calibration with \u226550 distinct holdout outcomes in the selected fixed decile and market/rule/family/version compatibility. Hermes confidence and synthetic samples never authorize.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Qualified probability lower bound requires recalculated verified calibration with \u226550 distinct holdout outcomes in the selected fixed decile and market/rule/family/version compatibility. Hermes confidence and synthetic samples never authorize.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Proposed owner allocation USD100, per-order fee-inclusive hard cap USD10 with USD6\u20138 target, max total outstanding worst-case loss USD10 and cumulative pilot loss USD10; enforce stricter native wallet/account/allocation limits, minimums, fees, depth and fee expiry before order.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Proposed owner allocation USD100, per-order fee-inclusive hard cap USD10 with USD6\u20138 target, max total outstanding worst-case loss USD10 and cumulative pilot loss USD10; enforce stricter native wallet/account/allocation limits, minimums, fees, depth and fee expiry before order.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Research across categories with source-specific trade allowlist, near-term priority, bounded GETs/model calls and USD2/day provider reservation maximum; no spend-reset via crash, scheduler, deadline or restart.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Research across categories with source-specific trade allowlist, near-term priority, bounded GETs/model calls and USD2/day provider reservation maximum; no spend-reset via crash, scheduler, deadline or restart.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Official authenticated read for dedicated signer/Deposit Wallet, collateral/orders/trades/positions; attended owner key for first canary then scoped CLOB Session Key if official path works; zero secrets in repo/chat/CLI.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Official authenticated read for dedicated signer/Deposit Wallet, collateral/orders/trades/positions; attended owner key for first canary then scoped CLOB Session Key if official path works; zero secrets in repo/chat/CLI.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No real CREATE until exact owner-bound Stage A and witnessed OAuth and attended Stage B via unchanged native live_canary composer; no lower-level bypass, and real receipt/reconciliation required before any unattended activation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No real CREATE until exact owner-bound Stage A and witnessed OAuth and attended Stage B via unchanged native live_canary composer; no lower-level bypass, and real receipt/reconciliation required before any unattended activation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Default OFF. Supervised bounded sessions with same durable state, policy expiry, owner-approved provider/risk ceilings; no endless loop, rearm by model, or scheduling during PR/CI.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Default OFF. Supervised bounded sessions with same durable state, policy expiry, owner-approved provider/risk ceilings; no endless loop, rearm by model, or scheduling during PR/CI.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Lock then reconcile before any new admission; unknown open order/position, half-filled leg, interrupted request or stale balance consume reservation and block re-entry; kill always prevents exposure and retains authoritative native recovery.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Lock then reconcile before any new admission; unknown open order/position, half-filled leg, interrupted request or stale balance consume reservation and block re-entry; kill always prevents exposure and retains authoritative native recovery.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R012 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r013",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reject arbitrary endpoint, invalid schema, malformed Decimal, duplicate keys, symlinks, untrusted error echo, secret persistence or direct SDK bypass; verify existing security scanning.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject arbitrary endpoint, invalid schema, malformed Decimal, duplicate keys, symlinks, untrusted error echo, secret persistence or direct SDK bypass; verify existing security scanning.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R013 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r014",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exact schema/cert/scope/readiness PASS and one authoritative stable-head offline full suite, focused/adjacent, hosted 11-job CI, security scans and separate implementation review.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exact schema/cert/scope/readiness PASS and one authoritative stable-head offline full suite, focused/adjacent, hosted 11-job CI, security scans and separate implementation review.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R014 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r015",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Separate source-backed market capture and empirical calibration from synthetic test-only fixtures; current fee policy after 2026-11-04 requires independent refresh and certification; never imply sampled universe completeness or settlement from endDate.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Separate source-backed market capture and empirical calibration from synthetic test-only fixtures; current fee policy after 2026-11-04 requires independent refresh and certification; never imply sampled universe completeness or settlement from endDate.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R015 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r016",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Report software/edge/account/canary/unattended gates separately and provide one consolidated secure owner setup checklist, no fabricated activated account, trade, profit or mandatory needless follow-on WP.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Report software/edge/account/canary/unattended gates separately and provide one consolidated secure owner setup checklist, no fabricated activated account, trade, profit or mandatory needless follow-on WP.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R016 PASS or explicit fail-closed reason",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Native canonical JSON/SHA256 helper content digests only, excluding their own digest field; all projection and mutation coverage is specified in prompt appendix4. No new record-id derivation language or algorithm.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Only the native canonical software authorization chain; runtime refusal/admission transitions are specified normatively in prompt appendix.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Separate real independent twelve-lens certificate binds final prompt/spec bytes plus current PR261 predecessor; native WP gate succeeds",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Explicit Karl-approved exact program/bounded software authority; no operational order permission",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Scoped source+tests, independent implementation review, exact full and hosted evidence",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Truthful synthetic cases never activate real money; production gaps are explicit.",
+    "items": [
+      {
+        "example_id": "UNQUALIFIED_HERMES_RESEARCH",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SEMANTIC_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "sample_class": "TEST_ONLY",
+          "model_p": "0.99",
+          "qualification": "NO_TRADE:CALIBRATION_MISSING",
+          "defect": "untrusted Hermes p cannot qualify"
+        }
+      },
+      {
+        "example_id": "SYNTHETIC_TWO_LEG_PARTIAL_NO_TRADE",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "source": "SYNTHETIC",
+          "all_leg_atomic": false,
+          "decision": "NO_TRADE",
+          "orders": 0
+        }
+      },
+      {
+        "example_id": "SYNTHETIC_STATISTICAL_METHOD_TEST_ONLY",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "source": "SYNTHETIC",
+          "wilson_bound_recomputed": true,
+          "live_admission": false,
+          "orders": 0
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Every frozen requirement maps to a test node; full suite and real-world operation are separately evidenced, never inferred from synthetic tests.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_protected_activation_chain",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_protected_activation_chain",
+        "expected_result": "Verify merged PR261 exact head and merge and obtain a separate exact-hash PROTECTED certificate before any source edit."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_reuse_no_bypass",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_native_reuse_no_bypass",
+        "expected_result": "Reuse native scanner, Hunter, Hermes, StrategyVersion, Gate C, LIVE-ORCH and Gate B; no alternate credentials or direct execution APIs."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_complement_payoff_identity_and_fee_cost",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_structural.py::test_complement_payoff_identity_and_fee_cost",
+        "expected_result": "Verify identical condition, exact complementary payout and resolution rules, valid fee book and contemporaneous token snapshots; reject neg-risk, combos, unknown settlement, insufficient source proof."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_partial_leg_exposure_refuses_execution",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_structural.py::test_partial_leg_exposure_refuses_execution",
+        "expected_result": "Two-leg structural BUY requires proven all-or-none native execution semantics or prior executable hedge with a worst-case loss budget; sequential independent FOKs do not qualify. Otherwise research-only."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_historical_causal_calibration_and_wilson",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_calibration.py::test_historical_causal_calibration_and_wilson",
+        "expected_result": "Reproduce source forecasts from real pre-event receipts matched to independently verified actual outcomes; chronological holdout, unique cluster groups, fixed decile buckets and one-sided Wilson bound, with all missing/mixed/retrospective data rejected."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_statistical_forecast_verified_or_abstained",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_statistical_forecast_verified_or_abstained",
+        "expected_result": "Qualified probability lower bound requires recalculated verified calibration with \u226550 distinct holdout outcomes in the selected fixed decile and market/rule/family/version compatibility. Hermes confidence and synthetic samples never authorize."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_owner_pilot_cap_and_minimum_fee_inclusive",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_owner_pilot_cap_and_minimum_fee_inclusive",
+        "expected_result": "Proposed owner allocation USD100, per-order fee-inclusive hard cap USD10 with USD6\u20138 target, max total outstanding worst-case loss USD10 and cumulative pilot loss USD10; enforce stricter native wallet/account/allocation limits, minimums, fees, depth and fee expiry before order."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_bounded_cycle_quota_and_restart",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_bounded_cycle_quota_and_restart",
+        "expected_result": "Research across categories with source-specific trade allowlist, near-term priority, bounded GETs/model calls and USD2/day provider reservation maximum; no spend-reset via crash, scheduler, deadline or restart."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_native_custody_and_account_fail_closed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_native_custody_and_account_fail_closed",
+        "expected_result": "Official authenticated read for dedicated signer/Deposit Wallet, collateral/orders/trades/positions; attended owner key for first canary then scoped CLOB Session Key if official path works; zero secrets in repo/chat/CLI."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_first_canary_unattended_denied",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_first_canary_unattended_denied",
+        "expected_result": "No real CREATE until exact owner-bound Stage A and witnessed OAuth and attended Stage B via unchanged native live_canary composer; no lower-level bypass, and real receipt/reconciliation required before any unattended activation."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_supervised_bounded_session_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/deployment/test_autonomous_hunter.py::test_supervised_bounded_session_authority",
+        "expected_result": "Default OFF. Supervised bounded sessions with same durable state, policy expiry, owner-approved provider/risk ceilings; no endless loop, rearm by model, or scheduling during PR/CI."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_unknown_exposure_restart_and_kill",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_unknown_exposure_restart_and_kill",
+        "expected_result": "Lock then reconcile before any new admission; unknown open order/position, half-filled leg, interrupted request or stale balance consume reservation and block re-entry; kill always prevents exposure and retains authoritative native recovery."
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_no_secret_echo_and_source_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_no_secret_echo_and_source_authority",
+        "expected_result": "Reject arbitrary endpoint, invalid schema, malformed Decimal, duplicate keys, symlinks, untrusted error echo, secret persistence or direct SDK bypass; verify existing security scanning."
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_integration_admission_negative_matrix",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_integration_admission_negative_matrix",
+        "expected_result": "Exact schema/cert/scope/readiness PASS and one authoritative stable-head offline full suite, focused/adjacent, hosted 11-job CI, security scans and separate implementation review."
+      },
+      {
+        "requirement_id": "R015",
+        "source": "pytest",
+        "test": "test_source_cutoff_fee_expiry_and_no_live_claims",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_calibration.py::test_source_cutoff_fee_expiry_and_no_live_claims",
+        "expected_result": "Separate source-backed market capture and empirical calibration from synthetic test-only fixtures; current fee policy after 2026-11-04 requires independent refresh and certification; never imply sampled universe completeness or settlement from endDate."
+      },
+      {
+        "requirement_id": "R016",
+        "source": "pytest",
+        "test": "test_truthful_owner_handoff_and_activation_report",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_truthful_owner_handoff_and_activation_report",
+        "expected_result": "Report software/edge/account/canary/unattended gates separately and provide one consolidated secure owner setup checklist, no fabricated activated account, trade, profit or mandatory needless follow-on WP."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-AUTONOMOUS-LIVE-ACTIVATION-CHECKPOINT",
+    "next_title": "Same-engagement non-delegable secure owner/host/canary checkpoint after verified software, not an automatically created mini-WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-AUTONOMOUS-EDGE-TO-LIVE-01",
+    "forbidden_in_this_wp": [
+      "Never self-certify or implement before separate hash-bound PROTECTED certificate and native readiness PASS.",
+      "No real economic CREATE/SELL/CANCEL or full account access from CI, synthetic tests, mere code merge, generic user intent or unverified wallet.",
+      "No unhedged sequential structural multi-leg order; no claimed risk-free arbitrage without actual all-leg execution and settlement compatibility.",
+      "No unsupported probability family, no fake calibration, no LLM confidence/prose or market implied price as independently calibrated probability.",
+      "No silent USD5 -> USD10 change in historical dormant native policies; proposed USD10 requires independent certified profile, precise owner binding and hard risk tests.",
+      "No private secret, phrase, wallet key, API key in chat/repo/log/argv; no withdrawal or funding action.",
+      "No old frozen WP artifact edit, unrelated repo paths, new dependency, security workflow or policy bypass.",
+      "No unbounded scheduler, automatic loss reset, unlimited scan until trade or unmetered provider spend.",
+      "No fee-policy expiry extension or stale price/books treated current; no implied settlement from endDate.",
+      "No implied first-live approval: native attended Stage A/witnessed OAuth/Stage B and real reconciled receipt stay required.",
+      "No automatic merge, no auto deployment or provider purchase, no geoblock bypass."
+    ]
+  }
+}

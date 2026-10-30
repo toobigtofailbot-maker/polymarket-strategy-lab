@@ -1,0 +1,257 @@
+Package Identity:
+WP ID: S10-AUTONOMOUS-EDGE-TO-LIVE-01
+Title: Independently Qualified Structural and Statistical Edge to Protected Live Pilot
+Package class: PROTECTED_QUALIFIED_EDGE_TO_BOUNDED_LIVE
+Package size class: XL
+Base branch: main
+Required predecessor: PR261 exact head8af082ae7c0f94a428ecd56a9e37deaa345a6d94 merge9f82afe00b1c6256c9c48a08cb90d98836ba556a
+Evidence mode expected: current actual posted-evidence mode selected under canonical state machine
+Runtime impact: dormant native protected integration
+Product impact: finite default-off research and edge qualification
+Network impact: implementation workflow Git/docs/security only; product calls forbidden in implementation
+Credential impact: native provider reuse code only; no real secrets
+Dependency impact: none
+Trading impact: no operational activation or economic order during WP
+Recommended Codex Mode: current installed reasoning model; stop on scope or financial ambiguity
+
+SIDE23 / OWNER-CERTIFICATION CANDIDATE — S10-AUTONOMOUS-EDGE-TO-LIVE-01
+INDEPENDENTLY QUALIFIED STRUCTURAL + HISTORICAL STATISTICAL EDGE → NATIVE PROTECTED LIVE PILOT
+Governance track expected: PROTECTED
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Risk level: 4 / XL / 25 exact allowed paths
+Base: main at PR #261 merge 9f82afe00b1c6256c9c48a08cb90d98836ba556a; head 8af082ae7c0f94a428ecd56a9e37deaa345a6d94; exact predecessor must be refreshed before freeze
+Suggested branch: codex/s10-autonomous-edge-to-live-01
+Status: FINAL REVIEW CANDIDATE; requires independent exact-byte certificate before implementation; NO REAL-TRADING ACTIVATION
+Capital at risk in software implementation/CI: USD 0; real capital requires separately bound owner activation
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: true
+scheduler: true
+hermes_runtime: true
+strategy: true
+paper: true
+execution: true
+live: true
+END_GOVERNANCE_AUTHORITY_V1
+
+OBJECTIVE
+Karl approved the complete recommended configuration on 2026-10-30: category-neutral Hermes discovery; separate genuine structural-contract and statistically calibrated probabilistic admission methods; $100 dedicated pilot allocation; target $6–$8 initial fee-inclusive order and $10 order hard ceiling only after a certified owner policy amendment; $10 combined worst-case open-risk and pilot-loss stop; up to $2/day provider budget; native secure Deposit Wallet/Session Key where supported; existing attended first live canary; supervised bounded unattended sessions with hard kill and reconciliation.
+Deliver ONE integrated software WP and ONE consolidated owner/activation checkpoint. Do not create mini-WPs, duplicate gateway/Hermes/ledger/secret store, or claim trading/edge just because software/tests pass. Genuine no-trade is valid.
+
+AUTHORITY / NON-AUTHORITY POSTURE
+Implementation authority: Karl approved exactly this program after native rebind, genuine independent exact-byte PROTECTED certificate and current scope/readiness; code and tests only in PR.
+Report/export authority: bounded safe evidence and one PR body; no owner secrets.
+Paper authority: offline/synthetic regression and source replay only in PR/CI; real paper runs only under separately current authority.
+Execution authority: implement opt-in native code, never execute a real economic order in PR/CI or from ordinary model suggestion.
+Live authority: NONE for this draft/CI/merge; existing first-live composer and actual owner-bound Stage A, witnessed OAuth and attended Stage B remain mandatory. Any subsequent live activation requires a genuine secure account/eligible host/qualified edge and reconciled canary.
+Credential authority: code may use existing native secure providers but cannot inspect/store actual keys, create wallet/fund/deposit/withdraw, copy secrets or solicit them through chat.
+Runtime/scheduler authority: implement optional default-off bounded supervisor, but no service install/start or automatic host deployment in PR.
+Canonical evidence authority: existing signed/hashed native receipts, StrategyVersion and governance only; never synthetic production certificates.
+Network authority: Git, official documentation/security rules for development. No live product/provider/account/order network during coding/testing/PR; separately gated post-merge research/account checks only.
+Dependency-change authority: NONE. No lock, workflow, external code import or new dependency without re-certification and owner scope decision.
+
+HARD MERGE GATE
+Run git fetch origin --prune; git checkout main; git pull --ff-only origin main; git rev-parse HEAD; git log -1 --oneline; git status --short --branch.
+Verify PR #261 merged HEAD 8af082ae7c0f94a428ecd56a9e37deaa345a6d94 at merge 9f82afe00b1c6256c9c48a08cb90d98836ba556a, exact main/origin/main, clean tree, no new conflicting merge/branch/PR, no existing completed S10-AUTONOMOUS-EDGE-TO-LIVE-01; compare the latest live main and rebind target BEFORE independent certification. Stop on material drift; do not stack on former PR branch.
+
+CONTEXT BUDGET
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md, docs/ai/codex/README.md, docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md, docs/ai/codex/WP_DRAFTING_STANDARD.md, docs/ai/codex/WP_SPEC_STANDARD.md.
+Read for this WP: the two attached canonical draft files; src/live_pilot/autonomous_cycle.py/hunter_cycle.py/pilot.py; native Hunter/ESPN/NWS sources; near-term scanner; native Gate C, LIVE-ORCH, Gate B; unchanged live_canary.py; official Polymarket market/fee/Session Key/order docs; exact allowed code/test/contract files.
+Read only if blocked: underlying native source replay/identity helper/schema, historical source manifests/approved calibration dataset and needed host/admission interfaces.
+Do not touch: any unlisted src/, tools/, docs/, tests/, `.github/workflows/`, dependencies, secret folders, agent_runtime/, agent_memory/, local_data/, frozen older WP specs, generated artifacts. Do not ingest user wallet secrets or whole repo unnecessarily.
+Search if source moved: run_hunter_cycle_once, run_hermes_strategy_assessment, native_oauth_attempt, build_exploratory_gate_c_permit, LiveOrchestrator.reconcile, fee_max, size_order.
+Centralized protected boundary: docs/ai/codex/PROTECTED_PATHS.md canonical Centralized Boundary Group Reference, not a local rewrite. Read and honor actual native boundaries.
+
+0. FIRST SKILL / MINIMUM COMPLETE ONE-SHOT WORKFLOW
+AFTER mandatory repo startup docs and BEFORE broad inspection, agent spawning, drafting, implementation or tests, discover the live installed skill catalog, read $ponytail's actual SKILL.md and INVOKE `$ponytail` in lite mode as FIRST actual skill (in the author, separate PROTECTED certifier, implementation, and resume contexts). Use its findings to delete duplicate/hypothetical modules. If not installed, report UNAVAILABLE and use only a separately approved genuine equivalent; do not simulate a skill invocation or install to manufacture compliance. Repo-specific mandatory skills have priority over this list if changed.
+Then actually read/invoke applicable installed: $wp-predraft-inspector, $hermes-alpha-reuse-check, $financial-invariant-check, $dimensional-analysis, $canonical-evidence-audit, $runtime-authority-boundary-review, $wp-minimum-test-plan, $security-review, $wp-readiness-preflight, $wp-one-shot-review, $prompt-optimizer (working plan only), $code-simplifier, $ponytail-review, $find-bugs, $spec-to-code-compliance, $verification-before-completion, $pr-evidence-reconcile. Use $post-patch-validation, $systematic-debugging and $secret-serialization only if genuinely triggered, plus actual repo mandatory skills. Read each real SKILL.md; report DISCOVERED/READ/INVOKED/UNAVAILABLE accurately with one finding. No persona spam or repeated full suites; one stable-head authoritative broad suite. One separate real PROTECTED 12-lens certificate binds FINAL bytes. Agent never self-certifies. No source edit before certificate + native readiness + explicit owner software approval; pre-existing user approval grants program direction but not permission to bypass certificate.
+Use <=12-line practical working checklist after Ponytail. Prefer lean one-shot correctness and a single guarded PR over unnecessary wrappers or 3 research WPs.
+
+1. COMPATIBILITY / IMPOSSIBILITY TABLE BEFORE CERTIFICATION
+Produce a concise table for each: source acquisition; Hermes research; structural payoff/legs; empirical calibration; native forecast identity; native StrategyVersion/permit; live-orch/reconcile; Gate B/custody; attended canary; supervised loop. For each record exact live function/signature, old behavior, needed new behavior, current approved paths, can implement without changing unrelated paths (YES/NO), and safest stop if NO. In particular, existing single-order FOK does NOT prove atomic two-leg execution, and an observed model p does NOT prove calibration. If impossibility is real, do NOT hallucinate eligibility, and avoid automatically splitting the WP.
+
+2. DECISION LOCK — OWNER PROFILE (CONFIG TARGET, NOT CURRENT LIVE AUTHORITY)
+- Discover ALL categories via bounded approved public market APIs; prefer expected near-term resolution, NOT a mandatory 120-minute restriction or an endDate→settlement claim.
+- Hermes may propose/rank/source-check, NEVER certify itself or pass a raw model probability straight into native Gate C.
+- First executable methods: (i) verified all-leg structural complement with proven executable hedge/atomicity and exact resolution; (ii) independently calibrated NBA ESPN and US daily rain NWS probability where genuine historical evidence exists. Others research-only.
+- One dedicated wallet/Deposit Wallet; initial allocation up to USD100, with actual owner-signed verified profile; no auto-deposits or withdrawals.
+- Fee-inclusive order hard cap USD10, initial target USD6–8 (target only, not a minimum); no increase of historical $5 limits in place. New specifically identified owner profile requires independent policy/risk code tests and fresh owner binding; until then USD5 is effective and may make trades unfillable.
+- Worst-case total simultaneous exposure plus unresolved reserve + net realized-loss budget ≤ USD10 since activation, NO reset from daily rollover, restarts or realized gains without explicit owner-approved reset; no aggregate unhedged exposures which could lose > remaining pilot budget. Measure initial equity and realized losses from real authenticated canonical account history, or NO_TRADE.
+- Provider/model max USD2 per rolling 24h owner-bound budget with durable reservations (and stricter existing limits); default 0; no silent recurring paid provider activation.
+- FOK standard native entry where suitable, no unsafe two-leg partials; scoped CLOB Session Key only when official beta availability/Builder and native acceptance actually verified; attended first canary via exact native composer.
+- Default OFF; bounded continuous research windows via supervised finite sessions with preserved risk/spend state, kill/custody suspension, host currentness and reconciliation; no infinite wait-until-trade.
+- Mandatory real official location/venue checks, current fee schedule and principal-vs-shares minima, no geographic restrictions bypass.
+
+3A. STRUCTURAL OPPORTUNITY — DETERMINISTIC CONTRACT
+Qualify as STRUCTURAL_CANDIDATE only if verified single binary CTF condition with exactly two complementary outcomes and one unit total guaranteed settlement payout in the SAME identified rule family; reject neg-risk, combo, void/cancel/resolution ambiguity, mismatched condition/tokens/fees/market IDs or inconclusive settlement semantics. Use fresh native authenticated/unauthenticated market/book evidence with each leg's effective depth, fee function, ticks, min-notional (USD) and min-shares (shares), delay and slippage. A valid theoretical bound requires min total guaranteed payout minus actual executable all-leg fee-inclusive cost minus conservative slippage/settlement reserve > owner minimum margin (USD). Every source timestamp and exact rule hash must bind. No confidence/prediction needed for this theorem.
+Crucially, EXISTING NATIVE FOK SINGLE-SIDE path is NOT all-leg atomicity. IF two-leg all-or-none execution, escrow/reliable hedge or safe effective matching cannot be PROVEN through the existing native certified order gateway and account/reconcile paths, classify RESEARCH_ONLY / MULTI_LEG_EXECUTION_UNPROVEN. Do NOT submit sequential unhedged FOK orders, do not keep phantom guaranteed profit, do not bypass native authorization to add direct CLOB SDK. Tests must simulate first leg fill + second leg reject, partial execution, cancel/restart and stale depth -> no new unsafe exposure. A structural positive synthetic arithmetic example is NOT live readiness.
+
+3B. EMPIRICAL STATISTICAL ADMISSION — FROZEN CONTRACT
+This WP SHALL implement the independent calibrator, not merely attach a model-authored badge. Only two initial deterministic source families: existing NBA/ESPN and US daily rain/NWS; each forecast must cold-replay from its own original pre-event raw bytes, exact source cutoff, rule, token/outcome, method/version and event horizon, with verified actual final settlement from independently recorded real outcomes. The venue price or Hermes prose is not the probability ground truth. No synthetic/duplicated/out-of-order/backfilled prediction may qualify production calibration. Event-level independence: one unit per unique event resolution group; related YES/NO sides and repeated markets/predictions for same event may not inflate sample. Weather correlated station/day groups must not be treated as independent without group deduplication. All records canonical, digest-bound and reproducibly sorted.
+Frozen fixed bin boundaries are DECILES [0,0.1),...,[0.9,1.0]; p=1 belongs to final bin. Qualification dataset must be strictly time-split: group and sort verified resolved event clusters by resolution timestamp, freeze the deterministic source forecast method/version and fixed decile bin rules BEFORE the final holdout, split the earliest 70% as training/method-selection history and the latest 30% as untouched validation (no refits or bucket selection using holdout outcomes); all validation observations must precede the evaluated current decision time, and each pre-event forecast cutoff must predate market resolution. Method, source, horizon and rule family must match exactly. Any later method modification invalidates the holdout and requires an independent new forward-period validation. Select one bucket for current source-native forecast p. At least 50 genuinely distinct, resolved, verifiable observations in THAT bucket's chronological post-training/heldout portion are required; if insufficient, NO_TRADE:CALIBRATION_INSUFFICIENT. Use a fixed one-sided 95% Wilson binomial LOWER bound with z=1.6448536269514722, n unique independent resolved event-groups, k actual payouts=1, p_hat=k/n:
+  lower=(p_hat+z²/(2n)-z*sqrt(p_hat*(1-p_hat)/n+z²/(4n²)))/(1+z²/n).
+Floor final lower to 1e-6 using deterministic checked Decimal; never round up. Distinguish observed binomial sampling uncertainty from future distribution drift: record category, method, rule/version, bucket, 70/30 chronological cutoffs, time coverage, cluster assumptions, n,k, heldout model Brier score, heldout prevalence-baseline Brier score and dataset raw hashes; require model Brier ≤ baseline on untouched holdout for admission and reject missing comparison. Reject leakage, future sources, duplicated outcomes, unverified settlement or serious method/rule/distribution drift; never treat Wilson as proof of guaranteed profit. Require exact documented method-independent calibration evidence and out-of-sample result comparable or better than non-model reference; if this cannot be established with genuine independent data, no admission. A single downstream market/price/source cannot select an arbitrary favorable bucket or post-hoc lookback.
+Both native source-method stress lower and empirical Wilson lower are necessary; admitted p_lower = min(source_native_lower_for_exact_outcome, independently_recomputed_Wilson_lower) with mandatory consistent family/rule/side. If any required component is unavailable, refuse. For NO outcome use the verified native complement upper conversion only on true binary markets; do not assume generic market equivalence. All source fields/fees/forecasts must be revalidated at decision time. No external self-asserted calibration files or model p upgrades. The defined 95% Wilson interval is conditional on the historical event-group sampling assumptions, not a prediction guarantee; more data may be needed for useful trades.
+Tests: correct Wilson arithmetic incl k=0,n and k=n, 0/1 endpoints, bucket boundaries, NaN/Infinity, rounding, causal timestamps, group leakage, outcome verification, provider mismatch, stale method, revisions, empty real dataset and synthetic cannot qualify in production. Never claim calibrated method existing before this WP; enable an allowlist entry only after real evidence proves its exact production method eligibility.
+
+3C. TRUST → ECONOMICS → NATIVE ADMISSION
+After structural OR calibrated statistical qualification, bind original market/condition/token/outcome/rule SHA, source receipts, method SHA, decision time, active owner-bound StrategyVersion and native canonical lifecycle allocation. Genuine Hermes strategy assessment is advisory only. Native `execution_feasibility` rechecks current Gamma and CLOB, fee policy per market, actual depth, tick/latency, minimum USD notional and share size separately, SDK grid and account cost. Statistical q shares on 0.01/share plus SDK grid: stress EV USD = q*p_lower - q*ask - conservative fee USD - q * source-verified residual_usd_per_share; require > owner margin. No universal residual assumption across methods. Structural all-leg cost expressed USD and every leg's sum/fees/partial risk verified. Compare total fee-inclusive single-order worst-case against <=USD10 new owner profile (historical <=USD5 remains until migrated/recertified). Respect all stricter native global allocation and venue guards. Prior fee policy expires 2026-11-04T00:00:00Z; no automatic extension; current official fee snapshot required before live orders past expiry. If actual orderMinSize=5 USDC principal and positive fee, $5 all-in is inadequate: don't falsify fill feasibility.
+No native order may occur without the entire current StrategyVersion -> Hermes context -> Gate C permit -> LIVE-ORCH -> Gate B -> native owner-specific canary or post-canary protected Hunter chain. Owner profile change to $10 must be *explicitly certified* in exact code/scope and current signed owner record, never interpreted as already enabled by this document.
+
+3D. BOUNDED AUTONOMY, LOSS AND FIRST REAL CANARY
+Preserve native session lock and authoritative wallet/account reads BEFORE any research-to-order exposure. Snapshot/reserve complete request+provider cost+potential economic loss before dispatch; ambiguous calls, partial fills and process death never refund quota. Hash chain and separate monotonic counters bound total provider spend (rolling 24h anchored to real UTC plus durable time-window) and economic risk (since owner activation). Existing pilot parent/child ledgers must be reconciled and checked under native wallet lock; empty or fresh only when truly proven. Initial available pilot equity <=USD100 is owner's dedicated allocation, verified independently of main-wallet value; collateral and order allowances cannot be guessed. No new BUY if `realized_losses + worst_case_open_positions + unresolved_order_reserves + proposed_worst_case_loss > USD10`; partition the same underlying fill/order/reserve commitment exactly once by native identity and count the maximum supported current loss exposure, while any reconciliation conflict or unknown identity blocks admission. Include fees and potential 100% loss for unhedged binary BUY; structural hedge may reduce worst-case only after actual both-leg confirmed holdings, not mere plan. Any account equity or claim conflict => NO_TRADE.
+First canary is attended and exact with Stage A owner-released permit/wallet/order/window and witnessed OAuth + human Stage B using unchanged `src/execution_gateway/live_canary.py`. No lower-level native canary bypass, no credential injection in prompts or logs; first real CREATE, fill, trade/cancel and positions must be reconciled with native receipts BEFORE unattended mode. Session Key only CLOB-trading scoped, expiration and owner-approved wallet; beta rejection triggers custody suspension. No unattended service until official authenticated balance/order/trade/position reads, current host/NTP/official access/geo, real owner record, positive qualified candidate and exact canary outcome are verified.
+Optional supervised service reuses same finite cycle with default OFF, bound active owner policy (TTL and explicit session budget), fresh geoblock, kill before every provider request/order, bounded restart backoff and durable ledger. No repeated scan with no deadline, no annual automatic capital increase, no auto fee renewal, no duplicate BUY on restart, no auto-service start during PR/CI. Terminal statuses: SOFTWARE_IMPLEMENTED_NOT_ACTIVATED, READY_BUT_EDGE_BLOCKED, READY_BUT_ACCOUNT_BLOCKED, FIRST_CANARY_PENDING, BOUNDED_LIVE_ACTIVE (actual receipts only), IMPLEMENTATION_BLOCKED; no unverified activation claim.
+
+4. SCOPE, REVIEW AND VALIDATION
+Exact required and allowed changed paths (25):
+- src/live_pilot/autonomous_cycle.py
+- src/live_pilot/edge_qualifier.py
+- src/live_pilot/calibration.py
+- src/live_pilot/structural.py
+- tests/live_pilot/test_edge_qualifier.py
+- tests/live_pilot/test_calibration.py
+- tests/live_pilot/test_structural.py
+- tests/live_pilot/test_autonomous_cycle.py
+- tests/live_pilot/test_autonomous_authority.py
+- tools/deployment/run_autonomous_hunter.py
+- tests/tools/deployment/test_autonomous_hunter.py
+- docs/autonomous_live_pilot_contract.md
+- docs/live_trading_authorization.md
+- docs/deferred_items_log.md
+- docs/status_entries/S10-AUTONOMOUS-EDGE-TO-LIVE-01.md
+- docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/wp_prompt.txt
+- docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/wp_spec.json
+- docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/draftability_certificate.json
+- docs/project_status.md
+- docs/repo_truth_index.md
+- src/live_pilot/hunter_cycle.py
+- src/execution_gateway/live_orch.py
+- tools/alpha/run_near_term_market_screener.py
+- tests/live_pilot/test_hunter_cycle.py
+- tests/tools/alpha/test_near_term_market_screener.py
+No other path may change.
+One separate independent PROTECTED 12-lens reviewer validates this whole financial/structural/calibration/operating contract with real implementability simulation and zero unresolved decisions BEFORE any source changes. Native `python -B tools/wp/wp_readiness_gate.py --wp ... --spec ... --repo-root . --certificate ...` must PASS. Then implement exactly certified files, tests and status; run focused+adjacent, security scans, one stable-head authoritative FULL suite, exact-head 11-job hosted CI, one combined separate implementation review, post-patch verification if applicable, PR evidence guard + re-fetch. No silent failed helper rewrite; body-only manual evidence fallback must disclose raw failed helper exit if optional comment unavailable. Karl-only merge. No real Polymarket/provider/credential/order call during implementation, tests or hosted CI.
+
+5. EXACT EVIDENCE PLAN
+R001–R016 map one-to-one to the accompanying canonical `wp_spec.json` with exact named pytest nodes. For every requirement show ONE positive where possible, a representative invalid case, native source/receipt provenance and result. Structural first leg succeeds/second fails must refuse any unhedged order; calibration bucket must reject synthetic and future data; fee $10 migration may not alter old $5 profile; kill/account bounds fail closed; real `LIVE` remains OFF until exact first canary. The full suite cannot establish source-quality/actual fill; mark real-world blockers separately. Preserve real exit codes, source byte hashes, and stable-head PR/CI proof.
+
+SUCCESSOR BOUNDARY
+The one software engagement includes one consolidated secure OWNER ACTIVATION CHECKPOINT after Karl-only merge. The source WP itself cannot fabricate real calibration sample, all-leg atomic execution, authenticated account access, official access eligibility, money/credential setup, or a real first canary. If evidence remains absent the system returns NO_TRADE and the status is READY_BUT_ACTIVATION_BLOCKED; do not open a speculative new research WP. A genuinely necessary protected out-of-scope gateway change must be re-scoped and independently recertified before editing.
+
+REPORT BACK
+Provide frozen SHA256 hashes, real independent certificate (not self-issued), exact scope/clean worktree, focused+adjacent/full/security/hosted results, honest skill-invocation ledger, one PR and guarded posted body, operator-facing activation input checklist with zero secrets, source calibration denominators, qualifying or abstention reasons, actual funds/balance/positions only when authentically read, canary authority and actual order receipts if permitted. Report SOFTWARE_READY vs EDGE_QUALIFIED vs ACCOUNT_VERIFIED vs FIRST_CANARY_COMPLETED vs UNATTENDED_ACTIVE separately. Never market this implementation as making a real profitable trade without observed evidence.
+
+EVIDENCE PLAN
+The following normative requirement rows correspond exactly to the spec and are independently tested. Run required named node commands, one final full suite and exact CI.
+R001: merge/native certification. Verify merged PR261 exact head and merge and obtain a separate exact-hash PROTECTED certificate before any source edit.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_protected_activation_chain
+R002: reuse and authority. Reuse native scanner, Hunter, Hermes, StrategyVersion, Gate C, LIVE-ORCH and Gate B; no alternate credentials or direct execution APIs.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_native_reuse_no_bypass
+R003: structural opportunity qualification. Verify identical condition, exact complementary payout and resolution rules, valid fee book and contemporaneous token snapshots; reject neg-risk, combos, unknown settlement, insufficient source proof.
+  Test node: tests/live_pilot/test_structural.py::test_complement_payoff_identity_and_fee_cost
+R004: structural leg safety. Two-leg structural BUY requires proven all-or-none native execution semantics or prior executable hedge with a worst-case loss budget; sequential independent FOKs do not qualify. Otherwise research-only.
+  Test node: tests/live_pilot/test_structural.py::test_partial_leg_exposure_refuses_execution
+R005: historical calibration methodology. Reproduce source forecasts from real pre-event receipts matched to independently verified actual outcomes; chronological holdout, unique cluster groups, fixed decile buckets and one-sided Wilson bound, with all missing/mixed/retrospective data rejected.
+  Test node: tests/live_pilot/test_calibration.py::test_historical_causal_calibration_and_wilson
+R006: independent numeric admission. Qualified probability lower bound requires recalculated verified calibration with ≥50 distinct holdout outcomes in the selected fixed decile and market/rule/family/version compatibility. Hermes confidence and synthetic samples never authorize.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_statistical_forecast_verified_or_abstained
+R007: pilot economics and order sizing. Proposed owner allocation USD100, per-order fee-inclusive hard cap USD10 with USD6–8 target, max total outstanding worst-case loss USD10 and cumulative pilot loss USD10; enforce stricter native wallet/account/allocation limits, minimums, fees, depth and fee expiry before order.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_owner_pilot_cap_and_minimum_fee_inclusive
+R008: real data and model budgets. Research across categories with source-specific trade allowlist, near-term priority, bounded GETs/model calls and USD2/day provider reservation maximum; no spend-reset via crash, scheduler, deadline or restart.
+  Test node: tests/live_pilot/test_autonomous_cycle.py::test_bounded_cycle_quota_and_restart
+R009: secure account/custody. Official authenticated read for dedicated signer/Deposit Wallet, collateral/orders/trades/positions; attended owner key for first canary then scoped CLOB Session Key if official path works; zero secrets in repo/chat/CLI.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_native_custody_and_account_fail_closed
+R010: first live canary. No real CREATE until exact owner-bound Stage A and witnessed OAuth and attended Stage B via unchanged native live_canary composer; no lower-level bypass, and real receipt/reconciliation required before any unattended activation.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_first_canary_unattended_denied
+R011: bounded autonomous service. Default OFF. Supervised bounded sessions with same durable state, policy expiry, owner-approved provider/risk ceilings; no endless loop, rearm by model, or scheduling during PR/CI.
+  Test node: tests/tools/deployment/test_autonomous_hunter.py::test_supervised_bounded_session_authority
+R012: position/kill/recovery. Lock then reconcile before any new admission; unknown open order/position, half-filled leg, interrupted request or stale balance consume reservation and block re-entry; kill always prevents exposure and retains authoritative native recovery.
+  Test node: tests/live_pilot/test_autonomous_cycle.py::test_unknown_exposure_restart_and_kill
+R013: security/no echo. Reject arbitrary endpoint, invalid schema, malformed Decimal, duplicate keys, symlinks, untrusted error echo, secret persistence or direct SDK bypass; verify existing security scanning.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_no_secret_echo_and_source_authority
+R014: tests and independent review. Exact schema/cert/scope/readiness PASS and one authoritative stable-head offline full suite, focused/adjacent, hosted 11-job CI, security scans and separate implementation review.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_integration_admission_negative_matrix
+R015: source/currentness truth. Separate source-backed market capture and empirical calibration from synthetic test-only fixtures; current fee policy after 2026-11-04 requires independent refresh and certification; never imply sampled universe completeness or settlement from endDate.
+  Test node: tests/live_pilot/test_calibration.py::test_source_cutoff_fee_expiry_and_no_live_claims
+R016: one coherent owner handoff. Report software/edge/account/canary/unattended gates separately and provide one consolidated secure owner setup checklist, no fabricated activated account, trade, profit or mandatory needless follow-on WP.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_truthful_owner_handoff_and_activation_report
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|autonomous_edge_to_live|r001|all_relevant_transitions|REQUIRE|fail_closed_r001|requirements.r001|R001
+NR002|autonomous_edge_to_live|r002|all_relevant_transitions|REQUIRE|fail_closed_r002|requirements.r002|R002
+NR003|autonomous_edge_to_live|r003|all_relevant_transitions|REQUIRE|fail_closed_r003|requirements.r003|R003
+NR004|autonomous_edge_to_live|r004|all_relevant_transitions|REQUIRE|fail_closed_r004|requirements.r004|R004
+NR005|autonomous_edge_to_live|r005|all_relevant_transitions|REQUIRE|fail_closed_r005|requirements.r005|R005
+NR006|autonomous_edge_to_live|r006|all_relevant_transitions|REQUIRE|fail_closed_r006|requirements.r006|R006
+NR007|autonomous_edge_to_live|r007|all_relevant_transitions|REQUIRE|fail_closed_r007|requirements.r007|R007
+NR008|autonomous_edge_to_live|r008|all_relevant_transitions|REQUIRE|fail_closed_r008|requirements.r008|R008
+NR009|autonomous_edge_to_live|r009|all_relevant_transitions|REQUIRE|fail_closed_r009|requirements.r009|R009
+NR010|autonomous_edge_to_live|r010|all_relevant_transitions|REQUIRE|fail_closed_r010|requirements.r010|R010
+NR011|autonomous_edge_to_live|r011|all_relevant_transitions|REQUIRE|fail_closed_r011|requirements.r011|R011
+NR012|autonomous_edge_to_live|r012|all_relevant_transitions|REQUIRE|fail_closed_r012|requirements.r012|R012
+NR013|autonomous_edge_to_live|r013|all_relevant_transitions|REQUIRE|fail_closed_r013|requirements.r013|R013
+NR014|autonomous_edge_to_live|r014|all_relevant_transitions|REQUIRE|fail_closed_r014|requirements.r014|R014
+NR015|autonomous_edge_to_live|r015|all_relevant_transitions|REQUIRE|fail_closed_r015|requirements.r015|R015
+NR016|autonomous_edge_to_live|r016|all_relevant_transitions|REQUIRE|fail_closed_r016|requirements.r016|R016
+END_NORMATIVE_RULE_MATRIX_V1
+
+
+NATIVE COMPATIBILITY AND FINAL IMPLEMENTATION CONTRACT
+This appendix resolves the provisional ambiguities; earlier prose is narrowed by these exact choices without granting operational authority.
+
+1. Native API compatibility (verified PR261 merge):
+- scanner.run(scratch_dir, transport=None, clock_ns=..., monotonic=...): historical near-term behavior unchanged by default; add an explicit all-horizons mode for this adapter only. Same hard page/request/body/time ceilings, source replay, category-neutral research. Past/ambiguous end dates never prove settlement. Near-term ordering is preference only.
+- hunter.run(scratch, registry, categories, budget_path=..., executable=..., home=..., fetcher_type=..., clock_ns=..., controller=...) and autonomous_cycle.replay_forecasts: retain exact cold-replayed native source identity and supported NBA_ESPN_V1/RAIN_NWS_V1 only. Native source bounds are not calibration.
+- calibration.historical_bound: deterministic offline statistical validator and diagnostic result over causal grouped historical records. Sort by (resolved_ns, event_group); one group one sample; reject conflicting duplicates rather than picking favorable rows. n_train=(7*N)//10, earliest training rows, latest holdout rows. Method freeze timestamp must strictly precede first holdout source cutoff; all source cutoffs precede resolution and all resolutions precede decision time. Reject a tie crossing train/holdout resolution time. Baseline probability is training payout prevalence, never fitted on holdout. Brier comparisons use all matching-family holdout groups; selected-decile n>=50 applies additionally. Decimal local context precision80, checked finite bounded canonical values, one-sided Wilson z=1.6448536269514722, clamp mathematical lower to [0,1] then floor to six places; no float conversion. Report n_train,n_holdout,n_bucket,k,bucket,time coverage, method/rule identity, hashes and both Brier scores.
+- structural.verify_complement: deterministic candidate-only arithmetic over exactly two complementary identified binary outcomes, contemporaneous source identities, nonnegative fees/reserve and supported settlement proof; always returns no execution eligibility on this base, MULTI_LEG_EXECUTION_UNPROVEN. A boolean supplied by a caller cannot establish atomicity. No leg order code is added.
+- edge_qualifier.qualify_candidate: rederive exact source/market/rule/method identity, then combine native stress lower and empirical bound only when production provenance and method acceptance are independently established. Diagnostic arithmetic is never production acceptance. There is no approved historical NBA/rain corpus in this engagement. Production corpus/method acceptance remains empty unless genuine independently verified pre-event receipt provenance and final settlement are actually found in current repo truth before certification; synthetic rows, caller booleans and self-hashed external datasets can never populate it. Implement all numeric/causal validation and preserve NO_TRADE:CALIBRATION_INSUFFICIENT or CALIBRATION_NOT_VERIFIED for absent production evidence. No fabricated live-eligible positive test is required.
+- live_orch.LiveOrchestrator.canary(permit,intent): preserve historical unmarked behavior and both historical USD5 profile constants. New strategies bind an opt-in autonomous_edge marker in their exact execution_rule, including method/version and corpus-proof digest independent of StrategyVersion. Bind_strategy_version hashes the whole rule. Re-read that exact StrategyVersion and revalidate marker/qualification inside the held native wallet lock at the last admission boundary after current venue/risk and before admit_and_transmit; a marker with no approved real method/proof refuses. New profile always requires this marker. No external callback can waive it.
+- live_canary.run(case_path,...): byte-unchanged. It constructs default V1_CANARY USD5 orchestrator and exact Stage A envelope. First real canary remains USD5, possibly infeasible; USD10 is a distinct post-canary opt-in profile only. Native Stage A/B and approval record remain necessary. Neither algorithm diagnostics nor a digest alone provides provenance or owner permission.
+- hunter_cycle._load/run_hunter_cycle_once: preserve v2 policy/owner parsing/risk behavior. Add a separate versioned opt-in profile/schema binding for USD100 pilot allocation target, max USD10 order, max USD10 combined gross realized losses + current worst-case exposure/reserves. Require exact owner record and successful reconciled native first-canary lineage before post-canary admission; absent/ambiguous lineage refuses. Never change historical USD5 maxima in place. New CLOB session custody permits exact CLOB scope only and reuses existing provider; existing v2 scope compatibility is unchanged.
+- Existing Gate C, Gate B, gateway store and live_canary: unchanged, no new client, secret store, gateway or parallel economic ledger. Reuse canonical native episode/history records for new profile admission.
+
+2. Non-reset economic invariant:
+For new profile, compute conservative gross realized losses per closed BUY lifecycle, including prior V1 first canary and relevant native Hunter episodes since activation. Each lifecycle loss is max(total confirmed BUY principal+fees minus its independently verified confirmed SELL/redemption proceeds net of fees,0); never offset by other profitable lifecycles. Unverified payout counts as zero conservatively. Retain lifetime loss accounting across restart, policy/release renewal and day rollover; unknown/inconsistent lineage rejects. Add deduplicated native current open-position commitment and ambiguous/unresolved reserve exactly once by native episode/order identity, plus proposed fee-inclusive worst-case loss. Combined sum <=USD10, stricter native global authority still applies. Reject missing canonical activation baseline or imported/preexisting exposure rather than silently resetting. Enforce final in-lock check. No withdrawals/funding or economic operation during implementation.
+
+3. Rolling provider invariant:
+Keep the native external state root and exclusive run lock; retain existing exact journal/canonical integrity checks. New versioned session renewal must explicitly link prior wallet/owner state. Persist maximum cost/call reservations before dispatch; sum reservations in the prior rolling24h, including ambiguous dispatch and pending cycles. Total <=min(USD2,current exact owner consent,native stricter cap). Default consent zero. No new root/policy/release may silently reset accepted history. Backward/ambiguous UTC or broken lineage rejects. Do not add an independent provider database or secret store. A finite supervisor uses the same once-per-cycle function and durable state, explicit deadline/cycle ceiling, kill and fresh native account checks. It never starts or installs a service.
+
+4. Qualification identities and no-data posture:
+Reuse native canonical JSON and SHA256 helpers; new records use ordinary content digests over every public field except the digest itself (no novel id derivation algorithm or authoritative signature). Result objects must serialize every public field, including nulls and closed reason codes. Tests mutate included scalars, array order and excluded digest; canonical object insertion order does not change the digest. Existing forecast identities remain unchanged. Read paths through existing bounded strict no-symlink helpers; errors expose closed codes only.
+The numerical validator can calculate diagnostic bounds on explicitly labeled synthetic fixtures, but those results are always TEST_ONLY and cannot become native production forecast qualification. Production method acceptance stays empty in the absence of genuine historical evidence. This is a factual edge blocker, not evidence of no opportunity. The software release must not claim unattended-live capability activated or a calibrated production method when acceptance remains empty.
+
+5. Process evidence correction:
+R001 pytest proves regression invariants only; actual merge truth is gh pr view261 plus fetched Git ancestry and exact clean base, and certification/readiness are their original artifacts and actual native commands. R014 pytest exercises the integration negative matrix only; it cannot prove independent review/security/full-suite/hosted CI. Record actual commands/results independently in stable fragment and current PR body. Do not claim these process events from pytest. The exact final native readiness command includes --certificate and --check-diff at final scope verification. Hosted eleven-job evidence means actual full Tier3 required rows on the final head, not a count inferred from a plan.
+
+6. Stops:
+Stop before source edits unless independent12-lens exact-byte certificate and real native readiness PASS exist. If any proposed implementation requires a26th path, historical policy change, fabricated source acceptance, real product/provider/account network, dependency, secret access or altered canary composer, stop and report concrete conflict. Software PR is not ready until targeted/adjacent/full/security/hosted/independent review and posted-evidence gates actually pass. Absence of real corpus/account/host/provider/canary is activation-blocking, never permission to bypass or invent one.
+
+Hard stops: all appendix6 conditions are mandatory before editing or publishing.
+Negative-test matrix required: YES. Missing/null/type/empty, stale/future, unknown fields, malformed/nonfinite Decimal/JSON, duplicate/conflicting group/source/identity, symlink, untrusted error no-echo, credentials and direct gateway bypass, synthetic provenance, altered marker/proof, source hash/method/rule drift, partial leg, loss offset/reset, quota/reset/time rollback and first-canary refusal. Wording typo/case filters are N/A because this package is not a natural-language scanner. Positive mathematical cases remain TEST_ONLY, never production authority.
+
+Runtime transitions (not the native software authorization-chain schema):
+CYCLE_LOCKED -> SOURCE_EVALUATED: Reconcile, kill, owner and budget current; bounded independent sources recorded.
+SOURCE_EVALUATED -> FORECAST_QUALIFIED: Genuine historical statistical method/calibration verified or executable fully hedged structural route proven.
+SOURCE_EVALUATED -> NO_TRADE: No audited data or method, incompatible structural execution, rule ambiguity, budget/fee/market unknown.
+FORECAST_QUALIFIED -> NATIVE_ADMITTED: Exact StrategyVersion+Hermes advisory+GateC/native current feasibility, risk and owner policy pass.
+NATIVE_ADMITTED -> CANARY_HANDOFF: Owner Stage A and witnessed OAuth/Stage B first canary through unchanged composer.
+CANARY_HANDOFF -> RECONCILE_PENDING: One owner-witnessed CREATE attempt with real receipt possible, never automatic on software merge.
+RECONCILE_PENDING -> TERMINAL: Authoritative account/trade/position state known and risk accounting durable.
+TERMINAL -> UNATTENDED_ELIGIBLE: Reconciled real canary success and independent owner-bound session profile actually active.
+CYCLE_LOCKED -> NO_TRADE: Manual kill, stale, ambiguous or unverifiable state; no exposure.
+
+Identity ordering (mandatory): method/corpus proof is independent of any StrategyVersion, then execution_rule marker binds its digest, then native StrategyVersion/intent identities are computed. The final admission result binds exact StrategyVersion, intent, current market/source/fee/time and is rederived under lock; it is NOT hashed back into its own StrategyVersion. No identity fixed point is permitted. All residual cost values are finite nonnegative USD/share; multiply by q shares before subtracting from USD stress EV. Unknown method residual refuses; never apply a universal0.005 USD/share across unrelated methods.
+
+Renewal and profile precision: new capital profile is AUTONOMOUS_EDGE_01, native Hunter policy/owner schema version3.0.0, autonomous policy/journal schema version2.0.0; legacy versions and maxima unchanged. Use one immutable activation_id, public_wallet, canonical persistent state_root and activation native-ledger head, distinct from renewable session/policy/release identities. Every renewal names the exact previous completed session/journal head and retains the activation binding, with prior immutable policy snapshots preserved in the same native state root. Missing/mismatched predecessor, pending ambiguity, backward UTC, forked/missing journal, or new-root bootstrap against nonempty account/native history refuses. The activation baseline must include first V1 canary; it cannot be reset after losses. Provider maximum is an explicitly owner-bound rolling24h consent value in [0,2] USD, defaults0, and expires with owner consent. Sum each reserved maximum once for all started calls in preceding24h, including unresolved requests; equality with cap is allowed; no success/failure refund. Gross realized-loss cap never resets on day, session, policy, release, root, restart or gain. Profiles stay dormant without independent edge and real canary lineage. No code promotion of synthetic records or arbitrary files is allowed.
