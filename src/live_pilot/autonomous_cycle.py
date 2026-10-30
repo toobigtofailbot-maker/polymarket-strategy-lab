@@ -78,10 +78,13 @@ def decimal(value, low=Decimal(0), high=None, code='POLICY_INVALID'):
 
 
 def read(path, maximum=65536):
-    raw = common._read(path, maximum)
-    value = common._json(raw)
-    require(canonical(value)+b'\n' == raw)
-    return value
+    try:
+        raw = common._read(path, maximum)
+        value = common._json(raw)
+        require(canonical(value)+b'\n' == raw)
+        return value
+    except Exception:
+        raise GatewayError('JOURNAL_UNVERIFIED') from None
 
 
 def write(path, value):

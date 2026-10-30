@@ -341,3 +341,14 @@ def test_exact_output_fields_and_recursive_no_echo(tmp_path, monkeypatch):
     for code in A.CODES:
         safe = A.terminal(code)
         assert set(safe) == terminal_fields and marker not in json.dumps(safe)
+
+
+def test_corrupt_binding_preserves_unknown_spend(tmp_path, monkeypatch):
+    s = harness(tmp_path, monkeypatch)
+    no_wire_hunter(monkeypatch)
+    assert A.run(**s.args)['cycles_completed'] == 1
+    (Path(s.policy['state_root'])/'binding.json').write_bytes(b'{"broken-untrusted-state":')
+    result = A.run(**s.args)
+    assert result['code'] == 'JOURNAL_UNVERIFIED'
+    assert result['provider_calls'] is result['reserved_provider_cost_usd'] is None
+    assert not s.native.harness.venue.posts
