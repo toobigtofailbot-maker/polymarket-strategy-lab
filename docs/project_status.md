@@ -2201,3 +2201,20 @@ store or model backend. Native source bounds remain uncalibrated; production
 admission allowlist EMPTY, no economic mutation or live activation. Independent implementation review passed; exact validation and review readiness
 are recorded in the current PR body. Stable evidence:
 docs/status_entries/S10-HERMES-LIVE-INTEGRATED-01.md. LIVE DISABLED; orders/capital0.
+
+
+## S10-AUTONOMOUS-EDGE-TO-LIVE-01 certified software successor
+
+Predecessor PR261 merged: head8af082ae7c0f94a428ecd56a9e37deaa345a6d94,
+merge9f82afe00b1c6256c9c48a08cb90d98836ba556a. One PROTECTED/Risk4/XL software
+WP on exact25 paths, with separate exact-byte12-lens certificate and native
+readiness PASS before source edits. Mathematical calibration/structural diagnostics,
+locked native edge refusal, separate dormant USD10 profile, non-reset lifetime loss
+and durable rolling provider/session guards; historicalUSD5/attended canary unchanged.
+Production corpus/method acceptance0/0; structural atomicity unproven. No economic
+dispatch or unattended activation while these blockers remain. Stable evidence:
+`docs/status_entries/S10-AUTONOMOUS-EDGE-TO-LIVE-01.md`; exact certified package:
+`docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/`; contract:`docs/autonomous_live_pilot_contract.md`.
+Final validation/security/independent review/hosted evidence is in the current PRbody.
+Actual product/provider/account/credential/host/order operations0; capitalUSD0;
+LIVE DISABLED. Karl-only merge and protected activation are separate.

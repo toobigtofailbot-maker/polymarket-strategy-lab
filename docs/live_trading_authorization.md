@@ -102,3 +102,13 @@ Live mode requires a future WP, explicit human approval, active risk gateway, ki
 | WP175 restricted live canary | Pending separate exact-head Gate-C decision | 0 during implementation | N/A | 2026-09-16 package authority only | One strategy/market, LIMIT-only, one attempt; qualification prerequisite unavailable |
 | S10-LIVE-ORCH-01 first restricted live canary | No (dormant; separate exact-merge activation required) | 0 during implementation; frozen envelope USD 100 / 5 / 30 / 70 | N/A | N/A | BUY only, one CREATE per exact fresh permit, foreground only, no auto scaling |
 | S10-ALPHA-HUNTER-PILOT-02 hunter pilot | No (dormant; separate Karl custody, provider-budget, capital and activation decisions required) | 0 during implementation; dormant HUNTER_PILOT_02 maxima USD 5 fee-inclusive order / 30 aggregate / 50 free collateral / 30 net-loss budget | N/A | N/A | Opt-in profile only; at most one mutation per foreground invocation; reduce-only FOK SELL exit; owner decision O3 open, so zero NBA/rain BUYs are expected under the USD 5 cap |
+
+
+S10-AUTONOMOUS-EDGE-TO-LIVE-01 authorizes certified dormant software only.
+LIVE TRADING STATUS remains DISABLED. Both historical USD5 profiles and the
+attended first-canary composer/envelope remain unchanged. The distinct
+AUTONOMOUS_EDGE_01 USD100/USD10/USD10 profile is not an activated replacement.
+Production accepted methods/corpora0/0; structural atomic execution unproven.
+No account, funds, provider consent, credential, host eligibility or real canary
+was observed. Capital/orders in implementation USD0/0. Karl-only merge is separate
+from the single protected owner activation checkpoint; no merge/CREATE is authorized here.

@@ -43,6 +43,7 @@ CODES = frozenset(('POLICY_INVALID LOCKED_BY_OTHER JOURNAL_UNVERIFIED KILLED CUS
     'FEE_UNKNOWN_OR_EXPIRED MINIMUM_UNSATISFIABLE GATE_REJECTED CANARY_APPROVAL_MISSING '
     'ORDER_OUTCOME_UNKNOWN OFF OWNER_SETUP_REQUIRED RESEARCH_COMPLETE INPUT_INVALID STATE_UNAVAILABLE '
     'NO_CANDIDATES NO_TRADE').split())
+SESSION_KEYS = frozenset(('activation_id activation_ledger_head previous_session_sha256').split())
 
 
 def require(ok, code='INPUT_INVALID'):
@@ -92,12 +93,13 @@ def write(path, value):
     hunter.S.put(common._path(path), value)
 
 
-def load_policy(path, now):
+def load_policy(path, now, *, snapshot=False):
     try:
         raw = common._read(path)
         p = common._json(raw)
-        require(type(p) is dict and set(p) == POLICY_KEYS and canonical(p) == raw, 'POLICY_INVALID')
-        require((p['schema_id'], p['schema_version']) == ('autonomous-cycle-policy', '1.0.0')
+        renewed = type(p) is dict and p.get('schema_version') == '2.0.0'
+        require(type(p) is dict and set(p) == (POLICY_KEYS | SESSION_KEYS if renewed else POLICY_KEYS) and canonical(p)+(b'\n' if snapshot else b'') == raw, 'POLICY_INVALID')
+        require(p['schema_id'] == 'autonomous-cycle-policy' and p['schema_version'] in ('1.0.0', '2.0.0')
                 and p['mode'] in ('OFF', 'RESEARCH', 'LIVE') and p['kill_file_name'] == 'PILOT_KILL', 'POLICY_INVALID')
         for key in ('public_wallet', 'public_signer'):
             require(type(p[key]) is str and re.fullmatch(r'0x[0-9a-fA-F]{40}', p[key]), 'POLICY_INVALID')
@@ -116,8 +118,17 @@ def load_policy(path, now):
             ('max_provider_cost_usd_total', '0', '2'), ('max_fee_inclusive_order_usd', '2', '5'),
             ('max_total_commitment_usd', '0.00001', '30'), ('min_free_collateral_usd', '50', '100'),
             ('min_stress_margin_usd', '0', None)):
+            if renewed:
+                low, high = {'max_fee_inclusive_order_usd': ('2', '10'),
+                             'max_total_commitment_usd': ('0.00001', '10'),
+                             'min_free_collateral_usd': ('90', '100')}.get(key, (low, high))
             decimal(p[key], Decimal(low), None if high is None else Decimal(high))
-        return p, digest(raw)
+        if renewed:
+            for key in ('activation_id', 'activation_ledger_head'):
+                require(type(p[key]) is str and re.fullmatch('[0-9a-f]{64}', p[key]), 'POLICY_INVALID')
+            require(p['previous_session_sha256'] is None or type(p['previous_session_sha256']) is str
+                    and re.fullmatch('[0-9a-f]{64}', p['previous_session_sha256']), 'POLICY_INVALID')
+        return p, digest(canonical(p))
     except Exception:
         raise GatewayError('POLICY_INVALID') from None
 
@@ -214,7 +225,7 @@ def replay_forecasts(scratch, operation, native_policy, now):
 class _ResearchAccount(native.LiveOrchestrator):
     """Narrow native recovery under its wallet lock; no alternative gateway."""
     def _recover_all(self, session):
-        require(not session.gateway.live_orch_checkpoint()['episodes'], 'ACCOUNT_UNKNOWN')
+        require(self._envelope.profile == native.AUTONOMOUS_EDGE_01_PROFILE or not session.gateway.live_orch_checkpoint()['episodes'], 'ACCOUNT_UNKNOWN')
         return super()._recover_all(session)
 
     def _cancel_rounds(self, session, episode_id):
@@ -224,6 +235,9 @@ class _ResearchAccount(native.LiveOrchestrator):
 def account(p, native_policy_path, owner_record_path, owner_record_sha256, deps):
     now = deps.clock_ns()
     np, native_policy_hash = pilot._load(native_policy_path, owner_record_path, owner_record_sha256, Path(p['state_root']), now)
+    if p['schema_version'] == '2.0.0':
+        require(np['schema_version'] == '3.0.0' and all(p[k] == np[k] for k in SESSION_KEYS), 'OWNER_SETUP_REQUIRED')
+        require(Decimal(p['max_provider_cost_usd_total']) <= Decimal(np['provider_max_rolling24h_usd']), 'OWNER_SETUP_REQUIRED')
     suspension = Path(p['state_root']) / f'custody-suspended-{owner_record_sha256}.json'
     require(not suspension.exists() and not suspension.is_symlink(), 'CUSTODY_SUSPENDED')
     for key in ('public_wallet', 'public_signer', 'release_sha', 'state_root'):
@@ -240,15 +254,23 @@ def account(p, native_policy_path, owner_record_path, owner_record_sha256, deps)
     host = native.HostCurrentnessConfig(**{k: Path(v) if k != 'ssh_port' else v for k, v in np['host'].items()}, expected_release_sha=np['release_sha'])
     config = native.LiveOrchConfig(Path(p['state_root']), p['public_signer'], p['public_wallet'],
         Path(np['lifecycle_store_path']), Path(np['hermes_store_path']), host)
-    orchestrator = _ResearchAccount(config, envelope=native.LiveOrchCapitalEnvelope.hunter_pilot_02(),
+    envelope = (native.LiveOrchCapitalEnvelope.autonomous_edge_01() if p['schema_version'] == '2.0.0'
+                else native.LiveOrchCapitalEnvelope.hunter_pilot_02())
+    orchestrator = _ResearchAccount(config, envelope=envelope,
                                     dependencies=replace(deps, signer_type=signer))
-    require(not orchestrator.ledger()['episodes'], 'ACCOUNT_UNKNOWN')
+    if p['schema_version'] == '1.0.0' or not (Path(p['state_root'])/'activation.json').exists():
+        require(not orchestrator.ledger()['episodes'], 'ACCOUNT_UNKNOWN')
+    if p['schema_version'] == '2.0.0':
+        pilot.verify_activation_baseline(np)
     orchestrator._host_current()
     try:
         orchestrator._geoblock()
     except Exception:
         raise GatewayError('GEOBLOCK_REFUSED') from None
-    require(orchestrator.reconcile().status == 'NO_NEW_EXPOSURE_READY', 'ACCOUNT_UNKNOWN')
+    reconciliation = orchestrator.reconcile()
+    require(reconciliation.status == 'NO_NEW_EXPOSURE_READY', 'ACCOUNT_UNKNOWN')
+    if p['schema_version'] == '2.0.0':
+        pilot._latch_equity(Path(p['state_root']), np, native_policy_hash, reconciliation, orchestrator.ledger())
     return np, native_policy_hash
 
 
@@ -267,7 +289,7 @@ def replay_journal(root, p, policy_hash):
         try:
             e = read(path)
             require(set(e) == JOURNAL_KEYS and e == seal(e, 'entry_sha256'), 'JOURNAL_UNVERIFIED')
-            require((e['schema_id'], e['schema_version']) == ('autonomous-cycle-journal', '1.0.0'), 'JOURNAL_UNVERIFIED')
+            require((e['schema_id'], e['schema_version']) == ('autonomous-cycle-journal', p['schema_version']), 'JOURNAL_UNVERIFIED')
             require(e['sequence'] == index and type(e['sequence']) is int and e['previous_sha256'] == (entries[-1]['entry_sha256'] if entries else None)
                     and e['policy_sha256'] == policy_hash and e['economic_mutation_id'] is None, 'JOURNAL_UNVERIFIED')
             integer(e['cycle_index'], 0, p['max_cycles']-1, 'JOURNAL_UNVERIFIED')
@@ -359,7 +381,14 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
         root = common._path(p['state_root'])
         root.mkdir(mode=0o700, parents=True, exist_ok=True)
         with common._run_lock(root):
-            suspension = root / f'custody-suspended-{owner_record_sha256}.json'
+            state_root = root
+            kill_id = p.get('activation_id', policy_hash)
+            prior_reservations = []
+            if p['schema_version'] == '2.0.0':
+                # Authorize before persisting any renewal or provider reservation.
+                account(p, native_policy_path, owner_record_path, owner_record_sha256, deps.native)
+                root, prior_reservations = session_root(root, p, policy_hash, owner_record_sha256, deps.native.clock_ns())
+            suspension = state_root / f'custody-suspended-{owner_record_sha256}.json'
             require(not suspension.exists() and not suspension.is_symlink(), 'CUSTODY_SUSPENDED')
             binding = dict(schema_id='autonomous-state-binding', schema_version='1.0.0', public_wallet=p['public_wallet'],
                 public_signer=p['public_signer'], release_sha=p['release_sha'], policy_sha256=policy_hash,
@@ -367,13 +396,13 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
             if (root / 'binding.json').exists():
                 require(read(root / 'binding.json') == binding, 'JOURNAL_UNVERIFIED')
             else:
-                if killed(root, policy_hash):
+                if killed(state_root, kill_id):
                     return terminal('KILLED')
-                require({x.name for x in root.iterdir()} <= {'pilot-run.lock', 'live_orch'}, 'JOURNAL_UNVERIFIED')
+                require({x.name for x in root.iterdir()} <= ({'policy-snapshot.json'} if p['schema_version'] == '2.0.0' else {'pilot-run.lock', 'live_orch'}), 'JOURNAL_UNVERIFIED')
                 account(p, native_policy_path, owner_record_path, owner_record_sha256, deps.native)
                 write(root / 'binding.json', binding)
             entries = replay_journal(root, p, policy_hash)
-            if killed(root, policy_hash):
+            if killed(state_root, kill_id):
                 return terminal('KILLED', entries)
             started = deps.monotonic()
             first_started = entries[0]['started_ns'] if entries else deps.native.clock_ns()
@@ -383,7 +412,7 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
             while len(entries)//2 < p['max_cycles']:
                 index = len(entries)//2
                 require(deps.monotonic() < deadline and p['valid_from_ns'] <= deps.native.clock_ns() < p['valid_until_ns'], 'BUDGET_EXHAUSTED')
-                require(not killed(root, policy_hash), 'KILLED')
+                require(not killed(state_root, kill_id), 'KILLED')
                 np, native_policy_hash = account(p, native_policy_path, owner_record_path, owner_record_sha256, deps.native)
                 require(digest(common._read(policy_path)) == policy_hash, 'POLICY_INVALID')
                 scratch = common._path(hunter_scratch_dir)
@@ -397,9 +426,18 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
                     require(hunter.load_budget(budget_path, scratch) == budget
                             and common._read(budget_path) == budget_bytes, 'POLICY_INVALID')
                 spent = [e for e in entries if e['phase'] == 'RESERVED']
+                rolling = prior_reservations + provider_reservations(entries)
+                now = deps.native.clock_ns()
+                require(all(e['started_ns'] <= now and (e['ended_ns'] is None or e['ended_ns'] <= now)
+                            for e in rolling), 'JOURNAL_UNVERIFIED')
+                last_observed_utc = now
+                if p['schema_version'] == '2.0.0':
+                    recent = [e for e in rolling if e['ended_ns'] is None or now-e['ended_ns'] < 86400*NS]
+                    require(sum((Decimal(e['reserved_cost_usd']) for e in recent), Decimal(0))+cost
+                            <= min(Decimal(2), Decimal(np['provider_max_rolling24h_usd'])), 'BUDGET_EXHAUSTED')
                 require(sum(e['reserved_provider_calls'] for e in spent)+calls <= p['max_provider_calls_total']
                     and sum((Decimal(e['reserved_cost_usd']) for e in spent), Decimal(0))+cost <= Decimal(p['max_provider_cost_usd_total']), 'BUDGET_EXHAUSTED')
-                claim = dict(schema_id='autonomous-cycle-journal', schema_version='1.0.0', sequence=len(entries)+1,
+                claim = dict(schema_id='autonomous-cycle-journal', schema_version=p['schema_version'], sequence=len(entries)+1,
                     previous_sha256=entries[-1]['entry_sha256'] if entries else None, policy_sha256=policy_hash,
                     cycle_id=cycle_id(p, policy_hash, index), cycle_index=index, phase='RESERVED',
                     started_ns=deps.native.clock_ns(), ended_ns=None, reserved_gets=p['max_discovery_gets_per_cycle'],
@@ -419,12 +457,16 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
                         os.fsync(stream.fileno())
 
                 def check_runtime():
-                    require(not killed(root, policy_hash), 'KILLED')
+                    nonlocal last_observed_utc
+                    current_utc = deps.native.clock_ns()
+                    require(current_utc >= last_observed_utc, 'JOURNAL_UNVERIFIED')
+                    last_observed_utc = current_utc
+                    require(not killed(state_root, kill_id), 'KILLED')
                     require(digest(common._read(policy_path)) == policy_hash, 'POLICY_INVALID')
                     require(digest(common._read(native_policy_path)) == native_policy_hash
                             and digest(common._read(owner_record_path)) == owner_record_sha256, 'OWNER_SETUP_REQUIRED')
                     require(deps.monotonic() < deadline
-                            and deps.native.clock_ns() < p['valid_until_ns'], 'BUDGET_EXHAUSTED')
+                            and current_utc < p['valid_until_ns'], 'BUDGET_EXHAUSTED')
 
                 def before_get():
                     nonlocal actual_gets
@@ -447,27 +489,30 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
                 def transport(url, timeout, maximum):
                     before_get()
                     result = (deps.transport or scanner.public_read)(url, min(timeout, max(0.001, deadline-deps.monotonic())), maximum)
-                    require(not killed(root, policy_hash), 'KILLED')
+                    require(not killed(state_root, kill_id), 'KILLED')
                     return result
 
                 class MeteredFetcher(hunter.Fetcher):
                     def get(self, url):
                         before_get()
                         result = super().get(url)
-                        require(not killed(root, policy_hash), 'KILLED')
+                        require(not killed(state_root, kill_id), 'KILLED')
                         return result
 
                 reason, scanner_sha, hunter_sha = 'NO_CANDIDATES', None, None
                 try:
                     capture = root / f'research-{index:02d}'
-                    result = scanner.run(capture, transport=transport, clock_ns=deps.native.clock_ns, monotonic=deps.monotonic)
+                    wide = {'all_horizons': True} if p['schema_version'] == '2.0.0' else {}
+                    result = scanner.run(capture, transport=transport, clock_ns=deps.native.clock_ns, monotonic=deps.monotonic, **wide)
                     check_runtime()
                     verified = scanner.verify(capture)
                     if result['status'] == 'COMPLETED' and verified['status'] == 'VERIFIED':
                         scanner_sha = verified['manifest_sha256']
+                        from src.live_pilot.structural import assess_capture
+                        require(assess_capture(capture)['execution_eligible'] is False, 'GATE_REJECTED')
                     else:
                         raise GatewayError('SOURCE_INDEPENDENCE_UNPROVEN')
-                    require(not killed(root, policy_hash), 'KILLED')
+                    require(not killed(state_root, kill_id), 'KILLED')
                     # Native Hunter acquisition + native worst-case inference runtime must fit.
                     required_seconds = hunter.CONFIG['max_acquisition_seconds']+calls*300+30
                     require(deadline-deps.monotonic() >= required_seconds, 'BUDGET_EXHAUSTED')
@@ -478,11 +523,15 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
                         budget_path=snapshot_path, executable=executable, home=home,
                         fetcher_type=MeteredFetcher, clock_ns=deps.native.clock_ns, controller=controlled_research)
                     require(outcome['status'] == 'COMPLETED', 'SOURCE_INDEPENDENCE_UNPROVEN')
-                    require(not killed(root, policy_hash), 'KILLED')
+                    require(not killed(state_root, kill_id), 'KILLED')
                     operations = sorted(scratch.glob('index-op-*.json'))
                     operation = operations[-1].stem.removeprefix('index-')
                     hunter_sha = outcome['manifest_sha256']
                     forecasts = replay_forecasts(scratch, operation, np, deps.native.clock_ns())
+                    from src.live_pilot.edge_qualifier import qualify_candidate
+                    # This invokes the independent admission boundary, never a model badge.
+                    for forecast in forecasts:
+                        require(qualify_candidate(forecast)['production_eligible'] is False, 'GATE_REJECTED')
                     for forecast in forecasts[:p['max_market_candidates_per_cycle']]:
                         counts[forecast['qualification_state']] += 1
                     reason = 'CALIBRATION_NOT_VERIFIED' if forecasts else 'NO_CANDIDATES'
@@ -497,7 +546,7 @@ def run(*, policy_path, native_policy_path=None, owner_record_path=None, owner_r
                     return terminal(reason, entries, counts)
                 until = deps.monotonic()+p['cadence_s']
                 while deps.monotonic() < until:
-                    require(not killed(root, policy_hash), 'KILLED')
+                    require(not killed(state_root, kill_id), 'KILLED')
                     require(deps.monotonic() < deadline and deps.native.clock_ns() < p['valid_until_ns'], 'BUDGET_EXHAUSTED')
                     deps.pause(min(1, until-deps.monotonic(), deadline-deps.monotonic()))
             return terminal('BUDGET_EXHAUSTED', entries, counts)
@@ -512,4 +561,61 @@ def activation_report(*, software_verified=False):
     """A software report cannot assert an account, calibrated edge or live receipt."""
     return dict(disposition='READY_BUT_ACTIVATION_BLOCKED' if software_verified else 'IMPLEMENTATION_BLOCKED',
         live_active=False, account_connected=False, orders=0,
+        software_status='SOFTWARE_IMPLEMENTED_NOT_ACTIVATED' if software_verified else 'IMPLEMENTATION_BLOCKED',
+        edge_status='NOT_QUALIFIED', accepted_production_methods=0, accepted_production_corpora=0,
+        account_status='NOT_VERIFIED', funds_status='NOT_VERIFIED', provider_consent_status='NOT_VERIFIED',
+        first_canary_status='NOT_OBSERVED', unattended_status='DISABLED',
         blockers=['CALIBRATION_NOT_VERIFIED', 'OWNER_SETUP_REQUIRED', 'CANARY_APPROVAL_MISSING'])
+
+
+def session_root(root, p, policy_hash, owner_hash, now):
+    """Under the existing run lock: one activation, chained finite session journals."""
+    activation = dict(schema_id='autonomous-activation', schema_version='2.0.0',
+        activation_id=p['activation_id'], public_wallet=p['public_wallet'], state_root=str(root),
+        activation_ledger_head=p['activation_ledger_head'])
+    path = root/'activation.json'
+    dirs = sorted(root.glob('session-*'))
+    require(len(dirs) <= 256, 'JOURNAL_UNVERIFIED')
+    if path.exists():
+        require(read(path) == activation, 'JOURNAL_UNVERIFIED')
+    else:
+        require(not dirs and p['previous_session_sha256'] is None, 'JOURNAL_UNVERIFIED')
+        write(path, activation)
+    histories = []
+    for directory in dirs:
+        common._path(directory)
+        old = read(directory/'policy-snapshot.json')
+        validated, old_hash = load_policy(directory/'policy-snapshot.json', old['valid_from_ns'], snapshot=True)
+        require(directory.name == 'session-'+old_hash and all(validated[k] == p[k] for k in
+            ('activation_id', 'activation_ledger_head', 'public_wallet', 'state_root')), 'JOURNAL_UNVERIFIED')
+        if old_hash == policy_hash:
+            continue
+        binding = read(directory/'binding.json')
+        require(binding['policy_sha256'] == old_hash and binding['public_wallet'] == p['public_wallet'], 'JOURNAL_UNVERIFIED')
+        entries = replay_journal(directory, old, old_hash)
+        require(entries and entries[-1]['phase'] == 'TERMINAL', 'JOURNAL_UNVERIFIED')
+        histories.append((old['valid_from_ns'], old, entries))
+    histories.sort(key=lambda row: (row[0], row[2][-1]['entry_sha256']))
+    previous = None
+    reservations = []
+    ended = 0
+    for _, old, entries in histories:
+        require(old['previous_session_sha256'] == previous and entries[0]['started_ns'] >= ended, 'JOURNAL_UNVERIFIED')
+        previous = entries[-1]['entry_sha256']
+        ended = entries[-1]['ended_ns']
+        reservations.extend(provider_reservations(entries))
+    require(p['previous_session_sha256'] == previous and ended <= now, 'JOURNAL_UNVERIFIED')
+    directory = common._path(root/('session-'+policy_hash))
+    if not directory.exists():
+        require(len(dirs) < 256, 'BUDGET_EXHAUSTED')
+        directory.mkdir(mode=0o700)
+        write(directory/'policy-snapshot.json', p)
+    else:
+        require(read(directory/'policy-snapshot.json') == p, 'JOURNAL_UNVERIFIED')
+    return directory, reservations
+
+
+def provider_reservations(entries):
+    """Keep the whole maximum through terminal+24h, covering every late dispatch."""
+    ends = {e['cycle_id']: e['ended_ns'] for e in entries if e['phase'] == 'TERMINAL'}
+    return [dict(e, ended_ns=ends.get(e['cycle_id'])) for e in entries if e['phase'] == 'RESERVED']

@@ -15,3 +15,10 @@ def test_report_does_not_claim_software_or_account_ready(capsys):
     result = json.loads(capsys.readouterr().out)
     assert result['disposition'] == 'IMPLEMENTATION_BLOCKED'
     assert result['orders'] == 0 and not result['live_active']
+
+
+def test_supervised_bounded_session_authority(capsys):
+    assert cli.main(['--report']) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert report['disposition'] == 'IMPLEMENTATION_BLOCKED' and not report['live_active']
+    assert report['orders'] == 0

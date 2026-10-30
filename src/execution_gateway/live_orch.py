@@ -129,6 +129,8 @@ def _text(value: Decimal) -> str:
 
 V1_CANARY_PROFILE = "V1_CANARY"
 HUNTER_PILOT_02_PROFILE = "HUNTER_PILOT_02"
+AUTONOMOUS_EDGE_01_PROFILE = "AUTONOMOUS_EDGE_01"
+_PILOT_PROFILES = frozenset((HUNTER_PILOT_02_PROFILE, AUTONOMOUS_EDGE_01_PROFILE))
 _PROFILE_NOT_APPLIED = "NOT_APPLIED"
 _ENVELOPE_LIMIT_KEYS = (
     "authorized_account_capital_usd",
@@ -166,6 +168,17 @@ CAPITAL_PROFILES: Mapping[str, Mapping[str, Decimal | None]] = {
         "single_order_floor_usd": Decimal("2"),
         "net_loss_budget_usd": Decimal("30"),
     },
+    AUTONOMOUS_EDGE_01_PROFILE: {
+        "authorized_account_capital_usd": Decimal("100"),
+        "single_order_worst_case_max_usd": Decimal("10"),
+        "max_total_early_commitment_usd": Decimal("10"),
+        "min_free_collateral_reserve_usd": Decimal("90"),
+        "max_observed_realized_pnl_loss_usd": Decimal("10"),
+        "max_observed_position_pnl_drawdown_usd": Decimal("10"),
+        "max_observed_cumulative_canary_loss_usd": Decimal("10"),
+        "single_order_floor_usd": Decimal("2"),
+        "net_loss_budget_usd": Decimal("10"),
+    },
 }
 
 
@@ -193,6 +206,13 @@ class LiveOrchCapitalEnvelope:
             max_observed_cumulative_canary_loss_usd=_PROFILE_NOT_APPLIED,
             profile=HUNTER_PILOT_02_PROFILE,
         )
+
+    @classmethod
+    def autonomous_edge_01(cls) -> "LiveOrchCapitalEnvelope":
+        """Distinct dormant profile; historical USD5 profiles stay unchanged."""
+        return cls(single_order_worst_case_max_usd="10", max_total_early_commitment_usd="10",
+                   min_free_collateral_reserve_usd="90", max_observed_realized_pnl_loss_usd="10",
+                   max_observed_position_pnl_drawdown_usd="10", profile=AUTONOMOUS_EDGE_01_PROFILE)
 
     def validate(self) -> Mapping[str, Decimal | None]:
         """Exact equality to the selected profile table; returns its limits."""
@@ -709,7 +729,7 @@ def reconcile_episode_step(
     sell = binding.get("side") == "SELL"
     if state in LIVE_ORCH_CLEAN_TERMINAL_STATES:
         return new
-    if state == "TERMINAL_KNOWN_POSITION" and binding.get("capital_profile") == HUNTER_PILOT_02_PROFILE:
+    if state == "TERMINAL_KNOWN_POSITION" and binding.get("capital_profile") in _PILOT_PROFILES:
         # Release only on positive reconciled evidence: zero reported position,
         # every trade on the token final, no open order or open SELL on it and
         # a final fee state.  Absence of a position row, MATCHED/MINED trades or
@@ -1161,7 +1181,7 @@ class LiveOrchestrator:
         return snapshot, revalidate_venue(authority, snapshot, evaluated_at_ns=self._now())
 
     def _open_session(self) -> _Session:
-        if self._deps.signer_type != "OWNER" and self._envelope.profile != HUNTER_PILOT_02_PROFILE:
+        if self._deps.signer_type != "OWNER" and self._envelope.profile not in _PILOT_PROFILES:
             raise GatewayError("SIGNING_IDENTITY_INVALID")
         path = self.store_path
         session = _Session()
@@ -1447,7 +1467,7 @@ class LiveOrchestrator:
                 evaluation=evaluation,
             )
             intent_value = authority.intent
-            hunter = self._envelope.profile == HUNTER_PILOT_02_PROFILE
+            hunter = self._envelope.profile in _PILOT_PROFILES
             if hunter and (
                 intent_value.execution_style, intent_value.order_type, intent_value.post_only
             ) != ("AGGRESSIVE_TAKER", "FOK", False):
@@ -1482,6 +1502,26 @@ class LiveOrchestrator:
                 now = self._now()
                 if not authority.permit.issued_at_ns <= now < authority.permit.valid_until_ns:
                     raise GatewayError("PERMIT_EXPIRED")
+            # The unchanged attended composer reaches this locked check too.
+            # Caller callbacks cannot substitute for independent edge verification.
+            from src.live_pilot.edge_qualifier import require_native_edge
+            from src.strategy_lifecycle import load_strategy_lifecycle_store
+            lifecycle = load_strategy_lifecycle_store(self._config.lifecycle_store_path)
+            if not lifecycle.is_valid or lifecycle.snapshot is None:
+                raise GatewayError("PERMIT_NOT_CURRENT")
+            version = lifecycle.snapshot.version_by_id(authority.intent.strategy_version_id)
+            if version is None:
+                raise GatewayError("PERMIT_NOT_CURRENT")
+            edge_profile = self._envelope.profile == AUTONOMOUS_EDGE_01_PROFILE
+            from json import loads
+            if edge_profile or 'autonomous_edge' in loads(version.strategy_spec_json)['execution_rule']:
+                current = self._authority(permit, intent)
+                require_native_edge(version, current.intent, required=edge_profile)
+                if edge_profile and self._deps.admission_guard is None:
+                    raise GatewayError("EDGE_OWNER_RECORD_REQUIRED")
+                now = self._now()
+                if not current.permit.issued_at_ns <= now < current.permit.valid_until_ns:
+                    raise GatewayError("PERMIT_EXPIRED")
             episode = build_admitted_episode(
                 authority,
                 snapshot=snapshot,
@@ -1495,7 +1535,7 @@ class LiveOrchestrator:
                 risk=risk,
                 prepared=prepared,
                 admitted_time_ns=now,
-                **({"capital_profile": HUNTER_PILOT_02_PROFILE} if hunter else {}),
+                **({"capital_profile": self._envelope.profile} if hunter else {}),
             )
             episode_id = str(episode["episode_id"])
             try:
@@ -1536,7 +1576,7 @@ class LiveOrchestrator:
         transmits = 0
         episode_id: str | None = None
         try:
-            if self._envelope.profile != HUNTER_PILOT_02_PROFILE:
+            if self._envelope.profile not in _PILOT_PROFILES:
                 raise GatewayError("SIDE_UNSUPPORTED_FIRST_CANARY")
             self._envelope.validate()
             authority = self._deps.sell_permit_authority(
@@ -1572,7 +1612,7 @@ class LiveOrchestrator:
             closed = [e for e in episodes if e["episode_id"] == closes_episode_id]
             if (
                 len(closed) != 1
-                or closed[0]["binding"].get("capital_profile") != HUNTER_PILOT_02_PROFILE
+                or closed[0]["binding"].get("capital_profile") != self._envelope.profile
                 or closed[0]["binding"]["side"] != "BUY"
                 or closed[0]["state"] != "TERMINAL_KNOWN_POSITION"
                 or closed[0]["binding"]["token_id"] != token
@@ -1646,7 +1686,7 @@ class LiveOrchestrator:
                 risk=risk,
                 prepared=prepared,
                 admitted_time_ns=now,
-                capital_profile=HUNTER_PILOT_02_PROFILE,
+                capital_profile=self._envelope.profile,
                 closes_episode_id=closes_episode_id,
             )
             episode_id = str(episode["episode_id"])

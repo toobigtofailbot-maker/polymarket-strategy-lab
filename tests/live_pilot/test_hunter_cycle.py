@@ -131,6 +131,46 @@ def native_untouched(s):
     return s.harness.secret_requests == 0 and s.harness.venue.posts == [] and not (s.root / 'live_orch').exists()
 
 
+def test_distinct_edge_owner_policy_never_upgrades_v2(tmp_path,monkeypatch):
+    s=build(tmp_path,monkeypatch)
+    s.policy['max_order_commitment_usd']='10'
+    s.write()
+    with pytest.raises(GatewayError):
+        H._load(s.policy_path,s.owner_path,s.owner_hash,s.root,X.AT)
+
+    s.policy.update(schema_version='3.0.0',max_simultaneous_exposure_usd='10',
+        min_free_collateral_after_admission_usd='90',net_loss_budget_usd='10',
+        activation_id='a'*64,activation_ledger_head='b'*64,previous_session_sha256=None,
+        provider_max_rolling24h_usd='0',first_canary_receipt_sha256=None)
+    s.write()
+    s.owner.update(schema_version='3.0.0',**{k:s.policy[k] for k in H.EDGE_FIELDS})
+    s.write_owner()
+    p,_=H._load(s.policy_path,s.owner_path,s.owner_hash,s.root,X.AT)
+    assert p['max_order_commitment_usd']=='10' and p['provider_max_rolling24h_usd']=='0'
+    with pytest.raises(GatewayError):
+        H.verify_first_canary(p,{'episodes':[]})
+    s.owner['provider_max_rolling24h_usd']='2';s.write_owner()
+    with pytest.raises(GatewayError):
+        H._load(s.policy_path,s.owner_path,s.owner_hash,s.root,X.AT)
+
+
+def test_new_profile_isolated_exit_ownership_and_activation_equity(tmp_path):
+    old=dict(episode_id='old',binding=dict(side='BUY',capital_profile=H.PROFILE))
+    new=dict(episode_id='new',binding=dict(side='BUY',capital_profile=H.native.AUTONOMOUS_EDGE_01_PROFILE))
+    cp={'episodes':[old,new]}
+    assert H._pilot_buys(cp)==[old]
+    assert H._pilot_buys(cp,profile=H.profile_of({'schema_version':'3.0.0'}))==[new]
+    policy={'schema_version':'3.0.0','activation_id':'a'*64,'activation_ledger_head':'b'*64,
+            '_initial_equity':Decimal(100)}
+    rec=SimpleNamespace(status='NO_NEW_EXPOSURE_READY',details={'collateral_usd':'100'})
+    with pytest.raises(GatewayError):
+        H._latch_equity(tmp_path,policy,'c'*64,rec,cp)
+    H._latch_equity(tmp_path,policy,'c'*64,rec,{'episodes':[]})
+    # New policy/release cannot create a second E0; the activation file is immutable.
+    H._latch_equity(tmp_path,policy,'d'*64,rec,cp)
+    assert len(list(tmp_path.glob('hunter-pilot-equity-*')))==1
+
+
 def enter_position(s):
     s.harness.venue.on_post = L._accept_fill(shares='9.25', price='0.52')
     result = s.run()

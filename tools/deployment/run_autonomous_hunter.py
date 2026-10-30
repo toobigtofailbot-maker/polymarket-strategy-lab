@@ -20,7 +20,8 @@ class Parser(argparse.ArgumentParser):
 
 def main(argv=None):
     parser = Parser(description=__doc__)
-    parser.add_argument('--report', action='store_true')
+    parser.add_argument('--report', action='store_true',
+                        help='Report separate software, edge, account and canary gates; never activates a session')
     for option in ('policy-path', 'native-policy-path', 'owner-record-path', 'owner-record-sha256',
                    'hunter-scratch-dir', 'alpha-registry-path', 'budget-path', 'executable', 'home'):
         parser.add_argument('--'+option)

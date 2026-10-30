@@ -1,5 +1,36 @@
 # Deferred Items Log
 
+## S10-AUTONOMOUS-EDGE-TO-LIVE-01 consolidated checkpoint
+
+- EDGE-D001 READY_BUT_EDGE_BLOCKED: accepted production corpus/method denominators
+  remain0/0. Source-native NBA/rain bounds lack authenticated causal historical
+  calibration and independent final settlement. Numerical tests are TEST_ONLY.
+  Structural capture lacks a certified settlement theorem and all-leg execution.
+  No invented production allowlist, fake data, direct order path or research mini-WP.
+- EDGE-D002 OWNER_ACTIVATION_NOT_PERFORMED: dedicated wallet/funds, protected
+  provider/custody consent, current host/official eligibility, current venue
+  fee/minimum/risk and original attended first-canary/StageA records are not verified.
+  ExistingUSD5 remains effective; USD10 profile is dormant. One secure owner
+  checkpoint after Karl-only merge; no secrets requested through chat.
+- EDGE-D003 VALIDATION_ENVIRONMENT_LIMIT: the broad local Windows Python inventory
+  audit returned81 known vulnerabilities in11 packages, ignoring only the existing
+  approved CVE-2026-104851. It is not the clean pinned project environment and is
+  not approved as a production runtime. The exact installed pinned Linux validation
+  inventory audit returned0 additional vulnerabilities with that same sole exception.
+  No unrelated host packages, project dependencies, locks or security rules changed.
+- EDGE-D004 RECORDED_BOUNDED_LIMITS: at most256 preserved autonomous sessions;
+  history exhaustion refuses rather than resetting budgets. Provider reservations
+  retained until terminal+24h are conservative and can restrict spend belowUSD2.
+  Unknown redemption receipts are conservatively zero proceeds, possibly overstating
+  lifetime loss. These restrictions do not permit capital or hidden resets.
+- EDGE-D005 INDEPENDENT_REVIEW_REPAIR_EVIDENCE: initial independent source review
+  found rolling-reservation timing, V1 terminal-loss omission, new-profile ownership,
+  output field coverage, bool horizon identity, canary receipt provenance and missing
+  native marked-V1 test coverage. Corrections/regressions are in this same WP;
+  actual final independent verdict and exact validation are in the PR body.
+  Same-policy and in-cycle UTC rollback gaps were also corrected and independently
+  rechecked before publication; no new request may precede durable terminal time.
+
 ## S10-HERMES-LIVE-INTEGRATED-01 activation checkpoint
 
 - D001 OPEN_CAPABILITY_LIMIT: no independently calibrated native admission method
