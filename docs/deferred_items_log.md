@@ -1,5 +1,25 @@
 # Deferred Items Log
 
+## S10-HERMES-LIVE-INTEGRATED-01 activation checkpoint
+
+- D001 OPEN_CAPABILITY_LIMIT: no independently calibrated native admission method
+  is proved on the frozen PR260 base. The compiled admission set stays empty;
+  native ESPN/NWS replay yields SOURCE_BOUND_ONLY, generic methods reject. No model
+  prose, calibration badge or hash can promote admission. No operational activation
+  claim or invented generic qualifier. Any new method requires actual independent
+  evidence and exact approved source/certificate scope; this engagement is not split
+  into speculative research WPs.
+- D002 OWNER_SETUP_NOT_PERFORMED: exact native owner/custody/wallet/Deposit-Wallet,
+  current host/official access, bounded funded capital/provider approval and attended
+  first-canary record remain unverified. One consolidated secure local setup checkpoint
+  preserves them; no seeds/private keys in chat or repo, no actual account/provider calls.
+- D003 RESOLVED_IMPLEMENTATION_REVIEW: immutable provider budgets, per-inference
+  kill/deadline/owner guards, carried native policy digest, native custody suspension
+  and unknown-spend preservation were corrected and independently tested. Historical
+  status/index ordering assertions remain unchanged; owned new entries move after
+  history. Final full/hosted/evidence outcomes belong in the exact current PR body;
+  no unavailable check is represented as PASS.
+
 ## S10-ALPHA-HUNTER-PILOT-02 dormant hunter pilot deferrals
 
 | ID | State | Required evidence / boundary |

@@ -2,6 +2,15 @@
 
 LIVE TRADING STATUS: DISABLED
 
+S10-HERMES-LIVE-INTEGRATED-01 adds a dormant finite native research/account adapter,
+not live authorization. Its production calibrated-method allowlist is empty;
+source-bound NBA/rain forecasts and generic Hermes research cannot authorize a
+trade. No CREATE, SELL or CANCEL is reachable through the new adapter. Historical
+economic episodes are refused and handed to unchanged native recovery. First live
+canary remains the native live_canary.py witnessed OAuth/attended Stage-B composer
+under an actual exact owner record. No account, credentials, capital or scheduling
+is activated by implementation, CI or merge. See docs/autonomous_live_pilot_contract.md.
+
 S10-ALPHA-AUTO-PILOT-01: Karl authorized only the certified16-path zero-economic
 software implementation and offline validation on26October2026. The default-off
 attended-signing NBA micro-risk composer and optional native admission hook grant

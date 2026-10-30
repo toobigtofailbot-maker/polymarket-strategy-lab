@@ -2190,3 +2190,14 @@ Implementation/security review remains independently gated; see
 validation and readiness. No merge or operational authority. D005 OPEN; live
 DISABLED; USD 0; real orders 0. Successor: separately authorized
 S10-LIVE-CANARY-OPS-01. Historical D005 records above are preserved.
+
+## S10-HERMES-LIVE-INTEGRATED-01 — certified protected adapter implementation
+
+One PROTECTED/Risk4/XL engagement on narrowed exact14paths, based on merged PR260
+842c9b21bd0caf6ebdb860c7ce2b8a35445b831c (head131f21652594083a3687c6b78939c21a847a617e).
+Independent exact-byte12-lens certification and native readiness passed before
+source edits. The finite native research/account adapter adds no gateway, custody
+store or model backend. Native source bounds remain uncalibrated; production
+admission allowlist EMPTY, no economic mutation or live activation. Independent implementation review passed; exact validation and review readiness
+are recorded in the current PR body. Stable evidence:
+docs/status_entries/S10-HERMES-LIVE-INTEGRATED-01.md. LIVE DISABLED; orders/capital0.
