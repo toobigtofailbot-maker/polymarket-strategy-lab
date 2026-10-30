@@ -26,14 +26,23 @@ Production forecasts remain SOURCE_BOUND_ONLY/REJECTED, and no economic mutation
 or unattended live activation is reachable in this release. Software integration
 must not be described as full operational or generic trade qualification.
 
-Validation is in progress; Ready for review: NO. Final exact local/security/full/
-hosted CI and independent implementation-review evidence will be recorded in the
-current PR body and stable summary here when actually complete. No PR or activation
-is implied by a draft status fragment.
+Independent implementation review PASS covers the final source/test bytes; its
+report SHA256 is46a680bc2292e8b12f9e9335172540a2527911c11512159c4062dc2f77287eb2.
+Nine independent adversarial nodes passed; author focused suite31passed/0failed/
+0skipped/0warnings, exit0. Source SHA256
+2419cd04e4f73647b87988ca1b35ff496f97249e3083d9641e364b89b2e18c79.
+Final full/security/hosted results and the review-readiness decision belong in the
+current PR body; no unavailable or incomplete result is implied here.
+
+Current live PR head: see GitHub PR metadata and PR body. This status fragment is
+stable and non-self-referential; it does not encode its own containing commit SHA.
 
 Ponytail lite was the first actual skill in implementation and the separate
 certification context. Native readiness/reuse/financial/authority/test-plan skills
 were applied read-only; systematic debugging preserved fixture/path and kill-order
-failures. No actual provider, market, account, credential, order or deployment
+failures. The first broad candidate had six historical status-position failures;
+the owned status/index entries were moved after historical sections without
+changing tests or widening scope. Full final evidence must use the corrected source.
+No actual provider, market, account, credential, order or deployment
 operations occurred during implementation/tests. Workflow GitHub/git network use is
 distinct from zero product runtime use. Capital/orders USD0/0; LIVE DISABLED.

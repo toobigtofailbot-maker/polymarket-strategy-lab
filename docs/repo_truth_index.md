@@ -2279,5 +2279,6 @@ Current same-engagement protected implementation: exact certified package under
 `docs/autonomous_live_pilot_contract.md`; stable evidence
 `docs/status_entries/S10-HERMES-LIVE-INTEGRATED-01.md`. PR260 predecessor is merged.
 The finite adapter reuses native research/account components; no calibrated method
-is proved, production admission is empty and LIVE remains DISABLED. Implementation
-validation/review is in progress, not an activation record.
+is proved, production admission is empty and LIVE remains DISABLED. Independent
+implementation review passed; current validation/readiness is in the PR body.
+This entry is not an activation record.

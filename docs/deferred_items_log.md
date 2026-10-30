@@ -13,9 +13,12 @@
   current host/official access, bounded funded capital/provider approval and attended
   first-canary record remain unverified. One consolidated secure local setup checkpoint
   preserves them; no seeds/private keys in chat or repo, no actual account/provider calls.
-- D003 VALIDATION_IN_PROGRESS: required final focused/adjacent/security/full/hosted
-  and independent implementation review are not yet complete. Ready for review:NO
-  until exact evidence is recorded. No unavailable check is represented as PASS.
+- D003 RESOLVED_IMPLEMENTATION_REVIEW: immutable provider budgets, per-inference
+  kill/deadline/owner guards, carried native policy digest, native custody suspension
+  and unknown-spend preservation were corrected and independently tested. Historical
+  status/index ordering assertions remain unchanged; owned new entries move after
+  history. Final full/hosted/evidence outcomes belong in the exact current PR body;
+  no unavailable check is represented as PASS.
 
 ## S10-ALPHA-HUNTER-PILOT-02 dormant hunter pilot deferrals
 
