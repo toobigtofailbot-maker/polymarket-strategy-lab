@@ -1,0 +1,611 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-LIVE-INTEGRATED-01",
+    "title": "Integrated Hermes Research, Protected Polymarket Account Access, First Live Canary and Bounded Autonomous Pilot",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_INTEGRATED_HERMES_ACCOUNT_TO_LIVE_PILOT",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 260,
+      "head_sha": "131f21652594083a3687c6b78939c21a847a617e",
+      "merge_sha": "842c9b21bd0caf6ebdb860c7ce2b8a35445b831c"
+    },
+    "suggested_branch": "codex/s10-hermes-live-integrated-01",
+    "objective": "One independently certified PROTECTED integrated Hermes/research, evidence-qualified numerical probability, deterministic fee-and-risk admission, native protected account/canary and finite bounded autonomous pilot. Category-neutral capture is research-only until a method-specific independent numeric forecast and calibration evidence qualify. PR260 merged; source implementation zero live/account/provider activity. First real canary remains exact native attended and owner bound; no unconditional trade.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl explicitly authorized one consolidated autonomous trading integration and full Polymarket trading-account access in this conversation on 2026-10-28, without further routine implementation mini-steps; capital is zero until actual separately bound live activation with exact wallet/risk/permit evidence."
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/live_pilot/autonomous_cycle.py",
+      "tests/live_pilot/test_autonomous_cycle.py",
+      "tests/live_pilot/test_autonomous_authority.py",
+      "docs/autonomous_live_pilot_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-HERMES-LIVE-INTEGRATED-01.md",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/wp_spec.json",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/draftability_certificate.json",
+      "tools/deployment/run_autonomous_hunter.py",
+      "tests/tools/deployment/test_autonomous_hunter.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "allowed_changed_files": [
+      "src/live_pilot/autonomous_cycle.py",
+      "tests/live_pilot/test_autonomous_cycle.py",
+      "tests/live_pilot/test_autonomous_authority.py",
+      "docs/autonomous_live_pilot_contract.md",
+      "docs/live_trading_authorization.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-HERMES-LIVE-INTEGRATED-01.md",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/wp_spec.json",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/draftability_certificate.json",
+      "tools/deployment/run_autonomous_hunter.py",
+      "tests/tools/deployment/test_autonomous_hunter.py",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-01/",
+      "docs/wp_specs/S10-ALPHA-NEAR-TERM-02/"
+    ],
+    "max_changed_files": 14,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert ONLY changed files of this package to the exact certified predecessor merge without changing user funds, wallet/account, execution ledger, or order receipts. Stop and reconcile before disabling any deployed live service; no rollback cancels or deletes economic truth.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": true
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": true,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": true,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Protected integration of existing source-to-execution path; new code must compose native authenticated and trading APIs, not replace policy or entry APIs.",
+    "items": [
+      {
+        "surface": "new autonomous_cycle orchestrator",
+        "before": "No verified general near-term Hermes-to-live bounded loop; existing NBA/rain pilot dormant per-invocation",
+        "after": "One bounded research/decision/reconciliation driver that calls only native policy-bound trade interfaces",
+        "change_authorized": true,
+        "compatibility_requirement": "Reuse existing Hunter, Hermes, strategy, Gate C, LIVE-ORCH, Gate B; defaults remain no live until actual activation",
+        "authority": "PROTECTED_SOFTWARE_IMPLEMENTATION_ONLY"
+      },
+      {
+        "surface": "native Polymarket account read and custody",
+        "before": "Authenticated Gate B exists but actual user account/session binding unverified",
+        "after": "Secure local approved provider with exact wallet signer and Deposit Wallet, bounded account truth before every mutation",
+        "change_authorized": true,
+        "compatibility_requirement": "No wallet withdrawals, credential exfiltration, direct order API bypass, or unbounded account reads",
+        "authority": "EXACT_OWNER_WALLET_ACTIVATION_REQUIRED"
+      },
+      {
+        "surface": "protected first canary and unattended pilot admission",
+        "before": "Live DISABLED; exact-bound owner canary activation absent",
+        "after": "Native first canary then optional bounded unattended policy only after independent activation evidence",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve existing permit, risk, geoblock, wallet and kill checks; no implicit order by merging",
+        "authority": "SEPARATE_REAL_ECONOMIC_ACTIVATION_AFTER_CREDENTIAL_AND_POLICY_PROOF"
+      },
+      {
+        "surface": "Hermes evidence-to-probability ranking",
+        "before": "Real provider inference and category-neutral live qualifications unverified",
+        "after": "Strict autonomous-forecast@1.0.0 envelope; real native source methods only with replay and independently verified calibration; Hermes soft advice cannot declare tradeable p_lower; unsupported categories abstain.",
+        "change_authorized": true,
+        "compatibility_requirement": "Supported NBA/rain native methods may produce source stress bounds but require verified calibration for QUALIFIED_FOR_ADMISSION. No model prose, unsupported category or synthetic fixture is independent forecast evidence.",
+        "authority": "BOUNDED_PROVIDER_BUDGET_REQUIRED"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Twelve mandatory bounded deliverable families map 1:1 to native evidence and tests, with strict no-trade/false-live negative cases.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Merged predecessor and protected certificate: Confirm PR #260 is merged; rebind frozen main, PR/head/merge; validate native v1 spec and independent certificate of FINAL exact bytes; no self-certification.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Merged predecessor and protected certificate: Confirm PR #260 is merged; rebind frozen main, PR/head/merge; validate native v1 spec and independent certificate of FINAL exact bytes; no self-certification.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No new trade engine; reuse proofs: Reuse existing Alpha Hunter, near-term scanner, native Hermes/StrategyVersion, Gate C, LIVE-ORCH, Gate B, Hunter cycle, evidence and native fee/minimum checks; no bypass or alternate direct order client.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No new trade engine; reuse proofs: Reuse existing Alpha Hunter, near-term scanner, native Hermes/StrategyVersion, Gate C, LIVE-ORCH, Gate B, Hunter cycle, evidence and native fee/minimum checks; no bypass or alternate direct order client.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Account access and custody: Read-only authenticated account/balance/order/position truth through native Gate B and exact signer/Deposit Wallet binding; protected secret via existing attended or session-key credential-dir provider; no logs, repo keys or withdrawal permissions; refuse mismatches.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Account access and custody: Read-only authenticated account/balance/order/position truth through native Gate B and exact signer/Deposit Wallet binding; protected secret via existing attended or session-key credential-dir provider; no logs, repo keys or withdrawal permissions; refuse mismatches.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Market opportunity loop: Autonomously conduct bounded category-neutral market discovery; preserve source/fee/timing unknowns and 120m endDate metadata-only status; finite time/API/provider budgets, backoff and no-trade after budget; no infinite scan-until-trade. Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Market opportunity loop: Autonomously conduct bounded category-neutral market discovery; preserve source/fee/timing unknowns and 120m endDate metadata-only status; finite time/API/provider budgets, backoff and no-trade after budget; no infinite scan-until-trade. Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R005: Exact autonomous-forecast@1.0.0 schema, source receipt SHA provenance and cutoff, rule/condition/token/StrategyVersion binding, native NBA/rain method replay, Decimal p interval, calibration proof and strict source-independence; model confidence/prose and unsupported generic categories remain NO_TRADE (section 4A). Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005: Exact autonomous-forecast@1.0.0 schema, source receipt SHA provenance and cutoff, rule/condition/token/StrategyVersion binding, native NBA/rain method replay, Decimal p interval, calibration proof and strict source-independence; model confidence/prose and unsupported generic categories remain NO_TRADE (section 4A). Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R006: Only independently qualified p_lower may enter native conservative stress-EV: q*p_lower-q*ask-native_fee-q*0.005 for rule-supported existing Hunter method; USD2..5 fee-inclusive, Gamma principal min and CLOB share min independently, 30s book freshness, method/fee expiry, Gate C and verified StrategyVersion required. Unknown => NO_TRADE (section 4A). Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006: Only independently qualified p_lower may enter native conservative stress-EV: q*p_lower-q*ask-native_fee-q*0.005 for rule-supported existing Hunter method; USD2..5 fee-inclusive, Gamma principal min and CLOB share min independently, 30s book freshness, method/fee expiry, Gate C and verified StrategyVersion required. Unknown => NO_TRADE (section 4A). Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Protected live and one real canary: Preserve LIVE DISABLED until exact host geoblock, custody, risk, capital, canonical ledger, permit, signer and execution truth pass; first real trade only under current separately-bound canary/owner activation record; never treat general verbal authorization as complete dynamic trade permit.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Protected live and one real canary: Preserve LIVE DISABLED until exact host geoblock, custody, risk, capital, canonical ledger, permit, signer and execution truth pass; first real trade only under current separately-bound canary/owner activation record; never treat general verbal authorization as complete dynamic trade permit.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Risk and reconciliation: Idempotent one-mutation native gateway; owner funded wallet; bounded commitments, rate/capital/drawdown/loss controls, kill, account anomalies, order/position reconstruction, reduce-only exit, crash recovery and no duplicate BUY. Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Risk and reconciliation: Idempotent one-mutation native gateway; owner funded wallet; bounded commitments, rate/capital/drawdown/loss controls, kill, account anomalies, order/position reconstruction, reduce-only exit, crash recovery and no duplicate BUY. Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Unattended operating model: After genuinely successful canary and permitted activation, bounded scheduling/foreground-to-service adapter with singleton lock, quota, liveness and stop, status; no unbounded polls or hidden fee/provider spend. Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Unattended operating model: After genuinely successful canary and permitted activation, bounded scheduling/foreground-to-service adapter with singleton lock, quota, liveness and stop, status; no unbounded polls or hidden fee/provider spend. Section4D closes actual native API mapping, production empty calibrated-method set, immutable journal, exact policy and reservation semantics; real supported forecasts never admit without an existing calibrated native verifier.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Evidence, tests, governance: Protected exact-diff/security/no-secret/credential+geoblock negative tests, full suite on stable head, hosted exact-head CI, independent implementation review, PR body fetched post publication; merge remains Karl-only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Evidence, tests, governance: Protected exact-diff/security/no-secret/credential+geoblock negative tests, full suite on stable head, hosted exact-head CI, independent implementation review, PR body fetched post publication; merge remains Karl-only.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Economic activation outcome: Return exactly LIVE_BOUNDED_ACTIVE, READY_BUT_ACTIVATION_BLOCKED, or IMPLEMENTATION_BLOCKED. Show actual market evaluation, first trade ID only if genuine, real account balance only if authorized evidence and sanitized, no unfounded profitable claim.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Economic activation outcome: Return exactly LIVE_BOUNDED_ACTIVE, READY_BUT_ACTIVATION_BLOCKED, or IMPLEMENTATION_BLOCKED. Show actual market evaluation, first trade ID only if genuine, real account balance only if authorized evidence and sanitized, no unfounded profitable claim.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Minimal owner interaction: Ask for owner input at most when a non-inferable wallet, approved budget/permit, credential-local setup or actual transaction-specific authorization is required. Consolidate these into one secure setup handoff; never ask to repeat generic owner desire.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Minimal owner interaction: Ask for owner input at most when a non-inferable wallet, approved budget/permit, credential-local setup or actual transaction-specific authorization is required. Consolidate these into one secure setup handoff; never ask to repeat generic owner desire.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R012 independently verified or exact blocked reason",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Runtime hashes reuse native canonical SHA256 as deterministic validated derived fields, not a new algorithm or execution-authority identity. Exact preimages for forecast, cycle and journal are frozen in section4D; semantic fields have DERIVED/NONE and no derivation ID. Raw source hashes are recomputed from bytes. No new permit or StrategyVersion identity is introduced.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exactly the native governance chain; runtime transitions are frozen in prompt closure section 4D and semantic requirements R004/R008/R009.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "After PR260 merges, rebind exact predecessor, independent third-party certificate PASS of final prompt/spec bytes, native strict guard and readability checks all pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl owner-directed explicit program implementation authorization in bootstrap binds exact independently certified version after final reconciliation; no live account operation implied",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Bounded changed scope, all R001-R012 evidence, native source/authority tests and independent implementation review completed",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Two truthful schema-level examples record that arbitrary generic Hermes output is not qualified; synthetic integration success is not live authority. The runtime test family proves precise outcomes.",
+    "items": [
+      {
+        "example_id": "GENERIC_HERMES_NO_TRADE",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SEMANTIC_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "forecast_method": "UNREGISTERED",
+          "confidence_label": "HIGH",
+          "p_lower": "0.99",
+          "outcome": "NO_TRADE",
+          "note": "Fails single independent method-qualification prerequisite"
+        }
+      },
+      {
+        "example_id": "SYNTHETIC_OFFLINE_COMPOSITION_VALID",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "mode": "TEST_ONLY",
+          "forecast": "QUALIFIED_FIXTURE_ONLY",
+          "native_admission": "MOCKED_NO_TRANSMIT",
+          "economic_create_attempts": 0
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Twelve named test nodes plus native readiness, independent certification, stable-head full/hosted suite and real activation truth when enabled.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_protected_activation_chain",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_protected_activation_chain",
+        "expected_result": "Confirm PR #260 is merged; rebind frozen main, PR/head/merge; validate native v1 spec and independent certificate of FINAL exact bytes; no self-certification."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_reuse_and_no_direct_order_bypass",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_native_reuse_and_no_direct_order_bypass",
+        "expected_result": "Reuse existing Alpha Hunter, near-term scanner, native Hermes/StrategyVersion, Gate C, LIVE-ORCH, Gate B, Hunter cycle, evidence and native fee/minimum checks; no bypass or alternate direct order client."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_secure_account_access_and_wallet_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_secure_account_access_and_wallet_binding",
+        "expected_result": "Read-only authenticated account/balance/order/position truth through native Gate B and exact signer/Deposit Wallet binding; protected secret via existing attended or session-key credential-dir provider; no logs, repo keys or withdrawal permissions; refuse mismatches."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_bounded_scan_and_abstention",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_bounded_scan_and_abstention",
+        "expected_result": "Autonomously conduct bounded category-neutral market discovery; preserve source/fee/timing unknowns and 120m endDate metadata-only status; finite time/API/provider budgets, backoff and no-trade after budget; no infinite scan-until-trade."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_real_hermes_evidence_and_no_fake_edge",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_real_hermes_evidence_and_no_fake_edge",
+        "expected_result": "Native replay recomputes independent lower probability and calibration trust; model confidence, forged signatures, unsupported category, stale source and missing calibration all reject without orders; exact envelope and no-echo tests PASS."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_native_fee_minimum_risk_and_cap",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_native_fee_minimum_risk_and_cap",
+        "expected_result": "Full strict Gamma USD principal vs CLOB shares, fee-inclusive $2-5, fresh depth, native rule-specific residual cost, stress EV lower, StrategyVersion/Gate C mapping; unknown or unverifiable => NO_TRADE. Synthetic positive cannot grant live authority."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_first_live_canary_activation_fails_closed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_first_live_canary_activation_fails_closed",
+        "expected_result": "Preserve LIVE DISABLED until exact host geoblock, custody, risk, capital, canonical ledger, permit, signer and execution truth pass; first real trade only under current separately-bound canary/owner activation record; never treat general verbal authorization as complete dynamic trade permit."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_risk_kill_recovery_and_reconciliation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_risk_kill_recovery_and_reconciliation",
+        "expected_result": "Idempotent one-mutation native gateway; owner funded wallet; bounded commitments, rate/capital/drawdown/loss controls, kill, account anomalies, order/position reconstruction, reduce-only exit, crash recovery and no duplicate BUY."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_unattended_singleton_budget_restart",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_unattended_singleton_budget_restart",
+        "expected_result": "Strict autonomous-cycle-policy@1.0.0 schema, <=4 cycles, 40 discovery GET/cycle, <=4 provider calls/zero default budget, restart-safe spent reservations, singleton/kill/roll24 limits and live-canary protected path; no repeated mutation."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_authority_denial_and_evidence_replay",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_authority_denial_and_evidence_replay",
+        "expected_result": "Protected exact-diff/security/no-secret/credential+geoblock negative tests, full suite on stable head, hosted exact-head CI, independent implementation review, PR body fetched post publication; merge remains Karl-only."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_truthful_activation_report",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_truthful_activation_report",
+        "expected_result": "Return exactly LIVE_BOUNDED_ACTIVE, READY_BUT_ACTIVATION_BLOCKED, or IMPLEMENTATION_BLOCKED. Show actual market evaluation, first trade ID only if genuine, real account balance only if authorized evidence and sanitized, no unfounded profitable claim."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_consolidated_owner_handoff",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_consolidated_owner_handoff",
+        "expected_result": "Ask for owner input at most when a non-inferable wallet, approved budget/permit, credential-local setup or actual transaction-specific authorization is required. Consolidate these into one secure setup handoff; never ask to repeat generic owner desire."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-LIVE-ACTIVATION-GATE",
+    "next_title": "Same-engagement owner-specific native first canary and bounded activation checkpoint, never automatic trading on software merge",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-LIVE-INTEGRATED-01",
+    "forbidden_in_this_wp": [
+      "No source edit before PR260 merge/rebound predecessor and genuine independently issued PROTECTED certificate",
+      "No self-certification, generated fake certificate, waiver of current native readiness, out-of-scope file or workflow/dependency modification",
+      "No live economic CREATE/SELL/CANCEL before current legitimate owner wallet/permit/capital and official geoblock/host/account checks",
+      "No direct SDK or wallet execution bypass of Gate B/C/LIVE-ORCH, no trades using model outputs alone, no funding transfers or withdrawals",
+      "No secret values in repo, artifact, stdout or chat; no private key/seed phrase collection through assistant",
+      "No global Polymarket universe/profitability/settlement guarantee and no infinite until-trade logic",
+      "No automatic increase of USD5 fee-inclusive per-order / existing risk constants absent exact approved policy and further PROTECTED revalidation",
+      "No actual paid Hermes/model use without configured bound provider budget and consent",
+      "No automatic merge; no unauthorized deployment, cron or provider purchase",
+      "No trading from prohibited/geoblocked locations, false eligibility, unverified signer, or stale account data",
+      "No pretending live active if merged, synthetic tests, or partial credential setup",
+      "No code change in historical frozen WP directories or external secret material"
+    ]
+  }
+}

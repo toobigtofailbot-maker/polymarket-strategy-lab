@@ -2271,3 +2271,13 @@ OAuth/provider/account/model/Responses, VPS/SSH, wallet/ledger/order or economic
 - No runtime activation, real credential/provider/host/account/model/order
   operation, merge, dependency or workflow change. D005 OPEN; live DISABLED;
   USD 0 / real orders 0. S10-LIVE-CANARY-OPS-01 remains separately gated.
+
+## S10-HERMES-LIVE-INTEGRATED-01
+
+Current same-engagement protected implementation: exact certified package under
+`docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/`; behavior contract
+`docs/autonomous_live_pilot_contract.md`; stable evidence
+`docs/status_entries/S10-HERMES-LIVE-INTEGRATED-01.md`. PR260 predecessor is merged.
+The finite adapter reuses native research/account components; no calibrated method
+is proved, production admission is empty and LIVE remains DISABLED. Implementation
+validation/review is in progress, not an activation record.
