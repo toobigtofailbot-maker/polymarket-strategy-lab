@@ -2299,3 +2299,18 @@ dispatch or unattended activation while these blockers remain. Stable evidence:
 Final validation/security/independent review/hosted evidence is in the current PRbody.
 Actual product/provider/account/credential/host/order operations0; capitalUSD0;
 LIVE DISABLED. Karl-only merge and protected activation are separate.
+
+
+## S10-EDGE-EVIDENCE-ACTIVATION-01
+
+Merged predecessor PR262 atc2bbd18ef2f8a615226af959aac2e07273bd7f05
+(headd968996a094a1d17d543c1104fab3cb5885e02a2). Exact certified protected
+package: `docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/`.
+Forward-only native rain capture, bounded safe offline replay and causal training
+label guard: `docs/edge_evidence_activation_contract.md`.
+Stable validation/limitations/skill evidence:
+`docs/status_entries/S10-EDGE-EVIDENCE-ACTIVATION-01.md`; exact current live head,
+hosted/posted evidence and readiness: current PRbody/GitHub metadata.
+Empty production corpus/method allowlists, research-only structural path,
+original owner attended first-canary and capital caps remain authoritative.
+This entry is not an account or activation receipt.

@@ -9,7 +9,7 @@ from src.live_pilot import calibration as C
 
 
 def rows(n=200):
-    return [dict(event_group=f'event:{i}', source_cutoff_ns=10+i, resolved_ns=1000+i,
+    return [dict(event_group=f'event:{i}', source_cutoff_ns=1000+2*i, resolved_ns=1001+2*i,
         method_id='NBA_ESPN_V1', method_sha256='a'*64, rule_sha256='b'*64, horizon_s=3600,
         p_point='0.95', payout=0 if i < 40 else 1, raw_sha256=f'{i:064x}') for i in range(n)]
 
@@ -35,7 +35,7 @@ def test_historical_causal_calibration_and_wilson():
 
 
 @pytest.mark.parametrize('change', [
-    {'source_cutoff_ns': 1000}, {'resolved_ns': 10000}, {'payout': True},
+    {'source_cutoff_ns': 1001}, {'resolved_ns': 10000}, {'payout': True},
     {'p_point': 'NaN'}, {'p_point': 'Infinity'}, {'p_point': ''}, {'p_point': None},
     {'p_point': 0.95}, {'method_id': 'HERMES'}, {'raw_sha256': 'invalid'},
     {'horizon_s': 1}, {'extra': 'untrusted-value'},
@@ -57,7 +57,7 @@ def test_group_leakage_split_and_freeze():
     assert evaluate(data,horizon_s=1)['reason']=='CALIBRATION_INVALID'
     data = rows(); data[140]['resolved_ns'] = data[139]['resolved_ns']
     assert evaluate(data)['reason'] == 'CALIBRATION_INVALID'
-    assert evaluate(method_frozen_ns=150)['reason'] == 'CALIBRATION_INVALID'
+    assert evaluate(method_frozen_ns=1300)['reason'] == 'CALIBRATION_INVALID'
     assert evaluate([])['reason'] == 'CALIBRATION_INSUFFICIENT'
     assert evaluate(rows(100))['n_bucket'] == 30
     assert evaluate(list(reversed(rows()))) == evaluate()
@@ -89,3 +89,23 @@ def test_all_public_fields_and_digest_projection():
     assert pilot._digest(pilot._canonical(other)) != r['record_sha256']
     other = deepcopy(projection); other['raw_sha256'].reverse()
     assert pilot._digest(pilot._canonical(other)) != r['record_sha256']
+
+
+def test_causal_holdout_and_group_deduplication():
+    data = rows()
+    assert evaluate(data)['n_bucket'] == 60
+    data[140]['source_cutoff_ns'] = data[139]['resolved_ns']
+    r = evaluate(data)
+    assert r['reason'] == 'CALIBRATION_INVALID' and r['lower'] is None
+    assert not r['production_eligible']
+    data = rows(); data[140]['event_group'] = data[0]['event_group']
+    assert evaluate(data)['reason'] == 'CALIBRATION_INVALID'
+
+
+def test_verified_empirical_bound_and_fail_closed():
+    from src.live_pilot import edge_qualifier as E
+    from tests.live_pilot.test_autonomous_cycle import source_record
+    r = evaluate()
+    assert r['n_bucket'] >= 50 and Decimal(r['lower']) == C.wilson_lower(r['k'], r['n_bucket'])
+    assert r['evidence_class'] == 'TEST_ONLY' and not C.PRODUCTION_CORPORA
+    assert not E.qualify_candidate(source_record(), r)['production_eligible']

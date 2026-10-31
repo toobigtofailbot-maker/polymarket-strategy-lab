@@ -47,3 +47,9 @@ def test_raw_capture_without_settlement_theorem_abstains(tmp_path):
     assert r['reason']=='SETTLEMENT_UNVERIFIED' and r['source_manifest_sha256'] and not r['execution_eligible']
     assert set(r)=={'status','reason','execution_eligible','source_manifest_sha256'}
     assert S.assess_capture(tmp_path/'missing')['reason']=='STRUCTURAL_SOURCE_UNVERIFIED'
+
+
+def test_unproven_atomic_leg_execution_never_trades():
+    test_partial_leg_exposure_refuses_execution()
+    r = S.verify_complement(record(), now_ns=12)
+    assert r['evidence_class'] == 'RESEARCH_ONLY' and not r['execution_eligible']

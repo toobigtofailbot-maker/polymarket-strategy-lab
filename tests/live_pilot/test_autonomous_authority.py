@@ -125,3 +125,27 @@ def test_truthful_owner_handoff_and_activation_report():
     assert r['disposition'] == 'READY_BUT_ACTIVATION_BLOCKED'
     assert not r['live_active'] and not r['account_connected'] and r['orders'] == 0
     assert not C.PRODUCTION_CORPORA and not E.PRODUCTION_METHODS
+
+
+def test_owner_account_host_custody_denials(tmp_path, monkeypatch):
+    test_native_custody_and_account_fail_closed(tmp_path, monkeypatch)
+    assert A.evidence_activation_report()['eligible_host'] == 'NOT_OBSERVED'
+
+
+def test_first_canary_remains_attended(tmp_path, monkeypatch):
+    test_first_canary_unattended_denied(tmp_path, monkeypatch)
+    assert A.evidence_activation_report()['first_canary'] == 'NOT_OBSERVED'
+
+
+def test_truthful_activation_checkpoint(tmp_path, monkeypatch):
+    from tests.tools.alpha.test_edge_evidence_capture import execute
+    root, evidence, _ = execute(tmp_path)
+    monkeypatch.setattr(A, 'account', lambda *a: (_ for _ in ()).throw(AssertionError('unexpected account read')))
+    report = A.evidence_activation_report(root)
+    assert report['evidence'] == evidence and report['software'] == 'NOT_VERIFIED'
+    assert report['method'] == 'NOT_QUALIFIED' and report['unattended'] == 'DISABLED'
+    assert all(report[k] == 'NOT_OBSERVED' for k in ('account', 'funding', 'custody',
+        'eligible_host', 'provider_consent', 'first_canary'))
+    assert set(report) == {'software', 'evidence', 'method', 'account', 'funding', 'custody',
+        'eligible_host', 'provider_consent', 'first_canary', 'unattended', 'live_active'}
+    assert report['live_active'] is False

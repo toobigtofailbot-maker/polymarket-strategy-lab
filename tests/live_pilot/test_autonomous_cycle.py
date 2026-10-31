@@ -453,3 +453,7 @@ def test_corrupt_binding_preserves_unknown_spend(tmp_path, monkeypatch):
     assert result['code'] == 'JOURNAL_UNVERIFIED'
     assert result['provider_calls'] is result['reserved_provider_cost_usd'] is None
     assert not s.native.harness.venue.posts
+
+
+def test_bounded_evidence_session_restart_no_rearm(tmp_path, monkeypatch):
+    test_same_policy_resume_rejects_backward_utc_before_new_reservation(tmp_path, monkeypatch)

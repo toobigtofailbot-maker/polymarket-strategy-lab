@@ -9,6 +9,14 @@ PRODUCTION_METHODS = frozenset()
 MARKER = 'autonomous_edge'
 
 
+def evidence_diagnosis(scratch):
+    """Replay information is separate from financial admission, even when valid."""
+    from src.live_pilot.provenance import verify_capture
+    evidence = verify_capture(scratch)
+    return dict(status='NO_TRADE', reason='CALIBRATION_NOT_VERIFIED', p_lower=None,
+                production_eligible=False, evidence=evidence)
+
+
 def qualify_candidate(forecast, calibration_result=None):
     """Shaped forecasts and numerical diagnostics confer no production authority."""
     from src.live_pilot.autonomous_cycle import validate_forecast

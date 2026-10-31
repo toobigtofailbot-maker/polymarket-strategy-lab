@@ -1,0 +1,703 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-EDGE-EVIDENCE-ACTIVATION-01",
+    "title": "Real Edge Evidence, Native Admission and Secure Activation Readiness",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "PROTECTED_EDGE_EVIDENCE_ACTIVATION",
+    "package_size_class": "XL",
+    "risk_level": 4,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 262,
+      "head_sha": "d968996a094a1d17d543c1104fab3cb5885e02a2",
+      "merge_sha": "c2bbd18ef2f8a615226af959aac2e07273bd7f05"
+    },
+    "suggested_branch": "codex/s10-edge-evidence-activation-01",
+    "objective": "One integrated evidence-to-activation engagement: obtain bounded genuine public pre-event/settlement evidence, independently validate and admit only source-qualified statistical edges, keep unsupported structural legs non-executable, verify native host/account/custody readiness and prepare owner-specific first canary without inventing calibration, funds, permission or trades.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": true,
+    "xl_authorization_basis": "Karl expressly authorized the next consolidated post-PR262 WP and required all applicable mandatory skills with Ponytail lite first. Authority is for software and bounded approved public read-only evidence only after separate independent PROTECTED certification; no unilateral funding, paid-provider signup, secret handling, merge or real economic order."
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/live_pilot/provenance.py",
+      "src/live_pilot/calibration.py",
+      "src/live_pilot/edge_qualifier.py",
+      "src/live_pilot/autonomous_cycle.py",
+      "tests/live_pilot/test_provenance.py",
+      "tests/live_pilot/test_calibration.py",
+      "tests/live_pilot/test_edge_qualifier.py",
+      "tests/live_pilot/test_autonomous_cycle.py",
+      "tools/alpha/run_edge_evidence_capture.py",
+      "tests/tools/alpha/test_edge_evidence_capture.py",
+      "docs/edge_evidence_activation_contract.md",
+      "docs/autonomous_live_pilot_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-EDGE-EVIDENCE-ACTIVATION-01.md",
+      "docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/wp_prompt.txt",
+      "docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/wp_spec.json",
+      "docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/draftability_certificate.json",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/live_pilot/test_structural.py",
+      "tests/live_pilot/test_autonomous_authority.py"
+    ],
+    "allowed_changed_files": [
+      "src/live_pilot/provenance.py",
+      "src/live_pilot/calibration.py",
+      "src/live_pilot/edge_qualifier.py",
+      "src/live_pilot/autonomous_cycle.py",
+      "tests/live_pilot/test_provenance.py",
+      "tests/live_pilot/test_calibration.py",
+      "tests/live_pilot/test_edge_qualifier.py",
+      "tests/live_pilot/test_autonomous_cycle.py",
+      "tools/alpha/run_edge_evidence_capture.py",
+      "tests/tools/alpha/test_edge_evidence_capture.py",
+      "docs/edge_evidence_activation_contract.md",
+      "docs/autonomous_live_pilot_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-EDGE-EVIDENCE-ACTIVATION-01.md",
+      "docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/wp_prompt.txt",
+      "docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/wp_spec.json",
+      "docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/draftability_certificate.json",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "tests/live_pilot/test_structural.py",
+      "tests/live_pilot/test_autonomous_authority.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/workflows/",
+      "agent_runtime/",
+      "agent_memory/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "docs/wp_specs/S10-AUTONOMOUS-EDGE-TO-LIVE-01/",
+      "docs/wp_specs/S10-HERMES-LIVE-INTEGRATED-01/"
+    ],
+    "max_changed_files": 21,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only changed code/docs from this branch to verified PR262 merge; real owner-run evidence stored outside repository stays immutable and is not deleted. No automatic rollback of wallet ledger, credentials, funds or already observed orders.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": true
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": true
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": true
+      },
+      {
+        "boundary": "live",
+        "crossed": true
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": true,
+    "scheduler": true,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": true,
+    "execution": true,
+    "live": true
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One native source-qualified evidence route, existing protected admission and account/first-canary seams.",
+    "items": [
+      {
+        "surface": "src.live_pilot.provenance",
+        "before": "Absent source/settlement provenance acceptor for method admission",
+        "after": "Strict native forward-only raw capture integrity and cold replay verifier; explicitly no independent historical origin/finality acceptance or production eligibility.",
+        "change_authorized": true,
+        "compatibility_requirement": "Source receipts, resolution rules, causal cutoff, deterministic replay and no secret echo",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.live_pilot.calibration.historical_bound",
+        "before": "TEST_ONLY chronological diagnostics; production corpora empty",
+        "after": "Preserve TEST_ONLY diagnostics, reject train-label leakage before earliest holdout source cutoff; real accepted corpus count remains zero unless genuine independent evidence exists.",
+        "change_authorized": true,
+        "compatibility_requirement": "No synthetic promotion, post-hoc selection, cross-event leakage or unsupported category",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.live_pilot.edge_qualifier.qualify_candidate",
+        "before": "Production methods empty, NO_TRADE",
+        "after": "Preserve code-pinned empty production methods and fail-closed admission; expose source replay evidence separately without accepting caller assertions.",
+        "change_authorized": true,
+        "compatibility_requirement": "Never from Hermes labels, caller-injected allowlist, unverified hash or venue price",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "tools.alpha.run_edge_evidence_capture",
+        "before": "No dedicated reproducible bounded source-evidence acquisition command",
+        "after": "Strict public read-only, deterministic manifest/denominator, bounded one-shot capture + verification",
+        "change_authorized": true,
+        "compatibility_requirement": "No credentials/provider spend, no unbounded requests, no assumed API filter acceptance",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.live_pilot.autonomous_cycle.run",
+        "before": "Finite source-bound research and dormant authorization",
+        "after": "Preserve default-OFF finite research and absence of economic dispatch; add separate evidence_activation_report over a verified native research capture with unknown account/host/canary states.",
+        "change_authorized": true,
+        "compatibility_requirement": "No economic dispatch without real method/canary/account evidence",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.live_pilot.structural.verify_complement",
+        "before": "Research-only theoretical margin, no atomic legs",
+        "after": "Research-only theoretical margin, no atomic legs; preserved unchanged, negative regression coverage only.",
+        "change_authorized": false,
+        "compatibility_requirement": "Single-side FOK is not multi-leg guarantee",
+        "authority": "PROTECTED_CODE_ONLY"
+      },
+      {
+        "surface": "src.execution_gateway.live_orch.LiveOrchestrator",
+        "before": "Native read/reconcile/canary protected first live path",
+        "after": "Native read/reconcile/canary protected first live path; preserved unchanged, negative regression coverage only.",
+        "change_authorized": false,
+        "compatibility_requirement": "Legacy USD5 first-canary composer untouched; never direct CLOB transmit",
+        "authority": "PROTECTED_CODE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Fourteen minimum-complete owner requirements have explicit closed implementation/validation assertions.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verified PR262 merge, no conflicting main/open branch, correct frozen package, separate 12-lens cert and true native readiness before source edits.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verified PR262 merge, no conflicting main/open branch, correct frozen package, separate 12-lens cert and true native readiness before source edits.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse scanner, Hunter/ESPN/NWS, Hermes, StrategyVersion, Gate C, LIVE-ORCH, Gate B and live_canary; no alternate execution/credential store or arbitrary-provider method.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuse scanner, Hunter/ESPN/NWS, Hermes, StrategyVersion, Gate C, LIVE-ORCH, Gate B and live_canary; no alternate execution/credential store or arbitrary-provider method.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only raw immutable pre-event independent observations and independent final outcome receipts, exact event/condition/token/rule, UTC cutoff, source identity, method SHA and source manifest qualify original records.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only raw immutable pre-event independent observations and independent final outcome receipts, exact event/condition/token/rule, UTC cutoff, source identity, method SHA and source manifest qualify original records.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reproduce source-native forecasts from pre-event receipts; one event-group per resolved outcome, chronological 70/30 untouched holdout, frozen method and binning, no retroactive record/backfill/forecast revision contamination.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reproduce source-native forecasts from pre-event receipts; one event-group per resolved outcome, chronological 70/30 untouched holdout, frozen method and binning, no retroactive record/backfill/forecast revision contamination.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "At least 50 genuinely independent observations in the selected predeclared holdout decile, one-sided 95% floored Wilson lower, held-out Brier not worse than training-prevalence baseline, current rule/source/side compatibility; production acceptance only on separately verified real corpus.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "At least 50 genuinely independent observations in the selected predeclared holdout decile, one-sided 95% floored Wilson lower, held-out Brier not worse than training-prevalence baseline, current rule/source/side compatibility; production acceptance only on separately verified real corpus.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One user-authorized bounded unauthenticated public source capture with strict official allowlist, no redirects/secrets, honest denominator, clock/fee/filters and original receipts; fail closed on unsupported or unavailable real historical sources.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One user-authorized bounded unauthenticated public source capture with strict official allowlist, no redirects/secrets, honest denominator, clock/fee/filters and original receipts; fail closed on unsupported or unavailable real historical sources.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only an accepted pinned method can yield production p lower; independent recomputation, current venue book, source time, fee/minimum/share grid, payout and positive stress-EV; LLM confidence and synthetic receipts never qualify.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only an accepted pinned method can yield production p lower; independent recomputation, current venue book, source time, fee/minimum/share grid, payout and positive stress-EV; LLM confidence and synthetic receipts never qualify.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Structural math remains research-only until original settlement theorem AND guaranteed safe all-leg execution/hedge through existing native path are proved; single-side FOK and sequential orders never unlock it.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Structural math remains research-only until original settlement theorem AND guaranteed safe all-leg execution/hedge through existing native path are proved; single-side FOK and sequential orders never unlock it.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Historical first canary <=USD5 all-in; optional dormant $100 allocation, $10 order, $10 combined worst-case remaining pilot loss, $90 reserve only with distinct owner binding; no loss/fee exposure double count, no reset from gains or restart.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Historical first canary <=USD5 all-in; optional dormant $100 allocation, $10 order, $10 combined worst-case remaining pilot loss, $90 reserve only with distinct owner binding; no loss/fee exposure double count, no reset from gains or restart.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Check current eligible host/clock/access, public signer and Deposit Wallet, native authenticated balance/orders/trades/positions and custody/Session Key via approved local channel; no secret in artifacts, no geoblock bypass.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Check current eligible host/clock/access, public signer and Deposit Wallet, native authenticated balance/orders/trades/positions and custody/Session Key via approved local channel; no secret in artifacts, no geoblock bypass.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Existing live_canary composer with witnessed OAuth and Stage-A/Stage-B owner confirmation only; no synthetic canary, live CREATE in CI, lower-level shortcut or unattended first trade.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing live_canary composer with witnessed OAuth and Stage-A/Stage-B owner confirmation only; no synthetic canary, live CREATE in CI, lower-level shortcut or unattended first trade.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Bounded public GETs, default-zero paid model budget until owner approval, <=USD2 rolling24h, singleton, locked ledger, UTC rollback refusal and kill checks; ambiguous calls never refund, no repeated scan until a trade appears.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Bounded public GETs, default-zero paid model budget until owner approval, <=USD2 rolling24h, singleton, locked ledger, UTC rollback refusal and kill checks; ambiguous calls never refund, no repeated scan until a trade appears.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R012: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r013",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No secrets, raw provider errors or invalid content echoed; true local permission/symlink checks; reject unsuitable Windows audit host, no dependency or CI security bypass.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No secrets, raw provider errors or invalid content echoed; true local permission/symlink checks; reject unsuitable Windows audit host, no dependency or CI security bypass.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R013: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r014",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Proof from actual source counts, accepted method denominator, real account/canary status, scoped validation, independent source/security review, exact-head hosted jobs and guarded PR body; zero-edge outcome remains blocker, never claimed trade.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Proof from actual source counts, accepted method denominator, real account/canary status, scoped validation, independent source/security review, exact-head hosted jobs and guarded PR body; zero-edge outcome remains blocker, never claimed trade.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R014: verifiable evidence or closed blocker, never raw secrets",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Source identities reuse existing native canonical SHA-256 and independently fetched bytes; canonical event ledger remains the proof source. No new algebraic identity algorithm in spec.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Machine readiness is not permission; operational phases are separately owner-gated and fail closed.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Separate certifier independently approves frozen prompt/spec, 12 lenses PASS, zero decisions; hash-bound native readiness passes.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl project instruction covers exact authorized protected software work only, not capital/first canary.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Minimum evidence acquisition/qualifier code built within exact allowed files; no secret or real order.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Only synthetic positive grammar plus explicit invalid and no-trade cases; no production approval represented.",
+    "items": [
+      {
+        "example_id": "SYNTHETIC_WELL_FORMED_NO_TRADE",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "evidence_class": "TEST_ONLY",
+          "event_group": "synthetic-a",
+          "method": "NBA_ESPN_V1",
+          "original_source_verified": false,
+          "accepted_corpus_count": 0,
+          "decision": "NO_TRADE",
+          "orders": 0
+        }
+      },
+      {
+        "example_id": "MODEL_CONFIDENCE_FALSE_AUTHORITY",
+        "expected_valid": false,
+        "expected_error_codes": [
+          "SEMANTIC_CONTRADICTION"
+        ],
+        "intended_fault_count": 1,
+        "derivation_rule_ids": [],
+        "input": {
+          "evidence_class": "LLM_PROSE",
+          "confidence": "HIGH",
+          "p": "0.99",
+          "claimed_production_eligible": true,
+          "defect": "unverified numerical authority"
+        }
+      },
+      {
+        "example_id": "UNHEDGED_FOK_ARBITRAGE_REFUSAL",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [],
+        "input": {
+          "evidence_class": "OFFLINE_TEST_ONLY",
+          "two_leg_atomic": false,
+          "execution_eligible": false,
+          "decision": "NO_TRADE"
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Each requirement has a named concrete test, fresh actual external source evidence where applicable, and one final full-suite/CI proof.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_evidence_activation_protected_gate",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_evidence_activation_protected_gate",
+        "expected_result": "Verified PR262 merge, no conflicting main/open branch, correct frozen package, separate 12-lens cert and true native readiness before source edits."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_paths_cannot_be_bypassed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_native_paths_cannot_be_bypassed",
+        "expected_result": "Reuse scanner, Hunter/ESPN/NWS, Hermes, StrategyVersion, Gate C, LIVE-ORCH, Gate B and live_canary; no alternate execution/credential store or arbitrary-provider method."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_original_source_and_resolution_provenance",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_provenance.py::test_original_source_and_resolution_provenance",
+        "expected_result": "Only raw immutable pre-event independent observations and independent final outcome receipts, exact event/condition/token/rule, UTC cutoff, source identity, method SHA and source manifest qualify original records."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_causal_holdout_and_group_deduplication",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_calibration.py::test_causal_holdout_and_group_deduplication",
+        "expected_result": "Reproduce source-native forecasts from pre-event receipts; one event-group per resolved outcome, chronological 70/30 untouched holdout, frozen method and binning, no retroactive record/backfill/forecast revision contamination."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_verified_empirical_bound_and_fail_closed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_calibration.py::test_verified_empirical_bound_and_fail_closed",
+        "expected_result": "At least 50 genuinely independent observations in the selected predeclared holdout decile, one-sided 95% floored Wilson lower, held-out Brier not worse than training-prevalence baseline, current rule/source/side compatibility; production acceptance only on separately verified real corpus."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_bounded_public_capture_and_replay",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_edge_evidence_capture.py::test_bounded_public_capture_and_replay",
+        "expected_result": "One user-authorized bounded unauthenticated public source capture with strict official allowlist, no redirects/secrets, honest denominator, clock/fee/filters and original receipts; fail closed on unsupported or unavailable real historical sources."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_admit_only_verified_after_cost_edge",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_admit_only_verified_after_cost_edge",
+        "expected_result": "Only an accepted pinned method can yield production p lower; independent recomputation, current venue book, source time, fee/minimum/share grid, payout and positive stress-EV; LLM confidence and synthetic receipts never qualify."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_unproven_atomic_leg_execution_never_trades",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_structural.py::test_unproven_atomic_leg_execution_never_trades",
+        "expected_result": "Structural math remains research-only until original settlement theorem AND guaranteed safe all-leg execution/hedge through existing native path are proved; single-side FOK and sequential orders never unlock it."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_profile_risk_pilot_and_legacy_canary_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_edge_qualifier.py::test_profile_risk_pilot_and_legacy_canary_unchanged",
+        "expected_result": "Historical first canary <=USD5 all-in; optional dormant $100 allocation, $10 order, $10 combined worst-case remaining pilot loss, $90 reserve only with distinct owner binding; no loss/fee exposure double count, no reset from gains or restart."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_owner_account_host_custody_denials",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_owner_account_host_custody_denials",
+        "expected_result": "Check current eligible host/clock/access, public signer and Deposit Wallet, native authenticated balance/orders/trades/positions and custody/Session Key via approved local channel; no secret in artifacts, no geoblock bypass."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_first_canary_remains_attended",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_first_canary_remains_attended",
+        "expected_result": "Existing live_canary composer with witnessed OAuth and Stage-A/Stage-B owner confirmation only; no synthetic canary, live CREATE in CI, lower-level shortcut or unattended first trade."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_bounded_evidence_session_restart_no_rearm",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_cycle.py::test_bounded_evidence_session_restart_no_rearm",
+        "expected_result": "Bounded public GETs, default-zero paid model budget until owner approval, <=USD2 rolling24h, singleton, locked ledger, UTC rollback refusal and kill checks; ambiguous calls never refund, no repeated scan until a trade appears."
+      },
+      {
+        "requirement_id": "R013",
+        "source": "pytest",
+        "test": "test_invalid_source_no_echo_and_host_refusal",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_provenance.py::test_invalid_source_no_echo_and_host_refusal",
+        "expected_result": "No secrets, raw provider errors or invalid content echoed; true local permission/symlink checks; reject unsuitable Windows audit host, no dependency or CI security bypass."
+      },
+      {
+        "requirement_id": "R014",
+        "source": "pytest",
+        "test": "test_truthful_activation_checkpoint",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/live_pilot/test_autonomous_authority.py::test_truthful_activation_checkpoint",
+        "expected_result": "Proof from actual source counts, accepted method denominator, real account/canary status, scoped validation, independent source/security review, exact-head hosted jobs and guarded PR body; zero-edge outcome remains blocker, never claimed trade."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-EDGE-OWNER-ACTIVATION-CHECKPOINT",
+    "next_title": "Conditional owner-specific secure account, independent accepted edge and attended first canary within the same engagement; NOT an automatically mandated separate WP",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-EDGE-EVIDENCE-ACTIVATION-01",
+    "forbidden_in_this_wp": [
+      "No self-issued independent certificate or source edit before exact-hash independent PROTECTED readiness.",
+      "No invented calibration corpus, fake settlement, arbitrary confidence-based probability, uncalibrated live admission or trading for unsupported markets.",
+      "No raw API or wallet secret in repo/chat/prompts/log/argv; no unapproved paid provider activation, funding or withdrawal.",
+      "No account, credential, signed order or live economic mutation in CI or ordinary development; first real canary requires protected live owner-specific Stage A/OAuth/Stage B and an eligible host.",
+      "No unsafe partial, unhedged or sequential two-leg structural arbitrage trade, or claimed risk-free result.",
+      "No bypass of physical location checks, jurisdictional restrictions or venue terms; access refusal => NO_TRADE.",
+      "No silent alteration to existing USD5 first-live canary; dormant USD10 profile cannot become first-canary authority.",
+      "No loss-budget reset, double counting, unknown order reuse or budget refund on crash; kill and reconciliation remain authoritative.",
+      "No dependency/lock/workflow/security-policy/frozen older spec edit, no production deployment/service startup as part of PR.",
+      "No PR merge, generalized indefinite research, or speculative mini-WPs; complete truthful source and owner readiness checkpoint."
+    ]
+  }
+}
