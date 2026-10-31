@@ -8,6 +8,13 @@ checks passed before branch creation. Karl authorized bounded protected software
 and one public unauthenticated research capture after independent certification.
 No merge, account/secret, economic or production-service authority.
 
+Validated implementation commit: fe7bba6d4b2a0e023edfa5ea0c0a6c08f3b75460.
+Authoritative local full suite at that source/test snapshot:14503passed,
+14skipped,125warnings,exit0;1252raw Git blobs matched before/after. The later
+mandatory npm-advisory disclosure changes only this fragment and deferred log;
+production/tests/certified bytes/capture remain unchanged. Final exact-head
+hosted/full/doc evidence is recorded in PRbody without fixing this file's own SHA.
+
 ## Certification and native pre-source gate
 
 Separate12-lens certificate PASS, unresolved decisions empty; implementability PASS.
@@ -121,6 +128,16 @@ CVE-2026-104851 exception (2advisory unhashed-requirement warnings). Broad Windo
 global packages are not the pinned project runtime and were not audited/modified.
 Full-history/hosted secret gates and final exact scope are recorded in PRbody.
 
+Hosted frontend npm audit --audit-level=high passed its native threshold while
+reporting4moderate findings in the inherited Storybook development chain:
+glob13.0.6/GHSA-3g3m-2fjr-6pw4 and minimatch10.2.6/GHSA-g3hv-75wg-m249,
+including dependent-package findings. Package/lock bytes are identical to merged
+base; both packages are marked dev. D004 records this material security-evidence
+limit; it is not a zero-vulnerability claim or policy waiver. Dependency repair
+and forced Storybook downgrade are outside this WP. The disclosure was added
+after the first hosted plan exposed it, so final-head CI is renewed; earlier
+superseded CI is not reported as final coverage. All source/test bytes stay fixed.
+
 ## Negative/output matrix and skill ledger
 
 Matrix: strict missing/null/type/empty/malformed source inputs; external absolute/
@@ -177,7 +194,7 @@ NOT_OBSERVED; unattended DISABLED. Real account/credential/provider/model/order/
 funding/withdrawal/service operations0; capital at riskUSD0. Research receipts
 have no execution authority. Karl alone merges; no geoblock bypass.
 
-Deferred D001-D003 record actual historical evidence, ESPN access and owner
+Deferred D001-D004 record actual historical evidence, ESPN access, owner and npm
 activation gaps; earlier blockers remain qualified and historical docs preserved.
 No automatically mandated mini-WP. Any actual live action still requires genuine
 qualified evidence and the exact eligible-host, authenticated owner Stage A,
