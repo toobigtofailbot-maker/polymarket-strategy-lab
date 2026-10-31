@@ -105,6 +105,13 @@ Later capture/provenance36passed, exact R001-R01414passed, focused/adjacent444pa
 docs595passed, all exit0/0warnings. Actual final exact commands and authoritative
 full-suite/hosted/posted evidence reside in the current PRbody.
 
+Final --check-diff readiness initially rejected R002 because its cross-module
+test wrapper had no locally reachable assertion. The preserved native wallet-lock
+regression remains, with a direct empty-production-method assertion added. The
+premature full-suite container on that earlier test snapshot was stopped without
+an authoritative result. Production source/certified bytes/capture are unchanged;
+fresh readiness and final stable-head/full/hosted evidence reside in PRbody.
+
 Final native Semgrep p/python+p/security-audit:200applicable rules/5production
 files,0findings/0errors,exit0. Gitleaks directory rawexit1 has20byte-identical
 merged-baseline ranges,0introduced; no ignore/suppression added.5required binary

@@ -87,6 +87,7 @@ def test_evidence_activation_protected_gate():
 def test_native_paths_cannot_be_bypassed(tmp_path, monkeypatch):
     from tests.live_pilot.test_autonomous_authority import test_default_v1_marked_strategy_refuses_under_wallet_lock
     test_default_v1_marked_strategy_refuses_under_wallet_lock(tmp_path, monkeypatch)
+    assert not E.PRODUCTION_METHODS
 
 
 def test_admit_only_verified_after_cost_edge(tmp_path):
