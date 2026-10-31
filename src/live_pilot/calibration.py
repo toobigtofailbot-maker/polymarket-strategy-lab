@@ -101,6 +101,8 @@ def historical_bound(records, *, p_point, method_id, method_sha256, rule_sha256,
         if not train or not hold:
             return _seal(result)
         require(train[-1]['resolved_ns'] < hold[0]['resolved_ns'])
+        # Training labels must have existed before any holdout forecast was made.
+        require(max(r['resolved_ns'] for r in train) < min(r['source_cutoff_ns'] for r in hold))
         require(method_frozen_ns < min(r['source_cutoff_ns'] for r in hold))
         with localcontext() as ctx:
             ctx.prec = 80

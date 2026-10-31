@@ -68,3 +68,43 @@ def test_integration_admission_negative_matrix():
             E.require_native_edge(version,None,required=True)
     with pytest.raises(GatewayError,match='EDGE_PROOF_REQUIRED'):
         E.require_native_edge(SimpleNamespace(strategy_spec_json='{"execution_rule":{}}'),None,required=True)
+
+
+def test_evidence_activation_protected_gate():
+    from pathlib import Path
+    import subprocess
+    import sys
+    root = Path(__file__).resolve().parents[2]
+    package = root/'docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01'
+    result = subprocess.run([sys.executable, '-B', str(root/'tools/wp/wp_readiness_gate.py'),
+        '--wp', str(package/'wp_prompt.txt'), '--spec', str(package/'wp_spec.json'),
+        '--certificate', str(package/'draftability_certificate.json'), '--repo-root', str(root),
+        '--format', 'json'], capture_output=True, text=True, check=False)
+    assert result.returncode == 0
+    assert json.loads(result.stdout)['certificate_hash_bound'] is True
+
+
+def test_native_paths_cannot_be_bypassed(tmp_path, monkeypatch):
+    from tests.live_pilot.test_autonomous_authority import test_default_v1_marked_strategy_refuses_under_wallet_lock
+    test_default_v1_marked_strategy_refuses_under_wallet_lock(tmp_path, monkeypatch)
+    assert not E.PRODUCTION_METHODS
+
+
+def test_admit_only_verified_after_cost_edge(tmp_path):
+    from tests.tools.alpha.test_edge_evidence_capture import execute
+    root, _, _ = execute(tmp_path)
+    result = E.evidence_diagnosis(root)
+    assert set(result) == {'status', 'reason', 'p_lower', 'production_eligible', 'evidence'}
+    assert result['reason'] == 'CALIBRATION_NOT_VERIFIED'
+    assert result['evidence']['status'] == 'REPLAY_VERIFIED'
+    assert result['p_lower'] is None and result['production_eligible'] is False
+    assert result['status'] == 'NO_TRADE' and not E.PRODUCTION_METHODS
+    assert not E.qualify_candidate(source_record(), dict(production_eligible=True, p_lower='1'))['production_eligible']
+    invalid = E.evidence_diagnosis(tmp_path/'missing')
+    assert set(invalid) == set(result) and invalid['evidence']['status'] == 'REFUSED'
+
+
+def test_profile_risk_pilot_and_legacy_canary_unchanged():
+    test_owner_pilot_cap_and_minimum_fee_inclusive()
+    test_gains_never_reset_lifetime_losses_and_reserves_count_once()
+    test_closed_v1_first_canary_loss_cannot_disappear()

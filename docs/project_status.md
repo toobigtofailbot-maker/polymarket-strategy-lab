@@ -2218,3 +2218,25 @@ dispatch or unattended activation while these blockers remain. Stable evidence:
 Final validation/security/independent review/hosted evidence is in the current PRbody.
 Actual product/provider/account/credential/host/order operations0; capitalUSD0;
 LIVE DISABLED. Karl-only merge and protected activation are separate.
+
+
+## S10-EDGE-EVIDENCE-ACTIVATION-01 protected forward evidence software
+
+PR262 / S10-AUTONOMOUS-EDGE-TO-LIVE-01 merged: YES;
+headd968996a094a1d17d543c1104fab3cb5885e02a2;
+mergec2bbd18ef2f8a615226af959aac2e07273bd7f05. This is the frozen base.
+One PROTECTED/Risk4/XL WP, narrowed exact21 paths, dedicated worktree,
+independent exact-byte12-lens certificate and actual native readiness exit0
+before source edits. Reuses native rain Hunter/Alpha/PIT for a bounded one-shot
+public capture, offline original-byte replay and honest forward-only evidence
+counts; rejects training-label lookahead and keeps every production allowlist
+empty. Structural/native execution paths unchanged. No real account, provider,
+credential, order, funding, service or first-canary operation. Actual source
+attempt/replay and final validation/security/review/hosted receipts are in the
+stable fragment/current PRbody, not inferred from these capability statements.
+Contract: `docs/edge_evidence_activation_contract.md`;
+stable record: `docs/status_entries/S10-EDGE-EVIDENCE-ACTIVATION-01.md`.
+Original attended USD5 canary preserved; dormant USD10 profile remains dormant.
+Historical production corpus/method acceptance0/0; no qualified edge claimed;
+account/eligible host/custody/first-canary NOT_OBSERVED; unattended DISABLED.
+Karl alone merges. No operational authority follows from software/CI/merge.

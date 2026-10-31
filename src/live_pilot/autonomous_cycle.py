@@ -568,6 +568,16 @@ def activation_report(*, software_verified=False):
         blockers=['CALIBRATION_NOT_VERIFIED', 'OWNER_SETUP_REQUIRED', 'CANARY_APPROVAL_MISSING'])
 
 
+def evidence_activation_report(scratch=None):
+    """Offline evidence checkpoint, with no inferred account/host/canary receipts."""
+    from src.live_pilot.provenance import empty_report, verify_capture
+    evidence = empty_report() if scratch is None else verify_capture(scratch)
+    return dict(software='NOT_VERIFIED', evidence=evidence, method='NOT_QUALIFIED',
+                account='NOT_OBSERVED', funding='NOT_OBSERVED', custody='NOT_OBSERVED',
+                eligible_host='NOT_OBSERVED', provider_consent='NOT_OBSERVED',
+                first_canary='NOT_OBSERVED', unattended='DISABLED', live_active=False)
+
+
 def session_root(root, p, policy_hash, owner_hash, now):
     """Under the existing run lock: one activation, chained finite session journals."""
     activation = dict(schema_id='autonomous-activation', schema_version='2.0.0',

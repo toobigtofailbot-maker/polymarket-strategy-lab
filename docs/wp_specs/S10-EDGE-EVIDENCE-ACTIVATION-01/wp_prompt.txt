@@ -1,0 +1,311 @@
+Package Identity:
+  WP ID: S10-EDGE-EVIDENCE-ACTIVATION-01
+  Title: Real Edge Evidence and Secure Owner Activation Readiness
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-edge-evidence-activation-01
+  Required predecessor: PR #262 head d968996a094a1d17d543c1104fab3cb5885e02a2 merge c2bbd18ef2f8a615226af959aac2e07273bd7f05
+  Package class: PROTECTED_EDGE_EVIDENCE_ACTIVATION
+  Package size class: XL (Karl explicitly approves one consolidated task)
+  Evidence mode expected: actual native public/manual mode selected from repo truth
+  Runtime impact: dormant native evidence+admission code only, bounded public read-only capture permitted after certification
+  Product impact: genuine source qualification + one secure owner readiness checkpoint
+  Network impact: Git/official docs/approved bounded public GET; no real account, model, or orders in PR/CI
+  Credential impact: native provider compatibility only; no keys inspected/persisted by development agent
+  Dependency impact: none
+  Trading impact: no live economic mutation without separate actual owner Stage-A/OAuth/Stage-B proof
+  Governance track expected: PROTECTED
+Recommended Claude/Codex Mode:
+  Model/reasoning: High or Extra High when available; choose accurately from installed runtime
+  Reason: Independent financial evidence, risk and safe-source gates
+  Escalate to higher reasoning or STOP if: verified data impossible, unsafe out-of-scope source, atomicity false, qualification disputed
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 4
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: true
+scheduler: true
+hermes_runtime: true
+strategy: true
+paper: true
+execution: true
+live: true
+END_GOVERNANCE_AUTHORITY_V1
+
+OBJECTIVE — MINIMUM COMPLETE ONE-SHOT DELIVERY
+Karl approved this consolidated post-PR262 evidence-and-activation engagement. Main at c2bbd18ef2f8a615226af959aac2e07273bd7f05, latest PR #262 merged. Replace speculative software readiness with actual, inspectable source evidence and owner readiness. Reuse existing native calibration.py and edge_qualifier.py, new narrowly scoped provenance verifier, scanner, Hunter, Hermes, StrategyVersion, Gate C, LIVE-ORCH, Gate B, custody, first-canary composer. One WP, one exact branch, one PR; no new generic framework or research micro-WPs.
+
+The deliverable is: (A) a falsifiable real-data evidence report with per-source counts and source replay, (B) a native independent method acceptance decision only when real causal original forecasts and final outcomes satisfy all frozen constraints; otherwise a precise evidence insufficiency finding and safe forward-capture mechanism, (C) read-only account/VPS/fee/venue setup readiness checklist with current verified facts and clearly missing owner actions, (D) bounded live integration only for actually qualified methods and actual approvals, (E) single guarded PR and truthful handoff. A good NO_TRADE result is legitimate but no fake green production proof.
+
+AUTHORITY / NON-AUTHORITY POSTURE
+Implementation authority: YES for this exact package after genuine independent cert and native readiness; software-only changes to allowed paths.
+Report/export authority: bounded non-secret source receipt hashes and quantitative denominators; no raw owner credentials.
+Paper authority: permitted offline synthetic/source replay and bounded research-only evidence; no invented live outcome.
+Execution authority: permission to implement only native protected conditional admission; NO live economic CREATE/SELL/CANCEL during coding, testing or PR.
+Live authority: NONE from WP, CI, merge or source verification. Existing native owner-specific first-canary Stage A, witnessed OAuth, attended Stage B are non-delegable.
+Credential authority: code may reuse native supported custody; NO read/store/transmit private keys or API secrets during development, and never ask owner to paste them.
+Runtime/scheduler authority: finite one-shot public evidence acquisition after current checks; NO deployment, systemd install/start or automatic unattended trading from PR.
+Canonical evidence authority: immutable original native receipts + source-independent final settlement; synthetic/test hashes carry NO production proof.
+Network authority: bounded fixed official unauthenticated GET for source validation after certificate; GitHub and official documentation. NO credentials, funds, authenticated account/API or paid LLM calls in PR/CI. Actual owner setup is a later separately gated checkpoint.
+Dependency-change authority: NONE. Never change lock files, CI workflow, original frozen WP or external SDK pins.
+Forbidden economic/operational operations: direct CLOB order transmit; manual geoblock workaround; private key upload; deposit/withdraw; first canary automation; unverified collateral/atomicity; self-merging PR; unbounded network/LLM scheduler.
+
+HARD MERGE GATE (FIRST AFTER MANDATORY STARTUP + FIRST SKILL)
+Run: git fetch origin --prune; git checkout main; git pull --ff-only origin main; git rev-parse HEAD; git log -1 --oneline; git status --short --branch.
+Verify actual main/origin/main equals c2bbd18ef2f8a615226af959aac2e07273bd7f05, PR262 merged exact head d968996a094a1d17d543c1104fab3cb5885e02a2, clean worktree, generated-artifact guard and no existing open PR/local or remote branch for this WP. If main advanced or relevant code changed, reconcile exact state *before* freeze and separate cert; do not silently implement on a stale base. Use dedicated worktree, branch after readiness.
+
+CONTEXT BUDGET AND CANONICAL RULES
+Read first in repository order: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md, docs/ai/codex/README.md, docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md. Also read WP_SPEC_STANDARD.md, WP_DRAFTING_STANDARD.md, VALIDATION_MATRIX.md and PROTECTED_PATHS.md. Treat current repo as authoritative.
+Read next (targeted): src/live_pilot/calibration.py,edge_qualifier.py,autonomous_cycle.py,structural.py,hunter_cycle.py; tools/alpha/run_alpha_hunter.py, run_near_term_market_screener.py; native source/official market docs; src/execution_gateway/live_orch.py, live_canary.py; source receipt and proof code, exact tests and contracts.
+Read only if blocked: lower-level native settlement, canonical evidence, stores, deployment and custody interfaces. Do not scan all deferred history, inspect random unrelated directories, or touch files outside the finalized exact21 allowed paths. Centralized boundary = docs/ai/codex/PROTECTED_PATHS.md (do not duplicate or weaken its map).
+
+FIRST SKILL — NON-NEGOTIABLE
+After the mandatory repo startup READS, FIRST ACTUAL SKILL invocation in every drafting/independent-certifier/implementer/resume context: discover/read and invoke installed `$ponytail` using LITE mode. This must precede broad source browsing, spec editing, agent delegation, coding or testing. Record actual skill path, invocation, finding and scope reduction; never claim it ran if unavailable. If local repository requirements make it unavailable or mandatory, report and stop rather than simulate compliance. Do not use Ponytail merely as a slogan.
+After Ponytail, DISCOVER and READ the current installed SKILL.md for every applicable mandatory skill and RUN its real instructions. Minimum relevant inventory (rename/expand from live skill catalog): `$wp-predraft-inspector`, `$hermes-alpha-reuse-check`, `$financial-invariant-check`, `$dimensional-analysis`, `$canonical-evidence-audit`, `$runtime-authority-boundary-review`, `$wp-minimum-test-plan`, `$wp-readiness-preflight`, `$wp-one-shot-review`, `$prompt-optimizer` (working plan), `$security-review`, `$code-simplifier`, `$ponytail-review`, `$find-bugs`, `$spec-to-code-compliance`, `$verification-before-completion`, `$pr-evidence-reconcile`. Conditional by actual triggers: `$systematic-debugging`, `$post-patch-validation`, `$secret-serialization`, `$session-handoff-compact`; plus any repo-mandatory skill discovered. For each report READ/INVOKED/NOT_APPLICABLE/UNAVAILABLE with one concrete result. Installed locator success is not a certificate. `python -B -P` is preferred if local `inspect.py` shadows Python stdlib on 3.14.
+
+CERTIFICATION BEFORE IMPLEMENTATION
+These files are a PROVISIONAL DRAFT. Reconcile native contracts/skill feedback, finish exact fixed scope and normative matrix, then get REAL independent separate-context 12-lens PROTECTED certificate bound to final raw prompt/spec SHA256 at docs/wp_specs/S10-EDGE-EVIDENCE-ACTIVATION-01/draftability_certificate.json. Author must not issue/change its own independent PASS. Run native `python -B tools/wp/wp_readiness_gate.py --wp ... --spec ... --certificate ... --repo-root . --format json` with true exit0 and IMPLEMENTATION_READY before any source edit. Any prompt/spec change after certificate requires recertification. Karl's instruction authorizes the described software after certification, not live/secret execution.
+
+COMPATIBILITY / IMPOSSIBILITY CHECK
+Before freezing, inspect exact live signatures and produce concise table: original source receipt, independent settlement identity, calibration method, qualifier, market/current fee, existing native strategy/permit, ledger/wallet lock, live_canary, deployment host, structural multi-leg path, skill/certificate. Check each against exactly allowed files and prior behavior. Unknown independent historical evidence cannot be turned into a synthetic method. If essential safe behavior needs forbidden files, STOP on that narrow scope boundary and request one scoped correction, not 10 follow-up WPs.
+
+SOURCE ACQUISITION — CLOSED REAL EVIDENCE PLAN
+Use one precisely bounded public unauthenticated source-acquisition attempt after actual correct official endpoint/terms/current host/clock validation and reviewer certification; if absent, document why, not pretend a live GET. Default 0 until explicitly executing this one-shot capture; cap 40 GET total for source/market research, max 10 candidates, per-request timeout <=10s, max response <=2MB, finite time window <=120min, no automatic retries on HTTP4xx/5xx, no redirect off approved hosts, no geoblock/VPN workaround, no credentials and no paid provider. Freeze observed UTC as-of and fetched raw byte hashes, actual returned/unique/filtered counts, HTTP status/errors, provenance and replay. Never infer accepted Gamma filter syntax or full universe from request arguments. If a public endpoint is unavailable/forbidden, end acquisition honestly and continue offline validation.
+Original historical data: independently recorded original pre-event NBA ESPN or NWS native forecast/prediction receipts with real capture time and raw SHA; verified final event outcome/resolution from authoritative independent records; market rule/condition/token/outcome, method/version SHA and prediction decision cutoff; one group per true independent event resolution. Do not retroactively compute old forecasts from revised historical data or assume current source archives equal original real-time forecasts. If unavailable, create forward-only time-stamped future receipts that are RESEARCH_ONLY until settled; report actual n and why n<50. No fake data, resampling, invented history or provider self-attestation.
+
+INDEPENDENT STATISTICAL QUALIFICATION
+Freeze method, event rule family, horizon and bins pre-holdout; strict chronological 70/30 by independently resolved group, no data leakage/method edits/ties; source cutoff precedes outcome; holdout unresolved/late data excluded; no selection using test outcomes. For selected fixed decile [0,.1),...,[.9,1], at least 50 verified independent holdout groups; one-sided 95% Wilson lower rounded DOWN 1e-6; heldout model Brier <= frozen training-prevalence baseline; validation dates and raw original source IDs. Bind to actual current native method point/stress lower for same rule/horizon/side, take conservative minimum, not model prose or implied market odds. Wilson is not a universal prediction guarantee; distribution drift/stationarity checks and out-of-sample uncertainty remain. Qualifier only grants an accepted method on genuine independently reviewed production corpus frozen to method/rule/cutoffs. No syntactic receipt, hash, signed self-description, model score or TEST_ONLY diagnostics can fill PRODUCTION_CORPORA or PRODUCTION_METHODS.
+If evidence insufficient, do NOT edit empty allowlists to create a PASS. One concrete source/provenance deficit report and forward-collection plan inside same engagement, not another speculative module.
+
+STRUCTURAL METHOD DECISION
+Keep structural mathematical diagnostics RESEARCH_ONLY unless identical settlement theorem + actual safely guaranteed all-leg payoff/complete-or-safe hedge mechanics are established through authorized native gateway/locking/reconciliation. Current single-side FOK is NOT atomic two-leg arbitration. Do not implement unsafe sequential legs or label mathematical margin executable. If atomic mechanism absent, record precise source and execution capability blockers and prioritize statistical method first.
+
+VENUE, OWNER POLICY, AND FIRST CANARY
+Native source/strategy -> independently verified edge -> current Gamma/CLOB venue snapshot/fee/minimum/shares -> active exact StrategyVersion and Hermes advisory context -> native Gate C permit -> LIVE-ORCH -> Gate B account/reconcile. Positive conservative after-fee stress EV, unfilled depth, fee expiry and executable size required. Never assume old fee policy remains valid past 2026-11-04T00:00:00Z; recheck current documented official fee and market-specific fee at real operation.
+Effective first attended canary profile remains fee-inclusive <=USD5; if minimum principal+fee > cap, record MINIMUM_UNSATISFIABLE and NO_TRADE. New dormant target: $100 dedicated allocation, $10 per-order max, $90 free reserve, $10 combined worst-case loss since activation, $2 rolling24h provider budget only after explicit protected owner record, no silent profile replacement. No unknown exposure, loss reset/replenishment from realized profits, false account balance or double count. No funding/withdrawal. Private keys and API secrets only through native locally approved secret provider; never in this chat, WP, PR or logs. Only approved official access/eligible host; any geoblock refusal immediately stops.
+During PR implementation/CI do not perform authenticated reads, product provider inference or economic orders. After Karl-only merge the single secure owner checkpoint may verify local host, signer, Deposit Wallet, account state and custody with actual owner consent through native protected procedures. **First real CREATE** still requires exact Stage-A owner authorization and witnessed OAuth + attended Stage-B on src/execution_gateway/live_canary.py, real permit/intent/order/ledger correlation. The next unattended phase remains blocked until reconciliation and owner-specific standing policy evidence are real, not inferred from existing code.
+
+FINITE SESSIONS / KILL / SECURITY
+Keep OFF default, native run lock/wallet lock, known canonical ledger, kill latch before source/model/order, durable quota reservations across death/restart and rolling 24h; current clock rollback or host drift blocks. No unbounded while-true research until a candidate qualifies. For every failure output sanitized stable reason codes, source denominators/hashes (no raw untrusted errors). No new dependencies or host auto-install, service launch or account charge from the software PR.
+
+VALIDATION AND PR EVIDENCE
+Before PR, 14 mandatory named test nodes in spec plus adjacent native regressions, source-replay verifier and output/negative matrices; run relevant strict security review, no secret echo, Semgrep/Gitleaks, pinned dependency audit; final stable-head authoritative full suite, then single required hosted exact-head CI plan (all 11 expanded jobs checked). Independent implementation and separate security/financial review of actual source. Draft PR until stable. Post PR body, re-fetch exact head/body/files and native evidence guard. If optional comment-dependent old helper exit1, record raw exit1 and actual manual verification; don't fabricate PASS or post dummy comments. One WP PR, Karl only merges. No code changes after final CI unless renewed exact-head checks.
+
+HARD STOPS / CONCRETE NO-TRADE CONDITIONS
+STOP if source origin independent provenance or actual settlement is unverified — no production qualifier.
+STOP if n<50 real independent holdout event groups in the specific method/rule/decile — no edge admission; preserve truthful denominator.
+STOP if method frozen after holdout started, labels were revised, current source stale or rule mismatched — no production qualifier.
+STOP if atomic multi-leg or exact payout guarantee unproven — no structural execution.
+STOP if fee-inclusive minimum, risk/remaining $10 loss, current account/host/access, wallet ledger or owner canary record fails — NO_TRADE.
+STOP if a credential/private secret would enter agent, PR, logs or prompt — route to approved local owner-only flow.
+STOP if no independent 12-lens certificate/readiness PASS or needed source outside approved scope — do not implement.
+STOP if exact source code changed after final validation, local full/security or hosted checks fail, evidence cannot be re-fetched, or worktree is dirty — not READY.
+
+EVIDENCE PLAN — FOURTEEN REQUIREMENTS
+R001 Preflight and independent protected certification: Verified PR262 merge, no conflicting main/open branch, correct frozen package, separate 12-lens cert and true native readiness before source edits.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_evidence_activation_protected_gate
+R002 Native reuse, least scope and no direct order bypass: Reuse scanner, Hunter/ESPN/NWS, Hermes, StrategyVersion, Gate C, LIVE-ORCH, Gate B and live_canary; no alternate execution/credential store or arbitrary-provider method.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_native_paths_cannot_be_bypassed
+R003 Independent source provenance and pre-event truth: Only raw immutable pre-event independent observations and independent final outcome receipts, exact event/condition/token/rule, UTC cutoff, source identity, method SHA and source manifest qualify original records.
+  Test node: tests/live_pilot/test_provenance.py::test_original_source_and_resolution_provenance
+R004 Causal historical dataset integrity: Reproduce source-native forecasts from pre-event receipts; one event-group per resolved outcome, chronological 70/30 untouched holdout, frozen method and binning, no retroactive record/backfill/forecast revision contamination.
+  Test node: tests/live_pilot/test_calibration.py::test_causal_holdout_and_group_deduplication
+R005 Conservative empirical bound and real acceptance: At least 50 genuinely independent observations in the selected predeclared holdout decile, one-sided 95% floored Wilson lower, held-out Brier not worse than training-prevalence baseline, current rule/source/side compatibility; production acceptance only on separately verified real corpus.
+  Test node: tests/live_pilot/test_calibration.py::test_verified_empirical_bound_and_fail_closed
+R006 Bounded real public source acquisition and replay: One user-authorized bounded unauthenticated public source capture with strict official allowlist, no redirects/secrets, honest denominator, clock/fee/filters and original receipts; fail closed on unsupported or unavailable real historical sources.
+  Test node: tests/tools/alpha/test_edge_evidence_capture.py::test_bounded_public_capture_and_replay
+R007 Deterministic edge admission and after-cost feasibility: Only an accepted pinned method can yield production p lower; independent recomputation, current venue book, source time, fee/minimum/share grid, payout and positive stress-EV; LLM confidence and synthetic receipts never qualify.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_admit_only_verified_after_cost_edge
+R008 Structural proof and all-leg impossibility: Structural math remains research-only until original settlement theorem AND guaranteed safe all-leg execution/hedge through existing native path are proved; single-side FOK and sequential orders never unlock it.
+  Test node: tests/live_pilot/test_structural.py::test_unproven_atomic_leg_execution_never_trades
+R009 New-profile cumulative capital and loss safety: Historical first canary <=USD5 all-in; optional dormant $100 allocation, $10 order, $10 combined worst-case remaining pilot loss, $90 reserve only with distinct owner binding; no loss/fee exposure double count, no reset from gains or restart.
+  Test node: tests/live_pilot/test_edge_qualifier.py::test_profile_risk_pilot_and_legacy_canary_unchanged
+R010 Secure host, account and custody readiness: Check current eligible host/clock/access, public signer and Deposit Wallet, native authenticated balance/orders/trades/positions and custody/Session Key via approved local channel; no secret in artifacts, no geoblock bypass.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_owner_account_host_custody_denials
+R011 First real canary strictly attended: Existing live_canary composer with witnessed OAuth and Stage-A/Stage-B owner confirmation only; no synthetic canary, live CREATE in CI, lower-level shortcut or unattended first trade.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_first_canary_remains_attended
+R012 Renewable research budgets, kill and restart safety: Bounded public GETs, default-zero paid model budget until owner approval, <=USD2 rolling24h, singleton, locked ledger, UTC rollback refusal and kill checks; ambiguous calls never refund, no repeated scan until a trade appears.
+  Test node: tests/live_pilot/test_autonomous_cycle.py::test_bounded_evidence_session_restart_no_rearm
+R013 Security, no-echo and environment acceptance: No secrets, raw provider errors or invalid content echoed; true local permission/symlink checks; reject unsuitable Windows audit host, no dependency or CI security bypass.
+  Test node: tests/live_pilot/test_provenance.py::test_invalid_source_no_echo_and_host_refusal
+R014 One truthful owner checkpoint and exact PR evidence: Proof from actual source counts, accepted method denominator, real account/canary status, scoped validation, independent source/security review, exact-head hosted jobs and guarded PR body; zero-edge outcome remains blocker, never claimed trade.
+  Test node: tests/live_pilot/test_autonomous_authority.py::test_truthful_activation_checkpoint
+
+SUCCESSOR BOUNDARY
+One owner account/canary checkpoint stays conditional and non-delegable. Do not declare a new WP automatically, treat a first-canary as signed, activate a service, permit self-review/merge, or upgrade historical risk profiles. If a genuine verified source-qualified method is unavailable, finish the software/evidence PR and report production method count 0 with exact acquisition attempt/denominators and smallest physical unblock needed. Any broader live execution implementation beyond exact allowed paths requires fresh scope and independent approval.
+
+REPORT BACK
+Return: real Ponytail/mandatory skills invocation ledger; exact main SHA and head; final frozen prompt/spec SHAs + independent certificate; exact permitted file list; proof from actual public source acquisition (or explicit not attempted/refused) with n/groups/method/buckets and no fake provenance; all focused/full/security/exact-hosted CI exits; independent source/security review; posted body truth and manual evidence-mode exception if any; concise source/fee/host/account/custody/first-canary status matrix. Report SOFTWARE, EVIDENCE, EDGE, ACCOUNT, FIRST_CANARY, UNATTENDED as separate booleans with actual receipts. Never claim live trades or profits without real native receipts. Owner funding/secret/confirmation not solicited prematurely.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|edge_evidence_activation|r001|actual_required_evidence|REQUIRE|fail_closed_r001|requirements.r001|R001
+NR002|edge_evidence_activation|r002|actual_required_evidence|REQUIRE|fail_closed_r002|requirements.r002|R002
+NR003|edge_evidence_activation|r003|actual_required_evidence|REQUIRE|fail_closed_r003|requirements.r003|R003
+NR004|edge_evidence_activation|r004|actual_required_evidence|REQUIRE|fail_closed_r004|requirements.r004|R004
+NR005|edge_evidence_activation|r005|actual_required_evidence|REQUIRE|fail_closed_r005|requirements.r005|R005
+NR006|edge_evidence_activation|r006|actual_required_evidence|REQUIRE|fail_closed_r006|requirements.r006|R006
+NR007|edge_evidence_activation|r007|actual_required_evidence|REQUIRE|fail_closed_r007|requirements.r007|R007
+NR008|edge_evidence_activation|r008|actual_required_evidence|REQUIRE|fail_closed_r008|requirements.r008|R008
+NR009|edge_evidence_activation|r009|actual_required_evidence|REQUIRE|fail_closed_r009|requirements.r009|R009
+NR010|edge_evidence_activation|r010|actual_required_evidence|REQUIRE|fail_closed_r010|requirements.r010|R010
+NR011|edge_evidence_activation|r011|actual_required_evidence|REQUIRE|fail_closed_r011|requirements.r011|R011
+NR012|edge_evidence_activation|r012|actual_required_evidence|REQUIRE|fail_closed_r012|requirements.r012|R012
+NR013|edge_evidence_activation|r013|actual_required_evidence|REQUIRE|fail_closed_r013|requirements.r013|R013
+NR014|edge_evidence_activation|r014|actual_required_evidence|REQUIRE|fail_closed_r014|requirements.r014|R014
+END_NORMATIVE_RULE_MATRIX_V1
+
+
+FINAL AUTHOR RECONCILIATION — normative clarification before certification
+
+The preceding draft is finalized with these narrower concrete decisions. No historical
+source corpus is supplied by the ZIP or merged baseline. This WP must never populate
+PRODUCTION_CORPORA, PRODUCTION_METHODS or CALIBRATED_METHODS. The authorized
+insufficient-evidence branch is a complete deliverable: genuine bounded forward-only
+native capture (or an exact terminal refusal), deterministic cold replay, independent
+provenance gap, unchanged fail-closed admission and owner readiness reporting. No new
+production acceptance mechanism, configurable trust registry, source-signing scheme,
+settlement oracle or generic calibration framework is to be invented for missing data.
+Future production acceptance needs actual original observations AND independently
+reviewed exact settlement identity; no local verifier can manufacture either fact.
+No genuine source data is assumed present until inspected; report unqueried families.
+
+1. REUSE / CAPTURE PLAN
+Use tools.alpha.run_alpha_hunter.run with its existing fetcher_type seam, categories
+{'rain'} only, budget_path/executable/home/backend absent. Native rain cap6 is below10;
+ESPN/NBA is explicitly NOT_QUERIED due to unverified automated-use permission. Reuse original acquire/analyze/verify,
+raw receipts, method, Alpha/PIT research-only append and existing local registry
+initialization. Use a new empty external scratch and dedicated external research
+registry; never owner production stores. No new real Hermes dispatch. Preserve native
+source receipt filenames and keys so hunter.verify can cold replay. Native run_mode
+must remain PUBLIC_SCREENER_NO_HERMES, calibrated/production counts0. The attempt is
+one finite invocation; scratch is never reused to reacquire/retry. Failure does not
+start another operation. No change to native hunter.CONFIG or original allowlists.
+
+The sole real capture transport enforces <=40 total attempted GET, max6 rain market
+candidates, timeout<=10s including each bounded read and monotonic whole-response
+budget, max2*1024*1024 raw bytes, total invocation<=7200s, clock nondecrease,
+no redirect/proxy/auth/cookies/provider; HTTP error no retry. Native source endpoints
+are frozen to its existing exact templates: hunter.rain_event_url for capture UTC
+day+1/day+2; hunter.NWS+'stations/' plus native rule station id; hunter.points_url
+for native station lat/lon; existing hunter._NWS_RE for returned forecastGridData;
+venue.clob_book_url for native parsed token id. No user-supplied URL. No ESPN or
+other venue/host in this single attempt. Read existing hunter.url_ok for exact
+regex; use its validation without broadening it and restrict to the rain templates.
+Only HTTPS official fixed hosts gamma-api.polymarket.com, api.weather.gov and
+clob.polymarket.com. TLS defaults stay enabled. The capture transport stores durable
+request-start before dispatch and every bounded receipt including numeric HTTP
+status where available in a separate sanitized transport manifest; preserve native
+receipt shape for native replay. Closed status values: HTTP_2XX, HTTP_4XX,
+HTTP_5XX, REDIRECT_REFUSED, TIMEOUT, OVERSIZE, TRANSPORT_UNAVAILABLE,
+ENDPOINT_REFUSED, CLOCK_REFUSED, BUDGET_EXHAUSTED. Unknown/unsafe native input is
+INPUT_INVALID. No raw error strings/headers, response content, account or host
+location in stdout. Check secret-like response content with existing native SECRET
+scanner BEFORE persisting raw bytes; rejected raw content is not retained.
+
+Before actual capture verify actual UTC, actual native endpoint signatures and
+current official source terms/fee documentation through read-only inspection.
+Permission/refusal/unsupported terms blocks capture honestly, with 0 attempts and
+reason SOURCE_ACCESS_NOT_VERIFIED; public docs/Git workflow traffic is separate.
+Do not infer that existing usage proves current source permission. Windows public
+capture is permitted if native filesystem/transport checks pass; this does not
+approve the Windows host for production trading. No production-host remote check.
+
+2. PROVENANCE / REPORT CONTRACT
+New src.live_pilot.provenance.verify_capture(scratch) is offline/read-only. It first
+validates bounded safe paths, exact one-operation capture, pinned method source
+SHA256, stored manifest/raw hashes, monotone source clocks and native hunter.verify
+success. Persist the exact native method module raw-byte SHA at capture; source
+code drift refuses replay and never backfills an original method. Native manifest
+market identity retains event id, market/condition/token/outcome, rule SHA, forecast
+cutoff/start and point/bound values. Do not report full-universe completeness from
+request filters; count observed Gamma rows, distinct ids, native accepted/rejected
+markets, distinct station/climate-day/rule event groups, original pre-event forecasts, unresolved events,
+settled verified groups, training/holdout/bucket eligible groups separately. Conflicting
+or late/source-mismatched rows are rejected with counts, never relabeled original.
+Forward observations remain FORWARD_ONLY_RESEARCH; independent settled groups=0,
+production corpus/method count0, edge NOT_QUALIFIED. Local byte integrity is
+REPLAY_VERIFIED, never independently authenticated historical origin or settlement.
+Caller-provided finality/provenance booleans, rewritten raw receipts, self-hashes,
+LLM confidence and fake historical pairs never confer production eligibility.
+No direct source-pair settlement acceptor is added without a verifiable native
+original archive and finality contract; its absence is the explicit evidence gap.
+
+Verifier result is a closed fixed-key JSON mapping, fields enumerated/test-covered:
+schema_id='edge-evidence-report', schema_version='1.0.0', status in
+{REPLAY_VERIFIED,REFUSED,NOT_CAPTURED}, reason in {FORWARD_ONLY_RESEARCH,
+SOURCE_ACCESS_NOT_VERIFIED,SOURCE_INVALID,SOURCE_CODE_DRIFT,SOURCE_HASH_MISMATCH,
+SOURCE_CLOCK_INVALID,SOURCE_CAPTURE_INCOMPLETE}, capture_manifest_sha256 (null or
+lowercase64hex), native_manifest_sha256(null or lowercase64hex),
+method_sha256(null or lowercase64hex), observed_rows/unique_market_ids/
+native_market_count/independent_event_groups/pre_event_forecasts/unresolved_groups/
+verified_settled_groups/n_train/n_holdout/n_bucket (nonnegative integers on verified
+research replay, unknown null on refused/not-captured), source_counts mapping with
+exact keys GAMMA/ESPN/CLOB/NWS (nonnegative verified receipt counts, ESPN=0;
+unknown null on refusal), accepted_production_corpora=0,
+accepted_production_methods=0, production_eligible=false, evidence_class=RESEARCH_ONLY.
+No raw caller metadata or invalid values are echoed. Hashes attest bytes only.
+Invalid/missing source/account states never become a false successful count.
+
+New autonomous_cycle.evidence_activation_report(scratch=None) uses the offline
+verifier and preserves existing activation_report API/result behavior. Separate
+software/evidence/method/account/first-canary/unattended fields; account, funding,
+custody, provider consent, eligible execution host and canary always NOT_OBSERVED
+from this PR. SOFTWARE remains unverified until actual external validation receipts;
+report code is not a substitute for those process events. No account() call or
+credential read. edge_qualifier may consume verified report for refusal diagnostics
+only; production admission remains immutable and closed. No live wiring change is
+necessary without a qualified method. Preserve all original risk/canary/session
+semantics and original historical tests.
+
+3. CAUSAL CALIBRATION
+Retain original diagnostics/results and Decimal one-sided Wilson. Reject every
+training/holdout overlap where max(training.resolved_ns) >= min(holdout.source_cutoff_ns)
+before computing usable statistics; reject split resolution ties as before. Source
+cutoff is strictly before actual outcome. Freeze method/rule/horizon/side/decile
+before holdout source exposure. No fallback promotion based on n or good scores.
+Raw existing historical_bound rows remain TEST_ONLY without independently reviewed
+original event/settlement source corpus; exact absence is the real historical gap.
+
+4. SCOPE / PROCESS AND TESTS
+Required and allowed files are exactly the original19 plus
+tests/live_pilot/test_structural.py and tests/live_pilot/test_autonomous_authority.py;
+max_changed_files=21. Original unused optional paths are removed, not edited.
+The structural and LIVE-ORCH APIs remain read-only compatibility constraints. Branch/worktree
+creation follows clean sync and actual certificate/native readiness. Author candidate
+artifacts may be prepared externally before branch. Certifier alone writes independent
+certificate. Do not change prompt/spec afterward without fresh certification.
+
+All14 evidence entries use exact source='pytest' so the native gate actually checks
+nodes. R001/R014 pytest prove governed regressions only; actual remote PR merge,
+independent certificate, native pre-source gate, source fetch, separate final reviews,
+full/security exits and hosted/posted CI are independent process receipts, recorded
+separately in stable fragment and PRbody. Named tests must contain meaningful
+assertions and negatives, never assert that mock source/account/canary is real.
+Negative matrix includes forged origin/self-hash, missing or revised finality,
+method-code drift, train-label lookahead, duplicate/resolved event groups, timeout,
+redirect, oversize, cap/restart, symlink, no-echo, unknown counts and unchanged
+owner first-canary/gateway guards. Every public result field is test-covered.
+
+Skill ledger reports reading separately from actual task application and locator
+execution. Before-freeze review already used Ponytail LITE, all eight installed
+native locators and actual schema validator. Additional source/security/validation
+skills run only when their phase exists. A skipped phase is NOT_INVOKED, not PASS.
+No model/provider prompt eval is authorized or claimed; prompt-optimizer applies
+working-plan/schema/adversarial-case comparison only, not an LLM eval certificate.
+
+CURRENT OFFICIAL SOURCE ACCESS FINDING
+Read on 2026-10-30: Disney terms https://disneytermsofuse.com/english/ restrict
+automated extraction; no ESPN special permission is supplied. ESPN is not queried.
+NWS documents API access at https://www.weather.gov/documentation/services-web-api
+and public-domain use at https://www.weather.gov/disclaimer . Use the native rain
+family only; preserve these source limitations and no-outcome status in the report.
+This replaces the provisional NBA-only capture choice before independent certification.

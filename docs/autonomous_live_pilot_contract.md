@@ -207,3 +207,23 @@ Official references checked2026-10-30: [fees](https://docs.polymarket.com/tradin
 [orders](https://docs.polymarket.com/trading/place-orders).
 These references are not proof of account eligibility or beta availability. The
 existing fee-policy expiry2026-11-04T00:00:00Z remains unchanged.
+
+
+## S10-EDGE-EVIDENCE-ACTIVATION-01 forward evidence checkpoint
+
+The same-engagement protected evidence software reuses one finite native rain
+Hunter capture and offline replay. See `docs/edge_evidence_activation_contract.md`.
+No accepted production corpus/method or historical settlement proof is supplied
+by capture. Current source receipts are forward-only research; genuine resolved
+holdout denominator remains0. Independent event groups are not inferred from
+station/day identity or duplicated market tokens. Caller flags/hashes never
+promote financial authority. Training labels must predate all holdout forecasts.
+
+The capture is explicitly invoked, no scheduler/provider/account dispatch; its
+capture-local kill is checked and latched before source requests. Access refusal
+401/403/451 or redirects stops future dispatch. ESPN is not queried without
+separate automated-use permission. Existing native first-canary/custody/account/
+Gate C/gateway/risk/session behavior and empty production allowlists remain.
+The new offline checkpoint marks host/account/canary NOT_OBSERVED. Windows public
+research is not production-host qualification. The original5USD first attended
+canary and dormant10USD profile remain separate. Karl-only merge; LIVE DISABLED.
