@@ -1,0 +1,174 @@
+Package Identity:
+  WP ID: S10-SIGNAL-CANDIDATE-BRIDGE-01
+  Title: Offline Native Rain Signal to Mechanical FOK Research Candidate
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: 7a37fbd41f1e972407faa6973e2ff027c4a22264
+  Required predecessor: PR263 head 71b00fc6c54f712e6ecd8872b9e1f91f20b36c30, merge 7a37fbd41f1e972407faa6973e2ff027c4a22264
+  Suggested branch: codex/s10-signal-candidate-bridge-01
+  Package class: NATIVE_SIGNAL_TO_MECHANICS_RESEARCH_BRIDGE
+  Package size class: M (exact9)
+  Evidence mode expected: select exact native state-machine mode at actual PR closure
+  Runtime impact: NONE; one offline foreground tool
+  Product impact: one research-only source-to-mechanics receipt
+  Network impact: ZERO product/provider/account; ordinary Git/GitHub workflow only
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: ZERO; no accepted method, permit or order
+  Governance track expected: RUNTIME
+
+Recommended Codex Mode:
+  Use available model/reasoning appropriate to bounded source/financial compatibility.
+  STOP on an unresolvable native contract or protected boundary; do not redesign.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## Objective and authorization state
+One finite offline rain capture-to-existing-StrategyVersion-to-native-FOK research receipt with replayed source/code/rule/Yes-No identity, bounded decision-time venue freshness and unchanged fee-inclusive USD5 sizing; no independently authenticated source origin, accepted method, current real-market feasibility or economic authority is asserted.
+This is a final pre-implementation review package. Karl authorized draft correction and actual native readiness only. Readiness does not authorize implementation. STOP after readiness and return exact prompt/spec hashes and scope. Do not create a branch/worktree, implement tests/tool/docs, commit, publish PR, run CI or activate anything before Karl separately approves these exact bytes. No self-issued certificate; RUNTIME deterministic readiness is the native basis.
+
+## Mandatory startup and actual skills
+Read AGENTS.md -> AI_CODING_AGENT_START_HERE.md -> CODEX_START_HERE.md -> docs/project_status.md -> docs/repo_truth_index.md -> docs/deferred_items_log.md -> docs/ai/codex/README.md -> docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md. Navigate huge files by current/task-relevant sections. Discover actual installed user/system/plugin catalog before first skill. First actual invocation is Ponytail LITE, then wp-predraft-inspector. Apply minimum-test-plan to real test mapping, one-shot-review after substantive scope, readiness-preflight for actual gate and verification-before-completion before claims. Apply source/financial/boundary specialists where material. Record reads, commands, procedure and contribution separately; locator SOURCE_LOCATED is not readiness or a substantive review by itself.
+
+## Hard merge gate and ownership
+Before any later authorized branch: git fetch origin --prune; git switch main; git pull --ff-only origin main; git rev-parse HEAD; git rev-parse origin/main; git log -1 --oneline; git status --short --branch; python -B tools/git/preflight_generated_artifact_guard.py. Confirm clean main equals origin/main and contains both PR263 head and merge, required files exist, no package branch/PR or completed target exists. Use a dedicated worktree/one branch/one PR only after explicit authorization. If merged main moves materially, inspect drift and refreeze before approval. Karl alone merges. Never stack/reset user work.
+
+## Authority / Non-Authority Posture
+Implementation authority: NONE before Karl's exact-byte approval; afterward only these9 files.
+Report/export authority: bounded new external research receipt and sanitized validation evidence.
+Paper authority: NONE (synthetic test fixtures only, no paper engine/store).
+Execution authority: NONE; existing mechanical evaluator imports do not grant execution.
+Live authority: NONE; LIVE DISABLED; METHOD_NOT_QUALIFIED; production_eligible=false.
+Credential authority: NONE; never discover/read/request/log secrets or authenticated account data.
+Runtime/scheduler authority: NONE; no process/backend/daemon/cadence/service/deployment.
+Canonical evidence authority: local integrity/schema/lineage checks only; no origin/finality/calibration promotion.
+Network authority: no tool product/provider/account requests; normal workflow Git/GitHub only after separately authorized implementation/release stages.
+Dependency-change authority: NONE.
+Reference every group in docs/ai/codex/PROTECTED_PATHS.md Centralized Boundary Group Reference: credentials/secrets, authenticated clients, wallet/account behavior, order placement/cancel, execution gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment, dependency/lock changes, external code copying, generated artifacts. No group is crossed; external output is never committed. Native source, config, risk, OMS, reconciliation, canary, Hermes preview and method allowlists stay unchanged.
+
+## Exact changed-file scope and rollback
+Required = allowed = max_changed_files9, exact_scope_required=true. No optional compatibility path.
+1. tools/alpha/run_signal_candidate_bridge.py
+2. tests/tools/alpha/test_signal_candidate_bridge.py
+3. docs/signal_candidate_bridge_contract.md
+4. docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_prompt.txt
+5. docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_spec.json
+6. docs/status_entries/S10-SIGNAL-CANDIDATE-BRIDGE-01.md
+7. docs/project_status.md
+8. docs/repo_truth_index.md
+9. docs/deferred_items_log.md
+Do not modify src/, .github/, dependency/lock files, existing frozen packages, configs, credentials, deployment or source collectors. A new source sibling would require architecture approval; this tool adds none. Revert only these9 files after implementation; preserve external originals/lifecycle history and all protected state. No new registry/store/journal or framework.
+
+## Context budget and compatibility / impossibility
+Read for this WP: included P0 findings/handoff; native provenance.verify_capture; run_edge_evidence_capture.code_hashes/CONFIG; run_alpha_hunter.verify/analyze_rain/rain_rule; strategy_lifecycle models/store/policy; execution_feasibility models/public_market/evaluator; hunter_cycle fee_bound/size_order/fee_max; scanner dated fee constants; existing rain and feasibility fixtures. Read blocked references only for specific ambiguity. Do not read unrelated histories, credential dirs or operator accounts. Search fallback: signalbinding, evidence_refs, REPLAY_VERIFIED, METHOD_RAIN, health_of, acquisition_completed_ns, FEE_EXPIRY.
+Compatibility facts: native StrategyVersion accepts bounded sorted opaque evidence_refs; signalbinding:sha256 references pass its actual roundtrip and native execution-rule binding. No source-to-method field exists natively: bind explicitly through that existing evidence_refs surface, not a new src schema. Hunter method is nws-gridpoint-pop-climate-day-v1; pilot alias RAIN_NWS_V1 is separate and must map exactly. Native rain forecast has no start_ns: derive climate-day start through unchanged NDFD station timezone/standard offset helpers. Existing Hermes choice preview requires other semantics and remains unchanged. No compatible existing version is guaranteed: return VERSION_INVALID instead of minting one.
+
+## Frozen offline API and input bounds
+Implement only tools/alpha/run_signal_candidate_bridge.py with run --request-file <absolute external JSON> --output-file <new absolute external JSON>, and verify --request-file <same> --receipt-file <existing>. Expose evaluate_request(request) -> closed receipt and verify_receipt(request, receipt) -> the same closed receipt on exact rederivation, otherwise closed REFUSED receipt. main(argv=None) exits0 for completed research verdict/verified receipt,1 for refusal,2 for sanitized CLI usage errors; never echo argv/path/exception.
+Request exact keys: schema_id='signal-candidate-request', schema_version='1.0.0', analysis_mode (SYNTHETIC_ONLY or RESEARCH_HISTORICAL), capture_dir, lifecycle_store_path, expected_lifecycle_head, strategy_version_id, gamma_market_id, outcome_index, decision_ns, venue_bundle_file. No URL/provider/cap/probability/finality/qualified flag. IDs use native validators; integers exclude bool, are positive signed64-bit; outcome_index exactly0 or1. Request <=65536bytes, strict duplicate-free JSON via native strict loader, no floats/nonfinite values, depth<=12, nodes<=20000. Unknown/missing/null/type/empty fields refuse.
+Venue bundle exact keys: schema_id='signal-candidate-venue-bundle', schema_version='1.0.0', gamma_body_file, clob_body_file, acquisition_started_ns, acquisition_completed_ns, venue_snapshot. Body files <=2000000bytes each; bundle <=1048576bytes. Paths are safe absolute external regular files/directories using unchanged native path validation, reject symlink/reparse/hardlinks/nonregular files, repo and known native secret-directory boundaries. Inputs and outputs are disjoint; no overwrite, traversal or edits to evidence/store. Output parent must already exist, output opened exclusively only after validation, no symlink race following; capture path uses unchanged PR263 bounded directory/size verification. Read-only lifecycle loader only (mode=ro), never initialization/append. Capture/store/body files must not change across evaluation: recheck content references and loaded store head before output; drift refuses. Verify mode writes nothing.
+
+## Source, method, Yes/No and version binding
+Require src.live_pilot.provenance.verify_capture(capture_dir).status == REPLAY_VERIFIED. This enforces the unchanged one-operation PR263 format, pinned5-module source_hashes, rain-only COMPLETED and HERMES_NOT_RUN_BUDGET_ZERO, and cold hunter.verify/analyze replay. Do not call acquisition/run/controller; accept no caller-authored manifest as independently trusted. Root op is exactly op-000001. Select exactly one manifest market with gamma_market_id match, WEATHER_US_DAILY_RAIN, reason=None and forecast present. Re-read native retained Gamma market/rule data; rain_rule binds exact date/station/CLI resolution source and ordered ['Yes','No'] tokens. Both native source token rows must exist uniquely and match condition and indices, even when their old book diagnostics are negative. Select tokens[outcome_index]; do not swap/complement by title or forecast sign. A stale original CLOB book is not a reason to fabricate price; only separately supplied, rule-compatible venue evidence can support mechanical repricing.
+Recompute climate-day start in nanoseconds from native target_day/station metadata with NDFD.standard_utc_offset_minutes and climate_day_window; no UTC-midnight shortcut or Gamma endDate. Retain all original forecast assumptions; emit no new p_lower, calibration or stress-edge acceptance. Native source verification is SOURCE_REPLAY_VERIFIED only, source_origin=UNVERIFIED, never ORIGINAL_SOURCE_VERIFIED. Synthetic and historical modes have the same zero authority; a caller mode flag cannot promote origin.
+binding_payload exact keys/values: schema_id='signal-binding', schema_version='1.0.0', method_id='RAIN_NWS_V1', source_method='nws-gridpoint-pop-climate-day-v1', source_hashes (exact native5-module mapping), native_manifest_sha256 (raw manifest bytes hash), gamma_market_id, condition_id, token_ids (native ordered two strings), resolution_rule_sha256, target_day (native ISO date), station_id (native station), event_deadline_ns (derived climate-day start), source_cutoff_ns (native clocks). Define derived.signal_binding_ref per spec SHA256_CANONICAL_JSON over the exact one-key wrapper {"binding_payload": binding_payload}, prefix signalbinding:sha256:. Canonical JSON uses sort_keys, separators comma/colon, ensure_ascii=false, no NaN, UTF8, explicit nulls and array order preserved. No StrategyVersion id in this preimage, so binding is acyclic. Require exactly one evidence_ref starting signalbinding:sha256: on the selected existing version and it must equal the recomputed reference. Extra unrelated refs retain native validation. Source code identity is committed through source_hashes, not a caller label.
+Read verified lifecycle snapshot with expected_lifecycle_head exact match, version_by_id exact native id, created_time_ns<=decision_ns and health_of(id)!='RETIRED'. Unknown health is unassessed research metadata, not live approval; no allocation/policy activation is required or changed. Build_execution_intent revalidates this immutable version and derives execution_rule_sha256; never accept that digest from a caller. Missing/incompatible pre-existing version is a normal closed refusal, not permission to create one. Tests may prepare synthetic source/store/version fixtures before invoking the tool; the tool itself never does.
+
+## Time, venue and native economics
+Require native source_cutoff_ns<=native evaluated_ns<=decision_ns<min(native evaluated_ns+30000000000,event_deadline_ns). Grid publication/coverage/age remains the unchanged native check. Each relevant source receipt must predate native source cutoff; future/rollback/conflicting clocks refuse. Caller supplies research time; no current-live mode or host-clock rewrite. Every real retained replay is RESEARCH_HISTORICAL even when re-evaluated at original time. Real-event-to-order remains UNMEASURED.
+Re-read Gamma/CLOB body files and construct PublicExecutionVenueSnapshot with existing public_market.SourceFetchResult('BODY', bytes) and build_public_venue_snapshot for the selected native market/condition/token and bundle acquisition clocks. Compare its complete to_mapping() to bundle.venue_snapshot; validate native exact identity and supplied body hashes. Validate supplied Gamma raw selected-market rain_rule again, condition/two tokens/target date/station/rule digest equal source binding; do not splice unrelated/new rules. Repeated/refreshed Gamma bytes may differ in venue facts but not this semantic identity. This proves local supplied-byte mechanics, not independent capture origin/current venue truth.
+Require acquisition_started_ns<=acquisition_completed_ns<=decision_ns, both 0<=decision_ns-acquisition_completed_ns<=30000000000 and 0<=decision_ns-book_timestamp_ns<=30000000000. Native acquisition-time check still applies. Missing/future/stale book produces INCONCLUSIVE without successful sizing/admission. Source/clock identity conflicts are REFUSED. Evaluation+1day cannot remain mechanically feasible. Equality30s permitted for book/acquisition age, strict source-evaluation+30s and event deadline boundaries.
+Policy is fixed USD2floor/USD5fee-inclusive cap, BUY/AGGRESSIVE_TAKER/FOK/post_only=false, no GTD. Require dated scanner.FEE_POLICY and decision_ns<scanner.FEE_EXPIRY (2026-11-04T00:00:00Z), recognized WEATHER_US_DAILY_RAIN schedule, fee_taker_only=true and exponent1 compatible with documented source. Use hunter_cycle.fee_bound(snapshot,category, documented_rate=Decimal(scanner.FEE_RATES['weather'])) to preserve max native/documented rate, never zero/unknown fallback. Other unknown fees are INCONCLUSIVE; expiry is INCONCLUSIVE and never silently extended. Report conservative helper fee separately from native assessment fee if the raw native rate is lower; do not modify snapshot hashes to insert the conservative rate. No native r-to-WP172 bps conversion.
+Use fresh best ask/depth, native gamma_min_order_notional_usd and book_min_order_size_raw separately with hunter_cycle.size_order. No edge/margin requirement: these are mechanics only; entry_economics is deliberately not used because it also asserts a payout stress margin. Preserve native refusal when maximal chosen size lacks depth; no optimizer is added. Align down only to0.01shares and principal0.01USD; avoid unbounded q-=0.01 loops. For exact ask=a/10^d in lowest-or-unreduced integer form, valid0.01share integer n must satisfy n*a divisible by10^d: n_step=10^d/gcd(a,10^d), q_step=0.01*n_step; floor q/q_step then multiply. Use exact bounded Decimal/integer arithmetic and recompute fee_max; recheck floor/cap, notional/share minima and depth. Native tick and0secondsDelay remain mandatory. q=0 or USD5 minimum plus positive fees => MECHANICALLY_NOT_FEASIBLE, not a test failure requiring policy relaxation. Build_execution_intent uses selected existing version, computed q/ask, information_cutoff_ns=decision_ns,max_public_data_age_ns=30000000000; call unchanged assess_execution_feasibility(...,evaluated_at_ns=decision_ns). Native FEASIBLE/LIMITED/INCONCLUSIVE/NOT_FEASIBLE strings preserved, only native FEASIBLE plus all stronger fixed sizing/currentness checks maps to mechanical research success. No FAK/passive path is added.
+
+## Exact result, failure precedence and identity
+Receipt schema_id='signal-candidate-receipt', schema_version='1.0.0'. Every receipt always has exactly: schema_id,schema_version,receipt_id,status,reason_codes,analysis_mode,source_replay_state,source_origin,method_id,source_method,method_state,binding_payload,signal_binding_ref,capture_manifest_sha256,native_manifest_sha256,lifecycle_head,strategy_version_id,gamma_market_id,condition_id,token_id,outcome_index,source_cutoff_ns,native_evaluated_ns,decision_ns,event_deadline_ns,venue_snapshot_id,execution_intent,native_assessment,shares,principal_usd,conservative_fee_usd,all_in_usd,fee_policy_version,fee_policy_expiry_ns,source_counts,unresolved_groups,independent_event_groups,accepted_production_methods,accepted_production_corpora,production_eligible,permit,signed_order,no_live,no_order,real_event_to_order.
+status is REFUSED, INCONCLUSIVE, MECHANICALLY_NOT_FEASIBLE or MECHANICALLY_FEASIBLE_RESEARCH_ONLY. reason_codes is sorted unique closed codes: INPUT_INVALID,PATH_REFUSED,SOURCE_UNVERIFIED,SOURCE_CODE_DRIFT,IDENTITY_MISMATCH,VERSION_INVALID,STORE_CHANGED,CLOCK_INVALID,SOURCE_EXPIRED,BOOK_STALE,VENUE_UNKNOWN,FEE_UNKNOWN,FEE_POLICY_EXPIRED,MINIMUM_UNSATISFIABLE,DEPTH_INSUFFICIENT,SDK_GRID_UNSATISFIABLE,NATIVE_NOT_FEASIBLE,RECEIPT_MISMATCH,OUTPUT_REFUSED. Successful mechanical receipt has empty reasons. Native diagnostics remain inside native_assessment without renaming. Failure priority is input/path -> source/code -> identity/version/store -> clock/source-expiry -> venue/book/fee unknown -> known sizing/native negative -> success. Unknowns do not become successful zeros or invented economics.
+Trusted fixed fields: source_origin='UNVERIFIED', method_state='METHOD_NOT_QUALIFIED', accepted_production_methods=accepted_production_corpora=independent_event_groups=0,production_eligible=false,permit=signed_order=null,no_live=no_order=true,real_event_to_order='UNMEASURED'. All unverified lineage/time/economic/count fields are null; source_counts/unresolved_groups copy only verified native report. source_replay_state is REPLAY_VERIFIED or UNVERIFIED. method_id/source_method are their fixed pair only after validated source, else null. analysis_mode is validated input enum or null. No arbitrary text/path/URLs/raw forecast/errors are projected.
+receipt_id='signalcandidate:sha256:'+canonical hash of the exact one-key wrapper {"receipt": receipt_without_receipt_id}, including all explicit nulls/invariants and unchanged native nested mappings. These source-path wrappers match native WP identity_derivations projection semantics. No self-hash recursion. Verify replays all source/venue/lifecycle bindings and requires exactly equal complete receipt at recorded decision/expected head; it is not a head-currentness/policy-activation certificate. Exclusive output run and read-only verify share exact schema/scanning. Nested binding/intent/assessment fields use their closed native schema; recursive scanner covers valid and invalid results. Classify closed enums/IDs/validated decimal strings as scanned, numeric/boolean/null primitives as type-exempt with reasons. No manual omission serializer without complete field-coverage assertion. A hand-built dictionary is not a full output-surface scan unless a field-coverage test proves it covers every public field.
+
+## Requirements and requirement-to-evidence plan
+R001. Synchronized predecessor and exact nine-file scope: Real git/GitHub sync and native deterministic RUNTIME gate receipts prove PR263 merged, clean main equals origin/main at the frozen base, no competing package and exact scope; tests cannot prove these process events.
+Evidence: actual process receipts
+
+R002. Cold native rain source replay and Yes/No identity: Require unchanged provenance.verify_capture REPLAY_VERIFIED for one PR263-format rain-only/no-Hermes capture; select one source-supported native market, exact condition, ordered Yes/No tokens and outcome_index 0 or 1; code/hash/raw/rule conflicts refuse. Source origin remains UNVERIFIED.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_native_rain_replay_and_identity_binding
+
+R003. Existing verified StrategyVersion binding: Load lifecycle store read-only; resolve an existing non-retired version created no later than decision; require exactly one signalbinding:sha256 reference equal to the canonical binding payload defined below; never create or append a version or require live allocation.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_exact_verified_version_binding
+
+R004. Decision-time freshness and climate-day deadline: Require native source cutoff <= native evaluation <= decision, decision < native evaluation+30s and decision < rule-derived climate-day start; independently 0<=decision-venue_acquisition<=30s and 0<=decision-book_timestamp<=30s. Historical research clocks never prove current tradability.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_decision_time_currentness_and_replay_denial
+
+R005. Reachable native mechanical FOK without method promotion: Rebuild supplied snapshot from bounded original supplied Gamma/CLOB bytes and explicit acquisition clocks; compare entire native snapshot, identity and rain rule. Reuse fee_bound, size_order, fee_max, build_execution_intent and assess_execution_feasibility; a labeled synthetic consistent small-minimum/deep-book fixture reaches FEASIBLE with production_eligible=false.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_reachable_fok_mechanics_remains_research_only
+
+R006. USD5 all-in constraints and units: Use fixed USD2 floor/USD5 cap, shares versus Gamma USD notional separately, conservative max documented/native rain fee and exponent1 policy valid before scanner.FEE_EXPIRY; preserve ticks/depth/delay, share and SDK principal grids. USD5 principal plus positive fee refuses; no cap/tariff override.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_fee_minimum_depth_ticks_delay_and_expiry
+
+R007. Source replay is not origin or method acceptance: Native pilot alias RAIN_NWS_V1 maps only to Hunter nws-gridpoint-pop-climate-day-v1. Preserve source_origin=UNVERIFIED, METHOD_NOT_QUALIFIED and production_eligible=false regardless of source replay, arithmetic, model prose, TEST_ONLY diagnostics or injected allowlists; no independent probability bound or financial edge is emitted.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_no_method_or_financial_edge_promotion
+
+R008. Bounded deterministic receipt and cold verifier: Closed input/output schema, exact canonical content identity, safe external paths, bounded native capture, immutable exclusive output, deterministic verify by rederivation at recorded clocks and expected lifecycle head; malformed/tampered/secret-like input produces closed no-echo refusal, never raw path/body/error output.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_receipt_cold_replay_tamper_and_no_echo
+
+R009. No network, providers, accounts or economic dispatch: Tool imports and run/verify are offline with no scanner acquisition, Hunter run, Hermes inference, subprocess, account, signer, Gate C, LIVE-ORCH, wallet or order call; no runtime/source/config/DB mutation. Only explicit new external receipt writes are permitted.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_offline_no_network_account_or_orders
+
+R010. Field coverage and denominator truth: Every public field is classified and recursively scanned or type-exempt on success/refusal; native source counts copied only after verified replay, otherwise null. Independent settled groups and accepted production methods/corpora remain0, actual real event-to-order latency UNMEASURED.
+Evidence: tests/tools/alpha/test_signal_candidate_bridge.py::test_bound_output_field_coverage_and_denominators
+
+R011. Actual post-authorization closure evidence: After distinct Karl authorization only, record focused/adjacent tests, one authoritative stable full suite, actual-surface security and one combined independent implementation/security/financial review, exact-head hosted checks and re-fetched PR body/evidence guard under native state machine. No pytest fixture claims these events happened.
+Evidence: actual process receipts
+
+## Negative-test matrix (required YES)
+R002/R003 cover raw/code/hash/manifest/rule/method/version mismatch, future version, retired/missing store, wrong condition/outcome and Yes/No swap; ambiguity/duplicate input refuses. R004 covers source/venue future time, deadline equality, exact30s boundaries, climate-day timezone, decision+1day, source reset, historical relabel and store drift. R005/R006 cover fee-inclusive USD5 denial, independent USDC/share minima, no tick/depth/delay fallback, documented/native fee divergence, invalid exponent/expiry, non-divisible SDK grids and zero quantity; positive uses synthetic small-minimum compatible raw bodies with sufficient depth for both outcome directions. R007 proves no p_lower/edge/origin/qualification even with forged badges/allowlists. R008/R010 cover missing/null/wrong type/empty/truncated/duplicate-key/unknown-field/oversize/unsafe path/secret-like no-echo, field coverage including invalid outputs and tamper of every binding. R009 covers import/run/verify under socket/process/account/order/DB-write blockers with only explicit external output allowed; before/after source/store/repo bytes unchanged. No per-event Hermes or paid source is used. Natural-language strategy/trade wording typo/case filters are not introduced: policy categories7,9,10,13-15 are inapplicable to that absent filter; case/typo variants of typed enums/fields do reject, and safe allowed diagnostic text must not be overblocked. Secret scanning applies to raw inputs and output no-echo, not a fabricated realistic secret in committed fixtures.
+
+## Full-changed-set guard evidence and compatibility
+Bounded searches inspected complete changed-set guards in tests/test_append_only_local_manifest_and_dataset_snapshot_reference_contract_docs.py:1303-1341,1512-1522 and tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py:791-828,988; they derive exact active S10 scope from its status fragment/spec. tests/test_hermes_research_prompt_pack_operator_runbooks_docs.py:25-72,874 derives authorized tools similarly. Historical source guard tests/test_architecture_boundaries.py filters only src paths; tool-only scope adds none. The optional test_autonomous_opportunity_cycle.py compatibility edit is unnecessary because its frozen src allowlist text is unchanged. The old global deferred-log EOF assertion has already been corrected to exact row presence. Preserve these guards, no additions/weakening. Final implementation full suite remains the backstop for bounded-discovery limits; unforeseen outside-scope failure stops, never patches unapproved files.
+
+## Hard stops versus ordinary input refusals
+Invalid/stale/unsupported runtime input is an expected closed research refusal, not authority to widen scope. STOP the WP if safe implementation needs native src/config/dependency/workflow/protected edits; because this package has no such authority. STOP if binding/provenance/no-echo/path/race checks cannot be satisfied in these9 files; because misleading evidence cannot be accepted. STOP if native pure reuse or synthetic positive is impossible without loosening method/financial rules; because no alternative engine is authorized. STOP if final full/security/review/evidence checks fail or are unavailable; because readiness/review must report actual blockers. STOP on changed frozen main/authority/scope before owner approval; refreeze instead of silently implementing drift.
+
+## Native readiness, explicit owner stop and later closure
+For pre-authorization actual external frozen files use python -B tools/wp/wp_readiness_gate.py --wp <actual frozen prompt path> --spec <actual frozen spec path> --repo-root C:/GitHub/polymarket-strategy-lab --format json. In this paragraph angle-bracket descriptions identify actual filesystem arguments, not unresolved choices. Run actual supported --help if needed; require exit0/IMPLEMENTATION_READY, RUNTIME/DETERMINISTIC, certificate_required=false, package_guard_passed=null. No --check-diff before implementation, no test stubs or manufactured certificate. STOP HERE and return hashes/scope to Karl. Any prompt/spec correction changes hashes and invalidates prior approval.
+After Karl explicitly approves: create one dedicated branch/worktree, copy exact frozen prompt/spec without newline changes, implement only exact scope. Run focused new tests plus native feasibility/rain/provenance/lifecycle/boundary adjacent tests; complete negative/field coverage and no-side-effect evidence. One authoritative stable full suite per native matrix, actual-surface security, one combined independent implementation/security/financial review, readiness --check-diff and generated-artifact guard, exact-head selected hosted checks and final Side review. Re-fetch posted PR body and select exactly one native evidence mode; absent posting/review/required validation => BLOCKED_NOT_READY, Ready for review:NO. Preserve Model-D stable fragment, exact commands/counts, workflow-network versus zero product-network distinction. This paragraph describes later lifecycle requirements, not authorization now. No CI/PR/merge/service/trade action during draft phase.
+
+## Successor boundary and report back
+Weather original source/final CLI and wallet prospective studies remain conditional independent lanes, not automatic successors. Later method acceptance requires genuine independently reviewed original/settled evidence and separate exact protected package/certificate/owner approval; current unconditional method refusal and empty sets remain. No feature is deferred from this offline bridge to evade its tests.
+Report back now: actual skill procedures, synced base/PR facts, bounded compatibility/guard evidence, material corrections, actual native readiness raw result/exit, final raw-byte prompt/spec SHA256 and exact9-file scope. Stop for Karl's explicit implementation authorization. Report SOFTWARE/MECHANICS/METHOD/LIVE separately; no live latency claim or trading/account workaround.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|signal_candidate_bridge|r001|actual_evidence_required|REQUIRE|fail_closed_r001|requirements.r001|R001
+NR002|signal_candidate_bridge|r002|actual_evidence_required|REQUIRE|fail_closed_r002|requirements.r002|R002
+NR003|signal_candidate_bridge|r003|actual_evidence_required|REQUIRE|fail_closed_r003|requirements.r003|R003
+NR004|signal_candidate_bridge|r004|actual_evidence_required|REQUIRE|fail_closed_r004|requirements.r004|R004
+NR005|signal_candidate_bridge|r005|actual_evidence_required|REQUIRE|fail_closed_r005|requirements.r005|R005
+NR006|signal_candidate_bridge|r006|actual_evidence_required|REQUIRE|fail_closed_r006|requirements.r006|R006
+NR007|signal_candidate_bridge|r007|actual_evidence_required|REQUIRE|fail_closed_r007|requirements.r007|R007
+NR008|signal_candidate_bridge|r008|actual_evidence_required|REQUIRE|fail_closed_r008|requirements.r008|R008
+NR009|signal_candidate_bridge|r009|actual_evidence_required|REQUIRE|fail_closed_r009|requirements.r009|R009
+NR010|signal_candidate_bridge|r010|actual_evidence_required|REQUIRE|fail_closed_r010|requirements.r010|R010
+NR011|signal_candidate_bridge|r011|actual_evidence_required|REQUIRE|fail_closed_r011|requirements.r011|R011
+NR012|signal_candidate_bridge|signal_binding|binding_payload_valid|REQUIRE|exact_binding_digest|derived.signal_binding_ref|R003
+NR013|signal_candidate_bridge|receipt_identity|closed_receipt|REQUIRE|exact_receipt_digest|receipt.receipt_id|R008
+END_NORMATIVE_RULE_MATRIX_V1
