@@ -2240,3 +2240,8 @@ Original attended USD5 canary preserved; dormant USD10 profile remains dormant.
 Historical production corpus/method acceptance0/0; no qualified edge claimed;
 account/eligible host/custody/first-canary NOT_OBSERVED; unattended DISABLED.
 Karl alone merges. No operational authority follows from software/CI/merge.
+
+
+## S10-SIGNAL-CANDIDATE-BRIDGE-01 authorized offline implementation
+
+PR263 / S10-EDGE-EVIDENCE-ACTIVATION-01 is merged at7a37fbd41f1e972407faa6973e2ff027c4a22264 (head71b00fc6c54f712e6ecd8872b9e1f91f20b36c30). Karl authorized the exact nine-path RUNTIME/Risk3/M bridge after native deterministic readiness. One offline tool connects native rain byte replay, existing StrategyVersion evidence binding, decision-time source/venue clocks and native fee-inclusive USD2-5 FOK mechanics into a non-economic receipt. src/config/dependency/workflow/preview/runtime unchanged. Contract: docs/signal_candidate_bridge_contract.md; package: docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/; stable record: docs/status_entries/S10-SIGNAL-CANDIDATE-BRIDGE-01.md. Validation/review/CI evidence remains in progress and belongs in the current PR body; no readiness-to-merge claim. Source origin UNVERIFIED; METHOD_NOT_QUALIFIED; production_eligible=false; LIVE DISABLED; capital/orders USD0/0; real event-to-order UNMEASURED. Karl alone merges; no real acquisition/provider/account/host/economic authority.

@@ -1,0 +1,706 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-SIGNAL-CANDIDATE-BRIDGE-01",
+    "title": "Offline Native Rain Signal to Mechanical FOK Research Candidate",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "NATIVE_SIGNAL_TO_MECHANICS_RESEARCH_BRIDGE",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-signal-candidate-bridge-01",
+    "required_predecessor": {
+      "pr_number": 263,
+      "head_sha": "71b00fc6c54f712e6ecd8872b9e1f91f20b36c30",
+      "merge_sha": "7a37fbd41f1e972407faa6973e2ff027c4a22264"
+    },
+    "objective": "One finite offline rain capture-to-existing-StrategyVersion-to-native-FOK research receipt with replayed source/code/rule/Yes-No identity, bounded decision-time venue freshness and unchanged fee-inclusive USD5 sizing; no independently authenticated source origin, accepted method, current real-market feasibility or economic authority is asserted.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/alpha/run_signal_candidate_bridge.py",
+      "tests/tools/alpha/test_signal_candidate_bridge.py",
+      "docs/signal_candidate_bridge_contract.md",
+      "docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_spec.json",
+      "docs/status_entries/S10-SIGNAL-CANDIDATE-BRIDGE-01.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md"
+    ],
+    "allowed_changed_files": [
+      "tools/alpha/run_signal_candidate_bridge.py",
+      "tests/tools/alpha/test_signal_candidate_bridge.py",
+      "docs/signal_candidate_bridge_contract.md",
+      "docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_prompt.txt",
+      "docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_spec.json",
+      "docs/status_entries/S10-SIGNAL-CANDIDATE-BRIDGE-01.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "config/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only scoped tool/tests/doc/prompts/status. Preserve prior immutable external source receipts and all native research, custody, orders, risk and strategy stores unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One new finite offline operator tool, native import-only interfaces; no change to existing runtime, trading or persistence APIs.",
+    "items": [
+      {
+        "surface": "tools.alpha.run_signal_candidate_bridge run/verify CLI",
+        "before": "Native source replay and independently verified lifecycle/venue economics are separate",
+        "after": "run/verify on explicit bounded offline capture/lifecycle/venue files; one exclusive external content-addressed research receipt, no network/permit/order",
+        "change_authorized": true,
+        "compatibility_requirement": "Use verified actual native signatures; preserve existing Alpha/Hermes preview and lifecycle stores, do not edit src.",
+        "authority": "OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "src.execution_feasibility.assess_execution_feasibility (import-only)",
+        "before": "Native evaluator validates acquisition-time freshness and market mechanics",
+        "after": "Unchanged native evaluator called only after explicit independent decision-time and book-time caller freshness checks",
+        "change_authorized": false,
+        "compatibility_requirement": "Unchanged native evaluator only after 0<=decision-acquisition<=30s and 0<=decision-book_timestamp<=30s, strict source-evaluation+30s/event deadlines; all native statuses preserved.",
+        "authority": "READ_ONLY_EXISTING_API"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Ten concise requirements each traceable to a negative or positive test, not fabricated live observations.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Real git/GitHub sync and native deterministic RUNTIME gate receipts prove PR263 merged, clean main equals origin/main at the frozen base, no competing package and exact scope; tests cannot prove these process events.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Real git/GitHub sync and native deterministic RUNTIME gate receipts prove PR263 merged, clean main equals origin/main at the frozen base, no competing package and exact scope; tests cannot prove these process events.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Require unchanged provenance.verify_capture REPLAY_VERIFIED for one PR263-format rain-only/no-Hermes capture; select one source-supported native market, exact condition, ordered Yes/No tokens and outcome_index 0 or 1; code/hash/raw/rule conflicts refuse. Source origin remains UNVERIFIED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Require unchanged provenance.verify_capture REPLAY_VERIFIED for one PR263-format rain-only/no-Hermes capture; select one source-supported native market, exact condition, ordered Yes/No tokens and outcome_index 0 or 1; code/hash/raw/rule conflicts refuse. Source origin remains UNVERIFIED.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Load lifecycle store read-only; resolve an existing non-retired version created no later than decision; require exactly one signalbinding:sha256 reference equal to the canonical binding payload defined below; never create or append a version or require live allocation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Load lifecycle store read-only; resolve an existing non-retired version created no later than decision; require exactly one signalbinding:sha256 reference equal to the canonical binding payload defined below; never create or append a version or require live allocation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Require native source cutoff <= native evaluation <= decision, decision < native evaluation+30s and decision < rule-derived climate-day start; independently 0<=decision-venue_acquisition<=30s and 0<=decision-book_timestamp<=30s. Historical research clocks never prove current tradability.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Require native source cutoff <= native evaluation <= decision, decision < native evaluation+30s and decision < rule-derived climate-day start; independently 0<=decision-venue_acquisition<=30s and 0<=decision-book_timestamp<=30s. Historical research clocks never prove current tradability.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Rebuild supplied snapshot from bounded original supplied Gamma/CLOB bytes and explicit acquisition clocks; compare entire native snapshot, identity and rain rule. Reuse fee_bound, size_order, fee_max, build_execution_intent and assess_execution_feasibility; a labeled synthetic consistent small-minimum/deep-book fixture reaches FEASIBLE with production_eligible=false.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Rebuild supplied snapshot from bounded original supplied Gamma/CLOB bytes and explicit acquisition clocks; compare entire native snapshot, identity and rain rule. Reuse fee_bound, size_order, fee_max, build_execution_intent and assess_execution_feasibility; a labeled synthetic consistent small-minimum/deep-book fixture reaches FEASIBLE with production_eligible=false.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Use fixed USD2 floor/USD5 cap, shares versus Gamma USD notional separately, conservative max documented/native rain fee and exponent1 policy valid before scanner.FEE_EXPIRY; preserve ticks/depth/delay, share and SDK principal grids. USD5 principal plus positive fee refuses; no cap/tariff override.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Use fixed USD2 floor/USD5 cap, shares versus Gamma USD notional separately, conservative max documented/native rain fee and exponent1 policy valid before scanner.FEE_EXPIRY; preserve ticks/depth/delay, share and SDK principal grids. USD5 principal plus positive fee refuses; no cap/tariff override.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Native pilot alias RAIN_NWS_V1 maps only to Hunter nws-gridpoint-pop-climate-day-v1. Preserve source_origin=UNVERIFIED, METHOD_NOT_QUALIFIED and production_eligible=false regardless of source replay, arithmetic, model prose, TEST_ONLY diagnostics or injected allowlists; no independent probability bound or financial edge is emitted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native pilot alias RAIN_NWS_V1 maps only to Hunter nws-gridpoint-pop-climate-day-v1. Preserve source_origin=UNVERIFIED, METHOD_NOT_QUALIFIED and production_eligible=false regardless of source replay, arithmetic, model prose, TEST_ONLY diagnostics or injected allowlists; no independent probability bound or financial edge is emitted.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Closed input/output schema, exact canonical content identity, safe external paths, bounded native capture, immutable exclusive output, deterministic verify by rederivation at recorded clocks and expected lifecycle head; malformed/tampered/secret-like input produces closed no-echo refusal, never raw path/body/error output.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Closed input/output schema, exact canonical content identity, safe external paths, bounded native capture, immutable exclusive output, deterministic verify by rederivation at recorded clocks and expected lifecycle head; malformed/tampered/secret-like input produces closed no-echo refusal, never raw path/body/error output.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Tool imports and run/verify are offline with no scanner acquisition, Hunter run, Hermes inference, subprocess, account, signer, Gate C, LIVE-ORCH, wallet or order call; no runtime/source/config/DB mutation. Only explicit new external receipt writes are permitted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Tool imports and run/verify are offline with no scanner acquisition, Hunter run, Hermes inference, subprocess, account, signer, Gate C, LIVE-ORCH, wallet or order call; no runtime/source/config/DB mutation. Only explicit new external receipt writes are permitted.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Every public field is classified and recursively scanned or type-exempt on success/refusal; native source counts copied only after verified replay, otherwise null. Independent settled groups and accepted production methods/corpora remain0, actual real event-to-order latency UNMEASURED.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Every public field is classified and recursively scanned or type-exempt on success/refusal; native source counts copied only after verified replay, otherwise null. Independent settled groups and accepted production methods/corpora remain0, actual real event-to-order latency UNMEASURED.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010: bounded result or explicit closed refusal",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "After distinct Karl authorization only, record focused/adjacent tests, one authoritative stable full suite, actual-surface security and one combined independent implementation/security/financial review, exact-head hosted checks and re-fetched PR body/evidence guard under native state machine. No pytest fixture claims these events happened.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "After distinct Karl authorization only, record focused/adjacent tests, one authoritative stable full suite, actual-surface security and one combined independent implementation/security/financial review, exact-head hosted checks and re-fetched PR body/evidence guard under native state machine. No pytest fixture claims these events happened.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R011: actual process receipts or blocked",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "derived.signal_binding_ref",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Exact acyclic canonical commitment specified in native identity_derivations; no origin or economic authority.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Recompute from complete defined preimage and compare exact prefix/digest; field coverage forbids omission.",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "Closed verified content reference only",
+        "derivation_rule_id": "signal_binding_v1"
+      },
+      {
+        "path": "receipt.receipt_id",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Exact acyclic canonical commitment specified in native identity_derivations; no origin or economic authority.",
+        "mutable": false,
+        "identity_role": "COMMITTED",
+        "exclusion_reason": null,
+        "validation_rule": "Recompute from complete defined preimage and compare exact prefix/digest; field coverage forbids omission.",
+        "failure_category": "IDENTITY_DERIVATION_INVALID",
+        "safe_output": "Closed verified content reference only",
+        "derivation_rule_id": "signal_receipt_v1"
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": true,
+    "reason": "Two acyclic local content commitments for explicit source-to-version binding and receipt integrity; neither authenticates source origin or grants authority.",
+    "items": [
+      {
+        "rule_id": "signal_binding_v1",
+        "target_path": "derived.signal_binding_ref",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "binding_payload"
+        ],
+        "excluded_paths": [],
+        "prefix": "signalbinding:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      },
+      {
+        "rule_id": "signal_receipt_v1",
+        "target_path": "receipt.receipt_id",
+        "algorithm": "SHA256_CANONICAL_JSON",
+        "source_paths": [
+          "receipt"
+        ],
+        "excluded_paths": [
+          "receipt.receipt_id"
+        ],
+        "prefix": "signalcandidate:sha256:",
+        "canonicalization": {
+          "sort_keys": true,
+          "separators": [
+            ",",
+            ":"
+          ],
+          "ensure_ascii": false,
+          "allow_nan": false,
+          "encoding": "utf-8",
+          "preserve_explicit_nulls": true,
+          "preserve_array_order": true
+        }
+      }
+    ]
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Native RUNTIME readiness is not user implementation authority; no live states.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Prompt and spec finalized with actual current repo compatibility and native readiness exits0/IMPLEMENTATION_READY",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly approves frozen exact implementation package after native readiness; this handoff does not grant it",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "One scoped tool/tests/docs implemented; no protected src or product network and all required tests pass",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": true,
+    "reason": "Synthetic algebra-only binding and closed-refusal receipt examples verify native canonical identity rules, not valid source origin or trading.",
+    "items": [
+      {
+        "example_id": "synthetic_binding_hash_only",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "signal_binding_v1"
+        ],
+        "input": {
+          "binding_payload": {
+            "schema_id": "signal-binding",
+            "schema_version": "1.0.0",
+            "method_id": "RAIN_NWS_V1",
+            "source_method": "nws-gridpoint-pop-climate-day-v1",
+            "source_hashes": {
+              "hunter": "0000000000000000000000000000000000000000000000000000000000000000",
+              "shadow": "0000000000000000000000000000000000000000000000000000000000000000",
+              "venue": "0000000000000000000000000000000000000000000000000000000000000000",
+              "rules": "0000000000000000000000000000000000000000000000000000000000000000",
+              "weather": "0000000000000000000000000000000000000000000000000000000000000000"
+            },
+            "native_manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "gamma_market_id": "1",
+            "condition_id": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "token_ids": [
+              "1",
+              "2"
+            ],
+            "resolution_rule_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "target_day": "2026-10-28",
+            "station_id": "KNYC",
+            "event_deadline_ns": 1793163600000000000,
+            "source_cutoff_ns": 1793102400000000000
+          },
+          "derived": {
+            "signal_binding_ref": "signalbinding:sha256:a09a38aa4bac1176f2c503c5197078ba5607a6275d18b8ce0d39a150f8585d0e"
+          }
+        }
+      },
+      {
+        "example_id": "closed_refusal_receipt_hash_only",
+        "expected_valid": true,
+        "expected_error_codes": [],
+        "intended_fault_count": 0,
+        "derivation_rule_ids": [
+          "signal_receipt_v1"
+        ],
+        "input": {
+          "receipt": {
+            "schema_id": "signal-candidate-receipt",
+            "schema_version": "1.0.0",
+            "receipt_id": "signalcandidate:sha256:c52d2b820569f26f1054c6858c28f7f1eefcab7ee814bbf155751364b375f356",
+            "status": "REFUSED",
+            "reason_codes": [
+              "INPUT_INVALID"
+            ],
+            "analysis_mode": null,
+            "source_replay_state": "UNVERIFIED",
+            "source_origin": "UNVERIFIED",
+            "method_id": null,
+            "source_method": null,
+            "method_state": "METHOD_NOT_QUALIFIED",
+            "binding_payload": null,
+            "signal_binding_ref": null,
+            "capture_manifest_sha256": null,
+            "native_manifest_sha256": null,
+            "lifecycle_head": null,
+            "strategy_version_id": null,
+            "gamma_market_id": null,
+            "condition_id": null,
+            "token_id": null,
+            "outcome_index": null,
+            "source_cutoff_ns": null,
+            "native_evaluated_ns": null,
+            "decision_ns": null,
+            "event_deadline_ns": null,
+            "venue_snapshot_id": null,
+            "execution_intent": null,
+            "native_assessment": null,
+            "shares": null,
+            "principal_usd": null,
+            "conservative_fee_usd": null,
+            "all_in_usd": null,
+            "fee_policy_version": null,
+            "fee_policy_expiry_ns": null,
+            "source_counts": null,
+            "unresolved_groups": null,
+            "independent_event_groups": 0,
+            "accepted_production_methods": 0,
+            "accepted_production_corpora": 0,
+            "production_eligible": false,
+            "permit": null,
+            "signed_order": null,
+            "no_live": true,
+            "no_order": true,
+            "real_event_to_order": "UNMEASURED"
+          }
+        }
+      }
+    ]
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Named pytest nodes prove behavior only; R001/R011 require actual git/readiness/review/full-suite/hosted/posted receipts. Planned new nodes are not claimed to exist or pass before implementation.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "process_receipts",
+        "test": "native_sync_and_readiness",
+        "command": "python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_prompt.txt --spec docs/wp_specs/S10-SIGNAL-CANDIDATE-BRIDGE-01/wp_spec.json --repo-root . --format json",
+        "expected_result": "Real git/GitHub sync and native deterministic RUNTIME gate receipts prove PR263 merged, clean main equals origin/main at the frozen base, no competing package and exact scope; tests cannot prove these process events."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_rain_replay_and_identity_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_native_rain_replay_and_identity_binding",
+        "expected_result": "Require unchanged provenance.verify_capture REPLAY_VERIFIED for one PR263-format rain-only/no-Hermes capture; select one source-supported native market, exact condition, ordered Yes/No tokens and outcome_index 0 or 1; code/hash/raw/rule conflicts refuse. Source origin remains UNVERIFIED."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_exact_verified_version_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_exact_verified_version_binding",
+        "expected_result": "Load lifecycle store read-only; resolve an existing non-retired version created no later than decision; require exactly one signalbinding:sha256 reference equal to the canonical binding payload defined below; never create or append a version or require live allocation."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_decision_time_currentness_and_replay_denial",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_decision_time_currentness_and_replay_denial",
+        "expected_result": "Require native source cutoff <= native evaluation <= decision, decision < native evaluation+30s and decision < rule-derived climate-day start; independently 0<=decision-venue_acquisition<=30s and 0<=decision-book_timestamp<=30s. Historical research clocks never prove current tradability."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_reachable_fok_mechanics_remains_research_only",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_reachable_fok_mechanics_remains_research_only",
+        "expected_result": "Rebuild supplied snapshot from bounded original supplied Gamma/CLOB bytes and explicit acquisition clocks; compare entire native snapshot, identity and rain rule. Reuse fee_bound, size_order, fee_max, build_execution_intent and assess_execution_feasibility; a labeled synthetic consistent small-minimum/deep-book fixture reaches FEASIBLE with production_eligible=false."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_fee_minimum_depth_ticks_delay_and_expiry",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_fee_minimum_depth_ticks_delay_and_expiry",
+        "expected_result": "Use fixed USD2 floor/USD5 cap, shares versus Gamma USD notional separately, conservative max documented/native rain fee and exponent1 policy valid before scanner.FEE_EXPIRY; preserve ticks/depth/delay, share and SDK principal grids. USD5 principal plus positive fee refuses; no cap/tariff override."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_no_method_or_financial_edge_promotion",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_no_method_or_financial_edge_promotion",
+        "expected_result": "Native pilot alias RAIN_NWS_V1 maps only to Hunter nws-gridpoint-pop-climate-day-v1. Preserve source_origin=UNVERIFIED, METHOD_NOT_QUALIFIED and production_eligible=false regardless of source replay, arithmetic, model prose, TEST_ONLY diagnostics or injected allowlists; no independent probability bound or financial edge is emitted."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_receipt_cold_replay_tamper_and_no_echo",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_receipt_cold_replay_tamper_and_no_echo",
+        "expected_result": "Closed input/output schema, exact canonical content identity, safe external paths, bounded native capture, immutable exclusive output, deterministic verify by rederivation at recorded clocks and expected lifecycle head; malformed/tampered/secret-like input produces closed no-echo refusal, never raw path/body/error output."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_offline_no_network_account_or_orders",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_offline_no_network_account_or_orders",
+        "expected_result": "Tool imports and run/verify are offline with no scanner acquisition, Hunter run, Hermes inference, subprocess, account, signer, Gate C, LIVE-ORCH, wallet or order call; no runtime/source/config/DB mutation. Only explicit new external receipt writes are permitted."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_bound_output_field_coverage_and_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_signal_candidate_bridge.py::test_bound_output_field_coverage_and_denominators",
+        "expected_result": "Every public field is classified and recursively scanned or type-exempt on success/refusal; native source counts copied only after verified replay, otherwise null. Independent settled groups and accepted production methods/corpora remain0, actual real event-to-order latency UNMEASURED."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "process_receipts",
+        "test": "process_closure_receipts",
+        "command": "python -B -m pytest -q -p no:cacheprovider",
+        "expected_result": "After distinct Karl authorization only, record focused/adjacent tests, one authoritative stable full suite, actual-surface security and one combined independent implementation/security/financial review, exact-head hosted checks and re-fetched PR body/evidence guard under native state machine. No pytest fixture claims these events happened."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-SIGNAL-METHOD-QUALIFICATION-01",
+    "next_title": "Conditional original-source strategy qualification and protected evidence verification, only after genuinely qualifying source/settlement and explicit owner approval",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-SIGNAL-CANDIDATE-BRIDGE-01",
+    "forbidden_in_this_wp": [
+      "No production eligible method/corpus, probability authorization, trading permit or live order from this tool.",
+      "No modification to native Gate C, LIVE-ORCH, StrategyVersion persistence, signer, credential or execution gateway.",
+      "No product/public network or provider inference, account queries, paid calls, deployments or timers.",
+      "No source runtime, protected scope, dependency, workflow or governance rewrites.",
+      "No false currentness from source replay at historical clock or acquisition-time-only freshness.",
+      "No extension or silent override of expired fee policy and USD5 historical attended canary.",
+      "No automatic successor WP, second discovery engine, framework, wallet store or Hermes process.",
+      "No PR merge; Karl is merge authority."
+    ]
+  }
+}
