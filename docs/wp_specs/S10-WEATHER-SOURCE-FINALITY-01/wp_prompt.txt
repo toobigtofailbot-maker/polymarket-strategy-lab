@@ -1,0 +1,177 @@
+Package Identity:
+  WP ID: S10-WEATHER-SOURCE-FINALITY-01
+  Title: Original NWS Rain Forecast to Rule-Exact Climate Report and Venue Outcome Evidence
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen base: b678b5c98179a858f3df8b37016ae738a81311d0
+  Required predecessor: PR264 head bc51fc8f0287070fda306a7f219115481c2a5794, merge b678b5c98179a858f3df8b37016ae738a81311d0
+  Governance track expected: RUNTIME
+  Runtime impact: NONE; finite foreground research tool only
+  Product impact: original-source finality diagnostics, no method promotion
+  Network impact: default OFF; separate owner authorization for bounded public GET
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE; capital/orders USD0/0
+  Suggested branch: codex/s10-weather-source-finality-01
+  Package class: WEATHER_SOURCE_FINALITY_RESEARCH
+  Package size: M / exactly nine paths; Risk3 / RUNTIME
+  Network: finite owner-authorized unauthenticated official public GET only
+  Scheduler: NO running service, timer or activation; existing capture reuse only
+  Credentials/account/model/orders/live/capital: NONE / DISABLED / 0
+  Evidence mode: must be determined from final live PR, never inferred
+
+Recommended Codex Mode:
+  Use suitable strong reasoning for source-version/rule semantics and native scope; be concise. Do not treat deterministic RUNTIME readiness as a PROTECTED certificate.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. MANDATORY STARTUP / SKILLS
+Mandatory repo startup document order: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CODEX_START_HERE.md, docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md, docs/ai/codex/README.md and WP_EXECUTION_STATE_MACHINE.md. Read task-relevant WP drafting/spec/validation/protected paths and exact source docs after. Actual current repo takes precedence over this handoff.
+After startup, discover installed repo skills and actually READ + APPLY $ponytail SKILL.md in LITE mode as FIRST skill, before broad inspection/delegation/code; repeat for fresh independent author/reviewer contexts. Then genuine $wp-predraft-inspector and $hermes-alpha-reuse-check / $canonical-evidence-audit / $financial-invariant-check / $dimensional-analysis / $runtime-authority-boundary-review / $wp-minimum-test-plan as relevant to planning. $wp-readiness-preflight and $wp-one-shot-review before freeze; review/test specialists ($security-review, $ponytail-review, $find-bugs, $spec-to-code-compliance, $code-simplifier, $verification-before-completion, $pr-evidence-reconcile, $post-patch-validation) at their actual lifecycle stage. $systematic-debugging and $secret-serialization only when triggered. Current installed skill docs can add/subtract applicability; no invocation quotas, no fake PASS and no conflation of locator script and actual skill use. Report compact actual ledger with paths, invoked procedure, results, unavailable.
+
+2. SYNC / READINESS / HOLD
+Verify PR264 merged and main=origin/main, clean no generated artifacts/overlap. This handoff is PRE-DRAFT not implementation approval. Tight source inspection only: PR263 capture/replay, PR264 bridge, QDR native rain rule/finality, S10-QUAL-DATA-01 weather readiness and source modules, exact NWS CLI source/Polymarket venue resolution interfaces and relevant docs/tests. Find exact method/source signatures and any compatible previous CLI parser. Reconcile old Weather Signal draft if available; exact old draft bytes are NOT in this package, do not claim exact-byte amendment. Before branch/code, author exact nine-path machine spec and prompt, run native python tools/wp/wp_readiness_gate.py against true synchronized main; STOP if non-ready or protected classification required. Return exact frozen hashes and native readiness for Karl's explicit implementation authorization; do not implement before approval.
+
+3. MINIMUM COMPLETE OBJECTIVE
+Close existing PR263 six original rain station/day forecast groups with independent rule-exact NWS CLI and Polymarket resolution evidence *only if authentic applicable final reports can be located*. If still missing, truthful UNKNOWN per group; no source/settlement fabrication. Build one small tool for offline proof join / cold verification, with one optional owner-authorized bounded public GET path, not a new capture/forecast/market/qualification system. Outcomes do not grant an accepted production method. Existing PR264 source-to-FOK bridge remains unchanged.
+
+4. DATA CONTRACT / EXACT SOURCE TRUTH
+- Native capture: verify actual complete original PR263 directory via unchanged src/live_pilot/provenance.verify_capture + native Hunter verifier. Source raw original forecast issue/received/cutoff and market/condition/station/climate day + ordered Yes/No tokens. Never treat hash integrity as primary historical origin or settlement.
+- NWS: exact station, standard-offset climate day, measurable 0.01in / TRACE, product id / issued by/issue time, first/final/report revisions and rule's FIRST_PUBLISHED_FINAL/LATEST_BEFORE_2359_ET/LAST_BEFORE_1400_ET or actual literal policy. Use report available AS OF rule cutoff, not whatever latest appears now. WFO/metar/ASOS provisional observations are early information, NOT necessarily binding report. If NWS product access/report version unavailable, label missing; do not substitute NCEI later climate final as resolution-time CLI.
+- Venue: independently verify actual resolved final outcome and winning token from trustworthy venue/settlement source, exact market condition and resolution mechanics, not merely Gamma closed flag, price 1, model confidence, old source receipt or local row. If rule CLI and venue outcome differ, report discrepancy, not forced payout. A Gamma status alone may be useful diagnostics but not accepted settlement proof.
+- Source chronology: original pre-event forecast vs preliminary observations vs CLI versions vs venue resolution labels, distinct times/receipts. Timing buckets 0-6,6-12,12-24,24-48h relative to exact climate-day close; multiple snapshots of one station/day are not independent outcomes, YES/NO share same event. Near-resolution signal remains information hypothesis, not automatic profit.
+- Historical archive: compare native RAIN_NWS_V1 gridpoint PoP source to S10-QUAL-DATA-01 NOAA NDFD PoP12 and PendulumFlow v3 frozen 2026-08-18..09-26 evidence; their contracts differ. Reuse parsing/time helpers but do NOT promote mismatched vintages to native original-method history; record reason by archive type.
+- Counts: baseline 2026-10-30 32GET/14 observed markets/6 original pre-event unresolved groups/12 stale books/0 settled independent groups. After proof, report **actual** newly verified group count, verified event group IDs and excluded/missing counts; never set 6->6 settled by assumption. A truly verified row still is not calibration/production qualification.
+
+5. BOUNDED NETWORK (NO ACTIVATION WITH THIS PREDRAFT)
+Implementation must be read-only, default OFF for product GET. Owner may later authorize one finite manual source probe per frozen interface. Targets ONLY exact verified NWS (api.weather.gov + forecast.weather.gov if supported by exact existing rule) and public Gamma market-specific outcome endpoints. No arbitrary URLs, no redirects, no proxies, no API keys. <=6 original station-day groups, <=24 attempted GET total, <=2MB/response, <=32MB total, <=12s/attempt, <=300s invocation; no retries/loops. Use native public GET client where safe and compatible, otherwise no new generic client. One real probe if specifically authorized, retain raw exact bytes/HTTP receipts externally and report actual counts (0 if none). Never mutate original PR263 directory or commit raw external data. Rates/source policy may require further narrowing; STOP if host/API cannot validate.
+
+6. FORWARD COLLECTION (USER'S LOCKED STRATEGY)
+Rain first, temperature only a small RESEARCH_ONLY rule/market inventory when already available at zero extra network/code. Preserve forecast mispricing and near-resolution evidence as separate channels, both YES/NO, hybrid hold/early-exit hypothesis (no orders), and compare timing windows. Reuse PR263 manual finite capture for future original forecasts: add a *documented default-off owner-operated cadence recipe* and expected source/label availability schedule, but DO NOT install/enable scheduler, daemon, process loop, task, provider or new capture adapter. Scheduling actual recurring future collection requires separately approved host/cadence and runtime; this WP must not claim it is active.
+
+7. HARD STOPS / NEGATIVE CASES
+Stop at stale local main, unclean tree, unexpected scope, skill failure, native readiness failure or requirement to edit src/protected paths. Fail closed on missing/tampered raw bytes/code/method, market/rule mismatch, station/day/standard offset mismatch, conflicting CLI revisions, product issue time after cutoff, post-decision information leakage, no venue final outcome, both-token double count, unsupported third-party archive, arbitrary source URL, source budget/certificate/identity confusion and invalid time. No raw secret/URL/error echo, no unsafe paths, zero account/private/sign/order routes, no qualification bypass. If no official CLI historical version is obtainable, *do not invent an endpoint*: report access gap and implement only safe offline verifier/operational manual import semantics if bounded within same 9 files. No mega follow-up.
+
+8. ACCEPTANCE / POST-IMPLEMENTATION
+One tool `tools/alpha/run_weather_finality.py`, one test module `tests/tools/alpha/test_weather_finality.py`, one contract, spec/prompt, status + three central docs = exactly nine changed paths. Required functional evidence R001-R010 in machine spec, each mapped to a real pytest name; test actual positive synthetic proof but never label it original source; cover missing source/time/venue, access failure, clocks/revisions, immutable input, denial and side-effect guards. Native readiness before authorization; check-diff exact9 at stable final head; focused/adjacent PR263/PR264/old qualification tests, one authoritative full local suite (or permissible equivalent as rules say), independent implementation/security/financial review, exact-head hosted CI, Gitleaks and posted evidence reconciliation. No second reviewer quota or speculative infrastructure. Karl sole merge authority.
+
+9. OUTPUT HANDOFF
+Return (a) one screen source-reuse decision and exact API signatures + scope guards, (b) prompt/spec hashes + native readiness or precise stop, (c) proposed bounded public source probe details requiring separate approval if needed, (d) known 6 prior groups evidence-location availability with no account requests. AFTER exact owner implementation authorization: return one PR and truthful original-source/finality denominators, no promotion/zero live. Never claim tool code, native readiness, CI or skill execution completed just from this handoff.
+
+10. RULES / TEST NODES
+R001: Repo sync, skill invocation, scope and readiness. Ensure exact current main, no overlapping WP, Ponytail LITE first after required startup, genuine predraft, 9-file complete guard, exact final native RUNTIME readiness; verify process receipts rather than treating pytest as proof. Evidence: tests/tools/alpha/test_weather_finality.py::test_no_authority_or_source_mutation
+R002: PR263 capture provenance and original source cohort. Reuse unchanged provenance.verify_capture/Hunter verifier; use ONLY actually present operator-held external original source artifacts. Carry method, raw/code/rule, market, station, climate-day, ordered Yes/No, source_cutoff and observed times; no synthetic origin elevation. Evidence: tests/tools/alpha/test_weather_finality.py::test_verified_original_capture_lineage_and_missing_archive
+R003: Exact NWS CLI report lineage by market rules. For the original cohort reuse Hunter.rain_rule and require only LAST_BEFORE_1400_ET, threshold Decimal("0.01") inches, TRACE excluded. Parse exact CLI product identity, station, climate date, issuance and revisions. Select the last full-day report strictly before 14:00 America/New_York on the following date, only after the cutoff has elapsed and revision coverage is proven. Unsupported format, missing coverage, conflict, after-cutoff or partial-day data yields UNKNOWN, never invented versions. Evidence: tests/tools/alpha/test_weather_finality.py::test_cli_station_day_issue_cutoff_revision
+R004: Separate venue outcome agreement and finality. Keep official CLI evidence and venue settlement evidence independent. Gamma closed/price alone and self-asserted local labels never establish settlement. Existing QDR.normalize_gamma_market and resolve_label may validate compatible externally supplied native v3 market_resolved evidence for the exact condition/token; never reuse old corpus rows as current outcomes. Without independent applicable raw settlement evidence, venue status and dual agreement stay UNKNOWN. No new venue host or settlement client is authorized. Evidence: tests/tools/alpha/test_weather_finality.py::test_venue_resolution_independence_and_disagreement
+R005: Prospective information timing, no lookahead. For forecast and near-resolution pathways preserve original source observed-at, issue-at, received-at, source cutoff, trade-decision candidate timestamp and final report time; never use post-decision CLI or Gamma resolution as model input. Distinguish 0-6h,6-12h,12-24h,24-48h relative to rule climate-day end. Evidence: tests/tools/alpha/test_weather_finality.py::test_no_information_leak_and_entry_windows
+R006: Group identity, truthful denominators and compatibility. Deduplicate station/date/rule cohort and distinct instrument/market resolution identities; distinguish six originally unresolved PR263 groups from newly settled real groups; avoid counting time-window snapshots or both sides twice. Historical NDFD/PendulumFlow corpus is incompatible by default with original RAIN_NWS_V1 unless separately proved. Evidence: tests/tools/alpha/test_weather_finality.py::test_group_dedup_and_historical_method_separation
+R007: Bounded opt-in public-source retrieval. Optional fetch-once capability remains default OFF and requires separate exact owner authorization before any real call. At most 6 original groups, 24 attempted GET, 2000000 bytes per response, 32000000 bytes total, 12 seconds per request, 300 seconds total, redirects/proxies/retries/credentials forbidden. Fixed NWS product list/product-id and Gamma market-id routes only, derived from verified originals; no data-api/CTF/RPC/third-party host. Reuse capture.public_read with caller allowlist/budget. Unavailable/truncated/unprovable coverage yields UNKNOWN; no unbounded pagination. Evidence: tests/tools/alpha/test_weather_finality.py::test_public_get_allowlist_budget_and_refusal
+R008: Immutable external evidence and cold replay. External output only, exclusive create; pin original bytes, requests, HTTP results, issue/version, method and receipt, deterministic replay, no overwrite/partial success. Prevent unsafe paths, symlinks, hardlinks, duplicate JSON keys, exfiltration/no-echo, and mutable research-store writes. Missing data is explicitly missing. Evidence: tests/tools/alpha/test_weather_finality.py::test_receipt_cold_replay_integrity_and_no_echo
+R009: Preserve non-economic qualification boundary. Do not change PR264 bridge or qualifiers or production corpus. Provide optional factual join keys for existing bridge, not a new FOK engine or fake trade. Always zero approved methods, NO_TRADE / production_eligible false, no wallet, account, permission, orders or $5 cap change. Evidence: tests/tools/alpha/test_weather_finality.py::test_no_live_qualifier_or_bridge_promotion
+R010: Small audit, practical forward collection plan and final evidence. Report actual 6-group statuses and blockers, archive availability by source type, one safe owner-operated future cadence recipe reusing PR263 finite runner; no timer activation or automatic retries; narrow next decision and 0 orders. Focused/adjacent/full suite, security/independent review, exact-head hosted CI/PR evidence. Evidence: tests/tools/alpha/test_weather_finality.py::test_truthful_finality_counts_and_cadence_default_off
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|weather_source_finality|r001|actual_required_evidence|REQUIRE|closed_r001|requirements.r001|R001
+NR002|weather_source_finality|r002|actual_required_evidence|REQUIRE|closed_r002|requirements.r002|R002
+NR003|weather_source_finality|r003|actual_required_evidence|REQUIRE|closed_r003|requirements.r003|R003
+NR004|weather_source_finality|r004|actual_required_evidence|REQUIRE|closed_r004|requirements.r004|R004
+NR005|weather_source_finality|r005|actual_required_evidence|REQUIRE|closed_r005|requirements.r005|R005
+NR006|weather_source_finality|r006|actual_required_evidence|REQUIRE|closed_r006|requirements.r006|R006
+NR007|weather_source_finality|r007|actual_required_evidence|REQUIRE|closed_r007|requirements.r007|R007
+NR008|weather_source_finality|r008|actual_required_evidence|REQUIRE|closed_r008|requirements.r008|R008
+NR009|weather_source_finality|r009|actual_required_evidence|REQUIRE|closed_r009|requirements.r009|R009
+NR010|weather_source_finality|r010|actual_required_evidence|REQUIRE|closed_r010|requirements.r010|R010
+END_NORMATIVE_RULE_MATRIX_V1
+
+## Authority / Non-Authority Posture
+Implementation authority: NONE until Karl explicitly approves these exact prompt/spec hashes. Only the two pre-draft package files may be written now; no branch/worktree/PR/source/test/status/central-doc edits before approval.
+Report/export authority: sanitized external review/readiness receipts; after approval, one exclusive-create research evidence bundle.
+Paper authority: NONE. Execution authority: NONE. Live authority: NONE. Credential authority: NONE.
+Runtime/scheduler authority: NONE; a finite manual tool is not an operational service.
+Canonical evidence authority: local replay/lineage and source-specific diagnostics only; no changes to native canonical policy, production allowlists, source authenticity or financial qualification.
+Network authority: documentation and Git/GitHub workflow reads during pre-draft; zero NWS/Gamma product GET now. Future tool network remains default OFF and separately approved.
+Dependency-change authority: NONE.
+Reference docs/ai/codex/PROTECTED_PATHS.md Centralized Boundary Group Reference: credentials/secrets, authenticated clients, wallet/account behavior, order placement/cancel, execution gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment, dependency/lock changes, external code copying and generated artifacts. No protected boundary is crossed. Source modules may be inspected/imported read-only for replay; never edited.
+
+## Hard Merge Gate
+Before a later approved branch, run exactly:
+git fetch origin --prune
+git switch main
+git pull --ff-only origin main
+git rev-parse HEAD
+git rev-parse origin/main
+git log -1 --oneline
+git status --short --branch
+python -B tools/git/preflight_generated_artifact_guard.py
+Verify PR264 is merged, its exact head and merge are ancestors, no overlapping local/remote branch/open PR/completed package exists. Preserve these two reviewed pre-draft files without overwrite; they are expected untracked drafting artifacts pending approval, not permission to ignore other dirty work. Revalidate hashes and transfer their exact bytes to the approved branch/worktree only after Karl authorizes. Any material new main drift requires inspection and refreeze; no stacking or manual prior-WP branch merge. Karl alone merges.
+
+## Context Budget
+Read first: the mandatory startup sequence already named above; navigate huge status/index/deferred docs by current/task-relevant sections.
+Read for this WP: these prompt/spec bytes, PR263 capture/provenance and tests, Hunter rain-rule/replay, PR264 bridge/contract/tests, QDR rule/label APIs, NDFD station-time helpers, native readiness/spec guards, protected paths, drafting/validation/output-invariant standards, official source documentation.
+Read only if blocked: the exact native caller or existing test guarding a disputed surface; stop if a tenth changed path or protected edit is required.
+Do not read/touch: credentials/env/account material or unrelated source/architecture. No changes to src/, old tools, workflows, dependencies, configuration, raw original evidence or research stores.
+Search terms: rain_rule, verify_capture, resolve_label, parse_rule, issuanceTime, productText, CLI, LAST_BEFORE_1400_ET.
+
+## Frozen source findings and compatibility / impossibility check
+Fact: synced main b678b5c98179a858f3df8b37016ae738a81311d0; live PR264 metadata confirms merged exact supplied head/merge; open-PR search returned none. No overlapping weather-finality branch found.
+Fact: original source exists externally at C:/Users/dersu/AppData/Local/Temp/s10-edge-handoff-55nh9jic/real-rain-capture-20261030. Unchanged provenance.verify_capture(scratch) returned REPLAY_VERIFIED/FORWARD_ONLY_RESEARCH, six forecasts/six unresolved groups, verified_settled_groups=0, production_eligible=false. This proves retained local consistency, not independent historical origin.
+Fact: capture-final.json SHA256 d1282be4de6762857bf871519c2fcc7d4c98e4f92584aa680d7b3c40e37b8fff; op-000001/manifest.json b6c2508a2a148af0c2e6124645a44dc30f356fa460ee87954adb114568acb79d; method fc03a780a42883cc5062cc904f0217b4ed19ffcc91319f4a4d33e32787ac2f46. Original groups: KNYC, KLAX, KMDW, KIAH, KDFW, KPHX, each target_day 2026-10-31. Bind actual market/condition/ordered tokens from raw source, not this prose.
+Fact: H.rain_rule(market,event_day) returns (target_date,RuleSemantics,tokens), and supports LAST_BEFORE_1400_ET only. H.observed_markets(op,receipts,clocks), H.token_rows(op,receipts,clocks,markets), H.verify(root) and provenance.verify_capture(scratch) remain unchanged. No new forecast capture or bridge.
+Fact: QDR.parse_rule(description) recognizes three historical policies, but that does not broaden the original Hunter method. QDR.normalize_gamma_market(document,candidate) and QDR.resolve_label(gamma,resolutions) already require matching Gamma and v3 winner evidence. The frozen August-September NDFD/PendulumFlow corpus is a different method/time range; only exact-compatible APIs/time helpers are reusable.
+Fact: NDFD.standard_utc_offset_minutes(time_zone,target_day) and climate_day_window(target_day,standard_offset_minutes) define [start,end) in UTC using local STANDARD time. The rule cutoff instead uses America/New_York wall time with DST; for 2026-10-31 it is 2026-11-01T19:00:00Z, not climate-day close/Gamma endDate. Check the cutoff has elapsed before claiming finality.
+Fact: official NWS OpenAPI inspected during this pre-draft reports version3.12.2. Documentation route /products accepts location/start/end/office/wmoid/type/limit (1..500); /products/{productId} returns TextProduct with id,wmoCollectiveId,issuingOffice,issuanceTime,productCode,productName,productText. Collection uses @graph. No endpoint product data was requested. Source: https://api.weather.gov/openapi.json and https://github.com/weather-gov/api/blob/master/general-faqs.md .
+Fact: https://www.weather.gov/wrh/TextProduct documents a 168-hour product window, relative version numbers and expiring instance links; no full historical revision completeness guarantee. https://www.weather.gov/lot/weather_observations_faq says CLI is preliminary/revisable; subsequent NCEI QC is not the market-rule as-of report. No product versions have been independently obtained here.
+Fact: https://docs.polymarket.com/api-reference/markets/get-resolution-state documents data-api.polymarket.com/v2/resolutions with condition/question/event selectors and transaction/payout lifecycle fields. This host is OUTSIDE the allowed NWS/Gamma probe; do not query it or add a client. Gamma market GET is diagnostic only absent independent witness. Existing v3 evidence may be imported offline only if authentic and applicable; a fixture or user-declared winner is not a witness.
+Inference: exact CLI revision and independent venue coverage may remain unavailable within 24 attempts. That is legitimate UNKNOWN, not grounds for a tenth file, another provider or another WP.
+Decision: implement only one local audit/verify tool plus the bounded optional fetch capability; reuse existing native replay/transport/time helpers. Do not alter PR263/PR264 or qualification/calibration. No duplicate source-closure implementation was found in inspected Hunter/QDR/provenance/bridge paths; QDR label agreement is reused, not rebuilt.
+Open question: actual available CLI revision chain and independent venue evidence; answer with per-group UNKNOWN unless real retained proof establishes them. This is missing product evidence, not an unresolved authority decision.
+Future option: Karl may separately authorize one finite probe; no additional WP or recurring service is mandated.
+
+## Exact nine changed paths
+tools/alpha/run_weather_finality.py
+tests/tools/alpha/test_weather_finality.py
+docs/weather_source_finality_contract.md
+docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/wp_prompt.txt
+docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/wp_spec.json
+docs/status_entries/S10-WEATHER-SOURCE-FINALITY-01.md
+docs/project_status.md
+docs/repo_truth_index.md
+docs/deferred_items_log.md
+
+## Minimal interface and source finality contract
+One file exposes audit(request), verify(request,receipt), and a foreground CLI audit/verify/fetch-once. audit and verify make zero network/process/provider calls. Fetch is explicit, never implicit in audit/import/verify. Use capture.public_read(url,timeout,maximum) only after exact local allowlist validation; its existing status/body/HTTP-Date/HTTP-status tuple is unchanged. No generic adapter, new dependency or copied external implementation.
+Strict request fields: schema_id=weather-finality-request, schema_version=1.0.0, analysis_mode=ORIGINAL_CAPTURE or SYNTHETIC_ONLY, capture_dir, evidence_bundle_file. Reject unknown/duplicate keys, noncanonical types, unsafe absolute/relative paths and bool-as-int clocks. Offline evidence bundle contains raw NWS product-list/product and Gamma/independent-native-event files plus per-file SHA256/HTTP provenance/received_ns. Untrusted metadata cannot certify raw authenticity or revision coverage; absent provenance is UNPROVEN. Enforce at most6 groups,24 raw HTTP receipts,2000000 bytes each,32000000 total. Exact field/serialization inventory belongs in the one test/contract file; no evolving schema framework.
+All source capture files are read-only; bounded_inventory and native cold replay first. Pin source/evidence inventories and bytes before and after evaluation/output, including additions/deletions; reject symlinks/reparse traversal/hardlinks, mutable SQLite sidecars, overwritten/partial-success output, duplicate JSON keys, floats in exact numeric/time fields and raw-error/URL/path echo. Reuse native external-path rules and serializer/secret scanning, without changing old helpers. Output only to a new absolute external bundle directory (exclusive creation); no repo/raw capture/store mutation. verify reconstructs from retained inputs and compares the complete deterministic receipt; zero GET and zero hidden clock dependence.
+NWS retrieval allowlist: https://api.weather.gov/products?location=<verified station suffix>&type=CLI&start=<climate-start UTC>&end=<rule-cutoff UTC>&limit=500 and https://api.weather.gov/products/<strict server product id> selected only from that retained list. Query values percent-encoded and canonical, no arbitrary caller URLs, unrelated dates/locations, redirects/proxies/retries or unbounded pagination. At most one list/group, one Gamma GET/group, and remaining12 attempts for listed NWS products across all groups. If revision count exceeds budget or a collection is incomplete, retain diagnostics and UNKNOWN. No forecast.weather.gov HTML scraper is needed; keep original resolutionSource for identity without GET. Gamma only https://gamma-api.polymarket.com/markets/<verified original integer market id>. No other host. Do not confuse station suffix/product PIL location with issuing WFO; raw text/header and metadata must agree, else UNKNOWN.
+Parse CLI precipitation using Decimal inches, not float or millimetres: 0.00 -> NO, >=0.01 -> YES, T/TRACE -> NO under this exact rule; M/missing/ambiguous/multiple observed totals, partial-day, wrong date/station/product or conflicting same-time revisions -> UNKNOWN. Distinguish observed daily total from record/normal/month/year columns. Require full-day climate summary, raw issue timestamp/year/zone agreement, and exact product identity. Parse only supported forms with explicit negative tests; unsupported text stays UNKNOWN. No universal climate parser or assumed WFO mapping. Select latest eligible issue strictly before cutoff only if cutoff elapsed AND complete applicable revision coverage is independently demonstrated; current list, issue time or hash alone cannot prove original publication or complete historical coverage. Otherwise expose parsed candidate evidence with CLI status UNKNOWN; never fabricate a missing version or call a preliminary report final NCEI QC.
+Each derived group keeps original station/day independence key separate from per-instrument rule/condition/token identity. Evidence channels: forecast, optional preliminary information, CLI candidate/coverage, independent venue settlement. Never feed a post-decision label into prediction. Timing windows are [0,6),[6,12),[12,24),[24,48] hours of remaining time to exact climate-day end; outside is OUTSIDE_WINDOWS, missing/contradictory clocks UNKNOWN. Original decision/source cutoff is preserved; no invented near-resolution snapshots. Both YES/NO and repeated snapshots share one outcome. Do not count market variants as independent station/day outcomes.
+Receipt includes schema/version/id, input hashes/native method/manifest bindings, source replay/origin state, original group count, per-group rule/condition/ordered-token identity, climate-day bounds/cutoff and original source clocks, candidate CLI product/issue/value or null, CLI coverage/status, separate venue status/winner or null, agreement/discrepancy/UNKNOWN, reason codes, real/synthetic provenance, attempted GET/byte counts, excluded/missing/verified denominators and fixed no_order/no_live/production_eligible=false/accepted_production_methods=0/accepted_production_corpora=0. No raw URL/path/text/exception or secrets in public output. New source_verified_group_count is separate from unchanged native independent_event_groups=0. Missing source means null/unverified counts, not invented six or zero opportunities. Source origin remains UNVERIFIED; hashes never authenticate original historical origin. Verified version and venue agreement is research evidence only.
+Report aggregate status COMPLETED_RESEARCH or REFUSED; source/CLI/venue/dual statuses VERIFIED, UNKNOWN or DISAGREEMENT with closed reasons. Never interpret a completed UNKNOWN audit as settled/qualified. Exit0 means completed research/verified cold receipt, exit1 closed refusal, exit2 CLI misuse. Invalid outputs retain fixed safety flags and null unavailable financial fields, recursively scan strings and prove field coverage in tests. No PnL/order/fee/sizing engine or accepted-method mutation.
+
+## Evidence plan / Negative-test matrix
+R001-R010 above map to the exact ten planned pytest nodes; every node must have a meaningful direct/reachable assertion. Process source truth uses actual Git/skill/readiness receipts separately, not a test claiming the workflow happened.
+Cases: positive synthetic full-day candidate, exact0.01/0.00/TRACE/M, wrong station/date/PIL/WFO, partial-day/multiple-column ambiguity, correction after cutoff, identical-time conflict, cutoff not yet elapsed, incomplete revision coverage, UTC/LST/ET DST split; missing/tampered capture/body/hash/inventory/receipt/clock; fake Gamma closed/price label, absent/wrong/conflicting independent condition/token winner; double-side/snapshot group duplication and old-corpus mismatch; offline no-network enforcement; strict endpoint/redirect/proxy/retry/cap/time/HTTP/partial-body refusal; duplicate JSON keys/bool clocks/unsafe links/path/overwrite/no-echo; deterministic cold replay and complete valid/invalid output fields. Actual independently settled original groups are never proved by synthetic tests.
+After implementation authorization: python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py tests/tools/alpha/test_edge_evidence_capture.py tests/live_pilot/test_provenance.py tests/tools/alpha/test_signal_candidate_bridge.py tests/data_layer/analytical_research/test_qualification_data_readiness.py tests/data_layer/analytical_research/test_nws_ndfd_history.py
+At stable source run one authoritative full local suite under the existing pinned supported environment, actual-surface security/Gitleaks and native exact-nine --check-diff readiness against frozen base; exact-head hosted CI, one combined independent implementation review and independent Side PR review. Follow native state machine/evidence discipline; required unavailable checks mean blocked/not merge-ready. No tests/code/hosted CI are claimed run during this pre-draft. Map material new limitations to scoped deferred log only during approved implementation.
+
+## Successor boundary and report-back
+The schema successor label is a hypothetical later human decision, not an approved or automatically created WP. No promotion, qualification or new package follows from missing evidence. Return exact raw-byte prompt/spec hashes, native RUNTIME/DETERMINISTIC readiness receipt, scope/reuse differences, source availability and actual skill ledger. STOP for Karl's explicit exact-package approval before branch/source edits/product GET/provider/scheduler/PR. Readiness is not authorization or review/merge readiness.
