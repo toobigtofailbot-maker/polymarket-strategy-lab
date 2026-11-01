@@ -283,6 +283,50 @@ def test_unknown_venue_precedes_known_minimum_failure(tmp_path, missing):
     assert result['execution_intent'] is None
 
 
+@pytest.mark.parametrize('gamma_flag,book_flag,minimum,outcome,status,reason', [
+    (True, True, 1, 0, 'MECHANICALLY_NOT_FEASIBLE', 'NATIVE_NOT_FEASIBLE'),
+    ('absent', False, 5, 0, 'INCONCLUSIVE', 'VENUE_UNKNOWN'),
+    (None, False, 5, 0, 'INCONCLUSIVE', 'VENUE_UNKNOWN'),
+    (True, False, 1, 0, 'INCONCLUSIVE', 'VENUE_UNKNOWN'),
+    (False, True, 1, 0, 'INCONCLUSIVE', 'VENUE_UNKNOWN'),
+    (False, False, 1, 0, 'MECHANICALLY_FEASIBLE_RESEARCH_ONLY', None),
+    (False, False, 1, 1, 'MECHANICALLY_FEASIBLE_RESEARCH_ONLY', None),
+])
+def test_native_single_leg_neg_risk_boundary(tmp_path, gamma_flag, book_flag, minimum,
+                                           outcome, status, reason, monkeypatch):
+    request, gamma, book, _ = make_case(tmp_path, outcome=outcome)
+    gamma.update(negRisk=gamma_flag, orderMinSize=minimum)
+    if gamma_flag == 'absent':
+        gamma.pop('negRisk')
+    book['neg_risk'] = book_flag
+    write_venue(request, gamma, book)
+    if reason is not None:
+        def no_sizing(**kwargs):
+            pytest.fail('unsupported or unknown neg-risk reached sizing')
+        monkeypatch.setattr(B.sizing, 'size_order', no_sizing)
+    result = B.evaluate_request(request)
+    safe_result(result)
+    assert result['status'] == status, result
+    assert result['reason_codes'] == ([] if reason is None else [reason])
+    if reason is not None:
+        assert result['execution_intent'] is None
+
+
+@pytest.mark.parametrize('book_flag', ['absent', None, 'false'])
+def test_invalid_clob_neg_risk_retains_native_normalization(tmp_path, book_flag):
+    request, gamma, book, _ = make_case(tmp_path)
+    book['neg_risk'] = book_flag
+    if book_flag == 'absent':
+        book.pop('neg_risk')
+    bundle = write_venue(request, gamma, book)
+    assert bundle['venue_snapshot']['clob_source_state'] == 'INVALID'
+    result = B.evaluate_request(request)
+    safe_result(result)
+    # Invalid native normalization clears the timestamp; retain the earlier book refusal.
+    assert result['status'] == 'INCONCLUSIVE' and result['reason_codes'] == ['BOOK_STALE']
+    assert result['execution_intent'] is None
+
+
 def test_raw_code_drift_duplicate_json_and_path_boundaries(tmp_path, capsys):
     request, _, _, _ = make_case(tmp_path)
     started = Path(request['capture_dir'])/'capture-started.json'

@@ -305,11 +305,11 @@ def _mechanics(result, request, version, snapshot):
             snapshot.book_min_order_size_raw is not None, 'VENUE_UNKNOWN', 'INCONCLUSIVE')
     # This research contract gives unknown venue dimensions precedence over sizing failures.
     require(all(type(value) is bool for value in (snapshot.active, snapshot.closed,
-                snapshot.accepting_orders, snapshot.enable_order_book)) and
+                snapshot.accepting_orders, snapshot.enable_order_book,
+                snapshot.gamma_neg_risk, snapshot.book_neg_risk)) and
             snapshot.seconds_delay is not None and snapshot.gamma_tick_size is not None and
             snapshot.gamma_tick_size == snapshot.book_tick_size and
-            not (snapshot.gamma_neg_risk is not None and snapshot.book_neg_risk is not None and
-                 snapshot.gamma_neg_risk != snapshot.book_neg_risk), 'VENUE_UNKNOWN', 'INCONCLUSIVE')
+            snapshot.gamma_neg_risk == snapshot.book_neg_risk, 'VENUE_UNKNOWN', 'INCONCLUSIVE')
     require(now < scanner.FEE_EXPIRY, 'FEE_POLICY_EXPIRED', 'INCONCLUSIVE')
     require(snapshot.fee_exponent == '1', 'FEE_UNKNOWN', 'INCONCLUSIVE')
     try:
@@ -317,12 +317,16 @@ def _mechanics(result, request, version, snapshot):
     except Exception:
         raise Refused('FEE_UNKNOWN', 'INCONCLUSIVE') from None
     result.update(fee_policy_version=scanner.FEE_POLICY, fee_policy_expiry_ns=scanner.FEE_EXPIRY)
+    try:
+        gamma_min, book_min = sizing._venue(snapshot, result)
+    except Exception:
+        raise Refused('NATIVE_NOT_FEASIBLE', 'MECHANICALLY_NOT_FEASIBLE') from None
     ask = Decimal(snapshot.asks[0][0])
     depth = sum((Decimal(q) for p, q in snapshot.asks if Decimal(p) == ask), Decimal(0))
     try:
         q, _ = sizing.size_order(ask=ask, depth=depth, rate=rate, exponent=exponent,
-            cap=Decimal(5), floor=Decimal(2), gamma_min=Decimal(snapshot.gamma_min_order_notional_usd),
-            book_min=Decimal(snapshot.book_min_order_size_raw), seconds_delay=snapshot.seconds_delay)
+            cap=Decimal(5), floor=Decimal(2), gamma_min=gamma_min,
+            book_min=book_min, seconds_delay=snapshot.seconds_delay)
     except Exception as error:
         code = getattr(error, 'code', '')
         reason = ('MINIMUM_UNSATISFIABLE' if code == 'MINIMUM_UNSATISFIABLE_WITHIN_FEE_INCLUSIVE_CAP'
