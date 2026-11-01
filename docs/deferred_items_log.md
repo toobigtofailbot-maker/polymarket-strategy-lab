@@ -1,5 +1,12 @@
 # Deferred Items Log
 
+## S10-WEATHER-SOURCE-FINALITY-01 evidence limitations
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-WEATHER-SOURCE-FINALITY-01-D001 | No trusted historical CLI revision-completeness/original venue-witness verifier or independently supplied source proof | UNKNOWN_INDEPENDENT_FINALITY | P1 | Actual authentic rule-exact version coverage and independently admissible settlement proof, with owner disposition before expanding supported proof types; no automatic WP | Original six retained2026-10-31 forecast groups cold-replay locally, but current local HTTP/JSON/hash inputs cannot establish independent historical publication completeness/origin. The tool exposes candidate CLI/venue/local agreement while original independent statuses/count remain UNKNOWN/0. Synthetic completeness is explicit and cannot promote methods/corpora. No guessed archive/version, self-attestation flag, new trust framework or settlement host. |
+| S10-WEATHER-SOURCE-FINALITY-01-D002 | Real NWS/Gamma product retrieval is not authorized | NOT_PERFORMED_OWNER_GATED | P1 | Separate exact finite endpoint/budget approval before any real fetch-once | Implementation/offline tests only. Actual real GET0; default-off interface caps6groups/24attempts/2MB reply/32MB total/12s attempt/300s total, no retry/redirect/proxy. No provider/model/account/order/scheduler/deployment permission. Existing inherited advisory/owner blockers remain unchanged. |
+
 ## S10-AUTONOMOUS-EDGE-TO-LIVE-01 consolidated checkpoint
 
 - EDGE-D001 READY_BUT_EDGE_BLOCKED: accepted production corpus/method denominators

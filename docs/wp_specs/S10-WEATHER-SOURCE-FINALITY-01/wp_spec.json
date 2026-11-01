@@ -1,0 +1,522 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-WEATHER-SOURCE-FINALITY-01",
+    "title": "Original NWS Rain Forecast to Rule-Exact Climate Report and Venue Outcome Evidence",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WEATHER_SOURCE_FINALITY_RESEARCH",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-weather-source-finality-01",
+    "required_predecessor": {
+      "pr_number": 264,
+      "head_sha": "bc51fc8f0287070fda306a7f219115481c2a5794",
+      "merge_sha": "b678b5c98179a858f3df8b37016ae738a81311d0"
+    },
+    "objective": "One finite source-bound rain outcome evidence tool closing actual PR263 original forecast groups where independent rule-exact NWS CLI and venue finality exist; otherwise truthful missingness. No method admission, new forecast, scheduler, trading, or another data plane.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/alpha/run_weather_finality.py",
+      "tests/tools/alpha/test_weather_finality.py",
+      "docs/weather_source_finality_contract.md",
+      "docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/wp_prompt.txt",
+      "docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/wp_spec.json",
+      "docs/status_entries/S10-WEATHER-SOURCE-FINALITY-01.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md"
+    ],
+    "allowed_changed_files": [
+      "tools/alpha/run_weather_finality.py",
+      "tests/tools/alpha/test_weather_finality.py",
+      "docs/weather_source_finality_contract.md",
+      "docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/wp_prompt.txt",
+      "docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/wp_spec.json",
+      "docs/status_entries/S10-WEATHER-SOURCE-FINALITY-01.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "src/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "agent_runtime/",
+      "agent_memory/",
+      "local_data/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/qualification/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only the one new read-only tool, its tests and docs. Original external PR263 receipts and any retrieved official public evidence remain separately retained, never changed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Only add narrowly bound public weather evidence tooling; native source/financial/execution APIs unchanged",
+    "items": [
+      {
+        "surface": "tools.alpha.run_weather_finality audit/verify",
+        "before": "PR263 native forward rain source exists, outcome cohorts unresolved",
+        "after": "Finite offline join to exact independent NWS CLI product issue and venue final-resolution witnesses; safe offline cold verify; no research promotion",
+        "change_authorized": true,
+        "compatibility_requirement": "Use exact actual Hunter/QDR/provenance and existing source/venue APIs; do not mutate originals",
+        "authority": "RESEARCH_ONLY"
+      },
+      {
+        "surface": "tools.alpha.run_weather_finality fetch-once",
+        "before": "No verified source-version retrieval for the six groups",
+        "after": "Optional explicit single bounded public NWS+Gamma GET evidence acquisition; no periodic service or account",
+        "change_authorized": true,
+        "compatibility_requirement": "Fixed official host/URL allowlist derived from the source-verified market rule; 24 attempts/run, no retries or redirect",
+        "authority": "BOUNDED_PUBLIC_READ_ONLY"
+      },
+      {
+        "surface": "tools.alpha.run_edge_evidence_capture.run / src.live_pilot.provenance.verify_capture / tools.alpha.run_signal_candidate_bridge",
+        "before": "Canonical existing capture, replay and mechanics",
+        "after": "Unchanged; reused and referenced only",
+        "change_authorized": false,
+        "compatibility_requirement": "No source code edits and no promotion of historical method to production",
+        "authority": "UNCHANGED"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Ten bounded explicit requirements and negative test nodes",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Ensure exact current main, no overlapping WP, Ponytail LITE first after required startup, genuine predraft, 9-file complete guard, exact final native RUNTIME readiness; verify process receipts rather than treating pytest as proof.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Ensure exact current main, no overlapping WP, Ponytail LITE first after required startup, genuine predraft, 9-file complete guard, exact final native RUNTIME readiness; verify process receipts rather than treating pytest as proof.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R001 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse unchanged provenance.verify_capture/Hunter verifier; use ONLY actually present operator-held external original source artifacts. Carry method, raw/code/rule, market, station, climate-day, ordered Yes/No, source_cutoff and observed times; no synthetic origin elevation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuse unchanged provenance.verify_capture/Hunter verifier; use ONLY actually present operator-held external original source artifacts. Carry method, raw/code/rule, market, station, climate-day, ordered Yes/No, source_cutoff and observed times; no synthetic origin elevation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R002 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "For the original cohort reuse Hunter.rain_rule and require only LAST_BEFORE_1400_ET, threshold Decimal(\"0.01\") inches, TRACE excluded. Parse exact CLI product identity, station, climate date, issuance and revisions. Select the last full-day report strictly before 14:00 America/New_York on the following date, only after the cutoff has elapsed and revision coverage is proven. Unsupported format, missing coverage, conflict, after-cutoff or partial-day data yields UNKNOWN, never invented versions.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "For the original cohort reuse Hunter.rain_rule and require only LAST_BEFORE_1400_ET, threshold Decimal(\"0.01\") inches, TRACE excluded. Parse exact CLI product identity, station, climate date, issuance and revisions. Select the last full-day report strictly before 14:00 America/New_York on the following date, only after the cutoff has elapsed and revision coverage is proven. Unsupported format, missing coverage, conflict, after-cutoff or partial-day data yields UNKNOWN, never invented versions.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R003 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Keep official CLI evidence and venue settlement evidence independent. Gamma closed/price alone and self-asserted local labels never establish settlement. Existing QDR.normalize_gamma_market and resolve_label may validate compatible externally supplied native v3 market_resolved evidence for the exact condition/token; never reuse old corpus rows as current outcomes. Without independent applicable raw settlement evidence, venue status and dual agreement stay UNKNOWN. No new venue host or settlement client is authorized.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Keep official CLI evidence and venue settlement evidence independent. Gamma closed/price alone and self-asserted local labels never establish settlement. Existing QDR.normalize_gamma_market and resolve_label may validate compatible externally supplied native v3 market_resolved evidence for the exact condition/token; never reuse old corpus rows as current outcomes. Without independent applicable raw settlement evidence, venue status and dual agreement stay UNKNOWN. No new venue host or settlement client is authorized.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R004 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "For forecast and near-resolution pathways preserve original source observed-at, issue-at, received-at, source cutoff, trade-decision candidate timestamp and final report time; never use post-decision CLI or Gamma resolution as model input. Distinguish 0-6h,6-12h,12-24h,24-48h relative to rule climate-day end.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "For forecast and near-resolution pathways preserve original source observed-at, issue-at, received-at, source cutoff, trade-decision candidate timestamp and final report time; never use post-decision CLI or Gamma resolution as model input. Distinguish 0-6h,6-12h,12-24h,24-48h relative to rule climate-day end.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R005 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Deduplicate station/date/rule cohort and distinct instrument/market resolution identities; distinguish six originally unresolved PR263 groups from newly settled real groups; avoid counting time-window snapshots or both sides twice. Historical NDFD/PendulumFlow corpus is incompatible by default with original RAIN_NWS_V1 unless separately proved.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Deduplicate station/date/rule cohort and distinct instrument/market resolution identities; distinguish six originally unresolved PR263 groups from newly settled real groups; avoid counting time-window snapshots or both sides twice. Historical NDFD/PendulumFlow corpus is incompatible by default with original RAIN_NWS_V1 unless separately proved.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R006 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Optional fetch-once capability remains default OFF and requires separate exact owner authorization before any real call. At most 6 original groups, 24 attempted GET, 2000000 bytes per response, 32000000 bytes total, 12 seconds per request, 300 seconds total, redirects/proxies/retries/credentials forbidden. Fixed NWS product list/product-id and Gamma market-id routes only, derived from verified originals; no data-api/CTF/RPC/third-party host. Reuse capture.public_read with caller allowlist/budget. Unavailable/truncated/unprovable coverage yields UNKNOWN; no unbounded pagination.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Optional fetch-once capability remains default OFF and requires separate exact owner authorization before any real call. At most 6 original groups, 24 attempted GET, 2000000 bytes per response, 32000000 bytes total, 12 seconds per request, 300 seconds total, redirects/proxies/retries/credentials forbidden. Fixed NWS product list/product-id and Gamma market-id routes only, derived from verified originals; no data-api/CTF/RPC/third-party host. Reuse capture.public_read with caller allowlist/budget. Unavailable/truncated/unprovable coverage yields UNKNOWN; no unbounded pagination.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R007 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "External output only, exclusive create; pin original bytes, requests, HTTP results, issue/version, method and receipt, deterministic replay, no overwrite/partial success. Prevent unsafe paths, symlinks, hardlinks, duplicate JSON keys, exfiltration/no-echo, and mutable research-store writes. Missing data is explicitly missing.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "External output only, exclusive create; pin original bytes, requests, HTTP results, issue/version, method and receipt, deterministic replay, no overwrite/partial success. Prevent unsafe paths, symlinks, hardlinks, duplicate JSON keys, exfiltration/no-echo, and mutable research-store writes. Missing data is explicitly missing.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R008 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Do not change PR264 bridge or qualifiers or production corpus. Provide optional factual join keys for existing bridge, not a new FOK engine or fake trade. Always zero approved methods, NO_TRADE / production_eligible false, no wallet, account, permission, orders or $5 cap change.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Do not change PR264 bridge or qualifiers or production corpus. Provide optional factual join keys for existing bridge, not a new FOK engine or fake trade. Always zero approved methods, NO_TRADE / production_eligible false, no wallet, account, permission, orders or $5 cap change.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R009 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Report actual 6-group statuses and blockers, archive availability by source type, one safe owner-operated future cadence recipe reusing PR263 finite runner; no timer activation or automatic retries; narrow next decision and 0 orders. Focused/adjacent/full suite, security/independent review, exact-head hosted CI/PR evidence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Report actual 6-group statuses and blockers, archive availability by source type, one safe owner-operated future cadence recipe reusing PR263 finite runner; no timer activation or automatic retries; narrow next decision and 0 orders. Focused/adjacent/full suite, security/independent review, exact-head hosted CI/PR evidence.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "R010 bounded evidence, or explicit abstention",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Reuse native source/market identity and SHA256 file integrity; no novel canonical financial identity or acceptance proof",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME software readiness and owner authorization do not imply live/product authority",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Correct prompt+spec rechecked after live git sync; native gate exits0 IMPLEMENTATION_READY",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Owner explicitly authorizes exact hashes, 9-file code scope and separately reviewed capped public GET run, if applicable",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "One scoped tool/tests/docs implemented, no external scheduler/trade/provider credentials",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Canonical WP schema v1 precedence applies; tool runtime uses closed errors and no-echo.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Tests cover real/synthetic distinction, clock and label disagreement; no successful source/wallet authority illustrated",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Each R001-R010 corresponds to one exact named pytest node plus real process/network receipts; tests are proposed and not run",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_no_authority_or_source_mutation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_no_authority_or_source_mutation",
+        "expected_result": "Ensure exact current main, no overlapping WP, Ponytail LITE first after required startup, genuine predraft, 9-file complete guard, exact final native RUNTIME readiness; verify process receipts rather than treating pytest as proof."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_verified_original_capture_lineage_and_missing_archive",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_verified_original_capture_lineage_and_missing_archive",
+        "expected_result": "Reuse unchanged provenance.verify_capture/Hunter verifier; use ONLY actually present operator-held external original source artifacts. Carry method, raw/code/rule, market, station, climate-day, ordered Yes/No, source_cutoff and observed times; no synthetic origin elevation."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_cli_station_day_issue_cutoff_revision",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_cli_station_day_issue_cutoff_revision",
+        "expected_result": "For the original cohort reuse Hunter.rain_rule and require only LAST_BEFORE_1400_ET, threshold Decimal(\"0.01\") inches, TRACE excluded. Parse exact CLI product identity, station, climate date, issuance and revisions. Select the last full-day report strictly before 14:00 America/New_York on the following date, only after the cutoff has elapsed and revision coverage is proven. Unsupported format, missing coverage, conflict, after-cutoff or partial-day data yields UNKNOWN, never invented versions."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_venue_resolution_independence_and_disagreement",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_venue_resolution_independence_and_disagreement",
+        "expected_result": "Keep official CLI evidence and venue settlement evidence independent. Gamma closed/price alone and self-asserted local labels never establish settlement. Existing QDR.normalize_gamma_market and resolve_label may validate compatible externally supplied native v3 market_resolved evidence for the exact condition/token; never reuse old corpus rows as current outcomes. Without independent applicable raw settlement evidence, venue status and dual agreement stay UNKNOWN. No new venue host or settlement client is authorized."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_no_information_leak_and_entry_windows",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_no_information_leak_and_entry_windows",
+        "expected_result": "For forecast and near-resolution pathways preserve original source observed-at, issue-at, received-at, source cutoff, trade-decision candidate timestamp and final report time; never use post-decision CLI or Gamma resolution as model input. Distinguish 0-6h,6-12h,12-24h,24-48h relative to rule climate-day end."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_group_dedup_and_historical_method_separation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_group_dedup_and_historical_method_separation",
+        "expected_result": "Deduplicate station/date/rule cohort and distinct instrument/market resolution identities; distinguish six originally unresolved PR263 groups from newly settled real groups; avoid counting time-window snapshots or both sides twice. Historical NDFD/PendulumFlow corpus is incompatible by default with original RAIN_NWS_V1 unless separately proved."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_public_get_allowlist_budget_and_refusal",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_public_get_allowlist_budget_and_refusal",
+        "expected_result": "Optional fetch-once capability remains default OFF and requires separate exact owner authorization before any real call. At most 6 original groups, 24 attempted GET, 2000000 bytes per response, 32000000 bytes total, 12 seconds per request, 300 seconds total, redirects/proxies/retries/credentials forbidden. Fixed NWS product list/product-id and Gamma market-id routes only, derived from verified originals; no data-api/CTF/RPC/third-party host. Reuse capture.public_read with caller allowlist/budget. Unavailable/truncated/unprovable coverage yields UNKNOWN; no unbounded pagination."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_receipt_cold_replay_integrity_and_no_echo",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_receipt_cold_replay_integrity_and_no_echo",
+        "expected_result": "External output only, exclusive create; pin original bytes, requests, HTTP results, issue/version, method and receipt, deterministic replay, no overwrite/partial success. Prevent unsafe paths, symlinks, hardlinks, duplicate JSON keys, exfiltration/no-echo, and mutable research-store writes. Missing data is explicitly missing."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_no_live_qualifier_or_bridge_promotion",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_no_live_qualifier_or_bridge_promotion",
+        "expected_result": "Do not change PR264 bridge or qualifiers or production corpus. Provide optional factual join keys for existing bridge, not a new FOK engine or fake trade. Always zero approved methods, NO_TRADE / production_eligible false, no wallet, account, permission, orders or $5 cap change."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_truthful_finality_counts_and_cadence_default_off",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_weather_finality.py::test_truthful_finality_counts_and_cadence_default_off",
+        "expected_result": "Report actual 6-group statuses and blockers, archive availability by source type, one safe owner-operated future cadence recipe reusing PR263 finite runner; no timer activation or automatic retries; narrow next decision and 0 orders. Focused/adjacent/full suite, security/independent review, exact-head hosted CI/PR evidence."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-WEATHER-QUALIFICATION-CONDITIONAL",
+    "next_title": "Only after accepted original method data, independent rule exact labels, adequate sample and fresh venue economics; separately gated production qualification",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-WEATHER-SOURCE-FINALITY-01",
+    "forbidden_in_this_wp": [
+      "No native accepted method/corpus, no calibration PASS, no current real profitable edge claim, no production_eligible or live promotion.",
+      "No modification of PR263 capture, PR264 bridge, original native source/qualifiers, execution gateway, wallet/risk/first $5 canary or Gate C/LIVE-ORCH.",
+      "No claiming after-cutoff CLI or NCEI retrospective revision as the report used at market resolution.",
+      "No claim of independently source-verified venue outcome from Gamma closed flag alone; missing primary settlement truth => UNKNOWN.",
+      "No converting frozen Aug-Sep third-party NDFD/PendulumFlow corpus into original RAIN_NWS_V1 method.",
+      "No automatic scheduler/daemon, no provider inference, no paid data, no credentials, no account, no orders and no deployment.",
+      "No workflow/lock/dependency/config changes, generic provider framework, new weather forecast model or unsupported temperature admission.",
+      "No automatic successor WP merely because source material missing. Karl alone merges."
+    ]
+  }
+}

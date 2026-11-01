@@ -1,5 +1,9 @@
 # Repo Truth Index
 
+## S10-WEATHER-SOURCE-FINALITY-01
+
+Approved exact-nine-path RUNTIME/Risk3 research package on merged PR264 b678b5c98179a858f3df8b37016ae738a81311d0 (head bc51fc8f0287070fda306a7f219115481c2a5794). Frozen prompt/spec: docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/. Tool: tools/alpha/run_weather_finality.py; test: tests/tools/alpha/test_weather_finality.py; contract: docs/weather_source_finality_contract.md; stable evidence: docs/status_entries/S10-WEATHER-SOURCE-FINALITY-01.md. Original capture/native bridge unchanged; local integrity/candidate evidence never authenticates publication completeness or settlement. No production admission, qualification, scheduler/account/provider/order/deployment authority; real product GET0. Actual current hosted/posted/Ready evidence: PR body/GitHub metadata. Independent Side23 review and Karl-only merge remain required.
+
 ## S10-LIVE-ORCH-01 Restricted Live Orchestration + First-Live Canary Core (current protected implementation target)
 
 The contract is `docs/live_orchestration_contract.md`; the single new module is
