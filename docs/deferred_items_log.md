@@ -1,5 +1,12 @@
 # Deferred Items Log
 
+## S10-WALLET-EPOCH-01 evidence limitations
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-WALLET-EPOCH-01-D001 | Sampled live `/v2/activity` TRADE rows omit `is_combo` | UNKNOWN_SOURCE_SEMANTICS | P2 | Independent source evidence of the discriminator before any normalization change, in a separate WP | Not a dependency of the epoch wire fix. Native normalization keeps SCHEMA_DRIFT, WEAK_PARTIAL, identity-ambiguous, null condition/token context; never assumes FALSE. |
+| S10-WALLET-EPOCH-01-D002 | Live verification of the epoch wire fix not performed | NOT_PERFORMED_OWNER_GATED | P2 | Separately granted finite live retest | Offline intercepted tests only; zero product GET. Historical 2026-11-02 four-call retest motivated the fix but is not post-fix evidence, alpha, or copyability evidence. |
+
 ## S10-WEATHER-SOURCE-FINALITY-01 evidence limitations
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
