@@ -101,6 +101,7 @@ A row is identified by `(candidates_sha256, row_index)`. Re-reading the same fil
 - After a clean `RUN_FINISHED`, the store head must equal the recorded head (`PAPER_STORE_FOREIGN`).
 - After a crash, every native journal event past the last head recorded in the ledger must come from this run: a market event whose lineage is in the current source, or the pending order of an open occurrence. Control changes and manual or kill cancellations count as foreign (`PAPER_STORE_FOREIGN`).
 - A writer changing the store during a run trips the native stale-writer guard (`STALE_PAPER_STATE`).
+- Known residuals of the post-crash check: a deliberate writer that reproduces an open occurrence's market, asset and decision time, or that only advances time, is not distinguished; neither is an operator-edited replay file that adds a foreign writer's lineage. Both need control of the operator's own directory or inputs.
 - A torn last ledger line, or a crash between creating the paper store and writing `PLAN_FROZEN`, fails closed (`LEDGER_TAMPERED` or `PAPER_STORE_FOREIGN`). Such a run directory is abandoned, and a new run directory is required.
 
 ## Closure, feedback and report
