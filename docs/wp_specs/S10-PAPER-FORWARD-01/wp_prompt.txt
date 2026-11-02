@@ -1,0 +1,105 @@
+WP ID: S10-PAPER-FORWARD-01
+Title: Research-Paper Forward Decision & Evidence Loop
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: RESEARCH_PAPER_FORWARD_DECISION_AND_EVIDENCE_LOOP
+Package size: M — EXACTLY SEVEN tracked paths; risk level 3
+Governance track expected: RUNTIME
+Frozen base: main @ 7b8d2c895122682bcba915325dd3dd9dafdaa770 (PR #265 merged)
+Required predecessor: PR #265 head f7b997e905e80b94a44bed5eee5ddf330b3bbfa7; merged 7b8d2c895122682bcba915325dd3dd9dafdaa770
+Suggested branch: codex/s10-paper-forward-01
+Base branch: main
+Package size class: M
+Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED (or PUBLIC_VERIFIER_PASS if the public verifier exits 0)
+Runtime impact: new finite offline operator tool only; no src/ change, no service
+Product impact: research-paper evidence only
+Network impact: none at runtime; workflow git/GitHub only
+Credential impact: none
+Dependency impact: none (stdlib only)
+Trading impact: none; simulated research paper only, zero capital
+Recommended mode: high reasoning; escalate or STOP if any native API cannot express a requirement without engine change
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: false
+paper: true
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE / AUTHORITY / NON-AUTHORITY
+Objective: add ONE finite, offline, restart-safe operator that turns a pre-frozen research-only paper plan plus a time-ordered candidate file into native WP173 research-paper decisions, records every candidate occurrence (traded or not) in an append-only hash-chained ledger, reconciles that full funnel with the unchanged native WP173 snapshot, reports closed/unsettled outcomes truthfully, and, only when a matching StrategyVersion exists, feeds the snapshot to the existing `run_paper_performance_update` through an offline FakeHermesBackend.
+
+Verified gap on the frozen base (pre-draft inspection 2026-11-01): outside tests and disposable scripts, no repository code calls `build_paper_intent` or `PaperEngine.submit`; the native snapshot counts submitted intents only and has no NO_TRADE/stale/missed denominator; native risk staleness is feed-level (`src/paper_trading/risk.py` uses the last received event of any asset), so per-asset decision-time freshness is not enforced for a candidate; the WP173 fee is bps of notional while the venue taker fee is `shares * rate * (p*(1-p))^exponent` (`src/execution_feasibility/evaluator.py`). A disposable synthetic proof on the frozen base already showed native SELL, winner-bearing RESOLUTION settlement, pending unknown outcome, restart/duplicate idempotency, cold CLI snapshot, tamper rejection and FakeHermesBackend PERFORMANCE_UPDATE all work unchanged, so no `src/` change is needed.
+
+Authority granted only after Karl separately approves the exact SHA-256 of this prompt and its spec: implement the seven paths below on one branch, run focused, adjacent and one stable-head full local suite, publish ONE PR with exact-head hosted CI and native evidence. Karl alone merges.
+
+Non-authority: no product, public-data, provider, model or account network (workflow-only git/GitHub PR/CI network is allowed); no credentials, wallet, signing, order, execution gateway, Gate C, LIVE-ORCH, risk-cap or live path; no scheduler, daemon, service, timer, watcher, `while True`, sleep loop or autostart; no real Hermes/provider dispatch; no StrategyLifecycle, Alpha registry or policy write; no change under `src/`, dependencies, workflows or historical guards; no qualification, OOS, edge or profit claim. Paper intents come only from the frozen deterministic plan rule, never from a Hermes choice. Hermes feedback is advisory and cannot change the plan, the binding or any privilege.
+
+# 2. BASE AND GOVERNANCE PREFLIGHT
+Repeat repository startup (AGENTS.md, AI_CODING_AGENT_START_HERE.md, the tool adapter, project_status, repo_truth_index, deferred_items_log, docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE.md). Hard merge gate: `git fetch origin --prune`, `git checkout main`, `git pull --ff-only origin main`, `git rev-parse HEAD`, `git status --short --branch`; require HEAD == frozen base, PR #265 merged with the recorded head and merge SHAs, clean tree, no S10-PAPER-FORWARD-01 branch or PR locally or remotely, and no doc already claiming this WP complete. If main advanced, STOP for scope reconciliation.
+Context budget: read first the startup files; read for this WP src/paper_trading/{engine,models,runtime,store,cli,risk}.py, src/research_runtime/paper_performance_bridge.py, src/research_runtime/hermes_controlled_runtime/autonomous_feedback.py, tools/alpha/run_discovery_learning_proof.py and the adjacent tests below; read only if blocked src/strategy_lifecycle/, src/execution_feasibility/evaluator.py, src/data_layer/polymarket/market_truth_store.py; do not touch any src/, other tools/, dependency, workflow, credential, local_data or deployment path.
+Run before any edit:
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-PAPER-FORWARD-01/wp_prompt.txt --spec docs/wp_specs/S10-PAPER-FORWARD-01/wp_spec.json --repo-root .
+At the final stable head add `--check-diff --base 7b8d2c895122682bcba915325dd3dd9dafdaa770 --head <exact commit>`. RUNTIME needs no certificate; do not invent one.
+
+# 3. EXACT CHANGED-FILE SCOPE (SEVEN PATHS, allowed == required)
+1. `tools/alpha/run_paper_forward.py` — stdlib-only operator with subcommands `run` (finite run-once; rerunning on the same run directory is the resume path), `verify` (cold, read-only) and `feedback` (optional, offline). Explicit paths only; market source is exactly one of `--replay-events <json>` or `--market-truth-store <WP169 .sqlite3>` read through native `Wp169ReadOnlyTail` in one bounded read; `--max-decisions` bound required.
+2. `tests/tools/alpha/test_paper_forward.py` — the ten named tests R001–R010.
+3. `docs/research_paper_forward_contract.md` — compact operator contract: input schemas, units, funnel classes, ledger, labels, limits.
+4. `docs/deferred_items_log.md` — one appended section for deferred real source capture, venue fee-config acquisition, authentic settlement witnesses and recurring operation.
+5. `docs/status_entries/S10-PAPER-FORWARD-01.md` — stable non-self-referential status fragment.
+6. `docs/wp_specs/S10-PAPER-FORWARD-01/wp_prompt.txt` — this byte-exact prompt.
+7. `docs/wp_specs/S10-PAPER-FORWARD-01/wp_spec.json` — the byte-exact spec.
+Any eighth path, any `src/` edit or any historical guard edit is a hard stop with `BOUNDARY_SCOPE_BLOCKED` and exact proof. Run outputs (paper store, ledger, report, manager store) live only in operator-named directories outside the repository and are never committed.
+
+# 4. REQUIRED SEMANTICS
+Reuse, do not copy: `build_research_strategy_binding`, `PaperRiskLimits`, `PaperEngine.create_research/open/submit/process_market_event/advance_time`, `PaperStore`, `Wp169ReadOnlyTail`, `build_research_paper_performance_snapshot`, `snapshot_to_mapping`, `run_paper_performance_update`, `load_strategy_lifecycle_store`, native FakeHermesBackend. No second fill, fee, accounting, risk or settlement engine; no new database or market store.
+A. Plan freeze: the plan JSON (binding arguments, risk limits, cohort = `allowed_market_ids`, rule `FAIR_VALUE_EDGE_V1` with `min_edge` and `max_quantity`, fee scenario, latency/age limits, outcome handling, optional `strategy_version_id`) is hashed and recorded as the first ledger entry before any decision. `frozen_at_ns` must be earlier than every candidate `source_time_ns` and `decision_time_ns`. That comparison and the first-ledger hash prove only local run order (LOCAL_RUN_ORDER), not historical preregistration or that the plan existed before already-recorded data; prospective/OOS status needs separately authorized, independently witnessed pre-decision plan/capture evidence and is never claimed here. Rerun with different plan bytes fails closed. The binding is always research-only (native flags), `reserved_evidence_policy` NON_CONFIRMATORY_RESEARCH_PAPER, no reserved/OOS refs.
+B. Source time: a candidate is admissible only if `source_time_ns < decision_time_ns`. The book used is the native engine's current book for the exact `asset_id` and `market_id` after processing only events with `receive_time_ns < decision_time_ns`; events at or after decision time are processed after the decision. Book age `decision_time_ns - book.receive_time_ns` must be within the binding `max_data_age_ns`; missing, gapped, stale, wrong-market or wrong-asset books give typed NO_TRADE classes, never a fill. Arrival-time fill realism remains native.
+C. Rule: holding no position, BUY `max_quantity` iff `fair_value - best_ask - fee_bound(best_ask) >= min_edge`; holding a position in that asset, SELL the held free quantity iff `best_bid - fee_bound(best_bid) - fair_value >= min_edge`; otherwise ABSTAINED_NO_TRADE. All arithmetic Decimal; prices in USDC per share in [0,1]; quantities in shares; time in ns since Unix epoch UTC.
+D. Fees: plan fee basis must be `CONSERVATIVE_UPPER_BOUND_ESTIMATE` with a recorded venue `fee_rate`, integer `fee_exponent >= 1`, `maker_rebate_bps == 0` and binding `fee_rate_bps >= fee_rate * 10000` (a proven per-share upper bound of `rate*(p*(1-p))^exponent` for every p in [0,1]), or `SYNTHETIC_TEST_ONLY`. Unknown fee config, exponent 0 or a smaller bps gives COST_UNKNOWN for every candidate; fees are reported as ESTIMATE, never exact venue fees.
+E. Funnel and ledger: append-only JSONL, each line hash-chained to the previous and flushed with fsync. Each unique occurrence gets one STARTED before any engine call and exactly one immutable decision-occurrence terminal: ABSTAINED_NO_TRADE, SOURCE_FUTURE, SOURCE_STALE, SOURCE_GAP, WRONG_SCOPE, COST_UNKNOWN, or ATTEMPTED_INTENT. ATTEMPTED_INTENT records the submission outcome only: deterministic native `intent_id` and `order_id`, `risk_permitted` (false when native status is REJECTED) and the initial native status returned by submit; it never records or later rewrites a final order lifecycle. A repeated input row of an already-claimed occurrence gets one DUPLICATE_SUPPRESSED record (its row index and occurrence key) with no STARTED, terminal or native submit. Order lifecycle is derived separately at report/verify time from the verified native PaperStore state at the snapshot cutoff: OPEN and PARTIALLY_FILLED are nonterminal as-of states alongside REJECTED, FILLED, CANCELLED and EXPIRED; NOT_FILLED is an as-of count/quantity observation, never a terminal. Counts reconcile exactly, including after restart: raw_candidate_rows = unique_occurrences + suppressed_duplicate_rows; unique_occurrences = count(STARTED) = count(decision-occurrence terminals), INTERRUPTED_OR_UNKNOWN retained truthfully; ATTEMPTED_INTENT and RECOVERED, each native intent counted once including RISK_DENIED, = native snapshot intent_count; risk_permitted false = native risk_deny_count; per-status as-of counts sum to native order_count and their closed part equals native closed_order_state_counts. Imported candidate JSON is labelled IMPORTED_UNVERIFIED_SIGNAL with its byte SHA-256; no provenance is invented.
+F. Restart: rerun on an existing run directory verifies the chain and plan hash, then resumes. A STARTED without terminal is reconciled once: if the native store holds the deterministic intent id it binds that committed intent once as RECOVERED with its native ids and initial status, never resubmitting or double counting it; otherwise INTERRUPTED_OR_UNKNOWN. It never retries under a new identity. A claimed occurrence is never rebooked. A paper store head changed by another writer fails closed (native stale-writer guard).
+G. Closure truth: SELL fills and winner-bearing resolutions realize P&L natively. A winner is authentic only from the WP169 hash-bound resolution path; replay-file resolutions are labelled IMPORTED_UNVERIFIED_RESOLUTION. A null winner stays pending. Positions without settlement are UNSETTLED, missing marks keep unrealized UNKNOWN (never 0), and `resolution_pending_count == 0` is never read as all positions closed.
+H. Feedback: only with a lifecycle store whose `strategy_version_id` exists and lists the binding `candidate_id` in `evidence_refs`; otherwise FEEDBACK_PENDING_NO_MATCHING_LIFECYCLE with zero backend calls. The backend is a FakeHermesBackend answering with an operator-supplied fixed offline draft; the information cutoff is explicit and must advance. Paper and lifecycle bytes stay unchanged; only the operator-named manager store is written.
+I. Report: separate SYNTHETIC_TEST_ONLY, WP169_ACCEPTED_OBSERVATION, IMPORTED_UNVERIFIED_SIGNAL, SIMULATED_PAPER_FILL; realized, unrealized and pending; full funnel counts; research-only and zero-authority flags. No exact venue return, edge, qualification or OOS claim.
+
+# 5. NEGATIVE TEST MATRIX AND EVIDENCE PLAN
+Named tests (exact node commands in wp_spec.json): R001 plan freeze and research-only binding; R002 source time, per-asset freshness, wrong scope; R003 fee bound and COST_UNKNOWN; R004 funnel reconciliation with native snapshot, duplicate denominator and as-of OPEN/PARTIALLY_FILLED order states; R005 STARTED-first, restart, duplicate, interrupted, committed-intent recovery, stale writer; R006 SELL, settlement, unknown outcome, missing marks; R007 feedback lifecycle match and FakeHermesBackend; R008 cold verify and tamper; R009 finite offline CLI with zero network and no daemon; R010 report labels and no overclaim. Negatives must include future source, equal-time book, stale held asset, gapped book, wrong token, duplicate row before and after restart, accepted order left OPEN, PARTIALLY_FILLED order later FILLED or EXPIRED without terminal rewrite, crash after STARTED before submit, crash after native submit before terminal, foreign/altered paper store, altered plan, tampered ledger line, null-winner resolution, absent lifecycle, cutoff not advanced, non-fake backend, socket attempt.
+Adjacent unchanged native tests must stay green: tests/paper_trading/test_engine.py, tests/paper_trading/test_runtime.py, tests/paper_trading/test_cli.py, tests/paper_trading/test_models.py, tests/research_runtime/test_paper_performance_bridge.py, tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py, tests/tools/alpha/test_discovery_learning_proof.py, tests/test_architecture_boundaries.py.
+Then: readiness `--check-diff`, historical changed-path/status guards, `git diff --check`, generated-artifact check, secret scan if available, one final stable-head `python -B -m pytest -q -p no:cacheprovider`, exact-head hosted CI, and one combined independent implementation reviewer using its own skills (never self-certification). Validation is local-first; hosted CI is final exact-head verification only, and any change after a hosted PASS needs fresh exact-head CI. Machine outputs must not contain the WP_DRAFTING_STANDARD section 15 forbidden variant terms. The PR body carries the compatibility table and requirement-to-evidence traceability. Never weaken a test to pass.
+
+# 6. HARD STOPS
+Frozen base moved; readiness not IMPLEMENTATION_READY; any guard needs an eighth path or a `src/`/historical edit; any need for network, credentials, provider, scheduler, execution or lifecycle writes; native API cannot express a requirement without engine change; full suite red. Report BLOCKED with exact evidence instead of improvising.
+
+# 7. REPORT-BACK
+Return: PR link, exact head and base, readiness receipts (pre and `--check-diff`), focused and full-suite results with counts, hosted CI for the exact head, independent review verdict, evidence mode, files changed, network-usage wording that separates workflow network from runtime (runtime product network: 0), skills actually invoked, and remaining limitations. Ready for review only with complete evidence; merge: NO (Karl only).
+
+# 8. SUCCESSOR BOUNDARY
+Next: S10-PAPER-FORWARD-RUN-01, a separately authorized bounded operator session with an owner-approved source capture (fixed hosts, ids, request/time budget), a pre-frozen genuine strategy and a recorded venue fee config. Recurring or 24/7 operation needs a later standing operating and scheduler authority. Nothing here activates either.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|plan|frozen_research_plan|before_first_decision|REQUIRE|plan_hash_first_ledger_entry|paper_forward.plan|R001
+NR002|source_time|candidate_book|receive_before_decision_and_fresh|REQUIRE|no_future_or_stale_source|paper_forward.source|R002
+NR003|cost|fee_scenario|unknown_or_unbounded|REJECT|cost_unknown_no_trade|paper_forward.cost|R003
+NR004|funnel|candidate_occurrences|all_outcomes|REQUIRE|counts_reconcile_with_native_snapshot|paper_forward.funnel|R004
+NR005|restart|started_without_terminal|resume|REQUIRE|single_terminal_no_new_identity|paper_forward.occurrence|R005
+NR006|closure|unknown_outcome|no_authentic_winner|FORBID|no_settlement_or_payout_inferred|paper_forward.closure|R006
+NR007|feedback|hermes_update|no_matching_strategy_version|REJECT|feedback_pending_no_backend_call|paper_forward.feedback|R007
+NR008|verify|ledger_and_paper_store|tampered_or_foreign|REJECT|cold_verify_fails_closed|paper_forward.receipt|R008
+NR009|operation|cli|network_or_daemon|FORBID|finite_offline_only|paper_forward.cli|R009
+NR010|report|labels|synthetic_imported_or_simulated|PRESERVE_EXACT|no_venue_edge_or_live_claim|paper_forward.report|R010
+END_NORMATIVE_RULE_MATRIX_V1

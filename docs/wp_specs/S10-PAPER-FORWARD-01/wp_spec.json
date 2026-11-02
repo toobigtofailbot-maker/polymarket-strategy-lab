@@ -1,0 +1,519 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-PAPER-FORWARD-01",
+    "title": "Research-Paper Forward Decision & Evidence Loop",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "RESEARCH_PAPER_FORWARD_DECISION_AND_EVIDENCE_LOOP",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 265,
+      "head_sha": "f7b997e905e80b94a44bed5eee5ddf330b3bbfa7",
+      "merge_sha": "7b8d2c895122682bcba915325dd3dd9dafdaa770"
+    },
+    "suggested_branch": "codex/s10-paper-forward-01",
+    "objective": "One finite offline restart-safe operator: pre-frozen research-only paper plan plus time-ordered candidates -> native WP173 research-paper decisions, an append-only hash-chained full-funnel occurrence ledger reconciled with the unchanged native snapshot, truthful closed/unsettled outcome reporting and optional FakeHermesBackend PERFORMANCE_UPDATE only for a matching StrategyVersion; no src change, product network, provider, scheduler, execution or live authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/research_paper_forward_contract.md",
+      "docs/status_entries/S10-PAPER-FORWARD-01.md",
+      "docs/wp_specs/S10-PAPER-FORWARD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-PAPER-FORWARD-01/wp_spec.json",
+      "tests/tools/alpha/test_paper_forward.py",
+      "tools/alpha/run_paper_forward.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/research_paper_forward_contract.md",
+      "docs/status_entries/S10-PAPER-FORWARD-01.md",
+      "docs/wp_specs/S10-PAPER-FORWARD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-PAPER-FORWARD-01/wp_spec.json",
+      "tests/tools/alpha/test_paper_forward.py",
+      "tools/alpha/run_paper_forward.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "local_data/",
+      "secrets/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/security/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "docs/deferred_items_log.md"
+    ],
+    "rollback_surface": "Revert the exact seven-path diff. The operator, tests, contract, deferred entry, status and prompt/spec disappear; native WP173, WP169, Hermes, lifecycle and all operator run directories outside the repository are unaffected.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": true
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": false,
+    "paper": true,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One additive finite operator and its evidence contract; every native API is reused unchanged.",
+    "items": [
+      {
+        "surface": "tools/alpha/run_paper_forward.py run/verify/feedback CLI",
+        "before": "No non-test code turns candidates into native research PaperIntents or records non-trade outcomes.",
+        "after": "Explicit-path finite run-once/resume, cold verify and optional offline feedback over operator-named run directories.",
+        "change_authorized": true,
+        "compatibility_requirement": "No default paths, network, provider, daemon, schedule, retries under new identity, or repository writes.",
+        "authority": "LOCAL_OFFLINE_OPERATOR_ONLY"
+      },
+      {
+        "surface": "WP173 PaperEngine/PaperStore/runtime, WP169 Wp169ReadOnlyTail, paper_performance_bridge, autonomous_feedback, strategy_lifecycle",
+        "before": "Native contracts own paper lifecycle, market truth, snapshot, feedback and lifecycle records.",
+        "after": "Called through public APIs only; no copy or edit; lifecycle and WP169 stores read-only.",
+        "change_authorized": false,
+        "compatibility_requirement": "Byte-unchanged src/; native validation never weakened; existing tests stay green.",
+        "authority": "EXISTING_NATIVE_CONTRACT_ONLY"
+      },
+      {
+        "surface": "Run directory ledger and report",
+        "before": "No durable full decision funnel linked to a native paper snapshot.",
+        "after": "Append-only hash-chained JSONL ledger plus derived report; verify recomputes everything read-only.",
+        "change_authorized": true,
+        "compatibility_requirement": "Research evidence only; no secrets, account ids or absolute private paths in the report.",
+        "authority": "RESEARCH_EVIDENCE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Ten bounded operator semantics with honest typed outcomes.",
+    "items": [
+      {
+        "path": "paper_forward.plan",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Plan bytes hashed and recorded before any decision; frozen_at_ns earlier than every source and decision time, proving local run order only (LOCAL_RUN_ORDER), never preregistration, prospective or OOS status; research-only native binding, no reserved/OOS refs; rerun with different plan fails closed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Plan bytes hashed and recorded before any decision; frozen_at_ns earlier than every source and decision time, proving local run order only (LOCAL_RUN_ORDER), never preregistration, prospective or OOS status; research-only native binding, no reserved/OOS refs; rerun with different plan fails closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PLAN_FROZEN or REJECTED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.source",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "source_time_ns < decision_time_ns; exact market/asset book received strictly before decision and within max_data_age_ns; equal-time events after the decision",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "source_time_ns < decision_time_ns; exact market/asset book received strictly before decision and within max_data_age_ns; equal-time events after the decision",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ADMISSIBLE or typed NO_TRADE",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.cost",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "CONSERVATIVE_UPPER_BOUND_ESTIMATE needs recorded rate, integer exponent >= 1, zero maker rebate and fee_rate_bps >= rate*10000; else COST_UNKNOWN; fees always ESTIMATE",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "CONSERVATIVE_UPPER_BOUND_ESTIMATE needs recorded rate, integer exponent >= 1, zero maker rebate and fee_rate_bps >= rate*10000; else COST_UNKNOWN; fees always ESTIMATE",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FEE_BOUND_ESTIMATE or COST_UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.funnel",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "raw_candidate_rows = unique_occurrences + suppressed_duplicate_rows; unique_occurrences = STARTED count = immutable decision-occurrence terminal count; ATTEMPTED_INTENT records submission outcome only (native intent_id, order_id, risk_permitted, initial status); each native intent incl. RISK_DENIED counted once against intent_count; lifecycle derived as-of snapshot cutoff from verified PaperStore with OPEN/PARTIALLY_FILLED nonterminal and NOT_FILLED an observation, never a terminal; no terminal rewrite or double count",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "raw_candidate_rows = unique_occurrences + suppressed_duplicate_rows; unique_occurrences = STARTED count = immutable decision-occurrence terminal count; ATTEMPTED_INTENT records submission outcome only (native intent_id, order_id, risk_permitted, initial status); each native intent incl. RISK_DENIED counted once against intent_count; lifecycle derived as-of snapshot cutoff from verified PaperStore with OPEN/PARTIALLY_FILLED nonterminal and NOT_FILLED an observation, never a terminal; no terminal rewrite or double count",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FUNNEL_RECONCILED or BLOCKED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.occurrence",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "STARTED fsynced before engine call; repeated rows get DUPLICATE_SUPPRESSED with no STARTED or submit; resume binds an already-committed native intent once (RECOVERED) or records INTERRUPTED_OR_UNKNOWN; no resubmit, rebooking or new identity; stale writer fails closed",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "STARTED fsynced before engine call; repeated rows get DUPLICATE_SUPPRESSED with no STARTED or submit; resume binds an already-committed native intent once (RECOVERED) or records INTERRUPTED_OR_UNKNOWN; no resubmit, rebooking or new identity; stale writer fails closed",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SINGLE_TERMINAL or INTERRUPTED_OR_UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.closure",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "SELL and authentic winner settle natively; replay winners IMPORTED_UNVERIFIED_RESOLUTION; null winner pending; unsettled positions UNSETTLED; missing marks UNKNOWN never 0",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "SELL and authentic winner settle natively; replay winners IMPORTED_UNVERIFIED_RESOLUTION; null winner pending; unsettled positions UNSETTLED; missing marks UNKNOWN never 0",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "REALIZED, UNSETTLED or UNKNOWN",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.feedback",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only matching StrategyVersion listing candidate_id plus FakeHermesBackend and advancing cutoff; else FEEDBACK_PENDING_NO_MATCHING_LIFECYCLE with zero backend calls; paper and lifecycle bytes unchanged",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only matching StrategyVersion listing candidate_id plus FakeHermesBackend and advancing cutoff; else FEEDBACK_PENDING_NO_MATCHING_LIFECYCLE with zero backend calls; paper and lifecycle bytes unchanged",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "ASSESSED or FEEDBACK_PENDING or REJECTED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.receipt",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "verify recomputes ledger chain, plan hash, native snapshot id and funnel reconciliation without writing; tamper or foreign store fails",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "verify recomputes ledger chain, plan hash, native snapshot id and funnel reconciliation without writing; tamper or foreign store fails",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "VERIFIED or REJECTED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.cli",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Explicit paths, one market source, bounded decisions and one bounded WP169 read; no network, sockets, subprocess, sleep, loop daemon or repository output",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Explicit paths, one market source, bounded decisions and one bounded WP169 read; no network, sockets, subprocess, sleep, loop daemon or repository output",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "FINITE_OFFLINE or REFUSED",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "paper_forward.report",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Separate SYNTHETIC_TEST_ONLY, WP169_ACCEPTED_OBSERVATION, IMPORTED_UNVERIFIED_SIGNAL and SIMULATED_PAPER_FILL; realized/unrealized/pending; zero-authority flags; no edge, OOS, qualification or venue-return claim",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Separate SYNTHETIC_TEST_ONLY, WP169_ACCEPTED_OBSERVATION, IMPORTED_UNVERIFIED_SIGNAL and SIMULATED_PAPER_FILL; realized/unrealized/pending; zero-authority flags; no edge, OOS, qualification or venue-return claim",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_PAPER_REPORT",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new authoritative domain identity; native binding, intent, order and snapshot ids are reused; ledger hashes are local verification digests only.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exact repository governance transition chain.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME readiness IMPLEMENTATION_READY on the exact seven-path scope, simulated historical changed-path/status guards need no eighth path, synthetic closure proof passed on the frozen base.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly approves the exact prompt and spec SHA-256, RUNTIME risk 3 and the seven paths; never provider, network, scheduler, execution or live authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Seven paths implemented, ten named tests plus focused adjacent paper/feedback tests and one stable-head full suite green, readiness --check-diff green; otherwise truthful BLOCKED without PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged repository-native readiness-failure order; runtime decision failures are sanitized, local-only and never provide authority.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new domain schema validator; ten named tests cover required semantics and the negative matrix.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Ten observable requirements mapped to named tests, plus readiness check-diff, historical guards and one stable-head full suite.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_frozen_plan_precedes_decisions_and_stays_research_only",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_frozen_plan_precedes_decisions_and_stays_research_only",
+        "expected_result": "Plan hash is the first ledger entry before any decision; later frozen_at, altered plan on rerun and reserved/OOS refs are rejected; binding flags stay research-only with zero capital."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_decision_uses_only_prior_fresh_book_for_exact_asset",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_decision_uses_only_prior_fresh_book_for_exact_asset",
+        "expected_result": "Future source, equal-time book, stale or gapped asset book, wrong market and wrong token produce typed NO_TRADE terminals and no native order."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_fee_bound_and_unknown_cost",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_fee_bound_and_unknown_cost",
+        "expected_result": "Missing fee config, exponent zero, nonzero maker rebate or bps below rate*10000 give COST_UNKNOWN for every candidate; a valid bound is reported as ESTIMATE."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_full_funnel_counts_reconcile_with_native_snapshot",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_full_funnel_counts_reconcile_with_native_snapshot",
+        "expected_result": "With a duplicate row: raw rows = unique + suppressed and unique = STARTED = terminals; ATTEMPTED_INTENT incl. RISK_DENIED equals native intent_count and risk_permitted false equals risk_deny_count; an accepted order still OPEN and a PARTIALLY_FILLED order later FILLED or EXPIRED change only as-of counts (summing to order_count, closed part = closed_order_state_counts) while past terminals stay byte-identical."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_started_first_restart_duplicate_and_interrupted",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_started_first_restart_duplicate_and_interrupted",
+        "expected_result": "STARTED precedes engine calls; crash before submit resumes as INTERRUPTED_OR_UNKNOWN; crash after native submit before terminal binds the committed intent once as RECOVERED with no resubmit or double count; duplicate rows before and after restart are suppressed with both equalities holding; external paper head change fails closed."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_sell_settlement_and_unknown_outcome_truth",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_sell_settlement_and_unknown_outcome_truth",
+        "expected_result": "Owned SELL and authentic winner settlement realize the exact formula P&L; null winner stays pending and UNSETTLED; replay winner is IMPORTED_UNVERIFIED_RESOLUTION; missing marks stay UNKNOWN."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_feedback_requires_matching_lifecycle_and_fake_backend",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_feedback_requires_matching_lifecycle_and_fake_backend",
+        "expected_result": "Matching version is ASSESSED via FakeHermesBackend; absent match is FEEDBACK_PENDING_NO_MATCHING_LIFECYCLE with zero calls; stale cutoff and real backend rejected; paper and lifecycle bytes unchanged."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_cold_verify_hash_chain_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_cold_verify_hash_chain_and_tamper",
+        "expected_result": "verify recomputes chain, plan hash, snapshot id and funnel without writing; edited ledger line, foreign or altered paper store fail closed."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_finite_offline_cli_no_network_no_daemon",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_finite_offline_cli_no_network_no_daemon",
+        "expected_result": "CLI demands explicit paths and bounds, refuses repository output paths, makes zero socket attempts and contains no loop daemon, sleep, subprocess or network import; WP169 store bytes unchanged."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_report_labels_and_no_overclaim",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_paper_forward.py::test_report_labels_and_no_overclaim",
+        "expected_result": "Report keeps synthetic, WP169, imported and simulated labels distinct, separates realized, unrealized and pending, and carries no edge, OOS, qualification, venue-return or live claim."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-PAPER-FORWARD-RUN-01",
+    "next_title": "Separately authorized bounded forward-paper operator session with owner-approved source capture, pre-frozen genuine strategy and recorded venue fee config",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-PAPER-FORWARD-01",
+    "forbidden_in_this_wp": [
+      "Any product, public-data, provider, model or account network, credential, wallet, signing or real order.",
+      "Any scheduler, daemon, service, timer, watcher, autostart or recurring operation.",
+      "Any src/, dependency, workflow, historical guard or eighth-path change.",
+      "Any StrategyLifecycle, Alpha registry, policy, Gate C, LIVE-ORCH or risk-cap write.",
+      "Any paper intent derived from a Hermes choice, or Hermes feedback changing plan or privileges.",
+      "Any edge, OOS, qualification, exact venue fee or venue return claim.",
+      "Any merge; Karl is the only merge authority."
+    ]
+  }
+}
