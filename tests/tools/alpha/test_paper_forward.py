@@ -405,11 +405,29 @@ def test_started_first_restart_duplicate_and_interrupted(tmp_path, capsys, monke
     assert (funnel["raw_candidate_rows"], funnel["unique_occurrences"], funnel["suppressed_duplicate_rows"]) == (8, 4, 4)
     assert_reconciled(out["report"])
 
+    # A new occurrence reusing a claimed (asset, decision time) fails closed before any ledger write.
+    before = sha_file(case.run_dir / forward.LEDGER)
+    code, out = case.run(capsys, [cand("other", A, 10, "0.60")], events)
+    assert (code, out["reason_code"]) == (1, "CANDIDATES_OCCURRENCE_COLLISION")
+    assert sha_file(case.run_dir / forward.LEDGER) == before
+
     # A foreign writer between runs fails the resume closed.
     with PaperStore(case.run_dir / forward.PAPER) as store:
         PaperEngine.open(store).process_market_event(PaperMarketEvent(
             "BOOK", D, yes(D), at(20), at(20), "foreign:book", (("0.40", "1"),), (("0.42", "1"),)))
     code, out = case.run(capsys, rows, events)
+    assert (code, out["reason_code"]) == (1, "PAPER_STORE_FOREIGN")
+
+    # A foreign market event written after a crash, before resume, fails the resume closed.
+    crashed = Case(tmp_path, "r005-crash-foreign", plan())
+    monkeypatch.setattr(forward, "decide", crash_before_b)
+    with pytest.raises(RuntimeError):
+        forward.run(forward._parser().parse_args(crashed.argv(rows, events)))
+    monkeypatch.setattr(forward, "decide", original_decide)
+    with PaperStore(crashed.run_dir / forward.PAPER) as store:
+        PaperEngine.open(store).process_market_event(PaperMarketEvent(
+            "BOOK", B, yes(B), at(9.5), at(9.5), "foreign:after-crash", (("0.40", "1"),), (("0.42", "1"),)))
+    code, out = crashed.run(capsys, rows, events)
     assert (code, out["reason_code"]) == (1, "PAPER_STORE_FOREIGN")
 
     # A foreign writer during a run trips the native stale-writer guard.
@@ -507,6 +525,11 @@ def test_feedback_requires_matching_lifecycle_and_fake_backend(tmp_path, capsys)
     args = forward._parser().parse_args(["feedback", "--plan", str(case.plan), "--run-dir", str(case.run_dir),
                                          "--feedback-input", str(inputs), "--manager-store",
                                          str(case.root / "manager.sqlite3"), "--lifecycle-store", str(life)])
+    bad_clock = tmp_path / "feedback-bad-clock.json"
+    bad_clock.write_bytes(json.dumps(dict(json.loads(inputs.read_bytes()), manager_clock_utc="not-a-time")).encode())
+    code, out = cli(capsys, "feedback", "--plan", str(case.plan), "--run-dir", str(case.run_dir), "--feedback-input",
+                    str(bad_clock), "--manager-store", str(case.root / "manager.sqlite3"), "--lifecycle-store", str(life))
+    assert (code, out["reason_code"]) == (1, "FEEDBACK_INPUT_INVALID")
     rejected = forward.feedback(args, backend=object())
     assert (rejected["status"], rejected["reason_code"], rejected["backend_calls"]) == (
         "REJECTED", "BACKEND_NOT_OFFLINE", 0)
@@ -598,6 +621,7 @@ def test_finite_offline_cli_no_network_no_daemon(tmp_path, capsys, monkeypatch) 
     code, out = bounded.run(capsys, rows, events, max_decisions="1")
     assert code == 0 and kinds(bounded.ledger()).count("STARTED") == 1
     assert bounded.ledger()[-1]["body"]["bound_reached"] is True
+    assert bounded.ledger()[-1]["body"]["input_rows_not_reached"] == 2
     code, out = bounded.run(capsys, rows, events, max_decisions="5")
     assert code == 0 and kinds(bounded.ledger()).count("STARTED") == 3
     assert out["report"]["funnel"]["native_intent_count"] == 3
@@ -625,6 +649,18 @@ def test_finite_offline_cli_no_network_no_daemon(tmp_path, capsys, monkeypatch) 
                                             fair_value="0.90", source_time_ns=received + S // 2,
                                             decision_time_ns=received + S)], [])
     market_before = sha_file(market)
+    # A WP169 read truncated by --max-market-events fails closed before any decision or STARTED.
+    many = tmp_path / "market_truth_many.sqlite3"
+    with MarketTruthStore(many) as source:
+        for seq in (0, 1):
+            raw = _book_raw(seq)
+            source.append(raw, mt.normalize_websocket_message(raw, book_readiness={}))
+    truncated = Case(tmp_path, "r009-truncated", json.loads(wp169.plan.read_bytes()))
+    code, out = cli(capsys, "run", "--plan", str(truncated.plan), "--candidates", str(candidates), "--run-dir",
+                    str(truncated.run_dir), "--max-decisions", "5", "--market-truth-store", str(many),
+                    "--max-market-events", "1")
+    assert (code, out["reason_code"]) == (1, "WP169_READ_INCOMPLETE")
+    assert kinds(truncated.ledger()) == ["PLAN_FROZEN"]
     argv = [sys.executable, "-B", str(TOOL), "run", "--plan", str(wp169.plan), "--candidates", str(candidates),
             "--run-dir", str(wp169.run_dir), "--max-decisions", "5", "--market-truth-store", str(market)]
     for _attempt in range(2):

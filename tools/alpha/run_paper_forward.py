@@ -217,17 +217,41 @@ def _processed_lineages(store: PaperStore) -> list[str]:
     return [event.data["lineage"] for event in store.events() if event.event_type == "MARKET_EVENT"]
 
 
-def market_events(args, store: PaperStore) -> tuple[list[PaperMarketEvent], dict]:
+def market_events(args, store: PaperStore) -> tuple[list[PaperMarketEvent], dict, set]:
+    """Return unapplied source events, the source identity and every lineage the source holds."""
     done = set(_processed_lineages(store))
     if args.replay_events is not None:
         events, digest, label = load_replay(args.replay_events)
-        return [e for e in events if e.lineage not in done], dict(kind=label, sha256=digest)
-    try:
-        tail = Wp169ReadOnlyTail(args.market_truth_store, processed_lineages=sorted(done))
-        events = tail.read_new(limit=args.max_market_events)
-    except PaperTradingError as exc:
-        raise ForwardStop(f"WP169_{exc}") from None
-    return list(events), dict(kind="WP169", sha256=None)
+        source = dict(kind=label, sha256=digest)
+    else:
+        try:
+            tail = Wp169ReadOnlyTail(args.market_truth_store)
+            events = list(tail.read_new(limit=args.max_market_events))
+        except PaperTradingError as exc:
+            raise ForwardStop(f"WP169_{exc}") from None
+        # A truncated read would let later decisions use a book that unread earlier events replaced.
+        _require(tail.bootstrap_complete, "WP169_READ_INCOMPLETE")
+        source = dict(kind="WP169", sha256=None)
+    return [e for e in events if e.lineage not in done], source, {e.lineage for e in events}
+
+
+_FOREIGN_TYPES = {"SESSION_INITIALIZED", "CONTROL_CHANGED"}
+
+
+def _require_own_writes(entries: list[dict], store: PaperStore, lineages: set, open_rows: list[dict]) -> None:
+    """After a crash, every journal event past the last recorded head must come from this run's inputs."""
+    last = max(e["body"]["paper_head"]["sequence"] for e in entries if "paper_head" in e["body"])
+    keys = {(r["market_id"], r["asset_id"], r["decision_time_ns"]) for r in open_rows}
+    for event in store.events():
+        if event.sequence <= last:
+            continue
+        data = event.data
+        _require(event.event_type not in _FOREIGN_TYPES
+                 and (event.event_type != "MARKET_EVENT" or data["lineage"] in lineages)
+                 and (event.event_type != "ORDER_PENDING_RISK"
+                      or (data["order"]["market_id"], data["order"]["asset_id"],
+                          data["order"]["created_time_ns"]) in keys)
+                 and data.get("reason") not in ("MANUAL_PAPER_CANCEL", "SESSION_KILLED"), "PAPER_STORE_FOREIGN")
 
 
 # ---------------------------------------------------------------- ledger
@@ -386,7 +410,7 @@ def run(args) -> dict:
                                              created_time_ns=plan["frozen_at_ns"])
         ledger.append("PLAN_FROZEN", dict(
             plan_sha256=plan_sha, plan=plan, binding_id=binding.binding_id, session_id=engine.state.session_id,
-            plan_evidence_class="LOCAL_RUN_ORDER", fee_label=fee_label))
+            plan_evidence_class="LOCAL_RUN_ORDER", fee_label=fee_label, paper_head=_head(store)))
     try:
         return _resume_and_run(args, plan, fee_label, rows, cand_sha, ledger, store, engine)
     finally:
@@ -394,10 +418,18 @@ def run(args) -> dict:
 
 
 def _resume_and_run(args, plan, fee_label, rows, cand_sha, ledger, store, engine) -> dict:
-    events, source = market_events(args, store)
+    events, source, lineages = market_events(args, store)
     first_source = next((e["body"]["market_source"]["kind"] for e in ledger.entries if e["kind"] == "RUN_INVOKED"),
                         source["kind"])
     _require(first_source == source["kind"], "MARKET_SOURCE_CHANGED")
+    claimed = {(b["candidate"]["asset_id"], b["candidate"]["decision_time_ns"]): oid
+               for oid, b in _claimed(ledger.entries)[0].items()}
+    _require(all(claimed.get((r["asset_id"], r["decision_time_ns"]), r["occurrence_id"]) == r["occurrence_id"]
+                 for r in rows), "CANDIDATES_OCCURRENCE_COLLISION")
+    started, _rows, terminal = _claimed(ledger.entries)
+    if ledger.entries[-1]["kind"] != "RUN_FINISHED":
+        _require_own_writes(ledger.entries, store, lineages,
+                            [b["candidate"] for oid, b in started.items() if oid not in terminal])
     ledger.append("RUN_INVOKED", dict(candidates_sha256=cand_sha, signal_label="IMPORTED_UNVERIFIED_SIGNAL",
                                       market_source=source, max_decisions=args.max_decisions))
     started, seen_rows, terminal = _claimed(ledger.entries)
@@ -433,7 +465,7 @@ def _resume_and_run(args, plan, fee_label, rows, cand_sha, ledger, store, engine
             stopped_at = row["decision_time_ns"]
             break
         ledger.append("STARTED", dict(occurrence_id=row["occurrence_id"], candidates_sha256=cand_sha,
-                                      row_index=index, candidate=row))
+                                      row_index=index, candidate=row, paper_head=_head(store)))
         started[row["occurrence_id"]] = dict(candidate=row)
         engine.check_store_head()
         feed(row["decision_time_ns"])
@@ -444,8 +476,12 @@ def _resume_and_run(args, plan, fee_label, rows, cand_sha, ledger, store, engine
     if args.finish_time_ns is not None:
         engine.advance_time(args.finish_time_ns)
     report = build_report(ledger.entries, store, engine)
+    recorded = _claimed(ledger.entries)[1]
     ledger.append("RUN_FINISHED", dict(snapshot_id=report["snapshot_id"], paper_head=_head(store),
-                                       decisions_this_run=decisions, bound_reached=stopped_at is not None))
+                                       decisions_this_run=decisions, bound_reached=stopped_at is not None,
+                                       input_file_rows=len(rows),
+                                       input_rows_not_reached=sum((cand_sha, i) not in recorded
+                                                                  for i in range(len(rows)))))
     report["ledger_head"] = ledger.entries[-1]["hash"]
     Path(ledger.path.parent / REPORT).write_bytes(canonical(report) + b"\n")
     return report
@@ -549,7 +585,12 @@ def feedback(args, *, backend=None) -> dict:
                              "manager_clock_utc", "manager_draft", "manager_usage"}
              and inputs["schema"] == FEEDBACK_SCHEMA and type(inputs["manager_draft"]) is dict
              and "request_id" not in inputs["manager_draft"] and type(inputs["manager_usage"]) is dict
-             and _int_ns(inputs["decision_time_ns"]), "FEEDBACK_INPUT_INVALID")
+             and _int_ns(inputs["decision_time_ns"]) and type(inputs["manager_clock_utc"]) is str,
+             "FEEDBACK_INPUT_INVALID")
+    try:
+        clock_at = datetime.fromisoformat(inputs["manager_clock_utc"].replace("Z", "+00:00"))
+    except ValueError:
+        raise ForwardStop("FEEDBACK_INPUT_INVALID") from None
     lifecycle = load_strategy_lifecycle_store(args.lifecycle_store)
     _require(lifecycle.is_valid, "LIFECYCLE_STORE_INVALID")
     _plan, _sha, binding, _limits = load_plan(args.plan)
@@ -558,7 +599,6 @@ def feedback(args, *, backend=None) -> dict:
         return pending
     if backend is None:
         backend = _EchoDraftBackend(inputs["manager_draft"], inputs["manager_usage"])
-    clock_at = datetime.fromisoformat(inputs["manager_clock_utc"].replace("Z", "+00:00"))
     manager = _outside_repo(args.manager_store)
     if not manager.exists():
         sm.initialize_hermes_strategy_manager_store(manager)

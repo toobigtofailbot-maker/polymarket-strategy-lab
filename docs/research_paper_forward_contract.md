@@ -29,7 +29,7 @@ Prices, sizes, money and fees are decimal strings. JSON floats are rejected, exc
   - Rows must be ordered by non-decreasing `decision_time_ns`.
   - `frozen_at_ns` must be earlier than every source time and decision time.
   - Two different occurrences may not share an `(asset_id, decision_time_ns)` pair, because native intent ids are content-derived (`CANDIDATES_OCCURRENCE_COLLISION`).
-- **Replay** (`s10-paper-forward-replay-v1`) has `label` set to SYNTHETIC_TEST_ONLY or IMPORTED_UNVERIFIED, and native `PaperMarketEvent` fields with unique lineages and non-decreasing receive time. The alternative source is a WP169 store, read through the native `Wp169ReadOnlyTail` (`mode=ro`) in one bounded read.
+- **Replay** (`s10-paper-forward-replay-v1`) has `label` set to SYNTHETIC_TEST_ONLY or IMPORTED_UNVERIFIED, and native `PaperMarketEvent` fields with unique lineages and non-decreasing receive time. The alternative source is a WP169 store, read through the native `Wp169ReadOnlyTail` (`mode=ro`) in one bounded read. A read that does not reach the end of the store fails closed with `WP169_READ_INCOMPLETE` before any decision, because otherwise a later decision could use a book that unread earlier events replaced.
 
 Units: prices in USDC per share in [0,1]; quantities in shares; time in ns since the Unix epoch, UTC; `fee_rate_bps` in basis points of fill notional.
 
@@ -76,7 +76,7 @@ Then `rate*(p(1-p))^e <= rate*p <= p*bps/1e4` for every p in [0,1]. Anything els
 
 The terminal classes are:
 - **No-trade classes:** `ABSTAINED_NO_TRADE`, `SOURCE_FUTURE`, `SOURCE_STALE`, `SOURCE_GAP`, `WRONG_SCOPE`, `COST_UNKNOWN`.
-- **`ATTEMPTED_INTENT`:** the submission outcome only. It records the native `intent_id` and `order_id`, `risk_permitted`, and `initial_status` (OPEN or REJECTED, taken from the native risk decision).
+- **`ATTEMPTED_INTENT`:** the submission outcome only. It records the native `intent_id` and `order_id`, `risk_permitted`, and `initial_status`. `initial_status` is OPEN or REJECTED, taken from the native risk decision, so it is identical on the fresh and recovery paths. It deliberately does not capture a fill that native `submit` might apply immediately; later fills appear only in the as-of order state.
 - **`RECOVERED`:** a committed native intent found after a crash. It is bound once and never resubmitted.
 - **`INTERRUPTED_OR_UNKNOWN`:** STARTED with no committed native intent. It is never retried under a new identity.
 
@@ -94,12 +94,14 @@ Past terminals are never rewritten.
 - the number of `risk_permitted=false` terminals = native `risk_deny_count`;
 - the per-status counts sum to `order_count`, and the closed counts equal native `closed_order_state_counts`.
 
-A row is identified by `(candidates_sha256, row_index)`. Re-reading the same file adds nothing. Market events already applied, identified by their lineage in the native journal, are skipped.
+A row is identified by `(candidates_sha256, row_index)`. Re-reading the same file adds nothing. `RUN_FINISHED` records `input_file_rows` and `input_rows_not_reached`, the rows a `--max-decisions` bound left for a later run. Rows not yet reached are outside the funnel denominator. Market events already applied, identified by their lineage in the native journal, are skipped.
 
 **Resume checks:**
 - On resume, the chain and plan hash must match, and the paper session must be the ledger's own.
 - After a clean `RUN_FINISHED`, the store head must equal the recorded head (`PAPER_STORE_FOREIGN`).
+- After a crash, every native journal event past the last head recorded in the ledger must come from this run: a market event whose lineage is in the current source, or the pending order of an open occurrence. Control changes and manual or kill cancellations count as foreign (`PAPER_STORE_FOREIGN`).
 - A writer changing the store during a run trips the native stale-writer guard (`STALE_PAPER_STATE`).
+- A torn last ledger line, or a crash between creating the paper store and writing `PLAN_FROZEN`, fails closed (`LEDGER_TAMPERED` or `PAPER_STORE_FOREIGN`). Such a run directory is abandoned, and a new run directory is required.
 
 ## Closure, feedback and report
 
