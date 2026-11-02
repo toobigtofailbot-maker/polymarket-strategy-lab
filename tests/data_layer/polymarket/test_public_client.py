@@ -661,3 +661,23 @@ class TestWalletEpochWireWindow:
         with pytest.raises(WalletDataApiError) as host_exc:
             _validate_wallet_data_api_url("https://evil.example/v2/trades?start=" + _EPOCH_START)
         assert host_exc.value.code == "NETWORK_HOST_FORBIDDEN"
+        # The default wallet opener still refuses every redirect, and a refusal
+        # raised during transport propagates as the closed code.
+        handlers = [h for h in _pc._WALLET_DATA_API_OPENER.handlers if isinstance(h, _pc._NoRedirectHandler)]
+        assert len(handlers) == 1
+        with pytest.raises(WalletDataApiError) as redirect_exc:
+            handlers[0].redirect_request(req, None, 302, "Found", {}, "https://evil.example/")
+        assert redirect_exc.value.code == "NETWORK_HOST_FORBIDDEN"
+
+        class _RedirectingOpener:
+            calls = 0
+
+            def open(self, request, timeout=None):
+                self.calls += 1
+                raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+
+        redirecting = _RedirectingOpener()
+        with pytest.raises(WalletDataApiError) as propagated:
+            client.get_wallet_trades_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=redirecting)
+        assert propagated.value.code == "NETWORK_HOST_FORBIDDEN"
+        assert redirecting.calls == 1
