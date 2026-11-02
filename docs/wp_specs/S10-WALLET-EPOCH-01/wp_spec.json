@@ -1,0 +1,481 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-WALLET-EPOCH-01",
+    "title": "Native Data API v2 epoch-second query compatibility repair",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "WALLET_V2_EPOCH_WIRE_COMPATIBILITY",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "required_predecessor": {
+      "pr_number": 265,
+      "head_sha": "f7b997e905e80b94a44bed5eee5ddf330b3bbfa7",
+      "merge_sha": "7b8d2c895122682bcba915325dd3dd9dafdaa770"
+    },
+    "suggested_branch": "codex/s10-wallet-epoch-01",
+    "objective": "Convert existing canonical ISO-UTC wallet-feed windows to exact Unix epoch seconds only at the public HTTP request boundary, preserving native WALLET-01 receipt and PIT semantics; zero network use, zero new data model, no trading authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/polymarket/public_client.py",
+      "tests/data_layer/polymarket/test_public_client.py",
+      "tests/data_layer/wallet_intelligence/test_public_ingest.py",
+      "docs/wallet_public_evidence_foundation_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-WALLET-EPOCH-01.md",
+      "docs/wp_specs/S10-WALLET-EPOCH-01/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-EPOCH-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/polymarket/public_client.py",
+      "tests/data_layer/polymarket/test_public_client.py",
+      "tests/data_layer/wallet_intelligence/test_public_ingest.py",
+      "docs/wallet_public_evidence_foundation_contract.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-WALLET-EPOCH-01.md",
+      "docs/wp_specs/S10-WALLET-EPOCH-01/wp_prompt.txt",
+      "docs/wp_specs/S10-WALLET-EPOCH-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "credentials/",
+      "secrets/",
+      "agent_memory/",
+      "local_data/",
+      "tools/",
+      "src/execution_gateway/",
+      "src/execution_feasibility/",
+      "src/exploratory_gate_c/",
+      "src/risk_engine/",
+      "src/oms/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/strategy_lifecycle/",
+      "src/data_layer/wallet_intelligence/",
+      "src/data_layer/analytical_research/",
+      "src/data_layer/point_in_time_market_research/"
+    ],
+    "max_changed_files": 10,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly the ten declared paths; previous real source evidence and wallet ledger/cursors remain untouched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": false
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": false,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Two existing public wallet feed APIs change only integer timestamp serialization; ingest canonical scope is unchanged.",
+    "items": [
+      {
+        "surface": "get_wallet_trades_page(start,end,cursor,opener)",
+        "before": "Caller ISO strings are sent verbatim and return HTTP400 live.",
+        "after": "Public signature remains; both ISO UTC values are validated and converted to decimal Unix epoch seconds in query.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve all unrelated query keys, exact host/GET-only/no-auth/no-redirect/limit/one-page semantics and cursor handling.",
+        "authority": "SOFTWARE_ONLY_OFFLINE_NO_PRODUCT_GET"
+      },
+      {
+        "surface": "get_wallet_activity_page(start,end,cursor,opener)",
+        "before": "Caller ISO strings are sent verbatim and return HTTP400 live.",
+        "after": "Both ISO UTC values converted to decimal Unix epoch-second wire strings.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve existing exclude_deposits_withdrawals=false and sort_direction=ASC, no narrowing/new source authority.",
+        "authority": "SOFTWARE_ONLY_OFFLINE_NO_PRODUCT_GET"
+      },
+      {
+        "surface": "WalletIngestRequest/feed receipt/ingest-run identity",
+        "before": "ISO-UTC canonical request/receipt; native epoch caller values reject.",
+        "after": "Unchanged ISO-UTC canonical request/receipt; captured wire request_parameters truthfully show epoch.",
+        "change_authorized": false,
+        "compatibility_requirement": "No changes to ledger, canonical records, PIT clocks, token/condition semantics or ingest run key.",
+        "authority": "NO_CANONICAL_MODEL_CHANGE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Closed minimum implementation semantics and empirical-source limitations.",
+    "items": [
+      {
+        "path": "client.trades.epoch_wire",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Both canonical ISO UTC input timestamps convert to exact integer epoch seconds in the /v2/trades query only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Intercepted requests show exact decimal values for both start/end; no local timezone.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "client.activity.epoch_wire",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Same operation for /v2/activity, without altering filter names or their values.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Intercepted activity request query has identical frozen filters except epoch windows.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "client.windows.invalid",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Malformed, noncanonical, naive, offset, negative epoch, invalid date, nonzero subsecond, reversed windows or wrong types refuse before opener.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Parameterised bad windows cause zero opener calls and closed no-echo error.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "client.cursors.identical",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Cursor page conversion and original cursor semantics are identical to first-page conversion for both feeds.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Both cursor tests show epoch start/end and unchanged cursor/no new fetch.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ingest.receipt.canonical",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "ISO UTC requested scope, run identity, and PIT clock semantics do not change; query parameters show truthful epoch wire values.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native NETWORK mock plus verified cold-load ledger and exact receipt fields.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "ingest.activity.ambiguity",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "Missing is_combo remains SCHEMA_DRIFT/ambiguous and cannot manufacture FALSE identity.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing/offline test verifies ambiguity without adding a normalization override.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "client.safety.unchanged",
+        "source": "DERIVED",
+        "type": "string",
+        "required_rule": "No new transport, fallback, redirect, auth, retry, pagination or network ability. No real GET.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Relevant existing network boundary, cap and source safety tests pass.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "existing closed public error or truthful evidence field, never input echo",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No content-addressed id scheme changes; preserving the existing run identity is tested.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "WP package lifecycle only, not wallet-ingestion product state; listing these transitions grants no permission to enter them.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "prompt/spec authority mirror equality, exact ten-file scope, semantics, evidence plan and deterministic RUNTIME readiness pass",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorizes this exact WP package by prompt/spec SHA-256",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "implementation stays within the exact ten-file scope and all offline validation passes with zero product-network GET",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed spec guard precedence for WP schema 1.0.0.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Offline interception tests are authoritative; no new canonical-JSON derivation examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Existing tests plus exact-name new offline tests are the acceptance oracle.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t01_trades_initial_exact_wire",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "Exactly correct epoch-second start/end are sent for trades; filters and GET only."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t02_activity_initial_exact_wire",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "Exactly correct epoch-second start/end are sent for activity; filters unchanged."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t03_trades_cursor_same_epoch_window",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "Cursor and both epoch windows transmitted without extra request."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t04_activity_cursor_same_epoch_window",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "Activity cursor and both epoch windows transmitted without extra request."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t05_invalid_windows_refuse_before_transport",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "Malformed, noncanonical, reversed, subsecond/nonzero and wrong-type windows refuse with 0 opener calls."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t06_native_network_ingest_iso_receipt_epoch_wire",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_public_ingest.py",
+        "expected_result": "Mock NETWORK mode creates valid canonical ISO-window ledger receipt while captured wire scope is epoch."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t07_combo_and_activity_ambiguity_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_public_ingest.py",
+        "expected_result": "Combo no-window contract preserved; absent is_combo stays ambiguous SCHEMA_DRIFT."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_wallet_epoch_t08_existing_safety_and_partial_caps",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py",
+        "expected_result": "Existing cap/host/no-auth errors and partial pagination contracts remain correct and independently checked."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-WALLET-04",
+    "next_title": "Incremental wallet information value only after separately authorized real, prospective source and copyability evidence; the separate live retest is not part of this WP.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-WALLET-03",
+    "forbidden_in_this_wp": [
+      "product GET or wallet-signal collection",
+      "live source smoke",
+      "new wallet endpoints or feeds",
+      "change activity is_combo UNKNOWN semantics",
+      "modified WALLET-01 event/receipt canonical schema",
+      "network authorization increase",
+      "Hermes runtime/provider calls",
+      "scheduler/polling engine",
+      "qualification and WP170/WP172",
+      "wallet profile and copyability implementation",
+      "paper/live/OMS/credentials/Gate C/orders/capital",
+      "dependency/lock/workflow changes",
+      "merge"
+    ]
+  }
+}

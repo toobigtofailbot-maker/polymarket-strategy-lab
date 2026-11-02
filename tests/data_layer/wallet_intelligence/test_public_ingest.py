@@ -841,3 +841,90 @@ def test_wallet_package_has_no_forbidden_network_imports():
         source = inspect.getsource(mod)
         for forbidden in ("import requests", "import httpx", "import aiohttp", "import websockets", "import socket", "py_clob_client"):
             assert forbidden not in source
+
+
+# ---------------------------------------------------------------------------
+# S10-WALLET-EPOCH-01: ISO UTC canonical scope, epoch-second wire window.
+# ---------------------------------------------------------------------------
+class _CapturingRawOpener(_RawOpener):
+    def __init__(self, outcomes=()):
+        super().__init__(outcomes)
+        self.urls = []
+
+    def open(self, request, timeout=None):
+        self.urls.append(request.full_url)
+        return super().open(request, timeout=timeout)
+
+
+def _wire_query(url):
+    import urllib.parse
+    parts = urllib.parse.urlsplit(url)
+    return parts.path, dict(urllib.parse.parse_qsl(parts.query))
+
+
+def test_wallet_epoch_t06_native_network_ingest_iso_receipt_epoch_wire(tmp_path):
+    path = _new_ledger(tmp_path)
+    opener = _CapturingRawOpener([_valid_response(), _valid_response(), _valid_response()])
+    request = _request()
+    result = pi.ingest_wallet_evidence(
+        request, ledger_path=path, mode="NETWORK",
+        client=PolymarketPublicClient(), opener=opener,
+        guard=_Guard(True), clock_times=_clock(),
+    )
+    assert result.collection_completion_state == "COMPLETE"
+    assert opener.calls == result.transport_call_count == 3
+    wire = dict(_wire_query(url) for url in opener.urls)
+    for feed_path in ("/v2/trades", "/v2/activity"):
+        assert wire[feed_path]["start"] == "1767225600"
+        assert wire[feed_path]["end"] == "1767312000"
+    assert "start" not in wire["/v2/activity/combos"]
+    assert "end" not in wire["/v2/activity/combos"]
+
+    # Canonical scope and run identity stay ISO UTC.
+    assert result.ingest_run_key == pi.derive_run_key(request)
+    assert request.pre_run_preimage()["trades_scope"]["start"] == "2026-01-01T00:00:00Z"
+    receipts = {o.feed_key: o.receipt for o in result.feed_outcomes}
+    for feed in ("TRADES", "STANDARD_ACTIVITY"):
+        assert receipts[feed].requested_start == "2026-01-01T00:00:00Z"
+        assert receipts[feed].requested_end == "2026-01-02T00:00:00Z"
+
+    # Cold verified load: raw provenance records the epoch wire parameters.
+    snapshot = L.load_and_verify_wallet_evidence_ledger(path).snapshot
+    raw_params = [
+        dict(map(tuple, e.payload["request_parameters"]))
+        for e in snapshot.entries if e.record_kind == "RAW_EVIDENCE_REFERENCE"
+    ]
+    windowed = [p for p in raw_params if "start" in p]
+    assert len(raw_params) == 3 and len(windowed) == 2
+    assert all(p["start"] == "1767225600" and p["end"] == "1767312000" for p in windowed)
+
+
+def test_wallet_epoch_t07_combo_and_activity_ambiguity_unchanged(tmp_path):
+    path = _new_ledger(tmp_path)
+    pages = {
+        "TRADES": [_page([])],
+        "STANDARD_ACTIVITY": [
+            _page([{"type": "TRADE", "condition_id": "0xdef", "price": "0.6",
+                    "size": "5", "side": "SELL", "timestamp": "2026-01-01T12:00:01Z",
+                    "transaction_hash": "0x" + "b" * 64}])
+        ],
+        "COMBO_ACTIVITY": [_page([])],
+    }
+    res = pi.ingest_wallet_evidence(
+        _request(), ledger_path=path, mode="LOCAL_RESPONSE_FIXTURE",
+        page_fetcher=pi.make_local_fixture_fetcher(pages), clock_times=_clock(),
+    )
+    combo_receipt = next(o.receipt for o in res.feed_outcomes if o.feed_key == "COMBO_ACTIVITY")
+    assert combo_receipt.time_filter_capability == "NOT_SUPPORTED"
+    assert combo_receipt.requested_start is None and combo_receipt.requested_end is None
+    snapshot = L.load_and_verify_wallet_evidence_ledger(path).snapshot
+    events = [e.payload for e in snapshot.entries if e.record_kind == "WALLET_EVIDENCE_EVENT"]
+    assert len(events) == 1
+    event = events[0]
+    # Missing is_combo stays ambiguous: never manufactured as FALSE.
+    assert event["combo_state"] is None
+    assert event["identity_ambiguous"] is True
+    assert event["identity_strength"] == "WEAK_PARTIAL"
+    assert event["condition_context"] is None and event["token_context"] is None
+    dq = {o.feed_key: o.dq_flags for o in res.feed_outcomes}
+    assert "SCHEMA_DRIFT" in dq["STANDARD_ACTIVITY"]

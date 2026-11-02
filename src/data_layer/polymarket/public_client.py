@@ -20,10 +20,12 @@ from __future__ import annotations
 import dataclasses
 import hashlib
 import json
+import re
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Optional
 
@@ -506,14 +508,16 @@ class PolymarketPublicClient:
         """One page of GET /v2/trades for one wallet.
 
         Sends ``user``, ``taker_only=false`` (the non-taker-only form), the exact
-        requested time window, and no narrowing side/filter parameters.
+        requested ISO UTC window as Unix epoch seconds, and no narrowing
+        side/filter parameters.
         """
 
+        start_seconds, end_seconds = _wallet_epoch_window(start, end)
         parameters = [
             ("user", str(user)),
             ("taker_only", "false"),
-            ("start", str(start)),
-            ("end", str(end)),
+            ("start", start_seconds),
+            ("end", end_seconds),
             ("limit", str(_wallet_page_size(page_size))),
         ]
         return self._wallet_data_api_get_page(
@@ -537,16 +541,17 @@ class PolymarketPublicClient:
         """One page of GET /v2/activity for one wallet.
 
         Sends ``user``, ``exclude_deposits_withdrawals=false``,
-        ``sort_direction=ASC``, the exact requested time window, and NO type/side
-        narrowing.
+        ``sort_direction=ASC``, the exact requested ISO UTC window as Unix epoch
+        seconds, and NO type/side narrowing.
         """
 
+        start_seconds, end_seconds = _wallet_epoch_window(start, end)
         parameters = [
             ("user", str(user)),
             ("exclude_deposits_withdrawals", "false"),
             ("sort_direction", "ASC"),
-            ("start", str(start)),
-            ("end", str(end)),
+            ("start", start_seconds),
+            ("end", end_seconds),
             ("limit", str(_wallet_page_size(page_size))),
         ]
         return self._wallet_data_api_get_page(
@@ -691,6 +696,43 @@ def _wallet_page_size(page_size: object) -> int:
     if page_size < 1 or page_size > WALLET_MAX_PAGE_SIZE:
         raise WalletDataApiError("FIELD_VALUE_INVALID")
     return page_size
+
+
+# Explicit-Z UTC to whole seconds; an all-zero fraction is the only one allowed.
+_WALLET_UTC_SECOND_RE = re.compile(
+    r"([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.0+)?Z"
+)
+_UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
+def _wallet_epoch_seconds(value: object) -> int:
+    """Convert a canonical ISO UTC timestamp to non-negative integer Unix epoch
+    seconds. Raises the closed FIELD_VALUE_INVALID code without echoing input."""
+
+    if not isinstance(value, str):
+        raise WalletDataApiError("FIELD_VALUE_INVALID")
+    match = _WALLET_UTC_SECOND_RE.fullmatch(value)
+    if match is None:
+        raise WalletDataApiError("FIELD_VALUE_INVALID")
+    try:
+        instant = datetime(*(int(part) for part in match.groups()), tzinfo=timezone.utc)
+    except ValueError:
+        raise WalletDataApiError("FIELD_VALUE_INVALID") from None
+    seconds = (instant - _UNIX_EPOCH) // timedelta(seconds=1)
+    if seconds < 0:
+        raise WalletDataApiError("FIELD_VALUE_INVALID")
+    return seconds
+
+
+def _wallet_epoch_window(start: object, end: object) -> tuple[str, str]:
+    """Data API v2 /v2/trades and /v2/activity take epoch-second start/end; the
+    caller's ISO UTC window stays canonical everywhere else."""
+
+    start_seconds = _wallet_epoch_seconds(start)
+    end_seconds = _wallet_epoch_seconds(end)
+    if start_seconds > end_seconds:
+        raise WalletDataApiError("FIELD_VALUE_INVALID")
+    return str(start_seconds), str(end_seconds)
 
 
 def _extract_wallet_envelope(parsed: object):

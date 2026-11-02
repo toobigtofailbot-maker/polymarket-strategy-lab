@@ -108,6 +108,17 @@ disabled by default. Hard bounds: 10 pages/feed, page size <= 100, 1000
 rows/feed-run, 3000 rows/run, 4 MiB response byte cap enforced during the read,
 4096-char cursor cap. Redirects to another origin are rejected.
 
+Time-window wire format (S10-WALLET-EPOCH-01): callers, `WalletIngestRequest`,
+the run key, feed acquisition receipts and PIT clocks keep the canonical ISO UTC
+window. Only the `/v2/trades` and `/v2/activity` HTTP query serializes `start` and
+`end` as decimal non-negative Unix epoch seconds, on first and cursor pages alike,
+because the live Data API v2 rejects ISO values (HTTP 400). The client accepts only
+explicit-`Z` UTC with full `HH:MM:SS` and at most an all-zero fraction; offset,
+naive, non-string, invalid-date, leap-second, pre-1970 or reversed (`start > end`)
+windows fail with `FIELD_VALUE_INVALID` before any transport. Equal endpoints remain
+accepted. Recorded raw `request_parameters` truthfully show the epoch wire values;
+both forms denote the same instants. `/v2/activity/combos` still sends no window.
+
 ## 10. Ingest lifecycle
 
 Pre-run `ingest_run_key` (carried by page/observation/receipt only; never by raw

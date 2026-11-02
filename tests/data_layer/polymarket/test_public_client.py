@@ -466,7 +466,9 @@ class TestWalletDataApiFeedParameters:
         url = self._capture("get_wallet_trades_page", user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z")
         assert "taker_only=false" in url
         assert "user=" + WALLET_ADDR in url
-        assert "start=2026-01-01" in url and "end=2026-01-02" in url
+        # S10-WALLET-EPOCH-01: the ISO UTC window goes on the wire as epoch seconds.
+        assert "start=1767225600" in url and "end=1767312000" in url
+        assert "2026-01-01" not in url
 
     def test_activity_sends_required_filters_and_no_type_side_narrowing(self):
         url = self._capture("get_wallet_activity_page", user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z")
@@ -504,3 +506,178 @@ class TestWalletDataApiSourceSafety:
         result = client.get_wallet_trades_page(user=WALLET_ADDR, start="2026-01-01T00:00:00Z", end="2026-01-02T00:00:00Z", opener=op)
         from decimal import Decimal
         assert isinstance(result.rows[0]["price"], Decimal)
+
+
+# ---------------------------------------------------------------------------
+# S10-WALLET-EPOCH-01: ISO UTC window -> epoch-second wire query.
+# ---------------------------------------------------------------------------
+_EPOCH_START_ISO = "2026-01-01T00:00:00Z"
+_EPOCH_END_ISO = "2026-01-02T00:00:00Z"
+_EPOCH_START = "1767225600"
+_EPOCH_END = "1767312000"
+
+
+class _RecordingOpener:
+    def __init__(self, body=None):
+        self.body = body if body is not None else _ok_page()
+        self.requests = []
+
+    def open(self, req, timeout=None):
+        self.requests.append(req)
+        return _FakeResp(self.body)
+
+
+def _query(req):
+    import urllib.parse
+    return urllib.parse.parse_qsl(urllib.parse.urlsplit(req.full_url).query, keep_blank_values=True)
+
+
+class TestWalletEpochWireWindow:
+    def test_wallet_epoch_t01_trades_initial_exact_wire(self):
+        op = _RecordingOpener()
+        result = PolymarketPublicClient().get_wallet_trades_page(
+            user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=op
+        )
+        assert len(op.requests) == 1
+        req = op.requests[0]
+        assert req.get_method() == "GET"
+        assert req.full_url.startswith("https://" + WALLET_DATA_API_HOST + "/v2/trades?")
+        expected = sorted([
+            ("user", WALLET_ADDR), ("taker_only", "false"),
+            ("start", _EPOCH_START), ("end", _EPOCH_END), ("limit", "100"),
+        ])
+        assert _query(req) == expected
+        # Recorded provenance truthfully shows the epoch wire values.
+        assert result.request_parameters == tuple(expected)
+
+    def test_wallet_epoch_t02_activity_initial_exact_wire(self):
+        op = _RecordingOpener()
+        result = PolymarketPublicClient().get_wallet_activity_page(
+            user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=op
+        )
+        assert len(op.requests) == 1
+        req = op.requests[0]
+        assert req.get_method() == "GET"
+        assert req.full_url.startswith("https://" + WALLET_DATA_API_HOST + "/v2/activity?")
+        expected = sorted([
+            ("user", WALLET_ADDR), ("exclude_deposits_withdrawals", "false"),
+            ("sort_direction", "ASC"), ("start", _EPOCH_START), ("end", _EPOCH_END),
+            ("limit", "100"),
+        ])
+        assert _query(req) == expected
+        assert result.request_parameters == tuple(expected)
+
+    def test_wallet_epoch_t03_trades_cursor_same_epoch_window(self):
+        op = _RecordingOpener()
+        client = PolymarketPublicClient()
+        first = client.get_wallet_trades_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=op)
+        paged = client.get_wallet_trades_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, cursor="C2", opener=op)
+        assert len(op.requests) == 2
+        assert paged.incoming_cursor == "C2"
+        assert _query(op.requests[1]) == sorted(_query(op.requests[0]) + [("cursor", "C2")])
+        assert ("start", _EPOCH_START) in paged.request_parameters
+        assert ("end", _EPOCH_END) in paged.request_parameters
+        assert first.request_parameters == tuple(p for p in paged.request_parameters if p[0] != "cursor")
+
+    def test_wallet_epoch_t04_activity_cursor_same_epoch_window(self):
+        op = _RecordingOpener()
+        client = PolymarketPublicClient()
+        first = client.get_wallet_activity_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=op)
+        paged = client.get_wallet_activity_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, cursor="C2", opener=op)
+        assert len(op.requests) == 2
+        assert paged.incoming_cursor == "C2"
+        assert _query(op.requests[1]) == sorted(_query(op.requests[0]) + [("cursor", "C2")])
+        assert ("start", _EPOCH_START) in paged.request_parameters
+        assert ("end", _EPOCH_END) in paged.request_parameters
+        assert first.request_parameters == tuple(p for p in paged.request_parameters if p[0] != "cursor")
+
+    @pytest.mark.parametrize("method_name", ["get_wallet_trades_page", "get_wallet_activity_page"])
+    @pytest.mark.parametrize(
+        "start,end",
+        [
+            ("2026-01-01T00:00:00.5Z", _EPOCH_END_ISO),  # nonzero fraction
+            (_EPOCH_START_ISO, "2026-01-02T00:00:00.000001Z"),  # nonzero fraction
+            ("2026-01-01T00:00:00+00:00", _EPOCH_END_ISO),  # offset, even zero
+            ("2026-01-01T00:00:00-05:00", _EPOCH_END_ISO),
+            ("2026-01-01T00:00:00", _EPOCH_END_ISO),  # naive
+            ("", _EPOCH_END_ISO),
+            ("2026-01-01T00:00Z", _EPOCH_END_ISO),  # incomplete time
+            ("2026-01-01 00:00:00Z", _EPOCH_END_ISO),
+            ("2026-01-01T00:00:00z", _EPOCH_END_ISO),
+            ("２026-01-01T00:00:00Z", _EPOCH_END_ISO),  # non-ASCII digit
+            ("2026-02-30T00:00:00Z", _EPOCH_END_ISO),  # invalid date
+            ("2026-01-01T24:00:00Z", _EPOCH_END_ISO),  # out of range
+            ("2016-12-31T23:59:60Z", _EPOCH_END_ISO),  # leap second
+            ("1969-12-31T23:59:59Z", _EPOCH_END_ISO),  # negative epoch
+            ("1767225600", _EPOCH_END_ISO),  # epoch string is not a canonical caller value
+            (None, _EPOCH_END_ISO),
+            (_EPOCH_START_ISO, 1767312000),
+            (True, _EPOCH_END_ISO),
+            (_EPOCH_END_ISO, _EPOCH_START_ISO),  # reversed window
+        ],
+    )
+    def test_wallet_epoch_t05_invalid_windows_refuse_before_transport(self, method_name, start, end):
+        op = _RecordingOpener()
+        with pytest.raises(WalletDataApiError) as exc:
+            getattr(PolymarketPublicClient(), method_name)(user=WALLET_ADDR, start=start, end=end, opener=op)
+        assert exc.value.code == "FIELD_VALUE_INVALID"
+        assert str(exc.value) == "FIELD_VALUE_INVALID"
+        assert op.requests == []
+
+    @pytest.mark.parametrize("method_name", ["get_wallet_trades_page", "get_wallet_activity_page"])
+    def test_wallet_epoch_t05_equal_endpoints_follow_existing_contract(self, method_name):
+        # No native wallet contract rejects an equal start/end; it stays accepted.
+        op = _RecordingOpener()
+        result = getattr(PolymarketPublicClient(), method_name)(
+            user=WALLET_ADDR, start=_EPOCH_START_ISO, end="2026-01-01T00:00:00.000Z", opener=op
+        )
+        assert ("start", _EPOCH_START) in result.request_parameters
+        assert ("end", _EPOCH_START) in result.request_parameters
+
+    def test_wallet_epoch_t08_existing_safety_and_partial_caps(self):
+        client = PolymarketPublicClient()
+        # A has_more page is returned as-is: one GET, no automatic cursor loop.
+        more = _json_body({"data": [], "pagination": {"has_more": True, "next_cursor": "C2"}})
+        op = _RecordingOpener(more)
+        result = client.get_wallet_trades_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=op)
+        assert len(op.requests) == 1
+        assert result.has_more is True and result.next_cursor == "C2"
+        req = op.requests[0]
+        assert req.get_method() == "GET"
+        assert req.get_header("Authorization") is None
+        assert req.full_url.startswith("https://" + WALLET_DATA_API_HOST + "/")
+        # Page-size, cursor and byte caps still refuse.
+        with pytest.raises(WalletDataApiError) as size_exc:
+            client.get_wallet_activity_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, page_size=101, opener=op)
+        assert size_exc.value.code == "FIELD_VALUE_INVALID"
+        with pytest.raises(WalletDataApiError) as cursor_exc:
+            client.get_wallet_activity_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, cursor="", opener=op)
+        assert cursor_exc.value.code == "CURSOR_INVALID"
+        assert len(op.requests) == 1
+        huge = _RecordingOpener(b"{" + b"a" * (WALLET_MAX_RESPONSE_BYTES_PER_PAGE * 2))
+        with pytest.raises(WalletDataApiError) as cap_exc:
+            client.get_wallet_activity_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=huge)
+        assert cap_exc.value.code == "LIMIT_EXCEEDED"
+        with pytest.raises(WalletDataApiError) as host_exc:
+            _validate_wallet_data_api_url("https://evil.example/v2/trades?start=" + _EPOCH_START)
+        assert host_exc.value.code == "NETWORK_HOST_FORBIDDEN"
+        # The default wallet opener still refuses every redirect, and a refusal
+        # raised during transport propagates as the closed code.
+        handlers = [h for h in _pc._WALLET_DATA_API_OPENER.handlers if isinstance(h, _pc._NoRedirectHandler)]
+        assert len(handlers) == 1
+        with pytest.raises(WalletDataApiError) as redirect_exc:
+            handlers[0].redirect_request(req, None, 302, "Found", {}, "https://evil.example/")
+        assert redirect_exc.value.code == "NETWORK_HOST_FORBIDDEN"
+
+        class _RedirectingOpener:
+            calls = 0
+
+            def open(self, request, timeout=None):
+                self.calls += 1
+                raise WalletDataApiError("NETWORK_HOST_FORBIDDEN")
+
+        redirecting = _RedirectingOpener()
+        with pytest.raises(WalletDataApiError) as propagated:
+            client.get_wallet_trades_page(user=WALLET_ADDR, start=_EPOCH_START_ISO, end=_EPOCH_END_ISO, opener=redirecting)
+        assert propagated.value.code == "NETWORK_HOST_FORBIDDEN"
+        assert redirecting.calls == 1

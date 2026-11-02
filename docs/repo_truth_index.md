@@ -2324,3 +2324,8 @@ Merged predecessor PR263:7a37fbd41f1e972407faa6973e2ff027c4a22264, head71b00fc6c
 ## S10-WEATHER-SOURCE-FINALITY-01
 
 Approved exact-nine-path RUNTIME/Risk3 research package on merged PR264 b678b5c98179a858f3df8b37016ae738a81311d0 (head bc51fc8f0287070fda306a7f219115481c2a5794). Frozen prompt/spec: docs/wp_specs/S10-WEATHER-SOURCE-FINALITY-01/. Tool: tools/alpha/run_weather_finality.py; test: tests/tools/alpha/test_weather_finality.py; contract: docs/weather_source_finality_contract.md; stable evidence: docs/status_entries/S10-WEATHER-SOURCE-FINALITY-01.md. Original capture/native bridge unchanged; local integrity/candidate evidence never authenticates publication completeness or settlement. No production admission, qualification, scheduler/account/provider/order/deployment authority; real product GET0. Actual current hosted/posted/Ready evidence: PR body/GitHub metadata. Independent Side23 review and Karl-only merge remain required.
+
+
+## S10-WALLET-EPOCH-01
+
+Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7b997e905e80b94a44bed5eee5ddf330b3bbfa7). Frozen prompt/spec: docs/wp_specs/S10-WALLET-EPOCH-01/. Source: src/data_layer/polymarket/public_client.py (ISO UTC -> epoch-second query for /v2/trades and /v2/activity only); tests: tests/data_layer/polymarket/test_public_client.py, tests/data_layer/wallet_intelligence/test_public_ingest.py; contract: docs/wallet_public_evidence_foundation_contract.md section 9; stable evidence: docs/status_entries/S10-WALLET-EPOCH-01.md. Canonical WALLET-01 receipt/run-key/PIT semantics unchanged; no product GET performed.

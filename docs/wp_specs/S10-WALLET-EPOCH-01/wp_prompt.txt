@@ -1,0 +1,211 @@
+Package Identity:
+  WP ID: S10-WALLET-EPOCH-01
+  Title: Native Data API v2 epoch-second query compatibility repair
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-wallet-epoch-01
+  Package class: WALLET_V2_EPOCH_WIRE_COMPATIBILITY
+  Package size class: M (10 exact paths)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED or PUBLIC_VERIFIER_PASS, per actual verifiable result
+  Runtime impact: Existing public GET query serialization only
+  Product impact: Native WALLET-01 client compatibility, no new endpoint
+  Network impact: No product GET in this WP; existing requests change wire time format
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+  Risk level: 3
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High for contract-bound implementation and offline tests
+  Reason: Narrow but canonical receipt-versus-wire-format compatibility matters
+  Escalate to higher reasoning or STOP if: exact guard fails, newly required file is outside scope, or timestamp precision semantics cannot be preserved
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: false
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+
+# 0. Decision, evidence and success
+
+**This is a draftable implementation WP, not implementation permission merely because the file is attached.** Karl must explicitly approve the exact final WP after the repository's own `DRAFTABILITY_PASS` / `IMPLEMENTATION_READY` gate. The implementing agent must not self-authorize. Merge is separately reserved to Karl.
+
+Historical bounded empirical evidence (2026-11-02): four prior time-windowed wallet calls using ISO-8601 `start/end` produced 4/4 HTTP 400. A four-call one-shot retest on the **same two frozen wallets and same absolute UTC windows** changed only those two query values to Unix epoch seconds; 4/4 returned HTTP 200, with 400 historical trade/activity rows. The retest grant is closed. None of that is forward-observable alpha or profitability evidence.
+
+Native incompatibility verified at 7b8d2c895122682bcba915325dd3dd9dafdaa770:
+- `src/data_layer/polymarket/public_client.py` passes `start`/`end` verbatim to `_wallet_data_api_get_page` in `get_wallet_trades_page` and `get_wallet_activity_page`.
+- `src/data_layer/wallet_intelligence/public_ingest.py` uses ISO-UTC values for the request, feed plans, run identity and feed receipts.
+- `src/data_layer/wallet_intelligence/contracts.py::build_feed_acquisition_receipt` canonicalizes the requested window to ISO UTC, so passing epoch strings from the caller causes a **different** offline receipt-contract failure.
+- The real `/v2/activity` TRADE rows lack `is_combo` in the sampled data; current normalization conservatively marks this ambiguous and does not treat it as ordinary-market `false`.
+
+**Only objective:** retain existing canonical ISO UTC at every caller, receipt, run identity, and PIT/replay boundary; serialize the two wallet **HTTP query** values as decimal Unix epoch seconds. No new wallet endpoint, no new ingestion subsystem, no change to the source event model.
+
+A pass means the same existing native NETWORK path can make compatible query requests **in offline intercepted tests**, while recording the caller's original ISO-UTC scope in its canonical receipts. It does **not** require or authorize live product GETs, full-window pagination, repairs for `is_combo`, a profitable strategy, or a positive WALLET-03 result.
+
+# 1. Authority / Non-authority and state gate
+
+Sending or forwarding this WP does not grant code implementation authority. Implementation authorization: **NOT GRANTED by forwarding this file**. Karl may separately authorize after the deterministic gate passes. After authorization, ONE worktree, ONE branch, ONE draft PR with exact ten changed paths, focused tests, one stable-candidate full suite, and normal exact-head hosted CI are permitted.
+
+Permitted network: git fetch, GitHub PR/CI metadata and posting only as ordinarily necessary to carry out an authorized WP. **Zero product-network GET**, zero API probe, zero model inference, zero paid provider, no external data retrieval, no wallet/account private reads. Tests must use intercepted transports or locally synthesized fixtures.
+
+Forbidden: `is_combo` semantic guess or conversion to FALSE; data backfill promotion; other feeds or endpoints; wallet selection, profiles, copyability, signals, ranking, research qualification; Gamma/CLOB calls; Hermione/Hermes runtime; scheduler, polling loop, credential access, account, signing, paper, order, risk, Gate C, live, capital; new Python dependency; workflow modification; merge.
+
+No restart or retries of the previously used wallet collection grants. No workaround through direct `urllib` calls outside the native client.
+
+## Hard stops
+
+STOP and report, without editing further, on any of:
+- `STATE_DRIFT`: `main`/`origin/main` differs from the frozen base, the tree is dirty, a conflicting open WP exists, or the relevant code changed.
+- `READINESS_FAILED`: the native readiness gate is not `IMPLEMENTATION_READY`, or the exact-scope/diff guard fails.
+- A mechanically required edit falls outside the ten declared paths.
+- Timestamp precision semantics cannot be preserved exactly (integer seconds, UTC, no float or local timezone).
+- Any product-network GET, API probe, credential access or `is_combo` reinterpretation would be needed.
+- A required focused test, the full suite or exact-head CI fails.
+
+# 2. Hard base/merge gate and context budget
+
+Required baseline before code changes:
+- `main == origin/main == 7b8d2c895122682bcba915325dd3dd9dafdaa770`; last verified merged PR #265, head `f7b997e905e80b94a44bed5eee5ddf330b3bbfa7`, merge `7b8d2c895122682bcba915325dd3dd9dafdaa770`.
+- 0 open PRs at independent Side23 check. Re-check live before acting.
+- If main is newer, an open conflicting WP exists, local tree is dirty, or relevant code has changed: STOP `STATE_DRIFT` with short evidence; do not rebase or re-scope independently. Karl/Side23 may re-freeze a revised package.
+
+```bash
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+```
+
+Read startup exactly as current repo requires: `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md`, `CODEX_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, `docs/ai/codex/WP_DRAFTING_STANDARD.md`, `docs/ai/codex/WP_SPEC_STANDARD.md`, `docs/ai/codex/PROTECTED_PATHS.md`, `docs/ai/codex/VALIDATION_MATRIX.md`.
+
+Read **only for this fix**: `public_client.py`, `public_ingest.py`, `contracts.py`, `research_provenance.py::canonicalize_utc_timestamp`, the two focused test modules, the WALLET-01 public evidence contract, and guard logic necessary for exact-scope validation. No whole-repo forensic review. Inspect other source paths only as necessary to verify a direct import/call edge; do not change them.
+
+Run the current bounded **full-changed-set guard discovery** before scope freeze. If a mechanically required compatibility edit is outside these ten paths, STOP with its exact test/source evidence; do not silently expand the allowed set. One stable-candidate full suite remains the backstop.
+
+# 3. Exact changed-file scope — TEN, required = allowed
+
+1. `src/data_layer/polymarket/public_client.py`
+2. `tests/data_layer/polymarket/test_public_client.py`
+3. `tests/data_layer/wallet_intelligence/test_public_ingest.py`
+4. `docs/wallet_public_evidence_foundation_contract.md`
+5. `docs/project_status.md`
+6. `docs/repo_truth_index.md`
+7. `docs/deferred_items_log.md`
+8. `docs/status_entries/S10-WALLET-EPOCH-01.md`
+9. `docs/wp_specs/S10-WALLET-EPOCH-01/wp_prompt.txt`
+10. `docs/wp_specs/S10-WALLET-EPOCH-01/wp_spec.json`
+
+
+Do not create a third WP-spec artifact: RUNTIME track needs the two spec files above, **no independent PROTECTED certificate**. Outside these exact ten paths no edits or generated tracked artifacts. In `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md` and status entry, write only compact factual lines about the actual correction, unresolved discriminator and authority limits. No unrelated roadmap rewrite.
+
+Rollback is revert of exactly the ten WP files, with no mutation of past evidence or user stores.
+
+# 4. Normative correction — exactly one wire conversion
+
+**R001. Preserve API/canonical shape:** Keep the existing public signatures, parameters, feed keys, client class, endpoint paths and host checks. Callers continue to supply canonical UTC ISO timestamps in `start`/`end`; `WalletIngestRequest`, `pre_run_preimage`, `ingest_run_key`, `FeedAcquisitionReceipt.requested_start/end`, replay/PIT clocks and source first-seen semantics **remain unchanged**. Do not teach the contract builder to accept epoch strings or alter canonical records.
+
+**R002. Convert at the client boundary only:** Immediately before forming the `parameters` array for `/v2/trades` and `/v2/activity`, convert **both** verified UTC timestamps to non-negative decimal Unix epoch-second strings using deterministic, integer-safe standard-library arithmetic; never float/round/silently truncate and never use local timezone. Conversion applies identically on the first page and any cursor page. Preserve the existing `cursor` validation, query ordering, `taker_only=false`, `exclude_deposits_withdrawals=false`, `sort_direction=ASC`, `limit`, and `user` rules. Recorded source `request_parameters` must truthfully show the *epoch wire values*; requested scope in canonical receipt stays ISO UTC. There is no contradiction: they represent the same instants at different boundaries.
+
+**R003. Fail before dispatch:** Validate `start` and `end` as ISO UTC with explicit `Z`, a real calendar date/time and complete HH:MM:SS; reject any offset, naive, empty, wrong-type, leap-second, out-of-range, or non-canonical value before the client's opener can be called. An optional fractional part is allowed **only if its fraction is entirely zero**, to avoid unrepresentable subsecond precision on an integer-seconds API; nonzero fractions must return the existing closed `FIELD_VALUE_INVALID`/`FIELD_TYPE_INVALID` category before network. Reject `start > end`. Whether equal endpoints are valid must follow the existing native wallet request contract; do not invent new source semantics; tests cover that decision from current repo truth. Use a small private helper in `public_client.py` or an already import-safe native canonicalization helper; do not create a new module or a duplicate time model. Invalid-input errors must not echo values.
+
+**R004. Network safety unchanged:** Keep fixed `https://data-api.polymarket.com`, no auth, no cross-origin redirect, no retry, no automatic loop at the client level, byte cap, page limit, cursor cap, Decimal parse, endpoint identity, closed errors and existing guards. Preserve `combo` feed completely (no `start/end`). Do not make actual network requests during this WP.
+
+**R005. Existing lifecycle must work offline:** Under a mocked/intercepted native opener, the existing `ingest_wallet_evidence(mode='NETWORK')` path must make the documented epoch-query wire request while finalizing an ISO-window receipt; replay of its output through `load_and_verify_wallet_evidence_ledger` must verify. Do not bypass native guard or feed completion semantics. If a page says `has_more=true` and the bounded mock/guard stops, report PARTIAL rather than COMPLETE. Test first page and a cursor page at the native client level, but do not build a crawler.
+
+**R006. Do not fix unrelated source ambiguity:** The observed `/v2/activity` TRADE rows can omit `is_combo`. Continue to label them `SCHEMA_DRIFT` or equivalent explicitly ambiguous state and do not silently assume `is_combo=false`, assign a strong/ordinary-market identity, or convert them into tradeable evidence. Note separately as a deferred issue, not a dependency blocking the ISO-to-epoch patch. Do not modify `src/data_layer/wallet_intelligence/public_ingest.py` or `contracts.py`.
+
+**R007. Data evidence honest:** No activity count from the historical retest is prospective, no provider event time can be equated with public availability, and leaderboard PnL is not evidence of copyability. This WP must not claim that activity parser compatibility or live profitability is solved.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|wallet.trades|query.window|request.formed|REQUIRE|epoch_seconds_wire|client.trades.epoch_wire|R001
+NR002|wallet.activity|query.window|request.formed|REQUIRE|epoch_seconds_wire|client.activity.epoch_wire|R002
+NR003|wallet.trades|query.cursor|cursor.page|PRESERVE_EXACT|same_epoch_window_and_cursor|client.cursors.identical|R003
+NR004|wallet.activity|query.cursor|cursor.page|PRESERVE_EXACT|same_epoch_window_and_cursor|client.cursors.identical|R004
+NR005|wallet.window|input.timestamp|invalid_or_reversed|REJECT|refuse_before_transport|client.windows.invalid|R005
+NR006|wallet.ingest|receipt.requested_scope|network_mode|PRESERVE_EXACT|iso_utc_canonical_scope|ingest.receipt.canonical|R006
+NR007|wallet.activity|row.is_combo|missing|FORBID|false_identity_inference|ingest.activity.ambiguity|R007
+NR008|wallet.client|transport.safety|any_request|PRESERVE_EXACT|existing_network_bounds|client.safety.unchanged|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 5. Evidence plan: minimum complete offline test/evidence matrix
+
+Add focused tests with the exact names in `wp_spec.json` (or preserve them if a name already exists, without duplicating). Use the existing test fakes/opener interception; no new deps or live HTTP. Tests must demonstrate:
+
+- exact `start/end` epoch-second wire parameter values, on both feeds, before first GET;
+- exact same conversion for both feeds with `cursor` present, unchanged cursor and other filters;
+- invalid UTC input or inverse window causes **zero transport** and closed error, including a nonzero fractional second;
+- ISO receipt fields and run key unchanged; raw/request-parameter provenance reflects epoch wire; native ledger verification passes;
+- missing `is_combo` remains ambiguous; combos endpoint has no window;
+- the old ISO-on-wire test expectations are updated (the existing tests `TestWalletDataApiFeedParameters` currently assert ISO URL text and must change);
+- fixed host/redirect/get-only/limit/byte/partial-pagination behaviour remains tested, no added raw network operation.
+
+## Negative test matrix
+
+| Negative case | Expected outcome | Test (evidence id) |
+|---|---|---|
+| naive, offset, empty, wrong-type, invalid-date, leap-second, non-canonical `start`/`end` | closed error, 0 opener calls, no input echo | `test_wallet_epoch_t05_invalid_windows_refuse_before_transport` (R005) |
+| nonzero fractional second | closed error, 0 opener calls | `test_wallet_epoch_t05_invalid_windows_refuse_before_transport` (R005) |
+| `start > end` | closed error, 0 opener calls | `test_wallet_epoch_t05_invalid_windows_refuse_before_transport` (R005) |
+| TRADE row missing `is_combo` | stays `SCHEMA_DRIFT`/ambiguous, never `FALSE` | `test_wallet_epoch_t07_combo_and_activity_ambiguity_unchanged` (R007) |
+| combos feed given a window | no `start`/`end` on wire | `test_wallet_epoch_t07_combo_and_activity_ambiguity_unchanged` (R007) |
+| foreign host, redirect, over-limit page size, byte cap, `has_more` with bounded stop | existing closed errors / PARTIAL, not COMPLETE | `test_wallet_epoch_t08_existing_safety_and_partial_caps` (R008) |
+
+Focused commands (real exit codes must be included in final report):
+```bash
+python -B -m pytest -q -p no:cacheprovider tests/data_layer/polymarket/test_public_client.py
+python -B -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_public_ingest.py
+python -B -m pytest -q -p no:cacheprovider tests/data_layer/wallet_intelligence/test_ledger.py
+python -B -m pytest -q -p no:cacheprovider tests/test_architecture_boundaries.py
+python -B -m pytest -q -p no:cacheprovider tests/test_project_status_docs.py tests/test_repo_truth_docs.py
+```
+
+Also run the actual repo's generated-artifact/diff-scope guard and applicable source security checks; report unavailable tools honestly. Run the one authoritative full suite on the **stable** final candidate and exact-head CI per RUNTIME validation matrix; do not repeat broad/full tests for trivial edits. After implementation, run:
+
+```bash
+python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-WALLET-EPOCH-01/wp_prompt.txt --spec docs/wp_specs/S10-WALLET-EPOCH-01/wp_spec.json --repo-root . --check-diff
+```
+
+Before implementation, run the same gate without `--check-diff`, obtain its `IMPLEMENTATION_READY` result, then **request exact final-hash Karl authorization**. If the gate fails, stop; do not declare readiness or unilaterally re-authorize altered scope. No independent PROTECTED certificate is applicable to this RUNTIME risk-3, no-credentials/no-execution/no-live package.
+
+# 6. Successor boundary
+
+Next WP: `S10-WALLET-04` (incremental wallet information value), separately gated; it needs separately authorized real prospective source and copyability evidence. The finite live retest of this fix is not part of this WP. Forbidden here: product GET or wallet-signal collection, live source smoke, new wallet endpoints/feeds, changing `is_combo` UNKNOWN semantics, WALLET-01 canonical schema changes, network authorization increase, Hermes runtime/provider calls, scheduler/polling, qualification, wallet profile/copyability work, paper/live/OMS/credentials/Gate C/orders/capital, dependency/lock/workflow changes, merge.
+
+# 6A. Report-back: required evidence, PR and independent assessment
+
+One draft PR only; never merge. Include exact final base/head, 10 changed paths, prompt/spec SHA-256, test commands/results, package readiness terminal, no product calls, known source-backed empirical motivation, and bounded statement of what remains unproven. A real PR review is independent of the implementer's self-check. Any failed required suite/CI/guard is NOT READY; no speculative exemption.
+
+**Mandatory downloadable returns even if BLOCKED:**
+- `SIDE23_WALLET_EPOCH_WP_IMPLEMENTATION_REPORT.md` with verdict, diff, test/CI/guard outcomes, realized changed-file scope, unresolved blockers and consultant alignment.
+- `SIDE23_WALLET_EPOCH_WP_IMPLEMENTATION_EVIDENCE.zip` with sanitized manifest, test receipts, exact package/spec SHA-256 and code diff (no private wallet raw bodies, tokens, keys, personal files).
+- `SHA256SUMS.txt`, independently recomputed. An in-chat summary or a PR link alone is insufficient.
+
+Execution may be `BLOCKED_NOT_AUTHORIZED`, `STATE_DRIFT`, `READINESS_FAILED`, `IMPLEMENTED_REVIEW_REQUIRED`, or `TEST_FAILED`. Only separate Karl+Side23 review can authorize merge; no live wallet retest is included.
+
+# 7. Consultant objective alignment — mandatory final report section
+
+The purpose is **repeatable, economically meaningful, independently verified, non-crypto alpha**, driven by broad discovery, Hermes research, real wallet intelligence and forward paper evidence.
+
+- Capability: make an already-built WALLET-01 public ingest path work against its actual documented v2 wire contract.
+- Measured success: deterministic client converts ISO UTC to epoch seconds; native ledger and receipts remain valid under offline replay; later real forward-observation experiments become technically possible.
+- Efficiency: existing client, existing tests, no new store, scheduler, provider, WP series or wallet crawler; one small code fix rather than another source-hunting cycle.
+- Exact stop: once offline validation and review-ready PR exist, stop. A **later**, separately granted finite live retest can check the fix. No evidence of incremental wallet alpha or trade eligibility follows automatically. Parallel Hermes and broad Alpha research must continue independently.
