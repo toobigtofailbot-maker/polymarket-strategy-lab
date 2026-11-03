@@ -376,8 +376,6 @@ def lanes(receipts, body, as_of, days):
             lane['stop_reason']='ORDER_UNVERIFIED'
         elif len(rows)<100:
             lane['stop_reason']='PAGE_BOUND_REACHED'
-        elif lane['pages']==20:
-            lane['stop_reason']='COVERAGE_TRUNCATED'
         hashes[lane['tag_id']].add(page_hash)
     planned=pending()
     return state,pages,None if planned is None else planned[1]
@@ -705,6 +703,7 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
             return receipt
 
         body=lambda n:read_bytes(op/n,CONFIG['max_body_bytes'])
+        # shortcut: each page replays earlier pages (<=20, O(n^2) parses inside the 240 s budget); cache bodies if pages grow.
         while horizon_days is not None and monotonic()<deadline:
             planned=lanes(receipts,body,as_of,horizon_days)[2]
             if planned is None:break

@@ -275,7 +275,8 @@ Lane stop states: PAGE_BOUND_REACHED (short or empty page),
 SORT_OR_PAGINATION_UNVERIFIED (repeated full page), ORDER_UNVERIFIED (missing or
 malformed endDate, or a decrease within or across the lane's pages),
 SOURCE_INVALID, SOURCE_UNAVAILABLE, FILTER_CONTRACT_UNVERIFIED (HTTP 4XX),
-COVERAGE_TRUNCATED (shared page cap or offset 1900 with a full page),
+COVERAGE_TRUNCATED (shared 20-page cap reached while the lane is active;
+four lanes each get a first page, so no lane reaches offset 1900),
 ACQUISITION_BUDGET_EXHAUSTED. One failed lane never stops another. Coverage
 `stop_reason` is PAGE_BOUND_REACHED only when every lane is; otherwise the first
 incomplete lane's state in frozen order. Rows with endDate outside the window are
