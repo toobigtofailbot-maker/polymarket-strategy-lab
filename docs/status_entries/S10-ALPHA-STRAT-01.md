@@ -6,7 +6,16 @@ RUNTIME/Risk3/M, exact7, branch `codex/s10-alpha-strat-01` from main/PR267 merge
 
 ## Validation state
 
-IMPLEMENTED_LOCAL. Local Windows collection is blocked by Application Control on the inherited Nautilus DLL (D004), so validation uses local image `s10-canary-siwc-validation:20261024` with `--network none --read-only`. Focused screener file: 93 passed, including the eight R001-R008 spec nodes. Adjacent importer modules (autonomous cycle/authority, structural, provenance, calibration, edge capture, signal bridge): 151 passed. Three hand mutants (rotation tie-break, order check, lane membership) were each killed by a strat node. Full-suite, readiness `--check-diff`, secret-scan and review results are recorded below once run; live head, exact-head hosted checks, evidence mode and the Ready decision belong in the PR body.
+IMPLEMENTED_LOCAL / LOCAL_VALIDATION_COMPLETE. Local Windows collection is blocked by Application Control on the inherited Nautilus DLL (D004), so validation uses local image `s10-canary-siwc-validation:20261024` with `--network none --read-only`. Focused screener file: 93 passed, including the eight R001-R008 spec nodes. Adjacent importer modules (autonomous cycle/authority, structural, provenance, calibration, edge capture, signal bridge): 151 passed. Three hand mutants (rotation tie-break, order check, lane membership) were each killed by a strat node. Validated code commit: `62f9113d9e722b04e951eee82d6a168a1681e2b6`; later commits change only this fragment.
+
+Full suite: `python -B -m pytest -q -p no:cacheprovider --basetemp /tmp/full -ra`, run offline on a disposable bundle clone of that commit.
+- Attempt 1 ran 0 tests: 6 collection errors, exit 2. The clone was checked out with CRLF line endings, because the host's system gitconfig has autocrlf=true, so the hash-pinned `docs/hermes_runtime_security_profile.json` failed its own pin (PROFILE_INVALID).
+- After an LF re-checkout (0 CRLF files, profile hash matched): `10 failed, 14614 passed, 15 skipped, 125 warnings in 1035.22s`, exit 1. All 10 failures were historical changed-path scope guards that run `git diff origin/main`, a ref missing from the bundle clone.
+- With `origin/main` set to `a0d54384` in the clone, the same 10 nodes passed (exit 0).
+
+Native readiness `--check-diff --base a0d54384ad7ef293336a5cf646bc80be0cccf1e1 --head HEAD`: exit0, IMPLEMENTATION_READY, scope 7, diff_scope checked. Gitleaks 8.27.2 found no leaks in the WP commit range.
+
+Review: ponytail-review found one dead per-lane truncation branch, removed in `1c1e995`. An independent fresh-context implementation reviewer then returned PASS_WITH_NOTES with LOW notes only: this fragment's results were still pending; lane `new_unique` includes rows without a valid id while coverage `unique_ids` does not (now documented in the contract); FILTER_MISMATCH rows from a tagged page keep the lane PAGE_BOUND_REACHED but the assessment EVIDENCE_INCOMPLETE (documented). Live head, exact-head hosted checks, evidence mode and the Ready decision belong in the PR body.
 
 ## Negative matrix and deferred issues
 
