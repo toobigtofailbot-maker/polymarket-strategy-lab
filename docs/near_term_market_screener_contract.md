@@ -285,7 +285,9 @@ FILTER_MISMATCH, which keeps the assessment EVIDENCE_INCOMPLETE.
 Records of this mode carry `near-term-market-screen@3.0.0`: config (v2 fields,
 `window_s=N*86400`, `tag_lanes`), started, request, receipt, manifest and
 terminal. The manifest adds `lanes` (tag_id, label, pages, raw_rows, new_unique,
-identical_duplicates, conflicting_ids, stop_reason) and each market adds
+identical_duplicates, conflicting_ids, stop_reason; `new_unique` counts every
+first-seen row including rows without a valid id, while coverage `unique_ids`
+counts valid ids only) and each market adds
 `lane_tag_ids` (every lane that returned the id, frozen order). Identical
 cross-lane rows count as duplicates; differing rows keep the first-seen row,
 add PAGE_CONFLICT and are never selected. The verify result keeps the v2
