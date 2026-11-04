@@ -1,0 +1,150 @@
+Package Identity:
+WP ID: S10-R3-FORECAST-01
+Title: Frozen Offline Independent Forecasting, Stratified Scoring and Price-Derived Comparator
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Inspected merged main SHA: da5031c6a4c79f63dd0968df3cceb1b12d0de72f
+Required predecessor: PR #269 merged, head 1a0e4cf88cd3ece75fa485ba75e3e11b01fb86ec, merge da5031c6a4c79f63dd0968df3cceb1b12d0de72f
+Open independent PR #268: unmerged at planning; never stack on, edit or silently consume its v3 screener semantics
+Suggested branch: codex/s10-r3-forecast-01
+Package class: OFFLINE_FORECAST_SCORING_AND_STRATIFIED_EVALUATION
+Package size class: M, exactly 8 changed files
+Risk level: 3
+Governance track expected: RUNTIME
+Evidence mode expected: select exact real state-machine mode at PR closure
+Runtime impact: one foreground offline research tool only, never a daemon or scheduled job
+Product impact: source-grounded independent training-only probability or abstention, same-case research scores; no trading claim
+Network impact: ZERO product/provider/market endpoints; normal authorized Git/GitHub workflow only
+Credential impact: NONE
+Dependency impact: NONE
+Trading impact: NONE; capital/orders USD0/0 and LIVE DISABLED
+Recommended Claude/Codex Mode: high reasoning on native compatibility/crossing, regular engineering on verified scope; stop for actual scope/protected conflicts only.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Status, objective, Authority / Non-Authority Posture and Karl authorization boundary
+
+**Karl's existing owner authorization:** Karl has given Side24 standing permission to prepare and authorize future minimum-complete WPs and explicitly requests proceeding with this next WP. This authorizes ONLY the exact eight-path, local/offline, zero-network/provider, zero-capital implementation described here, conditional on actual native RUNTIME readiness on exact package bytes and normal repository gates. CC needs no additional routine implementation approval after PASS. It does NOT grant new provider/budget/authenticated access, protected toolset, paper, risk, live, orders, credentials, dependencies, new paths or merge authority. Do not represent source- or test-side success as real forecast alpha.
+
+Objective: **One actual callable source → independent training-only forecast OR abstention → matched scoring → verifiable receipt**, with a separately labeled market-price-derived Wang comparator. Preserve all 36 R3 adoption commitments, and leave mandatory outcome-to-future-research learning to next `S10-R3-LEARN-01`; don't invent a duplicate WP170 or Alpha registry.
+
+Owner: Side24 drafting/independent review. Implementer: Claude Code. Merger: Karl only. Lane B retains independent paper authority.
+
+Authority matrix: Implementation for 8 paths after readiness; bounded sanitized external scratch and test fixtures; no canonical source/candidate/experiment store write, no provider GET, no model call, no credentials, no scheduler, no Hermes, no qualification, no Gate C, no wallet, paper, execution or live, no dependency/CI edit. Refer to `docs/ai/codex/PROTECTED_PATHS.md` for every protected boundary group; only `local_offline_tooling`, `source_runtime`, `docs`, `tests`, `canonical_evidence_policy` are crossed exactly as machine mirror. A real PR and normal GitHub workflow network is permitted, distinct from product/provider network.
+
+# 2. Required startup, skills, current branch and native pre-implementation readiness
+
+In this single authorized CC run:
+1. Read `AGENTS.md` → `AI_CODING_AGENT_START_HERE.md` → `CLAUDE_START_HERE.md` → `docs/project_status.md` → `docs/repo_truth_index.md` → `docs/deferred_items_log.md` → `docs/ai/codex/README.md` → `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, then task-relevant `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md`, `RESULT_OUTPUT_INVARIANT_STANDARD.md`, `PR_EVIDENCE_REPORTING_DISCIPLINE.md`. Current merged repo truth supersedes this planning snapshot.
+2. Discover ACTUAL installed Claude Code skills; read actual installed Ponytail SKILL.md. **FIRST genuinely invoked skill must be Ponytail LITE**, after startup reads and before broad source inspection, any other skill, agents or edits; record actual invocation/path, finding, scope savings. Stop `PONYTAIL_UNAVAILABLE` if impossible. Afterward invoke applicable repo-mandatory and materially useful installed skills, e.g. wp-predraft-inspector, hermes-alpha-reuse-check, wp-minimum-test-plan, wp-readiness-preflight, canonical-evidence-audit, runtime-authority-boundary-review, financial-invariant-check (Brier/denominators), dimensional-analysis (probabilities/UTC), wp-one-shot-review, verification-before-completion, code-simplifier, find-bugs, spec-to-code-compliance, PR-evidence-reconcile. Use only names actually installed; run instructions, not decorative name-dropping. Security review if applicable; systematic-debugging on real failure. Record used/not-applicable/unavailable and concrete contributions. No skill installation.
+3. Before branch, `git fetch origin --prune`, `git checkout main`, `git pull --ff-only origin main`, `git rev-parse HEAD`, `git rev-parse origin/main`, `git log -1 --oneline`, `git status --short --branch`, `python -B tools/git/preflight_generated_artifact_guard.py`. Verify clean synchronized main, predecessor PR #269 merged with head 1a0e4cf88cd3ece75fa485ba75e3e11b01fb86ec and merge da5031c6a4c79f63dd0968df3cceb1b12d0de72f in ancestry, no existing target branch/PR/completed status, and no scope collision with open PR #268. If main advanced, reconcile relevant source/guard changes; no stacking, no resetting user work.
+4. Inspect actual merged native `source_grounding.py` and `tools/alpha/run_source_grounding.py` cold `verify` call, frozen core/read-only sources, `research_provenance`, `alpha_discovery`, `experiment_os` and experiment registry exposed builders/read-only validators, relevant tests, `calibration_metric_computation` limits and `src/live_pilot/calibration.py` protected forecast data. Confirm that WP170 preregistration/split/OOS remains canonical, and do not claim its run evidence if merely calculating a research diagnostic.
+5. Inspect each exact pinned upstream source and licenses (Section 4); choose **native algorithm adaptation** and executed source-aligned tests; no vendoring, heavyweight imports or package install. Full Gnosis install not target-version safe across py3.12–3.14; its >=3.10,<3.13 overlaps 3.12, not zero versions. ForecastBench-Sim is GPL; read/adapt only uncopyrightable concepts / independently authored tests, do not copy its code.
+6. Extract ZIP OUTSIDE repo, verify all SHA256SUMS and hashes of exact prompt/spec, then run **hard** `python -B tools/wp/wp_readiness_gate.py --wp <ABS_EXTRACT>/docs/wp_specs/S10-R3-FORECAST-01/wp_prompt.txt --spec <ABS_EXTRACT>/docs/wp_specs/S10-R3-FORECAST-01/wp_spec.json --repo-root .` on clean main. Require actual exit 0, `IMPLEMENTATION_READY`, `is_ready=true`, RUNTIME track, scope count 8 and no errors. **NO source edit/branch before success.** If an in-scope, same-capability prompt/spec correction is needed, repair only those package files before branch, retain old/new SHA+failure, rerun on final bytes. Never weaken guard, change authority/scope or approve protected changes. If gate/skill genuinely unavailable, STOP and produce mandatory blocker ZIP. On gate PASS, Karl's already-issued implementation authorization applies; create one branch/PR and implement with autonomy. After implementation, run native readiness + `--check-diff` on committed exact final prompt/spec/head and the correct current base.
+
+# 3. Exact eight changed paths and bounded context
+
+Required=allowed=maximum 8, no ninth path:
+1. `src/data_layer/analytical_research/forecast_evaluation.py`
+2. `tools/alpha/run_forecast_evaluation.py`
+3. `tests/tools/alpha/test_forecast_evaluation.py`
+4. `docs/forecast_evaluation_contract.md`
+5. `docs/deferred_items_log.md`
+6. `docs/status_entries/S10-R3-FORECAST-01.md`
+7. `docs/wp_specs/S10-R3-FORECAST-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-R3-FORECAST-01/wp_spec.json`
+
+Read-only context: existing S10-R3-SRC-01 implementation and contract; native PIT `research_provenance`/`as_of_query`/`record_store`, Alpha `alpha_factory`/`alpha_discovery`, WP170 `experiment_os`/`experiment_registry`, existing qualification and calibration metrics, near-term screener (but PR268 v3 not merged). Do not edit any of these references. Only append minimum truthful deferred items; status fragment stable/non-self-referential; prompt/spec committed byte-identically to the final gated files. Exact scope policy wins over any wish for an extra adapter. If real necessary fixes exceed eight or cross a protected group, STOP with precise incompatible contract.
+
+# 4. Concrete offline forecasting and scoring contract / pinned source reuse
+
+**Source pins, verified as existing pinned files (adapt; DO NOT COPY OR INSTALL):**
+- `R3-01` Metaculus/forecasting-tools@`a54dd6443d19745b267e99a3b0b7627e74b9a57a` `forecasting_tools/forecast_bots/forecast_bot.py` → multi-forecast protocol; no LLM or service.
+- `R3-06` gnosis/prediction-market-agent-tooling@`817117d9e5b9ebe62ed1bf5ed090c67e49dab77f` `prediction_market_agent_tooling/benchmark/benchmark.py` → same-case outcomes, abstention and error/cost accounting.
+- `R3-10` YichengYang-Ethan/prediction-market-pricing@`04b916c34d29c4d586ffd16b0b2036aadcca2308` `src/identification/external_benchmark.py` → separate exogenous prior / reference-vintage semantics; no bookmaker calls.
+- `R3-10-WANG` YichengYang-Ethan/prediction-market-pricing@`04b916c34d29c4d586ffd16b0b2036aadcca2308` `src/models/hierarchical_wang_mle.py` → price-derived train-only Wang/logit distortion comparator, NEVER independent probability.
+- `R3-12` forecastingresearch/forecastbench@`e8d3c94f9b7f424bbd1205007db08cf2950a45a3` `src/question_sampling/_sampling.py` → cohort stratification and all eligibility denominators.
+- `R3-12-SAMPLER` forecastingresearch/forecastbench@`e8d3c94f9b7f424bbd1205007db08cf2950a45a3` `src/question_sampling/_sampling.py` → deterministic seeded sampler.
+- `R3-18` Metaculus/metac-bot-template@`bcbd016b9c6aee4f62ceeb7f8556b4d96d97b1cc` `integrations/main_lightningrod_eval.py` → source-aligned protocol/negative tests, no hosted eval.
+- `R3-20` Metaculus/metaculus@`bfae5fe87e049404cd1ff094150dee10360aec59` `scoring/score_math.py` → independent score formula reference/parity, no Django.
+- `R3-22` forecastingresearch/forecastbench-sim@`27776fc49bcf3753302045c762830088040c5629` `packages/fbsim-benchmark/tests/test_contract.py` → adversarial numeric/contract tests, no GPL code copied.
+
+**One finite native caller, no alternate control plane:** add `forecast_evaluation.py` as stdlib-only pure bounded forecast/score functions and `tools/alpha/run_forecast_evaluation.py` with `run --grounding-scratch ABS --cases ABS --scratch-dir ABS` and `verify --scratch-dir ABS`. The caller must ACTUALLY cold-verify the existing S10-R3-SRC-01 scratch receipt using `tools.alpha.run_source_grounding.verify`, bind its exact native IDs, source/rule hashes, cutoff, availability and outcome orientation, and verify any referenced native WP170 experiment/split objects in read-only mode. If no validated native experiment is supplied, output `DIAGNOSTIC_ONLY_EXPERIMENT_UNBOUND`; do not invent preregistration or WP170 RunEvidenceReceipt. No canonical PIT/Alpha/WP170 registry writes. Input files are caller-selected, bounded, strict duplicate-free JSON, with actual hashes; output scratch is absolute outside checkout, write-once, and cold `verify` never writes. No future/source/probability provider dispatch or network.
+
+**Forecast generation:** each selected non-crypto, binary, rule-identical observed market has a frozen decision cutoff and event/leakage group. Train one deterministic independent-from-market-price base-rate probability from *only* historical resolved events with source evidence knowable before decision time. Use a documented beta-smoothed binomial prior (one success and one failure pseudo-count by default) on matching preregistered category/horizon stratum; reveal exact training n, outcomes and no-lookahead proof. An empty or insufficient stratum returns ABSTAIN with explicit numerator/denominator, not implicit 0.5 or market price. Caller-supplied external probabilities may be evaluated only if explicit source/version/availability provenance is validated and labeled; do not pretend a model generated them. Multi-forecaster aggregation, if present, reports distinct producer/source lineage and does NOT count repetitions of one model as independent. Record independent source status precisely, no automatic qualified forecast.
+
+**Price-derived Wang comparator:** implement a small standard-library bounded training-only monotone probability distortion/logit/Wang-style candidate from the pinned `hierarchical_wang_mle.py` method family with frozen parameters or a deterministic train-only fit, and clear test of finite out-of-sample behavior. It is *always* tagged `MARKET_PRICE_DERIVED`, not `EXOGENOUS`, not combined into the independent model truth; if training unavailable, abstain. Never call bookmaker/market APIs or use post-decision price revisions. Distinguish source identification (`external_benchmark.py`) from price transform (`hierarchical_wang_mle.py`). This is research comparison, not fair-value authority.
+
+**Frozen cohort and scoring:** implement deterministic SHA-256-seeded stratification by **category × horizon × contemporaneously recorded price band** (MISSING is its own band); time and group exclusivity, no future truth in selection, full sampling inclusion/selection probability/skip/duplicate accounting. Strict input identity: same market+question+rule/outcome+decision time+event group; no mixed result of multiple markets sharing one event. Preserve all offered, eligible, selected, no-label, failed, abstained, invalid, duplicate and no-baseline counts. Primary scorer Brier and declared `epsilon=1e-12` clipped log loss with Decimal/stdlib precision and explicit finite formatting. No hidden p=0/1 loss clipping or sign reversal. Compare independent model, market reference probability and train-only base rate ONLY on the same labeled/answerable event-group-disjoint cohort; no p_market backfill; expose paired intersection and unavailable baseline separately. Outcomes never affect earlier forecasts; score only when independently resolved/known after decision and by scoring cutoff. Synthetic outcomes `SANITIZED_SYNTHETIC` can test contract but cannot establish actual market predictive value. Provenance and source observation timestamps are distinct from event/resolution time.
+
+**WP170 boundary:** Produce a typed content-addressed *advisory* score receipt with a `source_grounding_receipt_id` and optional validated WP170 experiment/split/membership references; use native `experiment_os` definitions/validators where compatible, not a parallel preregistration registry. If a real native OOS-sealed experiment cannot be validated, mark score as `DIAGNOSTIC_ONLY` and disallow qualification claims. No sending anything to WP172 executable-edge or WP173 paper in this WP. Retain immutable results ready for `S10-R3-LEARN-01` to propose future research-priority changes only after resolution. No retroactive re-write of forecast.
+
+**Frozen test material:** >=30 SANITIZED_SYNTHETIC non-crypto question/group cases in `tests/tools/alpha/test_forecast_evaluation.py` with corpus hash recorded in `docs/forecast_evaluation_contract.md`; deterministic manual independent oracle for Brier/log loss, score orientation, grouping, sampler and receipt hash; each test must traverse CLI→existing source-grounding verify→native forecast→score receipt→cold verify where relevant. Real local-data run only if operator already has legitimate historical data, reported separately, **NOT** required for implementation or CI. No additional data/API authorization is granted. No fake value or a passed synthetic `VALUE_VERIFIED`.
+
+# 5. Requirement-to-evidence traceability (evidence plan) / negative test matrix
+
+| ID | Mandatory real pytest node | Required result |
+|---|---|---|
+| R001 | `test_forecast_native_grounding_and_wp170_binding` | The run CLI cold-verifies an actual S10-R3-SRC-01 scratch receipt through tools.alpha.run_source_grounding.verify, binds question/market/rule/source and native as-of, and uses existing WP170/experiment_os verifier or marks experiment unbound; no fake preregistration. |
+| R002 | `test_forecast_training_only_independent_probability_or_abstain` | One actually called offline forecaster derives p_yes from only qualified event-group-disjoint, resolution-known-before-decision exogenous history (declared beta-smoothed base rate) OR abstains with reason; no price, future labels or late sources used to infer independent p. |
+| R003 | `test_forecast_price_wang_is_nonindependent_training_only` | A distinct price-derived Wang/logit-style comparator is executed on training-only market prices/labels when enough data; outputs are always MARKET_PRICE_DERIVED and never substituted for independently sourced p_yes; no model fit on test labels. |
+| R004 | `test_forecast_frozen_stratification_and_exact_denominators` | Deterministic SHA-256-seeded category/horizon/price-band cohort sampler admits exactly declared eligible IDs, preserves included/excluded/missing/unanswerable and deduplicated event-group denominators, with same-case method/baseline membership; outcome labels cannot affect sampling. |
+| R005 | `test_forecast_brier_logloss_paired_baseline_and_abstention` | Brier and disclosed epsilon-clipped log loss are independently computed with Decimal-input hygiene, paired on identical eligible resolved cases against frozen market and prior baselines; missing prices, 0/1, refusal, abstention, unresolved, synthetic data, costs, error and latency stay visible without fabricated score or lift. |
+| R006 | `test_forecast_cold_verify_tamper_and_temporal_conflicts` | Offline cold verify recomputes input hashes, immutable method/model parameters, source rule binding, outcome/source clocks and receipt id; changed labels, cutoffs, split, model provenance, cohort, costs or outputs fail closed without raw input echo. |
+| R007 | `test_forecast_negative_matrix_and_authority_nonexpansion` | Reject wrong types including bool-as-number, NaN/Infinity, duplicate case IDs, malformed/oversized files, invalid rules, stale/backfilled/late evidence, training/test leakage, unresolved truth and post-decision source; no network, Hermes, provider, strategy, canonical registry mutation, paper/live or order paths. |
+| R008 | `test_forecast_real_cli_offline_suite_and_adoption_truth` | Actual run/verify CLI generates and verifies a frozen >=30-case SANITIZED_SYNTHETIC evaluation; tests prove the native source-grounding+forecast+score call path, compare identical cohorts and disclose no REAL_VALUE_VERIFIED, production qualification or full parity closure from synthetic or tests-only evidence; R3-LEARN-01 remains mandatory. |
+
+Negative matrix: missing/null/wrong type/empty/malformed/duplicate; bool-as-number, float NaN/Infinity, negative and >1 p, string decimal noncanonical; source/rule/time/market/group mismatch; future label, after-cutoff training, same event across train/OOS, missing/unverified resolution; outcome orientation mismatch; unavailable price baseline, zero/one p, model repetition mistaken as independent; price-derived Wang mislabeled EXOGENOUS; secrets/trade-like fields/forbidden authority; receipt hash/manifest/denominator tamper; safe allowed research terminology must not be overblocked. Mark non-applicable native policy matrix categories with reason. Enforce no echo for rejected raw or credential-like data.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|native|grounding_wp170|offline_run|REQUIRE|native_receipt_or_unbound_diagnostic|requirements.r001|R001
+NR002|forecast|independent_prior|train_cutoff|REQUIRE|p_yes_or_abstain|requirements.r002|R002
+NR003|pricing|wang_comparator|price_derived|PRESERVE_EXACT|never_exogenous|requirements.r003|R003
+NR004|cohort|stratified_sampler|freeze_before_labels|REQUIRE|frozen_denominator_and_membership|requirements.r004|R004
+NR005|metric|matched_scores|resolved_paired_cases|REQUIRE|brier_logloss_matched_denominators|requirements.r005|R005
+NR006|verify|cold_receipt|tampered_or_foreign|REJECT|fail_closed_cold_verify|requirements.r006|R006
+NR007|authority|negative_matrix|any_invalid_or_prohibited|REJECT|no_authority_expansion|requirements.r007|R007
+NR008|adoption|truth_status|fixture_only_or_no_value|PRESERVE_EXACT|no_value_claim_learning_pending|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 6. Compatibility / impossibility and hard stops
+
+Compatibility checklist (report in CC PR body): actual SRC01 CLI verify return and source/receipt IDs, actual frozen core timestamps, native WP170 MetricDefinition / BaselineDefinition / PreregisteredExperiment/RunEvidenceReceipt semantics and ability to validate read-only; input event/outcome labeling; Decimal precision and market odds source; user fixture origin; upstream source license/security/import closure; eight-path control/CI historical guards. If full WP170 registry cannot represent synthetic provenance, keep it as `DIAGNOSTIC_ONLY`, never fabricate a canonical experiment. `src/data_layer/calibration_metric_computation.py` is coverage-quality only, not a signal Brier scorer; do not misuse it.
+
+STOP if source grounding cold-verify cannot be invoked on the actual inputs — because an unverified historical source cannot become a forecast basis. STOP if source-to-event/rule/outcome identity cannot be bound — because scores may attach to the wrong contract. STOP if time/group leakage cannot be deterministically rejected — because evaluation becomes invalid. STOP if a real native run would require forbidden writes, another path, a new dependency, model/provider networking or protected Hermes/runtime paths — because scope/authority would be exceeded. Per-case unanswerable/late/missing/invalid and no-training data are REFUSAL/ABSTAIN counts, *not* a WP-wide STOP when the rejection semantics themselves are working. STOP if tests cannot run, if invalid outputs echo sensitive input, or if native readiness/source guard fails. The WP is successful even if NO_LIFT or all realistic inputs ABSTAIN, provided the implementation really operates and truthfully records why; no synthetic 'successful score' counts as production performance.
+
+# 7. Validation, source/security and posted PR evidence
+
+After RED test proof, run exact R001–R008, full applicable negative matrix, native SRC01/PIT/Alpha/WP170/qualification and forecast-calibration adjacent tests, status/doc/boundary tests, source/license/security checks and generated-artifact guard. On stable implementation run one authoritative local full pytest (or truthful environment limitation + exact-head hosted equivalent according to repo state machine). Run native `wp_readiness_gate.py --check-diff --base {MAIN} --head HEAD` in actual supported syntax; if main advances, use correct gated base. Run gitleaks/semgrep/pip-audit as repo applicability and availability dictate; no pretend PASS for unavailable tool. Check no new dependency/CI file, zero product network, exact 8 changed files, `git diff --check`. Inspect hosted exact PR head and final CI jobs. Run real combined independent implementation review; correct material issues in scope before owner report, no self-certification for protected. Post truthful PR body and current stable status fragment with precise commands/results/counts. Prefer exact `PRIVATE_REPO_MANUAL_VERIFIED` mode if private unauthenticated verifier unavailable; no optional comment needed after WP91. Karl alone merges. A passing test shows native behavior, not full independent real-world value; keep all 36 adoption register rows and six provider lanes explicitly pending as applicable. Report per-ID actual implementation/test/parity and remaining work, do not label tests-only parity full adoption or ask for another Side chat.
+
+# 8. Outcome, anti-drift accounting and successor boundary
+
+Exactly these capability IDs have scope in this WP: R3-01 (forecast protocol); R3-06; R3-10; R3-10-WANG; R3-12; R3-12-SAMPLER; R3-18; R3-20; R3-22. Preserve all other 27 program IDs, previous `R3-02`/`R3-01-SOURCE_ARCHIVE` receipt/value limits, existing open PR #268 and independent Lane B. If the full actual native parity of R3-18, R3-20 or R3-22 is unproven, keep those IDs open; no quiet closure. Future mandatory `S10-R3-LEARN-01` must consume immutable forecast+resolved outcome score receipts and create a **future** Alpha research-priority proposal without historical rewriting. No automatic qualification, market strategy, economic edge, schedule, provider call or action.
+
+# 9. MANDATORY FILE HANDOFF, REPORT-BACK AND NEXT ACTION
+
+Claude Code must output exactly **one consolidated `S10-R3-FORECAST-01_CC_RETURN.zip`** whether success or blocker, saved outside the repository and never committed. Include: `COMPLETION_OR_BLOCKER.md`, actual changed-file list + blob/commit and PR/head/base, full updated prompt/spec hashes and native gate outputs/exit before edit + diff gate after, exact skill invocations/use ledger, source pin/license/reuse decision, R001–R008 tests and negative matrix, source-grounding→forecast→score→cold-verify proof/cold run receipt, synthetic benchmark denominators and provenance, comparison scores, source/security/full/hosted CI logs with failure history, posted PR body/evidence mode and unresolved dependencies. On blocker, no unauthorized branch/source edits; include actual command/error and minimal CC remedy. Link the ZIP to Karl and explicitly tell him to send **only that ZIP to Side24**, not a third chat.
+
+**CC MUST provide a complete copy-ready return message:**
+"Side24 — attached is `S10-R3-FORECAST-01_CC_RETURN.zip`. Independently inspect its actual source/score/receipt call path, native WP170 boundary, source reuse, stratification, score denominators, negative tests, readiness/CI/security/PR evidence. Refresh GitHub live main/PR/head and decide `MERGE_READY`, `TARGETED_FOLLOW_UP_REQUIRED`, or `BLOCKED_NOT_READY`. Do not merge."
+
+**Owner next action:** Karl downloads the returned one ZIP and sends it directly to this Side24 chat. Side24 responds to PR review **concisely**: merge-ready or targeted correction and exact next action; Karl alone decides merge. No new consultant or separate assessment chat.
