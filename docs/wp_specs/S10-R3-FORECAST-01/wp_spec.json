@@ -1,0 +1,490 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-FORECAST-01",
+    "title": "Frozen Offline Independent Forecasting, Stratified Scoring and Price-Derived Comparator",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_FORECAST_SCORING_AND_STRATIFIED_EVALUATION",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-forecast-01",
+    "required_predecessor": {
+      "pr_number": 269,
+      "head_sha": "1a0e4cf88cd3ece75fa485ba75e3e11b01fb86ec",
+      "merge_sha": "da5031c6a4c79f63dd0968df3cceb1b12d0de72f"
+    },
+    "objective": "Add one finite offline native source-grounded forecast and same-case scoring caller. Deterministic exogenous training-only p_yes or abstention; explicitly non-independent Wang price comparator; stratified freeze, Brier/logloss, denominators, cold verification, WP170 boundary and R3-LEARN-01 handoff. No provider/model/market network, registry mutation, strategy, paper or trade authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/forecast_evaluation.py",
+      "tools/alpha/run_forecast_evaluation.py",
+      "tests/tools/alpha/test_forecast_evaluation.py",
+      "docs/forecast_evaluation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-FORECAST-01.md",
+      "docs/wp_specs/S10-R3-FORECAST-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-FORECAST-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/forecast_evaluation.py",
+      "tools/alpha/run_forecast_evaluation.py",
+      "tests/tools/alpha/test_forecast_evaluation.py",
+      "docs/forecast_evaluation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-FORECAST-01.md",
+      "docs/wp_specs/S10-R3-FORECAST-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-FORECAST-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly eight tracked paths; keep source-grounding, PIT/Alpha/WP170 registries, Hermes, Gate C, WP172/173, Lane B and open PR268 unchanged. Offline scratch output is caller-selected outside checkout and never committed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "New pure forecast/score module, one offline CLI, test-visible integration with merged research receipts; all existing native authorities read-only.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/forecast_evaluation.py",
+        "before": "No independent, frozen, source-grounded multi-case forecast+scoring receipt; existing WP170 is an experiment OS, not a forecast provider.",
+        "after": "Pure bounded event-group-safe exogenous prior/abstain, separate price-derived Wang comparator, frozen sampler, paired Brier/logloss evaluator and content-addressed receipt core.",
+        "change_authorized": true,
+        "compatibility_requirement": "Native source_grounding receipt, PIT/Alpha as-of, existing WP170 prereg/split semantics and experiment registry are unchanged and not shadowed.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_forecast_evaluation.py",
+        "before": "No finite forecast-evaluation CLI over S10-R3-SRC-01 receipts.",
+        "after": "One caller-selected offline run + cold verify using verified existing local inputs, output only outside checkout.",
+        "change_authorized": true,
+        "compatibility_requirement": "No network/provider/LLM/Hermes, no canonical write, no product scheduling.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_forecast_evaluation.py",
+        "before": "No completed end-to-end future forecast scoring evidence.",
+        "after": "Actual caller tests R001-R008 with frozen synthetic cohort and negative/parity vectors.",
+        "change_authorized": true,
+        "compatibility_requirement": "No real profit, market-origin, source-origin or OOS value promoted from fixtures.",
+        "authority": "TESTS_ONLY"
+      },
+      {
+        "surface": "docs/forecast_evaluation_contract.md",
+        "before": "No forecast_eval contract.",
+        "after": "Exact inputs/outputs, source pins, method provenance, benchmark, failure and research-authority distinctions.",
+        "change_authorized": true,
+        "compatibility_requirement": "No duplicate WP170 experiment OS, no shadow Alpha memory, no change to prior native contracts.",
+        "authority": "DOCS_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "R001-R008 are exact normative implementation/test requirements, not new canonical schema field authority.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "The run CLI cold-verifies an actual S10-R3-SRC-01 scratch receipt through tools.alpha.run_source_grounding.verify, binds question/market/rule/source and native as-of, and uses existing WP170/experiment_os verifier or marks experiment unbound; no fake preregistration.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The run CLI cold-verifies an actual S10-R3-SRC-01 scratch receipt through tools.alpha.run_source_grounding.verify, binds question/market/rule/source and native as-of, and uses existing WP170/experiment_os verifier or marks experiment unbound; no fake preregistration.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One actually called offline forecaster derives p_yes from only qualified event-group-disjoint, resolution-known-before-decision exogenous history (declared beta-smoothed base rate) OR abstains with reason; no price, future labels or late sources used to infer independent p.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One actually called offline forecaster derives p_yes from only qualified event-group-disjoint, resolution-known-before-decision exogenous history (declared beta-smoothed base rate) OR abstains with reason; no price, future labels or late sources used to infer independent p.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A distinct price-derived Wang/logit-style comparator is executed on training-only market prices/labels when enough data; outputs are always MARKET_PRICE_DERIVED and never substituted for independently sourced p_yes; no model fit on test labels.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A distinct price-derived Wang/logit-style comparator is executed on training-only market prices/labels when enough data; outputs are always MARKET_PRICE_DERIVED and never substituted for independently sourced p_yes; no model fit on test labels.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Deterministic SHA-256-seeded category/horizon/price-band cohort sampler admits exactly declared eligible IDs, preserves included/excluded/missing/unanswerable and deduplicated event-group denominators, with same-case method/baseline membership; outcome labels cannot affect sampling.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Deterministic SHA-256-seeded category/horizon/price-band cohort sampler admits exactly declared eligible IDs, preserves included/excluded/missing/unanswerable and deduplicated event-group denominators, with same-case method/baseline membership; outcome labels cannot affect sampling.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Brier and disclosed epsilon-clipped log loss are independently computed with Decimal-input hygiene, paired on identical eligible resolved cases against frozen market and prior baselines; missing prices, 0/1, refusal, abstention, unresolved, synthetic data, costs, error and latency stay visible without fabricated score or lift.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Brier and disclosed epsilon-clipped log loss are independently computed with Decimal-input hygiene, paired on identical eligible resolved cases against frozen market and prior baselines; missing prices, 0/1, refusal, abstention, unresolved, synthetic data, costs, error and latency stay visible without fabricated score or lift.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Offline cold verify recomputes input hashes, immutable method/model parameters, source rule binding, outcome/source clocks and receipt id; changed labels, cutoffs, split, model provenance, cohort, costs or outputs fail closed without raw input echo.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Offline cold verify recomputes input hashes, immutable method/model parameters, source rule binding, outcome/source clocks and receipt id; changed labels, cutoffs, split, model provenance, cohort, costs or outputs fail closed without raw input echo.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reject wrong types including bool-as-number, NaN/Infinity, duplicate case IDs, malformed/oversized files, invalid rules, stale/backfilled/late evidence, training/test leakage, unresolved truth and post-decision source; no network, Hermes, provider, strategy, canonical registry mutation, paper/live or order paths.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reject wrong types including bool-as-number, NaN/Infinity, duplicate case IDs, malformed/oversized files, invalid rules, stale/backfilled/late evidence, training/test leakage, unresolved truth and post-decision source; no network, Hermes, provider, strategy, canonical registry mutation, paper/live or order paths.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Actual run/verify CLI generates and verifies a frozen >=30-case SANITIZED_SYNTHETIC evaluation; tests prove the native source-grounding+forecast+score call path, compare identical cohorts and disclose no REAL_VALUE_VERIFIED, production qualification or full parity closure from synthetic or tests-only evidence; R3-LEARN-01 remains mandatory.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Actual run/verify CLI generates and verifies a frozen >=30-case SANITIZED_SYNTHETIC evaluation; tests prove the native source-grounding+forecast+score call path, compare identical cohorts and disclose no REAL_VALUE_VERIFIED, production qualification or full parity closure from synthetic or tests-only evidence; R3-LEARN-01 remains mandatory.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY versioned forecast/score/abstain evidence or closed error code; never instructions, raw rejected payload, secret, wallet or price-as-independent claims",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "New receipt digest has local scratch identity only, never canonical PIT/WP170 authority; its exact recipe is in the project contract, while existing source/PIT/experiment identities are verified unchanged.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "One authorized governed RUNTIME package with a mandatory pre-source readiness gate and an immutable source/score publication lifecycle.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "On final exact prompt/spec bytes, run the native readiness gate against current clean main; fail closed on mismatch.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's standing 2026-11-03 authorization for bounded future WPs, reaffirmed in current request, applies only to this exact eight-file offline zero-provider scope after gate passes.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "One clean branch, all R001-R008 real tests and negative matrix, changed-file proof and full validation.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged WP159 fixed native schema error precedence; the WP runtime refusal precedence (PACKAGE_INVALID..INTERNAL_VALIDATION_FAILED) is specified in docs/forecast_evaluation_contract.md.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Executable fixture and negative corpus examples are bounded in the required single focused test module and local contract; do not create a second canonical example object family.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Each requirement has a mandatory exact pytest node in the single test file; authoritative suite and PR evidence are separately required.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_forecast_native_grounding_and_wp170_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_native_grounding_and_wp170_binding",
+        "expected_result": "The run CLI cold-verifies an actual S10-R3-SRC-01 scratch receipt through tools.alpha.run_source_grounding.verify, binds question/market/rule/source and native as-of, and uses existing WP170/experiment_os verifier or marks experiment unbound; no fake preregistration."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_forecast_training_only_independent_probability_or_abstain",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_training_only_independent_probability_or_abstain",
+        "expected_result": "One actually called offline forecaster derives p_yes from only qualified event-group-disjoint, resolution-known-before-decision exogenous history (declared beta-smoothed base rate) OR abstains with reason; no price, future labels or late sources used to infer independent p."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_forecast_price_wang_is_nonindependent_training_only",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_price_wang_is_nonindependent_training_only",
+        "expected_result": "A distinct price-derived Wang/logit-style comparator is executed on training-only market prices/labels when enough data; outputs are always MARKET_PRICE_DERIVED and never substituted for independently sourced p_yes; no model fit on test labels."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_forecast_frozen_stratification_and_exact_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_frozen_stratification_and_exact_denominators",
+        "expected_result": "Deterministic SHA-256-seeded category/horizon/price-band cohort sampler admits exactly declared eligible IDs, preserves included/excluded/missing/unanswerable and deduplicated event-group denominators, with same-case method/baseline membership; outcome labels cannot affect sampling."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_forecast_brier_logloss_paired_baseline_and_abstention",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_brier_logloss_paired_baseline_and_abstention",
+        "expected_result": "Brier and disclosed epsilon-clipped log loss are independently computed with Decimal-input hygiene, paired on identical eligible resolved cases against frozen market and prior baselines; missing prices, 0/1, refusal, abstention, unresolved, synthetic data, costs, error and latency stay visible without fabricated score or lift."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_forecast_cold_verify_tamper_and_temporal_conflicts",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_cold_verify_tamper_and_temporal_conflicts",
+        "expected_result": "Offline cold verify recomputes input hashes, immutable method/model parameters, source rule binding, outcome/source clocks and receipt id; changed labels, cutoffs, split, model provenance, cohort, costs or outputs fail closed without raw input echo."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_forecast_negative_matrix_and_authority_nonexpansion",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_negative_matrix_and_authority_nonexpansion",
+        "expected_result": "Reject wrong types including bool-as-number, NaN/Infinity, duplicate case IDs, malformed/oversized files, invalid rules, stale/backfilled/late evidence, training/test leakage, unresolved truth and post-decision source; no network, Hermes, provider, strategy, canonical registry mutation, paper/live or order paths."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_forecast_real_cli_offline_suite_and_adoption_truth",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_evaluation.py::test_forecast_real_cli_offline_suite_and_adoption_truth",
+        "expected_result": "Actual run/verify CLI generates and verifies a frozen >=30-case SANITIZED_SYNTHETIC evaluation; tests prove the native source-grounding+forecast+score call path, compare identical cohorts and disclose no REAL_VALUE_VERIFIED, production qualification or full parity closure from synthetic or tests-only evidence; R3-LEARN-01 remains mandatory."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-LEARN-01",
+    "next_title": "Mandatory resolved-outcome to frozen-score to future Alpha research-priority proposal; earlier forecast/experiment artifacts never mutated.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-FORECAST-01",
+    "forbidden_in_this_wp": [
+      "No real provider data downloads or sportsbook/external-odds/API access; six individually owner-gated provider lanes stay PENDING.",
+      "No Hermes invocation/delegation, LLM/Firecrawl/LightningRod/Metaculus hosted service or external model spend.",
+      "No changing WP170 experiment lifecycle/registry, PIT/Alpha data stores or canonical source-grounding machinery; no cheating with current labels.",
+      "No live/paper, strategy acceptance, wallet, account, risk, orders, fees, capital, execution, schedulers or deployment.",
+      "Price-derived Wang is never a genuinely independent forecast or real-value proof. No full adoption claim from synthetic or test-only parity.",
+      "Do not edit PR268, expand beyond the exact eight paths, add dependencies, create a second experiment OS or clone third-party code without approved source/security closure."
+    ]
+  }
+}

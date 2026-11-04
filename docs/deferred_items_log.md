@@ -1,5 +1,13 @@
 # Deferred Items Log
 
+## S10-R3-FORECAST-01 forecast evaluation limitations
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-FORECAST-01-D001 | No forecasting value demonstrated: on the frozen 37-target SANITIZED_SYNTHETIC corpus the independent stratum prior scored paired Brier 0.237860661506 vs market 0.133065517241 (29 paired cases) | NOT_VALUE_VERIFIED | P1 | Caller-run `LOCAL_REAL_PIT` grounding + independently resolved outcomes, then `S10-R3-LEARN-01` and independent review, before any value/adoption claim | Corpus and parameters authored in this WP; receipt hard-codes `NO_REAL_VALUE_VERIFIED`, `score_status` `DIAGNOSTIC_ONLY`; no tuning after observation. |
+| S10-R3-FORECAST-01-D002 | WP170 binding verifies registry/experiment/split read-only but does not map targets to WP170 sample ids | DIAGNOSTIC_ONLY_BY_DESIGN | P2 | A future governed WP mapping score targets to native `ResearchSample` membership with OOS seal and `RunEvidenceReceipt` through native builders | Status `WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_NOT_MAPPED`; no preregistration, run evidence or registry append; qualification claim false. |
+| S10-R3-FORECAST-01-D003 | R3-18 / R3-20 / R3-22 parity and caller-supplied external probabilities / multi-forecaster aggregation not closed | PARITY_OPEN_PENDING_KARL_ACCEPTANCE | P2 | Executed upstream-aligned parity, observed gap decision and Karl acceptance per the adoption-accountability rules; external probabilities only with validated source/version/availability provenance | Only the Metaculus binary baseline formula and independently authored contract tests are present; unknown external-forecast keys are refused; six provider lanes unchanged. |
+
 ## S10-R3-SRC-01 source-grounding and discovery limitations
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
