@@ -25,7 +25,9 @@ from src.data_layer.analytical_research import alpha_discovery as AD
 from src.data_layer.analytical_research import forecast_evaluation as FE
 from tests.data_layer.analytical_research.test_alpha_discovery import _pit_built, _pit_store
 from tests.data_layer.analytical_research.test_experiment_os_preregistration import experiment_stack
-from tests.tools.alpha.test_source_grounding import _policy_mapping
+from types import SimpleNamespace
+
+from tests.tools.alpha.test_source_grounding import GOOD_HTML, _policy_mapping, _source
 from tools.alpha import run_forecast_evaluation as CLI
 from tools.alpha import run_source_grounding as SRC
 
@@ -197,9 +199,13 @@ def world(tmp_path_factory):
         path = (base / f"rule-{slug}.txt").resolve()
         path.write_bytes(_rule(slug).encode())
         rules.append({"market_id": _mid(slug), "file": str(path)})
+    html = (base / "cpi.html").resolve()
+    html.write_bytes(GOOD_HTML)
+    sources = [_source("cpi-release", "cpi", html, GOOD_HTML),
+               _source("starship-note", "starship", html, GOOD_HTML)]  # admitted by native SRC-01 quality/PIT rules
     src_case = {"schema_id": "s10-r3-src01-case-v1", "case_label": "fc01-grounding", "corpus_class": "SANITIZED_SYNTHETIC",
                 "pit_store": str(pit), "alpha_registry": None, "policy": _policy_mapping(), "as_of": AS_OF,
-                "rule_texts": rules, "sources": [],
+                "rule_texts": rules, "sources": sources,
                 "queries": [{"query_id": "q1", "text": "Starship orbit", "category_hint": "science",
                              "relevant_market_ids": [_mid("starship")]}]}
     case_path = base / "src-case.json"
@@ -258,13 +264,20 @@ def test_forecast_native_grounding_and_wp170_binding(world, tmp_path, monkeypatc
     core = receipt["core"]
     assert core["source_grounding"] == {"receipt_id": rid, "verify_status": "VERIFIED", "as_of": AS_OF,
                                         "alpha_universe_snapshot_id": world["src_receipt"]["core"]["inputs"]["alpha_universe_snapshot_id"],
-                                        "bound_rule_markets": len(MARKETS)}
+                                        "bound_rule_markets": len(MARKETS), "markets_with_admitted_sources": 2}
     native = AD.build_alpha_universe_snapshot(world["pit"], AD.build_alpha_discovery_policy(_policy_mapping()).record, AS_OF).record
     by_id = {m.market_id: m for m in native.markets}
     starship = next(r for r in core["targets"] if r["case_id"] == "t-starship")
     assert starship["event_group"] == by_id[_mid("starship")].event_id
     assert starship["rule_content_sha256"] == by_id[_mid("starship")].rules[0].rule_content_sha256
     assert starship["outcome_labels"] == ["No", "Yes"] and starship["category"] == "science"
+    accepted = {e["market_id"]: e["raw_evidence_reference_id"] for e in world["src_receipt"]["core"]["sources"]["entries"]
+                if e["status"] == "ACCEPTED"}
+    assert starship["source_status"] == "SRC01_ADMITTED_SOURCES"
+    assert starship["grounded_source_reference_ids"] == [accepted[_mid("starship")]]
+    plain = next(r for r in core["targets"] if r["case_id"] == "t-artemis")
+    assert plain["source_status"] == "NO_ADMITTED_SOURCE" and plain["grounded_source_reference_ids"] == []
+    assert core["history"]["provenance"] == "CALLER_ASSERTED_CLOCKS_NOT_SRC01_GROUNDED"
     assert core["wp170"]["status"] == "DIAGNOSTIC_ONLY_EXPERIMENT_UNBOUND" and core["score_status"] == "DIAGNOSTIC_ONLY"
     assert core["authority"]["wp170_run_evidence_receipt"] is False and core["authority"]["qualification_claim"] is False
 
@@ -412,10 +425,12 @@ def test_forecast_frozen_stratification_and_exact_denominators(world, baseline):
     assert sum(s["available"] for s in cohort["strata"]) == 35 and sum(s["selected"] for s in cohort["strata"]) == 33
     assert sorted(c for s in cohort["strata"] for c in s["selected_case_ids"]) == cohort["selected_case_ids"]
     for s in cohort["strata"]:
-        assert s["inclusion_probability"]["numerator"] == s["selected"] and s["inclusion_probability"]["denominator"] == s["available"]
+        p = s["inclusion_probability_within_stratum"]
+        assert p["numerator"] == s["selected"] and p["denominator"] == s["available"]
     oh = [r for r in receipt["core"]["targets"] if r["case_id"] in ("t-oh-sen-dem", "t-oh-sen-rep")]
     assert sorted(r["status"] for r in oh) in (["EXCLUDED", "SELECTED"], ["EXCLUDED", "EXCLUDED"])
     assert any(r["reason"] == "EVENT_GROUP_DUPLICATE" for r in oh)
+    assert all(r["event_group_selection"] == {"numerator": 1, "denominator": 2, "value": "0.500000000000"} for r in oh)
     # same-case membership: every method is forecast for exactly the selected set
     assert sorted(receipt["core"]["forecasts"]) == cohort["selected_case_ids"]
     # labels cannot affect sampling; the seed does
@@ -460,12 +475,15 @@ def test_forecast_brier_logloss_paired_baseline_and_abstention(baseline):
     sc = receipt["core"]["scoring"]
     f = receipt["core"]["forecasts"]
     labels = {c["case_id"]: c["y"] for c in sc["cases"] if c["scorable"]}
-    paired = [c for c in labels if all(f[c]["methods"][m]["status"] == "FORECAST" for m in FE.METHODS)]
+    paired = [c for c in labels if all(f[c]["methods"][m]["status"] == "FORECAST" for m in FE.PRIMARY_METHODS)]
+    wang_paired = [c for c in paired if f[c]["methods"][FE.WANG]["status"] == "FORECAST"]
     assert sc["denominators"]["paired_intersection"] == len(paired) > 0
+    assert sc["denominators"]["paired_with_wang"] == len(wang_paired) > 0
     for m in FE.METHODS:
         got = sc["methods"][m]["on_paired"]
-        b = [_manual_scores(Decimal(f[c]["methods"][m]["p_yes"]), labels[c]) for c in paired]
-        assert got["n"] == len(paired)
+        ids = wang_paired if m == FE.WANG else paired
+        b = [_manual_scores(Decimal(f[c]["methods"][m]["p_yes"]), labels[c]) for c in ids]
+        assert got["n"] == len(ids)
         assert abs(Decimal(got["brier"]) - sum(x[0] for x in b) / len(b)) <= Decimal("1e-12")
         assert abs(float(got["log_loss"]) - sum(x[1] for x in b) / len(b)) <= 1e-9
         assert abs(float(got["baseline_score"]) - sum(x[2] for x in b) / len(b)) <= 1e-7
@@ -561,6 +579,7 @@ def test_forecast_cold_verify_tamper_and_temporal_conflicts(world, baseline, tmp
         "costs": (edit_receipt(set_cost), "RECEIPT_ID_MISMATCH"),
         "output_rehashed": (edit_receipt(rehash), "OUTPUT_MISMATCH:forecasts"),
         "model_provenance": (edit_receipt(provenance), "RECEIPT_ID_MISMATCH"),
+        "foreign_id_text": (edit_receipt(lambda r: r.update(receipt_id="Synthetic question injected")), "RECEIPT_ID_MISMATCH"),
     }
     for name, (mutate, code) in expectations.items():
         copy_dir = _tampered_copy(scratch, tmp_path, name)
@@ -579,6 +598,7 @@ def test_forecast_cold_verify_tamper_and_temporal_conflicts(world, baseline, tmp
     cases = _cases(rid, sampler={"seed": "fc01-seed", "sample_n": 200})
     t = {x["case_id"]: x for x in cases["targets"]}
     t["t-starship"]["outcome"].update(resolved_time="2026-06-01T00:00:00Z", known_time="2026-06-01T00:00:00Z")  # pre-decision
+    t["t-house-control"]["outcome"].update(resolved_time="2026-06-01T00:00:00Z", known_time="2026-07-01T00:00:00Z")
     t["t-artemis"]["outcome"]["known_time"] = "2028-01-01T00:00:00Z"  # after scoring cutoff
     t["t-fusion"]["outcome"]["resolved_time"] = "2027-02-01T00:00:00Z"  # resolved after known
     t["t-gdp"]["decision_time"] = "2026-05-01T00:00:00Z"  # before grounding cutoff
@@ -587,7 +607,7 @@ def test_forecast_cold_verify_tamper_and_temporal_conflicts(world, baseline, tmp
     t["t-tdf"]["price_observed_time"] = "2026-05-01T00:00:00Z"  # stale price
     core = _core(world, cases)
     reasons = core["scoring"]["denominators"]["not_scorable_by_reason"]
-    assert reasons["OUTCOME_KNOWN_BEFORE_DECISION"] == 1 and reasons["OUTCOME_AFTER_SCORING_CUTOFF"] == 1
+    assert reasons["OUTCOME_RESOLVED_BEFORE_DECISION"] == 2 and reasons["OUTCOME_AFTER_SCORING_CUTOFF"] == 1
     assert reasons["OUTCOME_CLOCK_INCONSISTENT"] == 1
     rows = {r["case_id"]: r for r in core["targets"]}
     assert rows["t-gdp"]["reason"] == "DECISION_BEFORE_GROUNDING_CUTOFF"
@@ -622,6 +642,7 @@ def test_forecast_negative_matrix_and_authority_nonexpansion(world, tmp_path, ca
         "float_prior": (mutate(lambda c: c["method"].update(prior_alpha=1.0)), "METHOD_INVALID"),
         "noncanonical_edge": (mutate(lambda c: c["method"].update(price_edges=["0.20", "0.4"])), "METHOD_INVALID"),
         "unsorted_edges": (mutate(lambda c: c["method"].update(horizon_edges_days=[90, 30])), "METHOD_INVALID"),
+        "noncanonical_prior": (mutate(lambda c: c["method"].update(prior_alpha="0001.5")), "METHOD_INVALID"),
         "duplicate_case_id": (mutate(lambda c: c["targets"].append(dict(c["targets"][0]))), "DUPLICATE_CASE_ID"),
         "duplicate_history_id": (mutate(lambda c: c["history"].append(dict(c["history"][0]))), "DUPLICATE_HISTORY_ID"),
         "empty_targets": (mutate(lambda c: c.update(targets=[])), "TARGETS_EMPTY"),
@@ -673,6 +694,12 @@ def test_forecast_negative_matrix_and_authority_nonexpansion(world, tmp_path, ca
     for key, fn, reason in checks:
         row = per_target(fn)[key]
         assert row["reason"] == reason and row["status"] == "INELIGIBLE", (key, row)
+    native_gap = SimpleNamespace(market_id=_mid("nocat"), event_id="event:x", question_text="q", outcome_labels=("No", "Yes"),
+                                 category=None, resolution_date=None)
+    gap_rows = FE.evaluate_targets(
+        {"method": _cases(rid)["method"], "targets": [_target("nocat", "0.5", "Yes", question_sha256=_sha(b"q"))]},
+        {"universe": SimpleNamespace(markets=[native_gap]), "bound_rules": {}, "source_refs": {}, "as_of": AS_OF})
+    assert gap_rows[0]["reason"] == "CATEGORY_MISSING"  # no "MISSING" sentinel stratum can collide with history
     hist = _core(world, _cases(rid))["history"]
     assert hist["excluded_by_reason"] == {"HISTORY_BACKFILLED": 1, "HISTORY_EVENT_GROUP_OVERLAPS_TARGET": 1,
                                           "HISTORY_FIELDS_INVALID": 1}
@@ -738,5 +765,6 @@ def test_forecast_real_cli_offline_suite_and_adoption_truth(world, baseline, tmp
     assert core["authority"]["real_value_verified"] is False and core["authority"]["orders"] is False
     assert core["scoring"]["lift_status"] == "SYNTHETIC_CONTRACT_EVIDENCE_NOT_VALUE"
     # identical cohorts: every method is scored on the same paired set
-    paired = {core["scoring"]["methods"][m]["on_paired"]["n"] for m in FE.METHODS}
-    assert paired == {core["scoring"]["denominators"]["paired_intersection"]}
+    d = core["scoring"]["denominators"]
+    assert {core["scoring"]["methods"][m]["on_paired"]["n"] for m in FE.PRIMARY_METHODS} == {d["paired_intersection"]}
+    assert core["scoring"]["methods"][FE.WANG]["on_paired"]["n"] == d["paired_with_wang"] <= d["paired_intersection"]

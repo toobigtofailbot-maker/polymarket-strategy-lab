@@ -64,6 +64,12 @@ def _input_hashes(inputs: Path) -> dict:
             for p in sorted(inputs.rglob("*")) if p.is_file()}
 
 
+def _safe_id(receipt: object) -> str | None:
+    """Echo a receipt id only in its own shape, never arbitrary text from an untrusted receipt."""
+    value = receipt.get("receipt_id") if isinstance(receipt, dict) else None
+    return value if type(value) is str and FE.re.fullmatch(FE.re.escape(FE.RECEIPT_PREFIX) + "[0-9a-f]{64}", value) else None
+
+
 def _evaluate(scratch: Path, frozen: dict) -> dict:
     """Shared by run and verify: cold-verify the frozen SRC-01 copy, bind it, compute the core."""
     inputs = scratch / "inputs"
@@ -138,12 +144,12 @@ def verify(scratch_dir: Path) -> dict:
                         dict(original["wp170"], registry_file="wp170.sqlite3")) if isinstance(original, dict) else None
         if expected != frozen:
             return {"status": "TAMPER_DETECTED", "failures": ["FROZEN_CASES_MISMATCH"], "network_attempts": 0,
-                    "receipt_id": receipt.get("receipt_id") if isinstance(receipt, dict) else None}
+                    "receipt_id": _safe_id(receipt)}
         core = _evaluate(scratch, frozen)
         failures = FE.verify_receipt(receipt, core)
     FE._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
     return {"status": "VERIFIED" if not failures else "TAMPER_DETECTED", "failures": failures,
-            "receipt_id": receipt.get("receipt_id") if isinstance(receipt, dict) else None, "network_attempts": 0}
+            "receipt_id": _safe_id(receipt), "network_attempts": 0}
 
 
 def main(argv: list[str] | None = None) -> int:

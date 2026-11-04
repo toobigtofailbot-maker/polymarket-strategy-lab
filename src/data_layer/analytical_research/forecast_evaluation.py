@@ -62,6 +62,7 @@ BASE_RATE = "train_base_rate_global_v1"
 MARKET = "market_reference_price_v1"
 WANG = "wang_probit_distortion_v1"
 METHODS = (INDEPENDENT, BASE_RATE, MARKET, WANG)
+PRIMARY_METHODS = (INDEPENDENT, BASE_RATE, MARKET)
 LINEAGE = {INDEPENDENT: "EXOGENOUS", BASE_RATE: "EXOGENOUS", MARKET: "MARKET_PRICE", WANG: "MARKET_PRICE_DERIVED"}
 COST = {"classification": "LOCAL_CPU_ONLY", "provider_calls": 0, "network_calls": 0, "spend_usd": "0"}
 
@@ -85,7 +86,7 @@ TRADE_KEY_WORDS = ("order", "orders", "side", "size", "amount", "signature", "st
 _ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,95}")
 _SHA_RE = re.compile(r"[0-9a-f]{64}")
 _PROB_RE = re.compile(r"0|1|0\.[0-9]{0,11}[1-9]")  # canonical: no sign, exponent, trailing zero or > 12 dp
-_POS_DEC_RE = re.compile(r"[1-9][0-9]{0,3}|[0-9]{1,4}\.[0-9]{0,5}[1-9]")
+_POS_DEC_RE = re.compile(r"[1-9][0-9]{0,3}|(0|[1-9][0-9]{0,3})\.[0-9]{0,5}[1-9]")
 
 
 class EvaluationStop(Exception):
@@ -204,7 +205,12 @@ def bind_grounding(receipt: dict, frozen_case: dict, grounding_inputs: Path, cas
         if entry["status"] == "BOUND":
             rel = frozen_case["rule_texts"][entry["index"]]["file"]
             bound[entry["market_id"]] = SG.sha256_hex((Path(grounding_inputs) / rel).read_bytes())
+    sources: dict[str, list[str]] = {}  # admitted, as-of-cutoff source references per market (SRC-01 verified)
+    for entry in core["sources"]["entries"]:
+        if entry["status"] == "ACCEPTED":
+            sources.setdefault(entry["market_id"], []).append(entry["raw_evidence_reference_id"])
     return {"receipt_id": receipt["receipt_id"], "as_of": as_of, "universe": universe, "bound_rules": bound,
+            "source_refs": {k: sorted(v) for k, v in sources.items()},
             "alpha_universe_snapshot_id": universe.alpha_universe_snapshot_id}
 
 
@@ -304,7 +310,9 @@ def evaluate_targets(cases: dict, grounding: dict) -> list[dict]:
             row["reason"] = "NOT_BINARY"
         elif t["yes_label"] not in native.outcome_labels:
             row["reason"] = "OUTCOME_ORIENTATION_MISMATCH"
-        elif (native.category or "").casefold() in CRYPTO_CATEGORIES:
+        elif not native.category:
+            row["reason"] = "CATEGORY_MISSING"
+        elif native.category.casefold() in CRYPTO_CATEGORIES:
             row["reason"] = "CRYPTO_EXCLUDED"
         elif t["market_id"] not in grounding["bound_rules"]:
             row["reason"] = "RULE_TEXT_NOT_BOUND"
@@ -316,7 +324,10 @@ def evaluate_targets(cases: dict, grounding: dict) -> list[dict]:
             row["reason"] = "DECISION_AFTER_RESOLUTION_DATE"
         else:
             price, price_reason = _contemporaneous_price(t, decision, m["max_price_age_seconds"])
-            row.update(status="ELIGIBLE", event_group=native.event_id, category=native.category or "MISSING",
+            refs = grounding["source_refs"].get(t["market_id"], [])
+            row.update(status="ELIGIBLE", event_group=native.event_id, category=native.category,
+                       grounded_source_reference_ids=refs,
+                       source_status="SRC01_ADMITTED_SOURCES" if refs else "NO_ADMITTED_SOURCE",
                        question_sha256=t["question_sha256"], rule_content_sha256=t["rule_content_sha256"],
                        yes_label=t["yes_label"], outcome_labels=list(native.outcome_labels), decision_time=decision,
                        resolution_date=resolution, horizon_band=horizon_band(decision, resolution, m["horizon_edges_days"]),
@@ -341,6 +352,8 @@ def freeze_cohort(rows: list[dict], sampler: dict) -> dict:
     kept = []
     for members in groups.values():  # one market per event: no mixed results across a shared event
         members.sort(key=lambda r: _draw_key(seed, r["case_id"]))
+        for r in members:
+            r["event_group_selection"] = _ratio(1, len(members))
         kept.append(members[0])
         for r in members[1:]:
             r.update(status="EXCLUDED", reason="EVENT_GROUP_DUPLICATE")
@@ -367,12 +380,13 @@ def freeze_cohort(rows: list[dict], sampler: dict) -> dict:
         for rank, r in enumerate(members):
             r["status"], r["reason"] = ("SELECTED", None) if rank < quota[s] else ("EXCLUDED", "NOT_SAMPLED")
         summary.append({"stratum": s, "available": len(members), "selected": quota[s],
-                        "inclusion_probability": _ratio(quota[s], len(members)),
+                        "inclusion_probability_within_stratum": _ratio(quota[s], len(members)),
                         "selected_case_ids": sorted(r["case_id"] for r in members[:quota[s]])})
     reasons = Counter(r["reason"] for r in rows if r["status"] != "SELECTED")
     selected = sorted(r["case_id"] for r in rows if r["status"] == "SELECTED")
     return {
         "seed": seed, "draw": "sha256(seed|case_id) ascending within stratum", "strata": summary,
+        "inclusion_note": "overall inclusion = event_group_selection (per target row) x inclusion_probability_within_stratum",
         "selected_case_ids": selected,
         "membership_sha256": SG.sha256_hex(SG.canonical_bytes(selected)),
         "denominators": {"offered": len(rows), "eligible": len(eligible), "event_groups": len(groups),
@@ -495,7 +509,7 @@ def forecast_case(row: dict, valid_history: list[dict], method: dict) -> dict:
         out[WANG] = {"status": "FORECAST" if row["market_price"] is not None else "UNAVAILABLE",
                      "reason": None if row["market_price"] is not None else "BASELINE_UNAVAILABLE:" + row["price_reason"],
                      "p_yes": None if row["market_price"] is None else _q(wang_transform(Decimal(row["market_price"]), lam)),
-                     "lambda": f"{lam:.9f}", "training": {"n": len(priced), "required_n": method["wang_min_training_n"],
+                     "lambda": f"{lam:.9f}", "lambda_at_bound": abs(abs(lam) - WANG_LAMBDA_BOUNDS[1]) < 1e-6, "training": {"n": len(priced), "required_n": method["wang_min_training_n"],
                                                           "training_ids_sha256": SG.sha256_hex(SG.canonical_bytes(
                                                               sorted(h["history_id"] for h in priced)))}}
     for name in METHODS:
@@ -522,8 +536,8 @@ def resolve_outcome(row: dict, outcome: object, corpus_class: str, scoring_cutof
     resolved, known = _utc(outcome["resolved_time"]), _utc(outcome["known_time"])
     if _key(resolved) > _key(known):
         return None, "OUTCOME_CLOCK_INCONSISTENT"
-    if _key(known) <= _key(row["decision_time"]):
-        return None, "OUTCOME_KNOWN_BEFORE_DECISION"
+    if _key(resolved) <= _key(row["decision_time"]):  # with resolved <= known this also covers known-before
+        return None, "OUTCOME_RESOLVED_BEFORE_DECISION"
     if _key(known) > _key(scoring_cutoff):
         return None, "OUTCOME_AFTER_SCORING_CUTOFF"
     return (1 if outcome["label"] == row["yes_label"] else 0), None
@@ -558,7 +572,9 @@ def score_cohort(cases_by_id: dict, rows: list[dict], forecasts: dict, corpus_cl
         per_case.append({"case_id": r["case_id"], "scorable": y is not None, "not_scorable_reason": reason, "y": y})
     scorable = [r["case_id"] for r in selected if labels[r["case_id"]] is not None]
     available = {m: [c for c in scorable if forecasts[c]["methods"][m]["status"] == "FORECAST"] for m in METHODS}
-    paired = [c for c in scorable if all(c in available[m] for m in METHODS)]
+    # Primary comparison is independent vs market vs train base rate; Wang is a separate comparator.
+    paired = [c for c in scorable if all(c in available[m] for m in PRIMARY_METHODS)]
+    wang_paired = [c for c in paired if c in available[WANG]]
 
     def scores(method, ids):
         return [score_one(Decimal(forecasts[c]["methods"][method]["p_yes"]), labels[c]) for c in ids]
@@ -567,9 +583,10 @@ def score_cohort(cases_by_id: dict, rows: list[dict], forecasts: dict, corpus_cl
         statuses = Counter(forecasts[c]["methods"][m]["status"] for c in scorable)
         boundary = sum(1 for c in available[m] if Decimal(forecasts[c]["methods"][m]["p_yes"]) in (0, 1))
         methods[m] = {"lineage": LINEAGE[m], "on_own_available": _aggregate(scores(m, available[m])),
-                      "on_paired": _aggregate(scores(m, paired)), "abstained": statuses.get("ABSTAIN", 0),
+                      "on_paired": _aggregate(scores(m, paired if m != WANG else wang_paired)),
+                      "paired_set": "PRIMARY" if m != WANG else "PRIMARY_AND_WANG", "abstained": statuses.get("ABSTAIN", 0),
                       "unavailable": statuses.get("UNAVAILABLE", 0), "boundary_probability_0_or_1": boundary,
-                      "errors": 0, "cost": dict(COST)}
+                      "errors": 0, "cost": dict(COST)}  # any error is a whole-run INTERNAL_VALIDATION_FAILED stop
     deltas = None
     if paired:
         ind, mkt = methods[INDEPENDENT]["on_paired"], methods[MARKET]["on_paired"]
@@ -582,8 +599,10 @@ def score_cohort(cases_by_id: dict, rows: list[dict], forecasts: dict, corpus_cl
                         "METACULUS_BINARY_BASELINE_SCORE": "HIGHER_IS_BETTER"},
         "denominators": {"selected": len(selected), "scorable": len(scorable), "not_scorable": len(selected) - len(scorable),
                          "not_scorable_by_reason": dict(sorted(reasons.items())),
-                         "available_by_method": {m: len(available[m]) for m in METHODS}, "paired_intersection": len(paired)},
+                         "available_by_method": {m: len(available[m]) for m in METHODS}, "paired_intersection": len(paired),
+                         "paired_with_wang": len(wang_paired)},
         "paired_case_ids_sha256": SG.sha256_hex(SG.canonical_bytes(paired)),
+        "paired_with_wang_case_ids_sha256": SG.sha256_hex(SG.canonical_bytes(wang_paired)),
         "methods": methods, "paired_deltas": deltas,
         "lift_status": ("NO_PAIRED_CASES" if not paired else "SYNTHETIC_CONTRACT_EVIDENCE_NOT_VALUE"
                         if corpus_class == "SANITIZED_SYNTHETIC" else "LOCAL_OBSERVATION_UNREVIEWED_NOT_VALUE"),
@@ -609,7 +628,8 @@ def build_evaluation_core(cases: dict, grounding: dict, wp170: dict, code_identi
         "code_identity": code_identity,
         "source_grounding": {"receipt_id": grounding["receipt_id"], "verify_status": "VERIFIED", "as_of": grounding["as_of"],
                              "alpha_universe_snapshot_id": grounding["alpha_universe_snapshot_id"],
-                             "bound_rule_markets": len(grounding["bound_rules"])},
+                             "bound_rule_markets": len(grounding["bound_rules"]),
+                             "markets_with_admitted_sources": len(grounding["source_refs"])},
         "wp170": wp170,
         "inputs": {"file_sha256": input_hashes, "cases_sha256": SG.sha256_hex(SG.canonical_bytes(cases)),
                    "scoring_cutoff": _utc(cases["scoring_cutoff"])},
@@ -621,6 +641,7 @@ def build_evaluation_core(cases: dict, grounding: dict, wp170: dict, code_identi
         "targets": rows,
         "cohort": cohort,
         "history": {"offered": len(history_rows), "admitted": len(valid_history),
+                    "provenance": "CALLER_ASSERTED_CLOCKS_NOT_SRC01_GROUNDED",
                     "excluded_by_reason": dict(sorted(Counter(r["reason"] for r in history_rows if r["reason"]).items())),
                     "entries": history_rows},
         "forecasts": forecasts,

@@ -24,7 +24,7 @@ Posture: RESEARCH_ONLY, `score_status` always `DIAGNOSTIC_ONLY`. No network, pro
   - `rule_content_sha256` equals the SHA-256 of the SRC-01 `BOUND` rule bytes;
   - `decision_time` is at or after the grounding `as_of` and before the native resolution date.
 
-  The event/leakage group is always the native `event_id`.
+  The event/leakage group is always the native `event_id`. A missing native category is refused (`CATEGORY_MISSING`). Each eligible row records its SRC-01 admitted source reference ids and `source_status` (`SRC01_ADMITTED_SOURCES` or `NO_ADMITTED_SOURCE`); history clocks are caller-asserted (`CALLER_ASSERTED_CLOCKS_NOT_SRC01_GROUNDED`, deferred D004).
 - **WP170.** The `wp170` field takes one of two values:
   - `null` gives `DIAGNOSTIC_ONLY_EXPERIMENT_UNBOUND`.
   - `{registry_file, experiment_id}` is checked with `experiment_registry.load_and_verify_experiment_registry` (read-only). The `PreregisteredExperiment` and its `TemporalSplitManifest` must exist. The result records `experiment_os.membership_hash(split, "OUT_OF_SAMPLE")` and the status `WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_NOT_MAPPED`.
@@ -70,7 +70,7 @@ History rows are refused (and counted) in these cases:
 3. `sample_n` slots are apportioned across strata by largest remainder (the ForecastBench method). Ties go by remainder, then stratum size, then name, and any shortfall is filled from the largest strata.
 4. Within a stratum, cases are drawn in ascending `sha256(seed|case_id)` order.
 
-Every stratum's available / selected count and inclusion probability is recorded, and so are the `offered`, `eligible`, `event_groups`, `event_group_duplicates`, `sampling_frame`, `requested`, `selected` and `not_sampled` counts, the per-reason ineligibility counts, and the membership SHA-256.
+Every stratum's available / selected count and `inclusion_probability_within_stratum` is recorded (overall inclusion = per-row `event_group_selection` × within-stratum probability), and so are the `offered`, `eligible`, `event_groups`, `event_group_duplicates`, `sampling_frame`, `requested`, `selected` and `not_sampled` counts, the per-reason ineligibility counts, and the membership SHA-256.
 
 ## Scoring
 
@@ -79,7 +79,7 @@ Every stratum's available / selected count and inclusion probability is recorded
   - its label is in the native labels;
   - its provenance matches the corpus (`SANITIZED_SYNTHETIC_LABEL` or `LOCAL_RESOLUTION_RECORD`);
   - `resolved_time <= known_time`;
-  - `known_time` is after the decision and at or before `scoring_cutoff`.
+  - `resolved_time` is after the decision (`OUTCOME_RESOLVED_BEFORE_DECISION` otherwise), and `known_time` is at or before `scoring_cutoff`.
 
   Anything else is counted as NOT_SCORABLE, with the reason.
 - **Per case:**
@@ -87,7 +87,7 @@ Every stratum's available / selected count and inclusion probability is recorded
   - Log loss is `-ln(q)` with `q` clipped to `[1e-12, 1 - 1e-12]`, computed in Decimal at precision 50. Every clipped case is counted.
   - The Metaculus binary baseline score is `100 * ln(2q) / ln 2`.
   - Means are quantized to 12 decimal places, half-even.
-- **Per method:** the receipt reports scores on its own available set and on the paired intersection (scorable cases where all four methods forecast), plus abstained, unavailable, boundary-0/1 and error counts and the cost (`LOCAL_CPU_ONLY`, 0 calls, `"0"` USD). Lift deltas (independent minus market) are reported only on the paired set. `lift_status` is `SYNTHETIC_CONTRACT_EVIDENCE_NOT_VALUE`, `LOCAL_OBSERVATION_UNREVIEWED_NOT_VALUE` or `NO_PAIRED_CASES`. Latency is the non-identity `total_ms`.
+- **Per method:** the receipt reports scores on its own available set and on the primary paired intersection (scorable cases where the independent prior, market and base rate all forecast; Wang is reported on its own `paired_with_wang` subset of that set, so a Wang abstention never removes the primary comparison), plus abstained, unavailable and boundary-0/1 counts (`errors` is always 0: any error is a whole-run `INTERNAL_VALIDATION_FAILED` stop) and the cost (`LOCAL_CPU_ONLY`, 0 calls, `"0"` USD). Lift deltas (independent minus market) are reported only on the paired set. `lift_status` is `SYNTHETIC_CONTRACT_EVIDENCE_NOT_VALUE`, `LOCAL_OBSERVATION_UNREVIEWED_NOT_VALUE` or `NO_PAIRED_CASES`. Latency is the non-identity `total_ms`.
 
 ## Receipt
 
