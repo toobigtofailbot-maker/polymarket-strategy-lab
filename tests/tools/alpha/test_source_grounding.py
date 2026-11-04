@@ -355,6 +355,12 @@ def test_source_grounding_source_archive_quality_and_native_receipt(baseline_run
     for ref in refs:
         assert RP.verify_raw_evidence_reference_identity(SG.rebuild_reference(ref))
     assert {r["retrieval_method"]: r["dq_flags"] for r in refs} == {"PROSPECTIVE_LOCAL_CAPTURE": ["OK"], "LATER_IMPORT": ["BACKFILLED"]}
+    # a later import never carries a first-seen clock, so no downstream consumer can re-admit it as prospective
+    imported = next(r for r in refs if r["retrieval_method"] == "LATER_IMPORT")
+    assert imported["pit"]["local_first_seen_time"] is None and imported["pit"]["public_available_time"] == "2026-05-30T00:00:00Z"
+    later = RP.evaluate_replay_admissibility(AS_OF, RP.ObservabilityEvidence(
+        local_first_seen_time=imported["pit"]["local_first_seen_time"], public_available_time=imported["pit"]["public_available_time"]))
+    assert later.basis == "PUBLIC_AVAILABLE"
     manifest = receipt["provenance_manifest"]
     assert manifest["input_evidence_reference_ids"] == [r["raw_evidence_reference_id"] for r in refs]
     assert manifest["output_hash"] == _sha(SG.canonical_bytes(receipt["core"]))
@@ -389,6 +395,14 @@ def test_source_grounding_404_block_thin_late_and_rule_mismatch_refusal(world, t
                                                            "ingestion_time": "2026-06-01T11:00:00Z"}, "SOURCE_CLOCK_INCONSISTENT"),
         ("future-public", put("fp.html", long_ok), long_ok, {"local_first_seen_time": None,
                                                               "public_available_time": "2026-06-02T00:00:00Z"}, "FUTURE_CONTENT"),
+        ("future-published", put("fpub.html", long_ok), long_ok, {"source_publish_time": "2026-09-01T00:00:00Z",
+                                                                   "public_available_time": "2026-09-01T00:00:00Z"}, "FUTURE_CONTENT"),
+        ("seen-before-published", put("sbp.html", long_ok), long_ok, {"source_publish_time": "2026-05-31T12:00:00Z",
+                                                                       "public_available_time": "2026-05-31T12:00:00Z"},
+         "SOURCE_CLOCK_INCONSISTENT"),
+        ("redirect", put("302.html", long_ok), long_ok, {"http_status": 302}, "HTTP_STATUS_302"),
+        ("status-zero", put("s0.html", long_ok), long_ok, {"http_status": 0}, "SOURCE_FIELDS_INVALID"),
+        ("status-bool", put("sb.html", long_ok), long_ok, {"http_status": True}, "SOURCE_FIELDS_INVALID"),
         ("late-revision", put("late.html", long_ok), long_ok, {"revision_time": "2026-06-05T00:00:00Z"}, "LATE_REVISION"),
         ("no-clock", put("noclock.html", long_ok), long_ok, {"local_first_seen_time": None, "public_available_time": None},
          "NO_OBSERVABILITY_EVIDENCE"),
@@ -490,6 +504,9 @@ def test_source_grounding_cold_verify_tamper_and_no_network(baseline_run, tmp_pa
         "hash": (lambda r: r["core"]["sources"]["accepted_references"][0].update(content_sha256="0" * 64), True),
         "adoption": (lambda r: r["core"]["adoption"].update({"R3-02": "VALUE_VERIFIED"}), True),
         "manifest": (lambda r: r["provenance_manifest"].update(gap_summary="{}"), True),
+        "core-not-mapping": (lambda r: r.update(core=["x"]), False),
+        "non-identity-smuggle": (lambda r: r["non_identity"].update({"R3-02": "VALUE_VERIFIED"}), False),
+        "non-identity-timing-type": (lambda r: r["non_identity"]["elapsed_ms"].update({SG.RANKER_ID: "fast"}), False),
     }
     for name, (mutate, reid) in mutations.items():
         dst = _copy(scratch, tmp_path, name)
@@ -512,6 +529,13 @@ def test_source_grounding_cold_verify_tamper_and_no_network(baseline_run, tmp_pa
     foreign = _copy(scratch, tmp_path, "foreign")
     shutil.copyfile(other / "receipt.json", foreign / "receipt.json")
     assert _verify(foreign) == 1
+    # every patched socket entry point is denied inside the guard and restored after it
+    with CLI.no_network() as attempts:
+        for call in (lambda: socket.gethostbyname("example.invalid"), lambda: socket.getaddrinfo("example.invalid", 80),
+                     lambda: socket.socket().sendto(b"x", ("127.0.0.1", 9))):
+            with pytest.raises(SG.GroundingStop):
+                call()
+    assert len(attempts) == 3 and socket.gethostbyname is not None and "deny" not in socket.getaddrinfo.__name__
     # any socket attempt inside the run is blocked and fails the run closed
     real = SG.rank_markets
 
@@ -579,6 +603,7 @@ def test_source_grounding_legacy_baseline_unchanged_and_no_authority(world, base
     (lambda c: c.update(schema_id="other"), "CASE_SCHEMA_INVALID"),
     (lambda c: c.update(pit_store="relative/pit.sqlite3"), "PIT_STORE_UNUSABLE"),
     (lambda c: c["policy"].update(queue_capacity="4"), "POLICY_INVALID"),
+    (lambda c: c["policy"].update(client_secret="x"), "FORBIDDEN_FIELD"),
 ])
 def test_case_negative_matrix(world, tmp_path, capsys, mutate, code):
     case = json.loads(json.dumps(world["case"]))
@@ -602,6 +627,9 @@ def test_scratch_and_input_boundaries(world, tmp_path, capsys):
     assert json.loads(capsys.readouterr().out.strip())["reason_code"] == "CASE_UNREADABLE"
     (tmp_path / "bad.json").write_text('{"a": NaN}', encoding="utf-8")
     assert CLI.main(["run", "--case", str(tmp_path / "bad.json"), "--scratch-dir", str(tmp_path / "s3")]) == 1
+    assert json.loads(capsys.readouterr().out.strip())["reason_code"] == "CASE_JSON_INVALID"
+    (tmp_path / "deep.json").write_text("[" * 200000 + "]" * 200000, encoding="utf-8")
+    assert CLI.main(["run", "--case", str(tmp_path / "deep.json"), "--scratch-dir", str(tmp_path / "s5")]) == 1
     assert json.loads(capsys.readouterr().out.strip())["reason_code"] == "CASE_JSON_INVALID"
     assert CLI.main(["verify", "--scratch-dir", str(tmp_path / "s4-missing")]) == 1
 

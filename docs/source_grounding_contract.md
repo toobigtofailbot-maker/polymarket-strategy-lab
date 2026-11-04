@@ -72,13 +72,20 @@ JSON keys. Free-text values (for example a query about "the price of eggs") are 
 
 Order: fields -> duplicate label (`CONFLICTING_SOURCE_IDENTITY`) -> market in corpus -> URL safety (http(s),
 no userinfo, no token/key/sig/auth/session query keys) -> bytes present -> SHA-256 equals
-`declared_sha256` (`SOURCE_BYTES_CHANGED`) -> UTC clocks (`SOURCE_CLOCK_INVALID`) -> ingestion present,
-not before first-seen (`SOURCE_CLOCK_INCONSISTENT`), and for prospective capture not after cutoff
-(`SOURCE_INGESTED_AFTER_CUTOFF`) -> native `evaluate_replay_admissibility` (`LATER_IMPORT` passes no
-local first-seen, so only `public_available_time` can admit it, and keeps `BACKFILLED`; revision after
-cutoff -> `LATE_REVISION`; not yet seen -> `FUTURE_CONTENT`; no clock -> `NO_OBSERVABILITY_EVIDENCE`) ->
-quality (`HTTP_STATUS_<n>`, `INVALID_BYTES`, `BLOCK_SIGNATURE`, `LOGIN_WALL`, `THIN_CONTENT`) -> same
-market + same content hash `DEDUPED`/`DUPLICATE_CONTENT` -> `ACCEPTED` with a native raw evidence id.
+`declared_sha256` (`SOURCE_BYTES_CHANGED`) -> UTC clocks (`SOURCE_CLOCK_INVALID`) -> publish or
+public-available time after cutoff (`FUTURE_CONTENT`) or after local first-seen
+(`SOURCE_CLOCK_INCONSISTENT`) -> ingestion present, not before first-seen (`SOURCE_CLOCK_INCONSISTENT`),
+and for prospective capture not after cutoff (`SOURCE_INGESTED_AFTER_CUTOFF`) -> native
+`evaluate_replay_admissibility` (`LATER_IMPORT` drops the caller's first-seen from both the decision and
+the stored `RawEvidenceReference`, so only `public_available_time` can admit it, and keeps `BACKFILLED`;
+revision after cutoff -> `LATE_REVISION`; not yet seen -> `FUTURE_CONTENT`; no clock ->
+`NO_OBSERVABILITY_EVIDENCE`) -> quality (`http_status` must be an integer 100-599 and only 2xx passes:
+`HTTP_STATUS_<n>`; `INVALID_BYTES`, `BLOCK_SIGNATURE`, `LOGIN_WALL`, `THIN_CONTENT`) -> same market + same
+content hash `DEDUPED`/`DUPLICATE_CONTENT` -> `ACCEPTED` with a native raw evidence id.
+
+Known limits: the quality gate is the upstream heuristic, so an error page served with status 200 and
+more than 200 visible characters without a signature passes; the source -> market link is asserted by the
+caller (only corpus membership is checked, not topical relevance).
 
 ## Ranking and baseline (frozen before the benchmark corpus)
 
@@ -133,7 +140,11 @@ Alpha join, benchmark denominators/metrics/per-case rows, adoption status and au
 over `{core, provenance_manifest}`. `verify` recomputes the core from the frozen inputs and fails closed
 on any difference (`RECEIPT_ID_MISMATCH`, `MANIFEST_ID_MISMATCH`, `MANIFEST_OUTPUT_BINDING_MISMATCH`,
 `RAW_EVIDENCE_ID_MISMATCH`, `INPUT_BYTES_TAMPERED`, `OUTPUT_MISMATCH:<field>`); a corrupt store stops
-`UNIVERSE_INVALID`. Code changes also fail verify (code identity is in the core).
+`UNIVERSE_INVALID`. Code changes also fail verify (code identity is in the core). `non_identity` may hold
+only the fixed note and numeric timings (`NON_IDENTITY_INVALID` otherwise). Verify proves internal
+consistency of one scratch directory: a party that rewrites frozen case, inputs and receipt together
+produces a new self-consistent receipt, so reviewers must compare `receipt_id` with an independently
+recorded copy.
 
 ## Adoption status
 

@@ -55,13 +55,16 @@ def no_network():
     def deny(*_args, **_kwargs):
         attempts.append(1)
         raise SG.GroundingStop("NETWORK_ATTEMPT_BLOCKED")
-    saved = (socket.socket.connect, socket.socket.connect_ex, socket.create_connection, socket.getaddrinfo)
-    socket.socket.connect = socket.socket.connect_ex = deny
-    socket.create_connection = socket.getaddrinfo = deny
+    saved = [(owner, name, getattr(owner, name)) for owner, names in (
+        (socket.socket, ("connect", "connect_ex", "sendto")),
+        (socket, ("create_connection", "getaddrinfo", "gethostbyname", "gethostbyname_ex"))) for name in names]
+    for owner, name, _ in saved:
+        setattr(owner, name, deny)
     try:
         yield attempts
     finally:
-        socket.socket.connect, socket.socket.connect_ex, socket.create_connection, socket.getaddrinfo = saved
+        for owner, name, original in saved:
+            setattr(owner, name, original)
 
 
 def _strict_json(raw: bytes, code: str):
@@ -70,7 +73,7 @@ def _strict_json(raw: bytes, code: str):
     try:
         return json.loads(raw.decode("utf-8"), parse_constant=reject,
                           object_pairs_hook=lambda pairs: dict(pairs) if len({k for k, _ in pairs}) == len(pairs) else reject(None))
-    except (UnicodeDecodeError, ValueError):
+    except (UnicodeDecodeError, ValueError, RecursionError):
         raise SG.GroundingStop(code) from None
 
 
@@ -162,8 +165,8 @@ def verify(scratch_dir: Path) -> dict:
         core, _ = SG.build_grounding_core(frozen, scratch / "inputs", code_identity())
         failures = SG.verify_receipt(receipt, core)
     SG._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
-    if isinstance(receipt, dict) and isinstance(receipt.get("core"), dict) and \
-            receipt["core"].get("inputs", {}).get("file_sha256") != core["inputs"]["file_sha256"]:
+    inputs = receipt["core"].get("inputs") if isinstance(receipt, dict) and isinstance(receipt.get("core"), dict) else None
+    if not isinstance(inputs, dict) or inputs.get("file_sha256") != core["inputs"]["file_sha256"]:
         failures.insert(0, "INPUT_BYTES_TAMPERED")
     return {"status": "VERIFIED" if not failures else "TAMPER_DETECTED", "failures": failures,
             "receipt_id": receipt.get("receipt_id") if isinstance(receipt, dict) else None, "network_attempts": 0}

@@ -139,7 +139,7 @@ def tokenize(text: str | None) -> list[str]:
 # ------------------------------------------------------------------ case validation
 
 
-def _scan_forbidden(value: object, depth: int = 0) -> None:
+def _scan_forbidden(value: object, depth: int = 0, *, trade_words: bool = True) -> None:
     """Credential- or trade-shaped keys anywhere reject the case (keys only; safe wording in values is allowed)."""
     _require(depth <= 8, "CASE_TOO_DEEP")
     if isinstance(value, dict):
@@ -147,14 +147,13 @@ def _scan_forbidden(value: object, depth: int = 0) -> None:
             _require(isinstance(key, str), "CASE_FIELDS_INVALID")
             lowered = key.casefold()
             _require(not any(p in lowered for p in SECRET_KEY_PARTS), "FORBIDDEN_FIELD")
+            _require(not trade_words or not set(re.split(r"[^a-z0-9]+", lowered)) & set(TRADE_KEY_WORDS),
+                     "FORBIDDEN_FIELD")
             # The native policy has its own strict FORBIDDEN_FIELD check and legitimately names price deltas.
-            if depth == 0 and key == "policy":
-                continue
-            _require(not set(re.split(r"[^a-z0-9]+", lowered)) & set(TRADE_KEY_WORDS), "FORBIDDEN_FIELD")
-            _scan_forbidden(item, depth + 1)
+            _scan_forbidden(item, depth + 1, trade_words=trade_words and not (depth == 0 and key == "policy"))
     elif isinstance(value, list):
         for item in value:
-            _scan_forbidden(item, depth + 1)
+            _scan_forbidden(item, depth + 1, trade_words=trade_words)
 
 
 def validate_case(case: object, *, frozen: bool) -> None:
@@ -353,7 +352,8 @@ def _visible_text(raw: bytes) -> str | None:
 
 
 def quality_verdict(http_status: int, raw: bytes) -> tuple[str, str | None]:
-    if http_status >= 400:
+    # Upstream gates >= 400; a 1xx/3xx capture is not a body either, so only 2xx can pass.
+    if not 200 <= http_status <= 299:
         return "QUALITY_FAILED", f"HTTP_STATUS_{http_status}"
     text = _visible_text(raw)
     if text is None:
@@ -388,7 +388,7 @@ def evaluate_sources(entries: list, universe: AD.AlphaUniverseSnapshot, as_of: s
         outcomes.append(out)
         if not isinstance(entry, dict) or set(entry) != SOURCE_KEYS or type(entry["source_label"]) is not str \
                 or _LABEL_RE.fullmatch(entry["source_label"]) is None or type(entry["market_id"]) is not str \
-                or type(entry["http_status"]) is not int or isinstance(entry["http_status"], bool) \
+                or type(entry["http_status"]) is not int or not 100 <= entry["http_status"] <= 599 \
                 or type(entry["media_type"]) is not str or not entry["media_type"] \
                 or entry["capture_mode"] not in CAPTURE_MODES or type(entry["declared_sha256"]) is not str \
                 or _SHA_RE.fullmatch(entry["declared_sha256"]) is None:
@@ -422,19 +422,27 @@ def evaluate_sources(entries: list, universe: AD.AlphaUniverseSnapshot, as_of: s
             out["reason"] = "SOURCE_CLOCK_INVALID"
             continue
         later_import = entry["capture_mode"] == "LATER_IMPORT"
+        key = RP._utc_instant_key
+        published = [clocks[k] for k in ("source_publish_time", "public_available_time") if clocks[k]]
+        if any(key(t) > key(as_of) for t in published):
+            out["reason"] = "FUTURE_CONTENT"
+            continue
+        if clocks["local_first_seen_time"] and any(key(t) > key(clocks["local_first_seen_time"]) for t in published):
+            out["reason"] = "SOURCE_CLOCK_INCONSISTENT"  # seen locally before it was published/available
+            continue
         if clocks["ingestion_time"] is None:
             out["reason"] = "SOURCE_INGESTION_CLOCK_MISSING"
             continue
-        key = RP._utc_instant_key
         if clocks["local_first_seen_time"] and key(clocks["ingestion_time"]) < key(clocks["local_first_seen_time"]):
             out["reason"] = "SOURCE_CLOCK_INCONSISTENT"
             continue
         if not later_import and key(clocks["ingestion_time"]) > key(as_of):
             out["reason"] = "SOURCE_INGESTED_AFTER_CUTOFF"
             continue
+        if later_import:
+            clocks["local_first_seen_time"] = None  # a later import never carries a prospective first-seen
         evidence = RP.ObservabilityEvidence(
-            # A later import never claims its import time as prospective first-seen.
-            local_first_seen_time=None if later_import else clocks["local_first_seen_time"],
+            local_first_seen_time=clocks["local_first_seen_time"],
             public_available_time=clocks["public_available_time"],
             is_correction_after_cutoff=bool(clocks["revision_time"]) and key(clocks["revision_time"]) > key(as_of),
             is_backfilled=later_import)
@@ -459,11 +467,11 @@ def evaluate_sources(entries: list, universe: AD.AlphaUniverseSnapshot, as_of: s
                                         correction_or_revision_time=clocks["revision_time"]),
             dq_flags=["BACKFILLED"] if later_import else ["OK"], replay_fidelity="FAITHFUL")
         out["status"], out["raw_evidence_reference_id"] = "ACCEPTED", reference.raw_evidence_reference_id
-        accepted.append({"market_id": entry["market_id"], "reference": RP_reference_to_mapping(reference)})
+        accepted.append({"market_id": entry["market_id"], "reference": _reference_mapping(reference)})
     return outcomes, accepted
 
 
-def RP_reference_to_mapping(reference: RP.RawEvidenceReference) -> dict:
+def _reference_mapping(reference: RP.RawEvidenceReference) -> dict:
     return {"raw_evidence_reference_id": reference.raw_evidence_reference_id, **reference.logical_preimage()}
 
 
@@ -679,8 +687,17 @@ def finalize_receipt(core: dict) -> dict:
 
 def verify_receipt(receipt: object, recomputed_core: dict) -> list[str]:
     """Return failure codes (empty list = verified). Fails closed on any mismatch."""
-    if not isinstance(receipt, dict) or set(receipt) - {"non_identity"} != {"core", "provenance_manifest", "receipt_id"}:
+    if not isinstance(receipt, dict) or set(receipt) - {"non_identity"} != {"core", "provenance_manifest", "receipt_id"} \
+            or not isinstance(receipt["core"], dict) or not isinstance(receipt["provenance_manifest"], dict):
         return ["RECEIPT_SHAPE_INVALID"]
+    # Timings are outside identity, so the block may hold timings only (no smuggled status claims).
+    extra = receipt.get("non_identity", {})
+    elapsed = extra.get("elapsed_ms", {}) if isinstance(extra, dict) else None
+    if not isinstance(extra, dict) or set(extra) - {"note", "elapsed_ms", "total_ms"} or not isinstance(elapsed, dict) \
+            or set(elapsed) - {RANKER_ID, BASELINE_ID} \
+            or any(type(v) not in (int, float) for v in [*elapsed.values(), extra.get("total_ms", 0)]) \
+            or extra.get("note", "timings are excluded from receipt identity") != "timings are excluded from receipt identity":
+        return ["NON_IDENTITY_INVALID"]
     failures = []
     body = {"core": receipt["core"], "provenance_manifest": receipt["provenance_manifest"]}
     if receipt["receipt_id"] != RECEIPT_PREFIX + sha256_hex(canonical_bytes(body)):
