@@ -93,7 +93,7 @@ SOURCE_KEYS = {"source_label", "market_id", "file", "url", "http_status", "media
                "ingestion_time", "revision_time"}
 CAPTURE_MODES = ("PROSPECTIVE_LOCAL_CAPTURE", "LATER_IMPORT")
 QUERY_KEYS = {"query_id", "text", "category_hint", "relevant_market_ids"}
-SECRET_KEY_PARTS = ("api_key", "apikey", "secret", "password", "passphrase", "private_key", "mnemonic", "seed_phrase",
+SECRET_KEY_PARTS = ("api_key", "apikey", "secret", "password", "passphrase", "private_key", "mnemo", "seed_phrase",
                     "access_token", "refresh_token", "authorization", "cookie", "credential", "wallet")
 TRADE_KEY_WORDS = ("order", "side", "size", "price", "amount", "signature", "stake", "bet")
 SECRET_RE = re.compile(r"(?i)(sk-[a-z0-9_-]{16,}|bearer\s+[a-z0-9._-]{8,}|-----begin [a-z ]*private key|"

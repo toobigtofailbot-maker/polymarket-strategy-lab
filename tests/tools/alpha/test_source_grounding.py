@@ -598,6 +598,7 @@ def test_source_grounding_legacy_baseline_unchanged_and_no_authority(world, base
     (lambda c: c.update(API_KEY="x"), "FORBIDDEN_FIELD"),
     (lambda c: c["queries"][0].update(order_side="BUY"), "FORBIDDEN_FIELD"),
     (lambda c: c["queries"][0].update(Wallet="w"), "FORBIDDEN_FIELD"),
+    (lambda c: c.update(Mnemonic_Words="x"), "FORBIDDEN_FIELD"),
     (lambda c: c["queries"][0].update(text="sk-" + "a" * 24), "SECRET_MATERIAL_REJECTED"),
     (lambda c: c.update(corpus_class="REAL_WORLD_LIFT"), "CORPUS_CLASS_INVALID"),
     (lambda c: c.update(schema_id="other"), "CASE_SCHEMA_INVALID"),
