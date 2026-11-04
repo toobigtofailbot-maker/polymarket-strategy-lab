@@ -1,0 +1,490 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-SRC-01",
+    "title": "Source-Grounded Alpha Research and Genuine Polymarket Agents Discovery",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_SOURCE_GROUNDING_AND_SEMANTIC_MARKET_RETRIEVAL",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-src-01-grounded-discovery",
+    "required_predecessor": {
+      "pr_number": 267,
+      "head_sha": "b512604f2a85c6ee3e983ff88355ef0ec7368412",
+      "merge_sha": "a0d54384ad7ef293336a5cf646bc80be0cccf1e1"
+    },
+    "objective": "Add one actual finite offline native CLI caller over a native observed-universe cohort; rank markets using a Polymarket Agents-inspired local retrieval method, quality-gate caller-supplied historical bytes through existing PIT provenance, cold-verify research receipts and compare >=30 fixed sanitized-synthetic cases against the constructed baseline_plain_v0. Report real-corpus value separately; no product networking or trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/source_grounding.py",
+      "tools/alpha/run_source_grounding.py",
+      "tests/tools/alpha/test_source_grounding.py",
+      "docs/source_grounding_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-SRC-01.md",
+      "docs/wp_specs/S10-R3-SRC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-SRC-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/source_grounding.py",
+      "tools/alpha/run_source_grounding.py",
+      "tests/tools/alpha/test_source_grounding.py",
+      "docs/source_grounding_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-SRC-01.md",
+      "docs/wp_specs/S10-R3-SRC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-SRC-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only eight tracked changes. All original PIT/Alpha/Hermes/canonical records and separately owned PR268 and Lane B remain untouched; scratch output is external and non-canonical.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One finite offline advisory-only adapter in existing source-runtime and one scratch CLI; all upstream core interfaces remain read-only.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/source_grounding.py (new)",
+        "before": "No single source-grounding/Polymarket-Agents-style local discovery procedure.",
+        "after": "Pure frozen as-of input validation, semantic local retrieval, claim/evidence quality and identity binding; refuses unsupported/unknown content.",
+        "change_authorized": true,
+        "compatibility_requirement": "No second PIT, Alpha, Hermes or paper persistence/authority. Existing core builders and read-only loaders are referenced, not modified.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_source_grounding.py (new)",
+        "before": "Native tools exist separately for PIT and Alpha discovery but no callable combined source-grounding receipt.",
+        "after": "Finite offline run/verify over caller-selected existing verified inputs and already-local source bytes, bounded 30+ benchmark questions and exported research-only receipt.",
+        "change_authorized": true,
+        "compatibility_requirement": "No network sockets, provider/models, authenticated reads or local DB mutation; output outside repo; no automatic Hermes invocation.",
+        "authority": "LOCAL_OFFLINE_TOOLING_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_source_grounding.py (new)",
+        "before": "No R3-SRC native discovery benchmark.",
+        "after": "End-to-end caller and cold verification, 30+ frozen same-corpus cases, real Polymarket Agents-inspired ranking + Metaculus quality negatives.",
+        "change_authorized": true,
+        "compatibility_requirement": "No running third-party services, no live network, no hypothesis profit claims.",
+        "authority": "OFFLINE_TEST_ONLY"
+      },
+      {
+        "surface": "Existing PIT/Alpha registries and PR #268",
+        "before": "Already authoritative or independently owned.",
+        "after": "Read-only inputs/reuse; neither PR #268 nor these modules modified.",
+        "change_authorized": false,
+        "compatibility_requirement": "No branch stacking; if PR #268 remains open use only current-main interfaces, not its future v3 format.",
+        "authority": "READ_ONLY_REFERENCE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight minimum-complete requirements for real local retrieval and source quality with fail-closed evidence and negatives.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "An actual native `alpha_discovery.build_alpha_universe_snapshot(store_path, policy, as_of)` ObservedMarketState cohort reaches the called local ranked market discovery workflow; event identity is preserved without invented grouping, missing rule text explicitly marked RULE_TEXT_UNAVAILABLE, optional Alpha candidate join uses only validated subject_refs, and an immutable research packet is produced.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "An actual native `alpha_discovery.build_alpha_universe_snapshot(store_path, policy, as_of)` ObservedMarketState cohort reaches the called local ranked market discovery workflow; event identity is preserved without invented grouping, missing rule text explicitly marked RULE_TEXT_UNAVAILABLE, optional Alpha candidate join uses only validated subject_refs, and an immutable research packet is produced.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run a frozen SANITIZED_SYNTHETIC >=30-case corpus committed inline with canonical corpus SHA256 over the actual CLI-to-native-ranker path; compare to constructed baseline_plain_v0 (case-folded question_text token overlap with exact native category tie-break) on the same corpus and report full metrics/denominators. Correct computation, not apparent lift, passes. Real-source uplift is separate and not claimed from fixtures.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run a frozen SANITIZED_SYNTHETIC >=30-case corpus committed inline with canonical corpus SHA256 over the actual CLI-to-native-ranker path; compare to constructed baseline_plain_v0 (case-folded question_text token overlap with exact native category tie-break) on the same corpus and report full metrics/denominators. Correct computation, not apparent lift, passes. Real-source uplift is separate and not claimed from fixtures.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Injected local raw bytes of known status and available/first-seen clock are quality- and SHA256-validated and bound to existing RawEvidenceReference/ResearchProvenanceManifest. Rule text is admissible only when explicitly supplied raw bytes match native rule_content_sha256; no shadow canonical store.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Injected local raw bytes of known status and available/first-seen clock are quality- and SHA256-validated and bound to existing RawEvidenceReference/ResearchProvenanceManifest. Rule text is admissible only when explicitly supplied raw bytes match native rule_content_sha256; no shadow canonical store.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "404/blocked/thin/missing source, later revision, changed URL body, unmatched native rule hash, future content, conflicting identity and missing trustworthy first-seen/available-time are per-case refusals counted within the denominator, never acceptable pre-cutoff evidence or automatic WP-wide stops.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "404/blocked/thin/missing source, later revision, changed URL body, unmatched native rule hash, future content, conflicting identity and missing trustworthy first-seen/available-time are per-case refusals counted within the denominator, never acceptable pre-cutoff evidence or automatic WP-wide stops.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Same IDs/conflicting timestamps, no match, duplicate claims and missing inputs preserve full benchmark denominator and honest abstain/rejection; no silent filtering.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Same IDs/conflicting timestamps, no match, duplicate claims and missing inputs preserve full benchmark denominator and honest abstain/rejection; no silent filtering.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Cold verifier rejects altered source bytes, hashes, ranked IDs, question/market/rule binding, metrics and population; both run and verify use zero sockets, providers and order/account paths.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Cold verifier rejects altered source bytes, hashes, ranked IDs, question/market/rule binding, metrics and population; both run and verify use zero sockets, providers and order/account paths.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Older PIT/Alpha/Hermes/screener semantics stay identical; no quote-derived independent fair probability, price edge, approval, order, paper or live authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Older PIT/Alpha/Hermes/screener semantics stay identical; no quote-derived independent fair probability, price edge, approval, order, paper or live authority.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One terminal research-only report gives pinned source, called CLI path, corpus class/hash, actual counts, refusal/abstain denominators and per-case IDs. Synthetic behavior parity is not real-world lift; R3-02 stays NOT_VALUE_VERIFIED absent independently reviewed real-local-corpus measured benefit.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One terminal research-only report gives pinned source, called CLI path, corpus class/hash, actual counts, refusal/abstain denominators and per-case IDs. Synthetic behavior parity is not real-world lift; R3-02 stays NOT_VALUE_VERIFIED absent independently reviewed real-local-corpus measured benefit.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY source/selection/quality receipt or closed error code; never trade, money, raw rejected content or private data",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Reuse existing native content hashes and identities, with source+selection receipt derivation specified in local doc; no independent canonical identifier authority.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Karl authorized the unchanged eight-file implementation scope conditional on a genuine final-byte deterministic native RUNTIME readiness PASS, with no additional permissions.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Confirm clean current main and predecessor, reverify actual Alpha/PIT APIs and run exact-final-byte native RUNTIME readiness with exit 0/IMPLEMENTATION_READY. Missing gate means STOP (not authorized to edit).",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly authorized this existing eight-file S10-R3-SRC-01 scope in his 2026-11-03 owner directive; authorization becomes effective ONLY following actual final-byte native RUNTIME gate PASS. No additional routine signoff; new scope/provider/protected/merge authority excluded.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Only the approved 8 paths, actual native caller and source-grounding receipt with tests, focused and broad validation, security and PR evidence. No automatic provider, runtime or trade activation.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged WP159 fixed native schema error precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Native PIT IDs reused; no new autonomous global canonical identity or schema example requirement. Research-only scratch JSON detailed in contract+fixtures.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight frozen end-to-end offline acceptance nodes; adjacent/full/hosted checks still required. After a separately authorized implementation attempt, CC must deliver one S10-R3-SRC-01_CC_RETURN.zip with exact evidence and copy-ready Side24 assessment message; independent review and Karl merge are separate.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_source_grounding_native_reader_and_real_discovery_caller",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_native_reader_and_real_discovery_caller",
+        "expected_result": "An actual native `alpha_discovery.build_alpha_universe_snapshot(store_path, policy, as_of)` ObservedMarketState cohort reaches the called local ranked market discovery workflow; event identity is preserved without invented grouping, missing rule text explicitly marked RULE_TEXT_UNAVAILABLE, optional Alpha candidate join uses only validated subject_refs, and an immutable research packet is produced."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_source_grounding_polymarket_agents_30_case_recall_and_precision",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_polymarket_agents_30_case_recall_and_precision",
+        "expected_result": "Run a frozen SANITIZED_SYNTHETIC >=30-case corpus committed inline with canonical corpus SHA256 over the actual CLI-to-native-ranker path; compare to constructed baseline_plain_v0 (case-folded question_text token overlap with exact native category tie-break) on the same corpus and report full metrics/denominators. Correct computation, not apparent lift, passes. Real-source uplift is separate and not claimed from fixtures."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_source_grounding_source_archive_quality_and_native_receipt",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_source_archive_quality_and_native_receipt",
+        "expected_result": "Injected local raw bytes of known status and available/first-seen clock are quality- and SHA256-validated and bound to existing RawEvidenceReference/ResearchProvenanceManifest. Rule text is admissible only when explicitly supplied raw bytes match native rule_content_sha256; no shadow canonical store."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_source_grounding_404_block_thin_late_and_rule_mismatch_refusal",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_404_block_thin_late_and_rule_mismatch_refusal",
+        "expected_result": "404/blocked/thin/missing source, later revision, changed URL body, unmatched native rule hash, future content, conflicting identity and missing trustworthy first-seen/available-time are per-case refusals counted within the denominator, never acceptable pre-cutoff evidence or automatic WP-wide stops."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_source_grounding_dedup_missing_abstention_and_conflict_accounting",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_dedup_missing_abstention_and_conflict_accounting",
+        "expected_result": "Same IDs/conflicting timestamps, no match, duplicate claims and missing inputs preserve full benchmark denominator and honest abstain/rejection; no silent filtering."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_source_grounding_cold_verify_tamper_and_no_network",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_cold_verify_tamper_and_no_network",
+        "expected_result": "Cold verifier rejects altered source bytes, hashes, ranked IDs, question/market/rule binding, metrics and population; both run and verify use zero sockets, providers and order/account paths."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_source_grounding_legacy_baseline_unchanged_and_no_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_legacy_baseline_unchanged_and_no_authority",
+        "expected_result": "Older PIT/Alpha/Hermes/screener semantics stay identical; no quote-derived independent fair probability, price edge, approval, order, paper or live authority."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_source_grounding_report_truthful_adoption_receipt",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py::test_source_grounding_report_truthful_adoption_receipt",
+        "expected_result": "One terminal research-only report gives pinned source, called CLI path, corpus class/hash, actual counts, refusal/abstain denominators and per-case IDs. Synthetic behavior parity is not real-world lift; R3-02 stays NOT_VALUE_VERIFIED absent independently reviewed real-local-corpus measured benefit."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-FORECAST-01",
+    "next_title": "Separately authorized independent forecasting and scoring with mandatory R3-LEARN-01 future-learning dependency. Relation work/provider campaigns are independent later scopes.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-SRC-01",
+    "forbidden_in_this_wp": [
+      "Actual API/venue/Firecrawl/Hermes/LLM/paid provider calls, independent source data download, public GET or WS, remote capture, real skills installation.",
+      "New or modified canonical PIT/Alpha stores, Hermes runtime/controller, strategy, model probabilities, WP170 experiment outcome or QUAL machinery.",
+      "Changes to PR #268 branch, original screener, upcoming Lane B paper data/campaign, risk, execution gateway, protected authority or live trading.",
+      "A documented or test-only reference may not count as functional Polymarket Agents adoption; relevant native ranked-market call path is required.",
+      "Wang, pricing, Oracle3 relation/fees, PMXT, paid data, forecasting models or market-basket economics belong to later gated WPs.",
+      "Any dependency/file ninth path, copied unaudited external source, scheduler, account, credential, wallet, orders, capital or merge without exact owner scope."
+    ]
+  }
+}

@@ -1,0 +1,191 @@
+Package Identity:
+WP ID: S10-R3-SRC-01
+Title: Source-Grounded Alpha Research and Genuine Polymarket Agents Discovery
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: OFFLINE_SOURCE_GROUNDING_AND_SEMANTIC_MARKET_RETRIEVAL
+Package size class: M (8 tracked files)
+Risk level: 3
+Governance track expected: RUNTIME
+Base branch: main
+Inspected provisional base SHA: a0d54384ad7ef293336a5cf646bc80be0cccf1e1
+Confirmed predecessor: PR #267, head b512604f2a85c6ee3e983ff88355ef0ec7368412, merge a0d54384ad7ef293336a5cf646bc80be0cccf1e1
+PR #268 at planning: OPEN and UNMERGED at 9a5a00cd61effa4e28b82f830427440b23aba86c. Do NOT stack on its branch or presume its v3 format is in main. Refresh before final freeze.
+Suggested branch: codex/s10-r3-src-01-grounded-discovery (Karl authorized this bounded scope on 2026-11-03, conditional on actual final-byte native readiness PASS)
+Evidence mode expected: PUBLIC_VERIFIER_PASS if actually verified; otherwise PRIVATE_REPO_MANUAL_VERIFIED or BLOCKED_NOT_READY
+Runtime impact: one additive finite local/offline read-only research adapter and CLI; no autonomous deployment or production activation
+Product impact: source-grounded, category-agnostic research question and local discovery ranking; no forecast or trading claim
+Network impact: NONE for product/API/provider/market acquisition; standard GitHub workflow permitted for this authorized WP after native readiness PASS
+Credential impact: NONE
+Dependency impact: NONE; no installing Polymarket Agents/Metaculus root packages
+Trading impact: NONE; no strategy, qualification, paper, capital, order or live authority
+Recommended Claude/Codex Mode: high reasoning for first native contract/API crosscheck; normal engineering thereafter; escalate only for material incompatibility.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Status, objective, Authority / Non-Authority Posture and Karl authorization boundary
+
+**OWNER AUTHORIZATION (conditional, implementation only):** Karl explicitly authorized this existing eight-file `S10-R3-SRC-01` scope in his 2026-11-03 directive, **subject to the actual native RUNTIME readiness gate passing on this package's final prompt/spec bytes** and the ordinary repo pre-branch gates. This is an instruction to Claude Code to perform one integrated preflight + autonomous in-scope implementation when, and only when, those gates pass. It does NOT authorize a branch or source edit before the gate; no extra approval is needed for routine in-scope engineering fixes. Scope/authority/provider/protected changes, merge and all market/capital actions remain Karl-only. Side24 has NOT claimed a native final-byte readiness pass from its packaging container; Claude Code must run and record the real gate before starting implementation.
+
+Objective: Reuse two selected external method families with working local native call paths, not shelfware:
+- **R3-02 / Polymarket Agents:** `PolymarketRAG.events/markets` idea from pinned `agents/connectors/chroma.py` plus question decomposition from `agents/application/prompts.py`. Implement a real offline as-of rule-aware event→market retrieval/ranker using verified native observed-universe/PIT/Alpha input, not a prompt-only copy, embedding purchase or archived trading client.
+- **R3-01-SOURCE_ARCHIVE and R3-01 source portion / Metaculus:** selected capture-quality logic from pinned `source_archive/pipeline.py` and `quality.py` applied to supplied already-local raw bytes and native provenance identities. No new crawler, provider fallback, or shadow archive authority.
+
+Use the strongest useful external idea but only after comparing real native equivalents. No economic/personal/account permissions are gained.
+
+# 2. Required startup, skills and hard merge/preflight gate
+
+In **this authorized single Claude Code run**, observe these ordered gates before any branch/source edit:
+1. In an existing clean local checkout, read `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/ai/codex/README.md`, `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`; apply `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md` and task-relevant code/tests. Preserve all user work and do not force-reset/clean it away.
+2. **MANDATORY SKILL FIRST:** discover the ACTUAL installed Claude Code skill catalogue and read the actual installed SKILL.md for `$ponytail`. After mandatory startup reads, the FIRST skill actually invoked MUST be `$ponytail` in **LITE** mode, with a recorded real invocation and concrete reuse/scope-pruning outcome, BEFORE broad code inspection, editing, agents or other skill invocation. If Ponytail is unavailable or cannot be invoked, STOP with `PONYTAIL_UNAVAILABLE` rather than substituting a typed name or fictitious invocation. Thereafter apply every repository-mandatory skill from its actual instructions and only materially relevant installed specialists: `wp-predraft-inspector`, `hermes-alpha-reuse-check`, `wp-minimum-test-plan`, `wp-readiness-preflight`, `canonical-evidence-audit`, `runtime-authority-boundary-review`, `spec-to-code-compliance`, `wp-one-shot-review`, `code-simplifier`, `verification-before-completion`, `pr-evidence-reconcile` when present/applicable. Use `security-review`, `supply-chain-risk-auditor`, `systematic-debugging` or others only for a real trigger and without any unauthorized installs/provider calls. The Oct 16 Codex inventory is HISTORICAL, not proof these skills are installed in CC. Report skill instruction read vs actually invoked vs unavailable with a concrete contribution; skill locator success alone is not evidence of substantive application.
+3. Remote Main Sync Gate: FIRST check `git status --short --branch` and generated-artifact status; STOP rather than discard existing user changes. Only on a clean checkout: `git fetch origin --prune`; `git checkout main`; `git pull --ff-only origin main`; `git rev-parse HEAD`; `git rev-parse origin/main`; `git log -1 --oneline`; `git status --short --branch`. Confirm clean current main, PR #267 merged (`b512604f...` head / `a0d54384...` merge) and contained in ancestry; independently refresh PR #268 exact **current** open/merge state; verify no existing S10-R3-SRC-01 branch, PR or completion record. Do not stack onto an unmerged #268 branch or edit #268.
+4. The pinned predecessor is PR #267, merge `a0d54384ad7ef293336a5cf646bc80be0cccf1e1` (not a requirement that main never advances). If `main` advances or #268 merges, reverify the touched native APIs, status/legacy tests and the eight-file overlap; record the actual new base. If drift is compatible and no machine authority/scope/normative-contract change is needed, proceed on clean main in this authorized WP without asking Karl about routine compatibility. If drift makes the frozen source/spec semantically false, requires new scope, or changes a protected boundary, STOP with exact blocker and do not improvise. PR #268 is NOT a prerequisite for this offline work. Its v3 is opt-in only after merge and is outside this WP's edits.
+5. Exact native read-only inspect: `src/data_layer/point_in_time_market_research/{records,as_of_query,record_store,research_provenance}.py`, `src/data_layer/analytical_research/{alpha_factory,alpha_factory_registry,alpha_discovery}.py`, and relevant `tests/data_layer/...` + `tools/alpha/run_near_term_market_screener.py`. Confirm `build_alpha_universe_snapshot(store_path, policy, as_of)`, `load_and_verify_point_in_time_record_store`, `load_and_verify_alpha_factory_registry`, `build_raw_evidence_reference`, `build_research_provenance_manifest`, exact record `envelope` fields and the candidate/rule ID joins and the actual `build_alpha_universe_snapshot(store_path, policy, as_of)` signature/return type. No invented API inputs or new store.
+6. Read exact pinned upstream files and their licenses/tests; decide **ADAPT_ALGORITHM**, not copied legacy import. If literal source is needed, stop for actual license/security audit before copying; no dependency authority here.
+7. **HARD STOP BEFORE BRANCH/IMPLEMENTATION:** extract the attached ZIP OUTSIDE the repo and verify `SHA256SUMS.txt`; record SHA-256 of the exact extracted prompt/spec. Against clean current-main repo, execute `python -B tools/wp/wp_readiness_gate.py --wp <absolute_extracted_package>/docs/wp_specs/S10-R3-SRC-01/wp_prompt.txt --spec <absolute_extracted_package>/docs/wp_specs/S10-R3-SRC-01/wp_spec.json --repo-root .` (use shell-appropriate absolute paths). Require actual exit 0, JSON `status=IMPLEMENTATION_READY`, `is_ready=true`, `governance_track=RUNTIME`, scope count eight and no errors. Do NOT use `--check-diff` pre-branch. Capture exact command/stdout/exit and prompt/spec SHA-256; never represent a scratch result on different bytes as proof. If FAIL due to a routine in-scope prompt/spec typo, CC MAY correct ONLY within this eight-file unchanged authority/contract and rerun the gate on the truly final bytes (record all failures and new hashes), before source edits. If correcting would change accepted scope, substantive requirements or governance track, STOP. No independent certificate is required for RUNTIME; do not self-certify any PROTECTED scope. On PASS, Karl's existing authorization activates; create one branch, copy exact gated prompt/spec into their allowed repo paths and implement autonomously. After final code edits, run the native appropriate readiness/diff-scope check on the committed prompt/spec + exact changed-file diff. The independent Side24 PR review is mandatory AFTER CC returns one ZIP; CC never self-merges.
+
+# 3. Exact eight changed paths (no ninth)
+
+1. `src/data_layer/analytical_research/source_grounding.py` — new deterministic pure/research-only preparation and ranker with native PIT/Alpha reuse, no writes to originals.
+2. `tools/alpha/run_source_grounding.py` — new finite local `run` + `verify` CLI over explicitly provided existing local stores/fixtures, with absolute scratch output outside repository and no product network.
+3. `tests/tools/alpha/test_source_grounding.py` — all R001–R008 offline integration, recall benchmark, negative tests and cold verify.
+4. `docs/source_grounding_contract.md` — input/receipt schemas, no-authority posture, source pins, actual `R3-02` discovery semantics and baseline definition.
+5. `docs/deferred_items_log.md` — brief source/provider and adoption-value limitations, not a broad backlog rewrite.
+6. `docs/status_entries/S10-R3-SRC-01.md` — committed exact outcomes and evidence when implemented; never predeclare PASS.
+7. `docs/wp_specs/S10-R3-SRC-01/wp_prompt.txt` — gated prompt bytes, committed identically unless an in-scope correction is required and re-gated.
+8. `docs/wp_specs/S10-R3-SRC-01/wp_spec.json` — matching machine spec, committed with actual gate and diff-scope proof.
+
+Read-only reference modules, not changed: the screener including PR #268, PIT `records/as_of_query/record_store/research_provenance`, Alpha Factory/Discovery/Experiment OS, Hermes runtime, all payment/provider/credential, paper, live, risk and order code.
+
+# 4. Concrete operational contract (one-shot and bounded)
+
+- The approved operator must expose `run` and `verify` using explicit caller-selected **already-existing** local PIT/Alpha/observed-market inputs and existing local raw source bytes; no environment discovery, download, automatic account/home paths, or hidden network. Choose the smallest locally compatible CLI arguments/JSON schema from the verified native APIs; document and freeze the chosen run/verify contract before functional implementation and test it end-to-end. Pre-source gate checks this normative specification, not the as-yet-unimplemented CLI. If that requires a ninth file or incompatible builder mutation, STOP rather than invent a shim.
+- Input carries immutable market/event IDs, exact resolution-rule snapshot and its hash, as-of cutoff, already-visible evidence/bytes plus publication/first-seen/ingestion clocks. Do not claim raw source was actually captured prospectively when bytes are imported later. No lookahead: after-cutoff material quarantined or refused.
+**Native corpus contract (verified main, no invented event/rule data):** `alpha_discovery.build_alpha_universe_snapshot(store_path, policy, as_of)` supplies the actual read-only observed universe of `ObservedMarketState` records (`market_id`, `event_id`, `question_text`, `category`, `outcome_labels`, `resolution_date`, and `rules`). `load_and_verify_point_in_time_record_store` validates the underlying PIT record store. A native rule is represented by `rule_content_sha256`, **not by stored rule wording**. Only explicitly caller-supplied already-local rule bytes whose recomputed SHA-256 equals the correct market's `rule_content_sha256` may contribute rule wording. Otherwise use question/category/outcome/date alone and report `RULE_TEXT_UNAVAILABLE`, preserving the original case denominator. Do not substitute guessed, current, unrelated or after-cutoff wording. Use the current native `event_id` as recorded; if it has the population form `event:polymarket:` plus `condition_id`, record `EVENT_ID_CONDITION_DERIVED` and do not imply a Gamma event grouping. `load_and_verify_alpha_factory_registry` contains Alpha candidate/family records, not the market corpus; use it only for an optional candidate-to-market join through validated `subject_refs` and report an unresolvable join instead of guessing. No new event store or public source capture.
+
+- Actually execute **Polymarket Agents-inspired event→market retrieval** on a bounded observed-universe corpus. Local lexical/BM25 first (no dependency), using question text, event/market linkage, resolution wording, time and category context. Emit ordered **real native market IDs**, rule-grounded subquestions, relevance provenance and explicit ambiguity/abstention; do not equate same titles with same payouts. No price signal or order action.
+- From already-local raw bytes, use Metaculus-inspired quality check: distinguish real source body vs 404/block/login/interstitial/thin/invalid bytes; content hash and clocks, no invented successful retrieval. Bind verified content to existing `build_raw_evidence_reference` and `build_research_provenance_manifest`. If creating a `SourceSnapshotRecord` would require changing native source-type rules, reuse native evidence reference rather than mislabel an imported source as a live Polymarket public capture.
+The committed ≥30-case benchmark is a `SANITIZED_SYNTHETIC` corpus **frozen inline** in `tests/tools/alpha/test_source_grounding.py`; record its canonical corpus SHA-256 in `docs/source_grounding_contract.md`. It exercises the actual CLI→native corpus→ranker→receipt→cold-verifier path. R002 passes for correct honest counts and ranking behavior, **not because a synthetic test claims lift**. An optional run over a caller's already-existing real local PIT store is reported separately (no new acquisition); `R3-02` stays `NOT_VALUE_VERIFIED` until that real result demonstrates measured incremental benefit under independent review. Benchmark failures, abstentions and per-case insufficiencies stay in the denominator.
+
+- Freeze ≥30 labeled non-crypto query cases and candidate corpus **before** choosing ranking parameters. Compare against a frozen `baseline_plain_v0`: case-folded token-overlap count over each native `ObservedMarketState.question_text`, with exact native `category` as tie-break, computed on the identical observed corpus and frozen before new ranker parameters are chosen; **constructed native-field baseline, not a pre-existing retrieval tool** with recall@10, precision at 10, false relatedness, missing/abstain and elapsed/cost; preserve **actual denominators**. Fixture-only benchmark proves interface behavior, not general real-world recall gains. Each real/source-backed case must carry traceable underlying evidence; no cherry-picked benefit.
+- One finite native terminal receipt binds source pin, read input IDs, code version, frozen query set, selected market IDs, explanation/claim-source links, hashes, method/version, actual counts, cost classification, failure and unknown states, plus `RESEARCH_ONLY`. `verify` recomputes exact source and output identity, benchmark denominator, and fails closed against tampering. Never claim `FULLY_ADOPTED` or `VALUE_VERIFIED` without measured real-case improvement and independent review; an honest NO_LIFT/INSUFFICIENT result leaves R3-02 open.
+- **No new canonical record/store or promotion authority**: the receipt is scratch/evidence for future review. No LLM, Hermes invocation, forecast probability, strategy, paper, order, venue credentials, real product GET or provider spending.
+
+# 5. Requirement-to-evidence traceability (evidence plan) / negative test matrix
+
+| ID | Focused test | Pass condition |
+|---|---|---|
+| R001 | `test_source_grounding_native_reader_and_real_discovery_caller` | Verified existing PIT/Alpha market-event/rule inputs and frozen question reach an actually called local discovery ranker and immutable research packet. Never prompt-only. |
+| R002 | `test_source_grounding_polymarket_agents_30_case_recall_and_precision` | Use a locked same-corpus >=30 labeled event/noncrypto questions to compare rule-aware local retrieval top10 against constructed `baseline_plain_v0` (case-folded question_text token overlap; exact native category tie-break; not pre-existing). Report actual numerator, denominator, precision, false relatedness and costs; no invented win. |
+| R003 | `test_source_grounding_source_archive_quality_and_native_receipt` | Injected locally existing source bytes are quality-gated, SHA256-bound, timestamp/cutoff-bound and recorded using existing native RawEvidenceReference/ResearchProvenanceManifest identities, not a second canonical store. |
+| R004 | `test_source_grounding_404_block_thin_late_and_rule_mismatch_refusal` | 404/blocked/too-thin/missing source, later revision, changed URL body, market/rule mismatch, future content and conflicting identity cannot be represented as acceptable pre-cutoff evidence. |
+| R005 | `test_source_grounding_dedup_missing_abstention_and_conflict_accounting` | Same IDs/conflicting timestamps, no match, duplicate claims and missing inputs preserve full benchmark denominator and honest abstain/rejection; no silent filtering. |
+| R006 | `test_source_grounding_cold_verify_tamper_and_no_network` | Cold verifier rejects altered source bytes, hashes, ranked IDs, question/market/rule binding, metrics and population; both run and verify use zero sockets, providers and order/account paths. |
+| R007 | `test_source_grounding_legacy_baseline_unchanged_and_no_authority` | Older PIT/Alpha/Hermes/screener semantics stay identical; no quote-derived independent fair probability, price edge, approval, order, paper or live authority. |
+| R008 | `test_source_grounding_report_truthful_adoption_receipt` | Emits one terminal research-only report with full source pin, exact caller, metrics, refusal counts, per-case ids and NOT_VALUE_VERIFIED when no lift; no dependency-only or doc-only adoption claim. |
+
+Negative test matrix: required because source and market/rule validators are new. Cover missing/null/wrong types, empty/unreadable/corrupt inputs, duplicate/conflicting IDs, bad UTC clocks, late revisions, future/blocked/missing content, wrong outcome/rule, unsupported market type, forged identity, unexpected credential/trade-like fields, tampered source bytes/hashes, false matched markets and allowed safe source wording. Explain irrelevant spelling-policy categories rather than adding broad fake regex defenses.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|discovery|native_ranker|cli_run|REQUIRE|ranked_native_market_ids_from_called_ranker|requirements.r001|R001
+NR002|benchmark|frozen_query_set|fewer_than_thirty_or_unlabeled|REJECT|benchmark_refused_denominator_preserved|requirements.r002|R002
+NR003|source|local_bytes|quality_pass_pre_cutoff|REQUIRE|native_raw_evidence_reference_bound|requirements.r003|R003
+NR004|source|local_bytes|error_block_thin_late_or_mismatch|REJECT|not_acceptable_pre_cutoff_evidence|requirements.r004|R004
+NR005|benchmark|case_outcomes|no_match_duplicate_or_missing|PRESERVE_EXACT|full_denominator_with_abstain_counts|requirements.r005|R005
+NR006|verify|receipt|tampered_or_foreign|REJECT|cold_verify_fails_closed|requirements.r006|R006
+NR007|authority|legacy_semantics|any_run|FORBID|no_trade_price_edge_or_store_mutation|requirements.r007|R007
+NR008|report|adoption_status|no_measured_lift|PRESERVE_EXACT|not_value_verified_r3_02_open|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 6. Compatibility, impossibility, hard stops
+
+| Need | Canonical mechanism | Allowed? | Preflight disposition |
+|---|---|---|---|
+| Read validated native market corpus, evidence and rule hashes | `alpha_discovery.build_alpha_universe_snapshot(store_path, policy, as_of)` over PIT record_store / as_of_query / records | YES, read-only | Verify real ObservedMarketState records; rule text requires hash-matched caller bytes |
+| Read optional Alpha candidate | Alpha Factory registry only, with validated `subject_refs` | YES, read-only | Missing candidate-to-market join is reported, never guessed or used as market corpus |
+| Perform actual market retrieval | new pure local ranker, inspired by Polymarket Agents | YES | benchmark with frozen observed corpus; no embeddings/provider |
+| Qualify source bytes | native research provenance + Metaculus quality method | YES | no new capture or canonical store |
+| Real source HTTP/crawler or Hermes LLM | controlled runtime / external source providers | NO | future distinct provider/campaign grant |
+| Forecast, learn from outcomes, relation economics | WP170/Hermes/Alpha downstream | NO | future S10-R3-FORECAST-01 / R3-LEARN-01 / R3-REL-01 |
+| Edit PR #268 or Lane B | separate owner | NO | never modify in this WP |
+
+STOP if a linked market/rule/source identity cannot be validated — because false source grounding can mislead all later forecasts.
+STOP if the implementation cannot **refuse and count** an input lacking trustworthy first-seen/available-time facts — because such input is a per-case refusal, not a WP-wide stop; imported historical pages cannot silently become PIT-known facts.
+STOP if safe meaningful real local retrieval requires another API, hosted embeddings, additional dependency or a copied unaudited module — because those permissions and scope are absent.
+STOP if the 30+ query benchmark or the actual native retrieval call path cannot be executed end-to-end on the frozen corpus through the real CLI call path — because the `R3-02` adoption promise cannot be met by a prompt or mock-only display.
+STOP if an eighth-path plus new ninth path is needed, a protected boundary is crossed, or a dependency/lock changes — because the eight-file authorization boundary is absolute until reapproved.
+STOP if new source/claim validators can echo invalid input, leak token-shaped data, misrepresent blocked/404 pages as valid, or skip applicable negative tests — because fail-closed evidence is required.
+STOP if focused, adjacent or exact-head required validation cannot run after final code changes — because PR cannot be called ready.
+STOP if PR body/evidence is not actually re-fetched or a verifier limitation is misstated — because posted GitHub evidence needs truthfulness.
+
+# 7. Validation, PR evidence and independent Side24 review (authorized, not yet executed)
+
+Focused: `python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_source_grounding.py`.
+Adjacent: native tests for PIT records/provenance, Alpha Factory/Discovery and screener, and affected research-corpus callers as applicable after real imports are confirmed.
+Full: one stable-candidate repository test run or exact-head hosted CI as required for RUNTIME; record exact commands/counts/exits; keep environment failures distinct from product bugs. Also readiness gate, `git diff --check`, local security scan where required, generated-artifact guard and PR evidence consistency guard on the **posted** body.
+
+One bounded independent implementation review must check native callable path, 30+ same-corpus query denominator, no disguised market-derived forecast, actual source/claim binding, no external API or unauthorized authority, code reuse, identity and the declared eight-file diff. CC uses repository-required internal review/evidence mechanisms without soliciting another Side chat; Side24 performs the final genuinely independent PR/diff/repo-fact assessment after CC returns the ZIP. Karl alone controls merge. A native in-scope fix is CC's responsibility, not a new micro-WP or owner round trip.
+
+# 8. Outcome, anti-drift accounting and successor boundary
+
+Per R3-02 and R3-01-SOURCE_ARCHIVE, PR body/status must show exact upstream pin/file, actual native caller and receipt, relevant tests, baseline values and whether value has been demonstrated. Do not mark R3-02 fully adopted when only synthetic fixtures or a new prompt exist. Do not silently close parity rows or any of the six independent provider lanes. Update the external 36-ID register **after** independent assessment, not as an automatic PR side effect.
+
+Next separately gated: `S10-R3-FORECAST-01` and mandatory `R3-LEARN-01`. Preserve real pricing/economic admissibility and Lane B separate ownership. No second scanner, Hermes framework, PIT store, paper engine, order gateway or autonomous scheduler.
+
+# 9. MANDATORY FILE HANDOFF, REPORT-BACK AND NEXT ACTION (permanent delivery contract)
+
+This section governs **every** S10-R3-SRC-01 draft, assessment, correction and eventual Claude Code handoff. It is an owner-mandated delivery instruction, NOT new implementation, permission, source, runtime or merge authority; do not create a ninth repository file for it. Future WPs should reuse this compact rule in their existing prompt/bootstrap rather than invent a new document family.
+
+Every deliverer MUST end its user-visible response with the exact heading **EXACT NEXT ACTION FOR KARL** and all five fields, populated without placeholders or requiring Karl to choose files or write technical directions:
+
+**SEND TO:** Claude Code for Karl-authorized implementation; afterward Side24 for independent assessment. No other Side chats or drafting consultants.
+
+**ATTACH THESE FILES:** exact filenames and roles; distinguish files **inside** the main ZIP from additional individual attachments. Do not ask to reattach a file that is already inside the ZIP. Explicitly say `No additional files` when true.
+
+**MESSAGE TO SEND:** complete copy-ready prompt; when a separate bootstrap `.md` is delivered, say unambiguously whether to paste its content or attach the file. The user's message must have one unambiguous purpose and no implied extra approvals.
+
+**EXPECTED RESULT:** exact artifact(s), completion criteria, relevant validation evidence or a truthful blocker.
+
+**AFTERWARD:** which exact resulting file goes to Side24 or Claude Code, what review or targeted correction happens next, and that Karl alone authorizes merge/new permissions.
+
+## 9.1 Mandatory CC → Side24 completion/blocker return (same authorized run)
+
+After this owner-authorized gated preflight, whether PASS/implementation success OR preflight/implementation blocker, Claude Code MUST produce **one** consolidated file named `S10-R3-SRC-01_CC_RETURN.zip` and explicitly instruct Karl to send that ZIP to **Side24** for independent assessment. If the preflight gate fails, include exact failures, hashes, required native files, any attempted allowable corrections and why execution stopped; do not create a branch/PR. Write the ZIP outside the repository worktree (never commit it; generated-artifact rule). This archive should contain the completion/blocker report, the exact current branch/PR/head or reason no PR exists, scope/diff receipt, focused+adjacent+full/hosted CI and readiness commands with counts/exit status, source pins/license/security checks, real native caller/receipt, 30+ question comparison with full denominators and failures, cold-verification evidence, exceptions/deferred items, and factual network/credential/order/capital usage. It must contain no secrets or generated local data unnecessarily. Distinguish a mock/fixture result from a genuine usage/value result.
+
+CC must put the following **copy-ready assessment prompt** in its final message (it may be copied from here; no separate prompt file required):
+
+> Side24 — independently assess the attached `S10-R3-SRC-01_CC_RETURN.zip` for S10-R3-SRC-01. Refresh live main/PR/head and all changed files, inspect the actual native source-grounding/discovery call path and receipts, Polymarket Agents/Metaculus source reuse, 30+ frozen same-corpus benchmark with honest denominators, PIT/rule/source identities, no network or authority expansion, required negative tests, readiness, full/hosted CI, source/security and posted PR evidence. Decide **MERGE_READY**, **TARGETED_FOLLOW_UP_REQUIRED**, or **BLOCKED_NOT_READY** with precise material reasons. Do not merge. If follow-up is needed, issue one narrow CC correction ZIP and a complete copy-ready CC bootstrap; otherwise state that Karl's next action is the merge decision.
+
+CC's final answer must say: **SEND TO: Side24; ATTACH: `S10-R3-SRC-01_CC_RETURN.zip` only; MESSAGE: copy the assessment prompt above; EXPECTED RESULT: independent Side24 merge-readiness/follow-up decision; AFTERWARD: Karl acts only on that decision.** It may not claim Side24 assessment or merge readiness merely because its own tests pass.
+
+If Side24 independently finds a material in-scope defect, Side24 sends one targeted correction ZIP with one matching CC bootstrap and the exact routing directions; if changes need new scope/provider/tool authority, report the owner decision instead of silently implementing.
+
+## 9.2 Immediate Karl → Claude Code work order (authorized, gated)
+
+**SEND TO:** Claude Code (CC), in one new implementation session with the existing local repository checkout.
+
+**ATTACH THESE FILES:** `SIDE24_S10_R3_SRC_01_FINAL_CC_EXECUTION_PACKAGE.zip` (main package) and `SIDE24_S10_R3_SRC_01_CC_BOOTSTRAP.md` (standalone copy-ready execution instructions). No additional files. The complete 36-row register and accountability addendum are inside the ZIP; do NOT attach separately.
+
+**MESSAGE TO SEND:** Paste the full content of `SIDE24_S10_R3_SRC_01_CC_BOOTSTRAP.md` as the chat message (also attach that .md if your UI supports it). It conveys Karl's already-granted conditional authorization; require native RUNTIME readiness PASS on the exact ZIP bytes before any branch/source edit. After PASS, implement and test the eight-file scope autonomously; do not send routine corrections back to Karl or to another Side chat.
+
+**EXPECTED RESULT:** One `S10-R3-SRC-01_CC_RETURN.zip` with either finished PR + tests + receipts + exact hashes/skills/provenance/CI, or a truthful preflight/technical blocker. Never claim MERGE_READY without Side24.
+
+**AFTERWARD:** Karl uploads only `S10-R3-SRC-01_CC_RETURN.zip` to Side24, with the copy-ready assessment prompt in §9.1; Side24 independently determines merge-ready vs targeted correction. Karl alone decides merge/new authority.

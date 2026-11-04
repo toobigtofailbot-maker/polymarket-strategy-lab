@@ -1,5 +1,13 @@
 # Deferred Items Log
 
+## S10-R3-SRC-01 source-grounding and discovery limitations
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-SRC-01-D001 | R3-02 discovery value not demonstrated: on the frozen 45-query SANITIZED_SYNTHETIC corpus the ranker scored recall@10 41/44 vs baseline_plain_v0 42/44 (precision 41/146 vs 42/128; no-match false results 1/6 vs 3/6) | NOT_VALUE_VERIFIED | P1 | A caller-run `LOCAL_REAL_PIT` case over an already-existing real store with independently labeled queries, then independent review, before any VALUE_VERIFIED/adoption claim | Corpus and parameters authored in this WP, so not independent. Receipt hard-codes `NOT_VALUE_VERIFIED`; no tuning was done after observing results. |
+| S10-R3-SRC-01-D002 | No real source capture or provider access | NOT_PERFORMED_OWNER_GATED | P2 | Separate Karl grant per provider lane (six lanes unchanged) | Only caller-supplied local bytes; `LATER_IMPORT` admitted solely on public-available time and kept BACKFILLED; no SourceSnapshotRecord or canonical store created. |
+| S10-R3-SRC-01-D003 | Real Polymarket PIT event ids are usually condition-derived, so the event stage adds little grouping on real stores | KNOWN_LIMITATION | P3 | Native event grouping only if a future approved WP records it | Labelled `EVENT_ID_CONDITION_DERIVED`; no Gamma event grouping inferred. |
+
 ## S10-WALLET-EPOCH-01 evidence limitations
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
