@@ -1,0 +1,140 @@
+Package Identity:
+  WP ID: S10-R3-LEARN-01
+  Title: Immutable Outcome-to-Score-to-Future-Research Learning Feedback
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Verified merged main / required predecessor PR #270 merge: 25562380a643a45a4f97c3603805c30a9e655394
+  Required predecessor: PR #270 head 20617f054c981c8e4f3e64e3ad625b2c62d6b22f merged at 25562380a643a45a4f97c3603805c30a9e655394
+  Unrelated open PR #268: unmerged at freeze; DO NOT stack, edit, merge or consume its unmerged features
+  Suggested branch: codex/s10-r3-learn-01
+  Package class: OFFLINE_OUTCOME_SCORING_ALPHA_LEARNING_FEEDBACK
+  Package size class: M, exactly 8 changed files
+  Risk level: 3
+  Governance track expected: RUNTIME
+  Evidence mode expected: select the real repo state-machine mode after GitHub publication
+  Runtime impact: one explicit foreground local/offline operator; no scheduler/background work
+  Product impact: verified frozen-forecast → later outcome → score → future Alpha research proposal; research-only
+  Network impact: ZERO product/provider/market calls; ordinary workflow Git/GitHub allowed
+  Credential impact: NONE
+  Dependency impact: NONE
+  Trading impact: NONE; live DISABLED, USD0/0 capital/orders
+  Recommended Claude/Codex Mode: high reasoning for native forecasting/outcome time contract; normal once compatible; STOP on protected boundary conflicts only
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Status, objective, Authority / Non-Authority Posture and Karl authorization boundary
+
+Owner: Karl (strategic/merge authority). WP owner and independent reviewer: Side24 only. Implementer: Claude Code only. Karl explicitly requested this WP, and granted standing authorization to implement ordinary in-scope WPs. **Authorized only for the exact eight changed paths below AFTER native RUNTIME readiness exit0.** No extra routine approval, Side chat, or research consultant. No implementation until the hard preflight passes.
+
+Deliver the **mandatory feedback loop** as real callable functionality: verify an existing S10-R3-FORECAST-01 receipt and its referenced S10-R3-SRC-01 evidence, accept only explicitly timed later outcome records, compare original immutable forecast probabilities to subsequently observed outcomes, compute diagnostic scores with honest abstentions/denominators, and propose where to research next. Do not fabricate a trading edge, score unobserved winners or auto-commit new Alpha memory. Synthetic tests prove the mechanism, not predictive value.
+
+Implementation authority: yes only for the eight paths after readiness. Report/export authority: sanitized, bounded, local scratch receipts. Canonical evidence authority: may validate/bind existing identities and create **noncanonical external research receipts**; may update this WP's prompt/spec and truthful status/deferred docs. No canonical PIT/Alpha/WP170 writes. No network, provider, credentials, Hermes runtime, scheduler, paper, execution, live authority, orders, wallet access, capital, deployment or dependency changes. Respect every group in docs/ai/codex/PROTECTED_PATHS.md. Lane B remains paper owner.
+
+# 2. Mandatory startup, skills, merge gate and native readiness
+
+1. Read `AGENTS.md` → `AI_CODING_AGENT_START_HERE.md` → `CLAUDE_START_HERE.md` → `docs/project_status.md` → `docs/repo_truth_index.md` → `docs/deferred_items_log.md` → `docs/ai/codex/README.md` → `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, then task-specific `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md` and evidence/validation guidance.
+2. Discover and inspect the **actual installed CC skill inventory**; after startup, the FIRST ACTUAL skill invocation must be `$ponytail` **LITE**, not merely a textual mention. Record actual SKILL.md location, invocation and scope-simplification result. If unavailable, honestly STOP with `PONYTAIL_UNAVAILABLE`; never invent a skill. Then use current installed applicable skills (where available) for native predraft inspection, Hermes/Alpha reuse, minimum test plan, canonical evidence, runtime boundary, readiness preflight, one-shot review, code simplification, bug/security review, spec-to-code compliance, verification-before-completion and posted PR evidence. Typical installed names used in this repository include `$wp-predraft-inspector`, `$hermes-alpha-reuse-check`, `$wp-minimum-test-plan`, `$canonical-evidence-audit`, `$runtime-authority-boundary-review`, `$wp-readiness-preflight`, `$wp-one-shot-review`, `$code-simplifier`, `$find-bugs`, `$verification-before-completion` and `$pr-evidence-reconcile`; **discover each exact name before use**, do not install new skills, do not claim a locator is actual skill application, and skip irrelevant skills with a reason. Conditional debugging only when a real defect is encountered. Report USED/NOT_APPLICABLE/UNAVAILABLE with actual contribution.
+3. BEFORE branch creation: `git fetch origin --prune`; `git checkout main`; `git pull --ff-only origin main`; `git rev-parse HEAD`; `git rev-parse origin/main`; `git log -1 --oneline`; `git status --short --branch`; `python -B tools/git/preflight_generated_artifact_guard.py`. Require clean main==origin/main and PR270 merged (final head 20617f054c981c8e4f3e64e3ad625b2c62d6b22f, merge 25562380a643a45a4f97c3603805c30a9e655394 in ancestry). Verify no current branch/PR for `S10-R3-LEARN-01` and no completed target. Do not stack on PR268. If main moves, reconcile exact new ancestry/overlap and re-run readiness before branch; material conflicts STOP, no silent new scope.
+4. Inspect actual merged forecast_evaluation.py, run_forecast_evaluation.verify, score_one, scoring.case/forecasts/targets, grounding receipt, native Alpha factory registry read-only loader and alpha_discovery input/priority semantics, WP170 experiment_os and experiment_registry read-only loading. Explicitly prove the original forecast input and recipient case IDs map one-to-one. The `FORECAST-01` forecast receipt can include retrospective outcome labels; never use those labels to regenerate p. Existing synthetic proof is not genuine prospectively collected outcome data.
+5. Verify outer ZIP SHA256SUMS, then run the **real native** `python -B tools/wp/wp_readiness_gate.py --wp <ABS_PACKAGE>/docs/wp_specs/S10-R3-LEARN-01/wp_prompt.txt --spec <ABS_PACKAGE>/docs/wp_specs/S10-R3-LEARN-01/wp_spec.json --repo-root .` on the exact final bytes on clean main BEFORE modifying sources or branch creation. Record command, hashes, exit code, status, 8-file scope and RUNTIME track. If routine spec correction is required, correct ONLY the authorized WP prompt/spec, recompute their hashes, rerun the exact final gate, then implement without another approval. Stop on uncured failure/unsanctioned scope/changed authority; produce one CC blocker ZIP. RUNTIME deterministic gate does not require self-issued independent PROTECTED certification.
+6. Once ready, create one isolated WP branch/worktree from clean main; implement/test/debug autonomously only inside the eight paths, create one PR and never merge it. Karl decides merging.
+
+# 3. Exact eight-file scope / context budget
+
+Required=allowed=max8, all tracked path changes:
+1. `src/data_layer/analytical_research/learning_feedback.py`
+2. `tools/alpha/run_learning_feedback.py`
+3. `tests/tools/alpha/test_learning_feedback.py`
+4. `docs/outcome_learning_feedback_contract.md`
+5. `docs/deferred_items_log.md`
+6. `docs/status_entries/S10-R3-LEARN-01.md`
+7. `docs/wp_specs/S10-R3-LEARN-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-R3-LEARN-01/wp_spec.json`
+
+Read-only context only: merged S10-R3-FORECAST-01 and SRC-01 source/CLI tests/contracts, PIT/provenance/as-of APIs, Alpha Factory registry/records and triage, WP170 schemas, existing calculation helpers, relevant security/architecture tests and chosen real skill SKILL.md instructions. Do not touch other `src/`, `tools/`, `.github/`, secrets, dependencies or config. Do not create a separate future-learning registry/service/framework. Scratch files only outside checkout; never stage generated artifacts. If a historical architecture test needs an extra changed path, STOP with exact evidence instead of unauthorized ninth-file editing.
+
+# 4. Minimum-complete offline API and substantive method
+
+**Native caller:** add `src/data_layer/analytical_research/learning_feedback.py` as deterministic stdlib research functions and `tools/alpha/run_learning_feedback.py` supporting:
+- `run --forecast-scratch ABS --outcomes ABS --scratch-dir ABS [--alpha-registry ABS]`
+- `verify --scratch-dir ABS`
+One finite run only. `run` requires a pre-existing verified S10-R3-FORECAST-01 scratch whose original immutable inputs include the S10-R3-SRC-01 grounded receipt. Call the existing `tools.alpha.run_forecast_evaluation.verify` (must return `VERIFIED`) before copying frozen inputs and again against those copies. Use native `forecast_evaluation.score_one` and exact original method p_yes; **DO NOT** recompute past training, risk the historical scoring cutoff, alter original receipt or replace member/decision identity. `verify` repeats the entire independent recomputation from frozen inputs and never writes. No generic command framework.
+
+**Outcome file**: caller-supplied bounded strict UTF-8 JSON file, versioned local learning-outcomes schema, a unique list of records referencing exact already-selected frozen `case_id`, `market_id`, `event_group`, `yes_label`, native rule hash and outcome label; each includes `resolved_time`, `known_time`, `local_first_seen_time` (nullable when not verified), `source_content_sha256` (of supplied immutable local bytes when available), and `evidence_class` `SANITIZED_SYNTHETIC` or `CALLER_IMPORTED_UNVERIFIED`. `yes_label` must be frozen original and labels map to Yes/No with no inversion. Missing/foreign/duplicate/conflicting case or rule/time -> one closed counted outcome state; no fabricated event identity, independent source, primary settlement, or late-availability clock. Reject unvalidated source claims; unverified imports remain unverified even with matching hashes. When prior forecast receipt already contains a known outcome, require exact consistency; contradictions reject. In real imported mode, local metadata and hashes do not authenticate origin. Require `known_time >= resolved_time` and after original decision, and `known_time <= scoring_cutoff` for scored use; revisions after cutoff only inform a separate correction/gap state, not rewriting history. Both same-event different markets must not inflate independent event counts.
+
+**Scoring**: per frozen original method (`independent_stratum_prior_v1`, `train_base_rate_global_v1`, `market_reference_price_v1`, `wang_probit_distortion_v1`) use original p_yes only if status `FORECAST`; no interpolation on abstentions. Reuse existing `forecast_evaluation.score_one` Brier/logloss clipping and preserve market-price-derived Wang lineage. Each method has offered, eligible, missing_outcome, disputed, late, abstained, scored and exclusion denominators. Paired comparisons require exact same selected case IDs, exact equal resolution witness, event-group independent count and same cutoff; lower Brier/logloss better, no fabricated lift from non-paired or hindsight-selected rows. Keep original FORECAST-01 results unchanged as historical snapshot; new derived score is a separate diagnostic, not an amendment to original WP170 OOS receipt.
+
+**Learning / next-research proposal**: deterministic bounded per-category/horizon/issue diagnostics: evidence coverage, calibration bins with predeclared edges, Brier/logloss relative to same-case baseline and stability/uncertainty (minimum sample threshold; no false significance). Queue candidate reasons from an explicit closed set: `RESOLUTION_EVIDENCE_MISSING`, `SOURCE_RULE_REVIEW`, `FORECAST_ABSTENTION`, `CALIBRATION_DRIFT_REVIEW`, `BASELINE_UNDERPERFORMING_REVIEW`, `INSUFFICIENT_SAMPLE`, `NO_PRIORITY_CHANGE`. For each proposal bind exact source forecast receipt, cohort membership digest, observed outcome evidences and (if supplied) read-only verified Alpha registry subject-ref linkage; missing join -> `ALPHA_LINK_UNVERIFIED`, never invented candidate ID. Proposal does NOT mutate canonical Alpha queue/registry, create ResearchEpisode, change qualification, promote WP170 evidence or schedule execution. A later separately authorized decision may incorporate it into Alpha memory. Proposal identity must be deterministic and cold-verifiable, no self-hash cycle.
+
+**Source/evidence method reuse:** apply native forecast_evaluation.score_one and original frozen forecast/grounding receipt verifier; native alpha_factory_registry.load_and_verify_alpha_factory_registry for optional read-only linking and alpha_discovery canonical subject refs. External methods already pinned in FORECAST-01 (Metaculus forecasting + Gnosis benchmarking + ForecastBench stratification and Wang distortion) remain source/adoption provenance; this WP does not install/revendor/claim new external packages or independent models. `source_grounding` remains the only pre-event source grounding authority; imported settlement remains `CALLER_IMPORTED_UNVERIFIED` until an actual original independent source is admitted by future owner governance.
+
+**Scratch/limits**: one new empty absolute scratch directory outside checkout, bounded source tree/JSON/registry input sizes no larger than the existing forecast CLI defaults, symlink/hardlink/path traversal refusal, atomic/write-once receipt and frozen inputs. Stable schema IDs, explicit deterministic SHA256 preimages, no path/exception/raw-secret echoes, no directories scanned without explicit operator paths. Code identity version + input hashes bind the receipt; cold verify detects byte edits, moved IDs, changed outcomes, score, weights and proposal order. Explicit `RESEARCH_ONLY`, `DIAGNOSTIC_ONLY`, `NO_CANONICAL_WRITE` authority flags in output; zero network enforced at CLI boundary, not merely asserted. No external requests during tests/implementation.
+
+**Demonstration**: reuse S10-R3-FORECAST-01's already committed synthetic fixture building helpers for >=30 selected market cases, supply later synthetic resolved outcomes, with one absent/late and one contradictory/duplicate example in negative tests; demonstrate actual operator `run`→`verify` and output proposal. This closes the **functional** outcome→score→future research handoff. Real empirical improvement and automatic canonical Alpha adoption remain separately evidence/authority gated, not silently claimed.
+
+# 5. Requirement-to-evidence traceability (evidence plan) / negative test matrix
+
+| ID | Mandatory named pytest node | Required real result |
+|---|---|---|
+| R001 | `test_learning_calls_verified_frozen_forecast_and_native_provenance` | Call the actual merged run_forecast_evaluation.verify on a frozen forecast scratch; match forecast receipt_id, grounding receipt, universe/rule/market/event and code identity. Reuse native score functions; never recompute forecasts after seeing labels. |
+| R002 | `test_learning_outcome_join_identity_timing_and_provenance` | Bind each later outcome to frozen selected case/market, Yes-No mapping, rule hash and event group; validate decision/resolution/public-known/first-seen/correction clocks. Differentiate SANITIZED_SYNTHETIC vs CALLER_IMPORTED_UNVERIFIED; missing, duplicate, contradictory or late evidence is counted/refused, never marked authentic. |
+| R003 | `test_learning_fixed_forecasts_rescored_with_matching_denominators` | Score only original frozen p_yes values with newly observed eligible outcomes through unchanged native score_one; preserve per-method available/abstained/unresolved/late/invalid denominators and event-group disjointness; paired method/baseline scores use exactly common resolved case ids and independent numeric oracle. |
+| R004 | `test_learning_calibration_groups_no_value_promotion` | Compute versioned descriptive Brier/logloss and bounded calibration-by-bin/category/horizon summaries with explicit minimum-n insufficiency, outcome vintage and denominators; never equate synthetic/imported or posthoc diagnostics with real OOS lift, independent origin, qualification or execution edge. |
+| R005 | `test_learning_proposes_future_alpha_research_without_registry_writes` | Generate one deterministic inspectable future-research queue proposal per eligible evidence group (review calibration drift, update source/rules, request missing outcomes, investigate abstentions, or insufficient sample), linked read-only to verified Alpha candidate/episode where available; otherwise ALPHA_LINK_UNVERIFIED. Proposal is never canonical Alpha queue, episode, WP170 evidence, requalification or automatic runtime action. |
+| R006 | `test_learning_receipt_cold_verify_hash_chain_and_tamper` | One finite run/verify CLI freezes original forecast receipt tree and outcome packet outside repo, content-addresses inputs/method/denominators/proposals, writes once, re-verifies upstream and recomputes core on cold verify. Tampering, foreign case/receipt, changed outcome, input byte, time, model lineage, score or proposal fails closed. |
+| R007 | `test_learning_negative_matrix_and_zero_authority` | Cover missing/null/wrong types, bool numeric, NaN/Inf, malformed/truncated/oversized/duplicate JSON keys and rows, path attacks, symlink/hardlink, secret-like fields, wrong event/rule/outcome mapping, future/after-cutoff evidence, unresolved and source revision conflicts; no product network, credentials, Hermes, canonical registry writes, scheduler, paper, capital or orders. |
+| R008 | `test_learning_end_to_end_synthetic_then_future_research_handoff` | Execute actual CLI run and cold verify on >=30 frozen SANITIZED_SYNTHETIC selected markets reusing real S10-R3-FORECAST-01 test fixtures; show outcome->score->proposed future research end to end with exact numerator/denominator accounting, no fake real lift and 36/36 plus six provider decision posture unchanged. |
+
+Representative negative matrix per `docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md`: missing/null/wrong type/empty, duplicate keys/rows, oversize/malformed file, symlink/reparse/hardlink, foreign receipt or case, mismatched market/event/rule/outcome label, ambiguous binary side, late/future/corrected clocks, unresolved/no authenticated evidence, prior-outcome conflict, forecast/score replay tampering, fake credentials/strategy fields, invalid score/log input, and safe allowed research words to avoid over-blocking. Mark truly inapplicable matrix classes with a reason, not hidden exclusions. Explicit test-side oracle distinct from production score identity functions.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|native|frozen_forecast|offline_run|REQUIRE|verified_original_predictions_only|requirements.r001|R001
+NR002|outcome|later_evidence|identity_and_clocks|REQUIRE|truthful_source_and_temporal_states|requirements.r002|R002
+NR003|score|fixed_probability|new_valid_outcome|REQUIRE|matched_brier_logloss_denominators|requirements.r003|R003
+NR004|diagnostics|frozen_group_metrics|admissible_cases|PRESERVE_EXACT|nonpromoting_calibration_and_uncertainty|requirements.r004|R004
+NR005|learning|future_research_proposals|diagnostic_evidence|REQUIRE|advisory_linked_priority_only|requirements.r005|R005
+NR006|verify|cold_receipt|tampered_or_foreign|REJECT|fail_closed_content_identity|requirements.r006|R006
+NR007|authority|negative_matrix|invalid_or_forbidden|REJECT|zero_network_zero_registry_write|requirements.r007|R007
+NR008|adoption|real_cli_frozen_fixture|end_to_end|REQUIRE|learning_loop_integrated_no_fake_value|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 6. Compatibility / impossibility and hard stops
+
+Before implementation write a concise table of existing actual `FORECAST-01` receipt shape (`core.forecasts`, `core.scoring`, `core.targets`, `core.cohort`, `wp170`, `receipt_id`), CLI verify return, source/market/rule IDs, native score_one signature and original decision cutoff, Alpha registry read-only loader and WP170 boundaries. Verify forecast inputs may include outcomes; learning cannot regenerate forecasts or invent pre-event outcomes. Explicitly distinguish validation of attached **local** outcome hash from independent settlement-origin verification. Use one implementation path if compatible; if a necessary semantic step demands modification to old immutable modules/registry, STOP with exact impossibility and produce blocker ZIP.
+
+STOP if upstream frozen forecast does not independently cold-verify — because no reliable prediction preimage. STOP if a later outcome cannot be unambiguously joined to market/rule/Yes-No/event — because wrong-contract feedback is worse than no feedback. STOP if same-event grouping or decision/known clocks are not evidenced — because denominator/leakage errors invalidate learning. A per-row missing/late/unresolved outcome is a **counted non-scorable state**, not a WP-wide STOP. STOP if immutable prediction/score semantics require refitting or editing historical artifacts — because that creates lookahead. STOP if native WP readiness or actual required tests cannot pass, or scope requires forbidden ninth path, dependency/provider/canonical registry writes — because those need separate owner authority. STOP if final evidence cannot be posted and verified truthfully — because PR cannot claim readiness. Normal bounded in-scope technical repairs proceed autonomously and rerun affected checks.
+
+# 7. Validation, native readiness and posted PR evidence
+
+After first actual RED test, implement minimum complete source and CLI; run R001-R008, applicable negative matrix, adjacent forecast/SRC/PIT/Alpha/WP170/qualification/architecture/no-live/status tests. Run native readiness before source work and native `--check-diff --base {main} --head HEAD` at stable commit using the true native CLI syntax discovered in repo truth. Run generated artifact, exact changed-file and security/gitleaks/source-license controls applicable to this WP; no new external copy or dependency. One authoritative full local suite after stabilization and exact-head hosted CI (11 jobs if existing routing applies); report genuine counts, skips, warnings and failures. Re-run affected gates if implementation changes. No skill claim without actual invocation. Record initial fails and repairs; no false pass.
+
+One PR for exactly this WP; PR body is the current evidence surface and `docs/status_entries/{wp}.md` is stable non-self-referential status. Select `PRIVATE_REPO_MANUAL_VERIFIED`, `PUBLIC_VERIFIER_PASS` or `BLOCKED_NOT_READY` honestly per repository state machine; final PR comments optional if current repo truth says so, no empty-comment blocker fabricated. Run PR evidence consistency guard on exact re-fetched POSTED body. Side24 independently assesses PR. Karl alone merges.
+
+# 8. Outcome, anti-drift accounting and successor boundary
+
+This WP implements mandatory **functional** outcome→score→future research-learning loop using the original frozen research predictions. It does NOT make R3 forecasting a real-value or production-qualified success. Preserve all 36 primary/subcapability IDs and six separate owner provider lanes; no row becomes adopted merely by naming it or passing synthetic tests. Existing R3-02 value-unverified, R3-10-WANG market-derived and 12 parity candidates open as previously adjudicated. No PR268 merge or Lane B paper scope. Future cross-market relations/economics WP is separately governed and outside this branch. Any material non-adoption/equivalence needs Karl's evidence-based decision; no auto-scoping down.
+
+# 9. MANDATORY FILE HANDOFF, REPORT-BACK AND NEXT ACTION
+
+CC returns exactly ONE consolidated `{wp}_CC_RETURN.zip` on success OR hard blocker, saved outside checkout and never committed. Include `COMPLETION_OR_BLOCKER.md`, changed files + hashes, full prompt/spec and actual final SHA256s, native readiness and diff-scope output, first Ponytail actual invocation / other skill ledger, R001-R008 results and adjacent/full/CI raw evidence, frozen forecast/outcome/learning receipt/cold verify with recomputed denominators, local vs imported outcome provenance, source/security tests, GitHub PR/body/head/checks and unresolved issues. If stopped before branch, still return a blocker ZIP with exact failed guard and no fake PR. Do not ask Karl to coordinate reviewers.
+
+CC must tell Karl: **SEND TO: Side24 (this chat). ATTACH: `{wp}_CC_RETURN.zip` only. MESSAGE: `Side24 — attached is {wp}_CC_RETURN.zip. Refresh exact live main/PR/head, independently inspect immutable forecast→later outcome→score→future research proposal call path, provenance/denominator/clock/authority, native readiness, skills, testing, source/security and exact-head CI. Decide MERGE_READY, TARGETED_FOLLOW_UP_REQUIRED or BLOCKED_NOT_READY. Do not merge. Return one concise merge decision and exact next action.` EXPECTED RESULT: independent Side24 disposition. AFTERWARD: Karl alone decides merge if merge-ready; if not, Side24 supplies one narrow CC correction package with exact routing.**
