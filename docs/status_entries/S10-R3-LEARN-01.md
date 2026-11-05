@@ -56,4 +56,29 @@ The run used the committed FORECAST-01 fixture: 37 offered, 33 selected. The pac
 
 ## Validation state
 
-IMPLEMENTED_LOCAL. The PR body carries the validated commit, full-suite, hosted CI and evidence mode.
+IMPLEMENTED_LOCAL / LOCAL_VALIDATION_COMPLETE. The validated implementation commit is `59d6af2`; later commits change only this fragment. Current head, exact-head hosted checks, evidence mode and the Ready decision belong in the PR body.
+
+**Authoritative full suite on 59d6af2:** `python -B -m pytest -q -p no:cacheprovider --basetemp /tmp/full -ra` gave 14660 passed, 15 skipped, 125 warnings in 1587.45s, exit 0. It ran in the existing pinned image `s10-canary-siwc-validation:20261024`:
+- `--network none --read-only`;
+- tmpfs `/tmp` and a uid-1000 0700 tmpfs HOME;
+- a disposable LF clone;
+- `safe.directory=/repo` via `GIT_CONFIG_*`;
+- no pull or install.
+
+**Other checks on 59d6af2:**
+
+| Check | Result |
+|---|---|
+| Focused `tests/tools/alpha/test_learning_feedback.py` | 8 passed |
+| Focused + adjacent (FORECAST-01, SRC-01, Alpha discovery/registry/boundaries, WP170 registry/prereg/boundaries, qualification, architecture, no-live, official-client boundaries) | 488 passed |
+| Native readiness `--check-diff --base 25562380a643a45a4f97c3603805c30a9e655394 --head HEAD` | exit 0, IMPLEMENTATION_READY, scope 8 |
+| Generated-artifact guard | passed |
+| `git diff --check` | clean |
+| Real operator run, idempotent rerun and cold verify | VERIFIED; an independent stdlib recompute matches |
+
+- **Red-green:** the new test module fails to import against main `2556238`.
+- **Initial failures and repairs:** the first focused run failed in three places, all fixed before the commit.
+  - A post-cutoff correction was refused as a prior-outcome conflict. The prior check is now limited to in-cutoff records.
+  - Upstream verifier stops are now normalized to `FORECAST_VERIFY_FAILED`.
+  - Two test expectations and fixtures were corrected.
+- **Not run locally:** gitleaks is not installed locally; the hosted gitleaks gate is the secret scan. Semgrep was not run because its registry rules need network. pip-audit is not applicable because no dependency changed.
