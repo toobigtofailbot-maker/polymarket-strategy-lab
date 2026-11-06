@@ -1,0 +1,150 @@
+Package Identity:
+  WP ID: S10-R3-REL-01
+  Title: Rule-Verified Related-Market Discovery plus Conditional Basket Economics
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen verified main / PR271 merge: 05a5e6a0c98f4ebd468fe0bdbf81ac07394a3474
+  Required predecessor: PR #271 head 008df16232caeb8cfde3cb2f1696955bcab6a905 merged at 05a5e6a0c98f4ebd468fe0bdbf81ac07394a3474
+  Unrelated PR #268 open, head 9a5a00cd61effa4e28b82f830427440b23aba86c, base a0d54384ad7ef293336a5cf646bc80be0cccf1e1 — do NOT stack or consume
+  Suggested branch: codex/s10-r3-rel-01
+  Package class: OFFLINE_RELATED_MARKET_RULE_AND_BASKET_ECONOMICS
+  Package size class: L, required=allowed=max 12 tracked files
+  Governance track expected: RUNTIME
+  Risk level: 3
+  Evidence mode expected: selected honestly after exact-head PR publication
+  Runtime impact: one finite, explicit offline research CLI, opt-in SRC-01 related command; no background process
+  Network impact: ZERO product/provider/account calls; ordinary Git/GitHub workflow only
+  Credential/dependency/strategy/paper/order/live/capital impact: NONE, USD0/0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Objective, authority / non-authority posture, final owner authorization
+
+Karl explicitly authorizes one bounded offline implementation joining the already approved R3-REL-01 (related-market discovery and rule assessment) and R3-REL-ECON-01 (conditional basket economics) workstreams. Side24 is the sole coordination and independent PR-review chat. Claude Code autonomously implements within the twelve fixed paths AFTER authentic native RUNTIME readiness exit0. No extra routine approval, consultant or Side chat is needed. Karl retains merge decisions and provider/capital/protected grants.
+
+Build an actual call path: verified S10-R3-SRC-01 receipt and native Alpha PIT market observations -> candidate related outcome sets -> source/rule hash, payout and counterexample proof -> conditional Oracle3-style basket payoff + native-market quote/fee/depth assessment -> content-addressed, replayable research-only candidate/assessment receipt -> observable honest same-corpus baseline comparison. No standalone mathematical-demo-only module, no vendor framework or new registry/service. Always distinguish synthetically valid formal model from independently verified real-world resolution and execution. Passing synthetic arithmetic is NOT evidence of real Alpha or profit.
+
+Cannot modify native Alpha/point-in-time stores, WP170 experiment registry, Gate-C/strategy, live_pilot/Hermes, paper engine, any account/order/credential/fee-config/dependency/workflow. Source/payout semantics cannot be inferred from title, an LLM score or caller-declared model alone. External reports are SANITIZED NON-CANONICAL research artifacts only. Do not discover/consume private secrets or operator credentials. Do not authenticate a provider or issue a product/market GET. Source archive source-origin remains caller-local unless independently authenticated later. No change to 36-row accepted program or independent Lane B authority.
+
+# 2. First skill, live repo preflight, actual native readiness (MUST BEFORE BRANCH)
+
+Startup reads in actual repo order: `AGENTS.md` -> `AI_CODING_AGENT_START_HERE.md` -> `CLAUDE_START_HERE.md` -> `docs/project_status.md` -> `docs/repo_truth_index.md` -> `docs/deferred_items_log.md` -> `docs/ai/codex/README.md` -> `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`. Then targeted `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md`, validation and posted evidence instructions. Read existing SRC/Alpha/PIT/execution-feasibility contracts and the attached pinned source map; avoid history dumps.
+
+Discover actual installed skill catalog. After startup READS, the **FIRST ACTUALLY INVOKED SKILL is installed `$ponytail` in LITE mode**. Read its actual SKILL.md and use its invocation mechanism; report path, actual invocation and real scope-reduction conclusion. A typed name is NOT an invocation. If Ponytail is unavailable, STOP honestly (PONYTAIL_UNAVAILABLE). Then apply actual installed relevant skills in useful sequence: wp-predraft-inspector, hermes-alpha-reuse-check, wp-minimum-test-plan, financial-invariant-check, dimensional-analysis, canonical-evidence-audit, runtime-authority-boundary-review, wp-readiness-preflight and wp-one-shot-review before implementation; verification-before-completion, code-simplifier/find-bugs/security-review/spec-to-code-compliance and pr-evidence-reconcile as relevant before final claims and posted PR. Names must be discovered, not invented; a locator returning SOURCE_LOCATED is not substantive skill use. Systematic-debugging only for real failures. Report USED/NOT_APPLICABLE/UNAVAILABLE with substantive proof. Do not install new skills or summon unnecessary agents/providers.
+
+Run `git fetch origin --prune`, `git checkout main`, `git pull --ff-only origin main`, `git rev-parse HEAD`, `git rev-parse origin/main`, `git log -1 --oneline`, `git status --short --branch`, `python -B tools/git/preflight_generated_artifact_guard.py`. Confirm clean main==origin/main and PR271 merged with exact predecessor head and merge in ancestry. PR268 remains separate: no branch stacking, no cherry-pick, no unmerged catalog/fee semantics. If main has moved, reconcile the exact base and conflicting paths with repo-truth before source edits, re-run gates. If material unsafe drift, STOP with evidence, no implicit new scope.
+
+Validate ZIP SHA256SUMS. On clean main, before branch or changing source run actual native:
+`python -B tools/wp/wp_readiness_gate.py --wp <EXTRACTED_PACKAGE_ABS>/docs/wp_specs/S10-R3-REL-01/wp_prompt.txt --spec <EXTRACTED_PACKAGE_ABS>/docs/wp_specs/S10-R3-REL-01/wp_spec.json --repo-root . --format json`
+Capture real exit, readiness status, RUNTIME/DETERMINISTIC, no certificate required, all exact final bytes/hash and 12-path scope. If routine prompt/spec issue: fix ONLY their two authorized paths, bind corrected final hashes, rerun native gate before source work, and continue once passing under Karl's already approved non-expanded scope. Do not silently change authority/track or protected semantics. If PROTECTED independent certificate becomes genuinely required, STOP pending independent native certification; CC cannot self-certify. If readiness cannot pass, return the mandatory single CC blocker ZIP. At end run native readiness `--check-diff --base 05a5e6a0c98f4ebd468fe0bdbf81ac07394a3474 --head HEAD` with actual native CLI syntax on committed final bytes. Never claim that a locally authored structural approximation was the native gate.
+
+Create one dedicated worktree/branch from clean main AFTER gate PASS, one PR, no merge. CC can inspect, refactor within scope, debug, repair, test and document autonomously. Avoid overly broad hardening and avoid splitting related fixes into more WPs.
+
+# 3. Exact changed-file set and source pin / compatibility budget
+
+Required=allowed=max 12; no optional 13th source/guard path. Change only:
+1. `src/data_layer/analytical_research/related_market.py`
+2. `src/data_layer/analytical_research/related_market_economics.py`
+3. `tools/alpha/run_related_market_alpha.py`
+4. `tools/alpha/run_source_grounding.py`
+5. `tests/tools/alpha/test_related_market_alpha.py`
+6. `tests/tools/alpha/test_related_market_economics.py`
+7. `tests/tools/alpha/test_source_grounding.py`
+8. `docs/related_market_alpha_contract.md`
+9. `docs/deferred_items_log.md`
+10. `docs/status_entries/S10-R3-REL-01.md`
+11. `docs/wp_specs/S10-R3-REL-01/wp_prompt.txt`
+12. `docs/wp_specs/S10-R3-REL-01/wp_spec.json`
+
+The two already tracked SRC-01 files are compatibility edits only: `tools/alpha/run_source_grounding.py` must keep legacy `run` and `verify` and their frozen bytes/exit meanings; `tests/tools/alpha/test_source_grounding.py` may add scoped regressions but cannot remove existing checks. New src/ modules under existing analytical_research package; do not modify `src/data_layer/analytical_research/__init__.py` merely for cosmetics; import explicitly. One new operator. One contract. One truthful status entry. `docs/deferred_items_log.md` append only the few genuine unresolved origin/fee/value limitations. External scratch/CI logs are not tracked. Revert only these paths.
+
+Pinned inspected upstream refs (full commit/blob/url in attached source map): Oracle3 `oracle3/arbitrage.py`@267fb7c (R3-03), `oracle3/fees.py`@267fb7c (R3-03-FEES), Oracle3 Extras `oracle3_extras/market/kairos/settlement.py`@b2d807a (R3-04), Chainstack `backend/core/steps/implications.py`@1f4f366 (R3-11), Synpath `src/matcher.py`@c906cb3 (R3-19). All are **method/pure-math/tri-state inspiration only**; verify license, API and import closure before copying any exact code. No transitive Oracle3, Synpath, Kairos, LLM, React, WebSocket, SDK or provider install.
+
+Native compatible read-only sources: `source_grounding.load_corpus`, `source_grounding.bind_rule_texts`, `tools.alpha.run_source_grounding.verify`, `alpha_discovery.build_alpha_universe_snapshot`, PIT `ResolutionRuleSnapshotRecord`/`ObservedMarketState`, `src.execution_feasibility.public_market.SourceFetchResult` + `build_public_venue_snapshot` (only if compatible with frozen supplied body semantics) and `src.execution_feasibility.evaluator` public exact arithmetic/dimensions where possible. `src.research_runtime.executable_edge.assess_executable_edge` is PROTECTED by its actual WP170 evidence prerequisites and must not be called with fake evidence. No duplicate price engine or unversioned independent fee helper. If the native engine lacks multi-leg atomicity, report unknown, do not fake execution PASS.
+
+# 4. Frozen finite operator and native discovery route (R001, R002, R006)
+
+New CLI:
+- `python -B tools/alpha/run_related_market_alpha.py run --grounding-scratch ABS --request-file ABS --scratch-dir ABS`
+- `python -B tools/alpha/run_related_market_alpha.py verify --scratch-dir ABS`
+- Existing workflow opt-in: `python -B tools/alpha/run_source_grounding.py related --grounding-scratch ABS --request-file ABS --scratch-dir ABS` delegates to the same run path; **no change when old run/verify used**.
+
+One finite operation only: caller-supplied existing SRC-01 scratch, local request describing bounded candidate relation/quotes, new empty absolute scratch outside checkout; all paths guarded (symlink, reparse, hardlink, nonregular, checkout/secret-directory overlap, traversal, alias, overwrite), bounded reads/records/time; freeze relevant source/PIT/rules/request/venue bodies and code hash before output; strict duplicate-free JSON; no environment/network import side effect; refuse sanitized code only, no raw input echo or exception/path. No calls to public_get; only construct native venue state from already frozen body bytes if permitted. Record actual one-source and native Alpha universe IDs, observed as-of and fetch/cutoff clocks, rule record/source/condition/token IDs, category and known missingness.
+
+Derive **candidate** market pairs/groups (2..4 binary outcomes) from the already verified native `AlphaUniverseSnapshot`, its source-grounded indexed event/rule references and exact caller-selected bounded hypothesis relationships. Reuse the native related candidates (do not invent a second market registry). May use shared event tokens/questions/category as low-confidence candidate generation ONLY. Condition-derived event_id is not an independent Gamma group or proof. Cross-venue claims without a native authenticated corresponding PIT market/settlement rule are `EXTERNAL_VENUE_UNVERIFIED`, not substituted with Polymarket data. Duplicate, split, unsupported and stale observations remain explicit counted noncandidates. Proposed relation MUST NOT be promoted on a matching title, similar wording, hash of an unrelated rule, Gamma event slug, Metaculus forecast, AI confidence or synthetic witness alone.
+
+Hash-bind every supplied rule byte set to exact native `rule_content_sha256`, `rule_record_version_id`, `resolution_source_id`, metadata cutoff and source lineage. Validate full source hierarchy/ambiguity/human-review state against native PIT. Preserve token outcome orientation, special state, timezone, interval, and market status. A hash proves identity of local bytes, not legal semantic truth or authentic origin. Record independent origin as UNKNOWN unless another already-native source attestation truly proves it (no invented one).
+
+# 5. Relation/payout semantic proof — hard non-promotion barrier (R002,R003)
+
+Support only five formal research hypotheses `IMPLICATION(A->B)`, `EXCLUSIVITY(A1..An)`, `COMPLEMENT(A,B)`, `SAME_EVENT(A,B)` and `EVENT_SUM(A1..An)`, n=2..4. They are hypotheses until proved. Exhaustively recompute valid payout/counterexample rows using bounded canonical Decimal logic and documented binary YES/NO orientation; do not accept caller-provided true/false verdicts as proof. For implication require no admitted state A=1,B=0; exclusivity at most one YES; complement exactly one; same_event identical normalized payout; event_sum exactly one. For basket payoff, rederive per-state sum and certified minimum, never trust an input `min_payout` or inferred equal settlement from matching question text.
+
+**CRITICAL real-semantics barrier**: Admissible state universe, resolution language and tie/void/cancel/partial payout interpretation must be derived from verifiable actual native structure or from separately authenticated independent evidence. A caller-only exhaustive table can establish `FORMAL_BOUNDED_PAYOFF_PROOF` CONDITIONAL ON THAT DECLARED MODEL, but cannot establish `REAL_WORLD_RULE_VERIFIED` or tradeable equivalence. If native PIT has only rule SHA/source metadata without a formal resolver, real-world relation result is `INCONCLUSIVE_RULE_SEMANTICS` (even when model math is true). A pair sharing an exact verified native condition/outcome/settlement identity can be recognized as mechanical identity, not a new independent cross-market profitable relation. Never count synthetically formal conditional truth as authenticated real payout proof. Add a precise different outcome/tie/cancellation and timezone counterexample negative test. If rules conflict -> `RULE_CONFLICT` / NOT_SAME; if incomplete -> `INCONCLUSIVE`, not FALSE or SAME. Every candidate retains both the math result and real-world evidence classification.
+
+# 6. Conditional Oracle3-style basket economics and safe status (R004,R005)
+
+For logically permissible formal hypotheses, enumerate bounded market/side/size legs and compare all possible payout-state minimums to worst-case acquire cost. Exact reference baskets: A->B uses NO(A)+YES(B), EXCLUSIVITY uses NO all, COMPLEMENT either YES both or NO both, SAME_EVENT uses YES(A)+NO(B) or reversed, EVENT_SUM uses YES all or NO all. Verify orientation and >=n-1/1 minimum per supported n. Explicitly reject wrong implication direction and nonbinary/fractional payout assumptions. An unsupported YES/NO complement-from-bid formula must not override real token-specific book snapshots.
+
+Research economics needs REAL per-leg normalized quote/side/size/timestamp and native trusted fee schedule; use native depth/min-order/tick/freshness dimension semantics when callable, avoid a competing generic order-size evaluator. Separate `THEORETICAL_PRICE_INCONSISTENCY`, `FEE_AND_DEPTH_CONDITIONAL`, `MECHANICALLY_INCONCLUSIVE` (missing/stale/atomicity), `NO_CONDITIONAL_EDGE`, `NOT_EXECUTABLE` statuses. Raw displayed 2-market quote sums never count as proof of realistic complete fill. Fee comes from exact decision-time/current per-market authorized schedule or a clearly marked versioned hypothetical TEST_ONLY schedule. **Native near-term policy expired on 2026-11-04T00:00:00Z**; no extending or treating its frozen rate as current. Official docs' 2026-11-06 fee table is contextual, NOT a verified per-market model. Missing/expired source => `FEE_CONFIG_UNKNOWN`; do not assume 0. Include maker/taker distinction, fee rounding direction, market min notional vs CLOB min shares, depth sweeps, book timestamp/clock disagreement, neg-risk and combo exclusions. No cross-market atomic trade/fill path exists under this WP: even with conditional after-fee positive basket never label `EXECUTABLE_EDGE_PASS`, `GUARANTEED_ARBITRAGE`, actual profit, execution readiness or strategy permit. No funds, orders, approvals or backend activation.
+
+# 7. End-to-end receipts, benchmark, negative tests and authority (R006,R007,R008)
+
+Write one versioned sanitized immutable `related-market-research-receipt` in caller-owned external scratch with hash of deterministic `core` as a one-key preimage excluding derived ID, ordered source inputs, exact code hashes, proven model states, per-leg observed/mechanical/fee statuses, candidate and verified-formal counts, state counterexample, real-semantic uncertainty and authority flags all false. `verify` cold re-derives from frozen original byte copies and native as-of corpus/rules with network explicitly blocked; modification of a rule, quote, case, snapshot, generated result, input hash or replay code identity => TAMPER_DETECTED. Output must expose all public fields in test-coverage and sanitize invalid results. Safe repeat returns verified/idempotent receipt, never appends or overwrites. Run exit0 for completed truthful research even when zero candidate/economic rows; refusals are nonzero and closed.
+
+Frozen >=40 **inline SANITIZED_SYNTHETIC** labeled cases across all five families, at least 10 deliberately invalid/tie/void/cancel/opposite-orientation/time cases, explicit real-source `LOCAL_REAL_PIT` path tested separately without false source promotion. Construct and name `baseline_native_relation_fields_v0` from the existing same-corpus Alpha event/question/category grouping; it is a **new comparison baseline**, not an existing verifier. Before comparing freeze benchmark SHA + rank/threshold settings + all query IDs + expected relation/negative labels. Report proposed pairs, eligible inspected, formal conditional proofs, confirmed native identity only, semantic unknown, false relationship matches, ambiguous/abstained, price inconsistencies, after-cost test-evaluable, real-world-evaluable, source counts, fee known/unknown, and false positive counts with actual denominators. Zero claimed improvement is permitted; no fabricated coverage or profitability, and no claim of independent data. Report actual real corpus test only if an authentic operator local dataset exists; absence of one is a limitation, not a fixture-pass conversion.
+
+Negative matrix MUST cover: forged/cross-market rule digest, ambiguous hierarchy, condition-derived event-id false grouping, wrong YES/NO, one counterexample for each logical relation, duplicate missing/out-of-range market, tie/void/cancel and partial, mismatched timezones/deadlines, expired/unknown schedule, 5dp fee rounding, fee underestimation, no asks, stale/depleted depth, min notional vs shares, price off-tick, neg-risk/combos unsupported, book/fee future timestamps, cutoffs, overlarge/malformed/secret-shaped data, symlink traversal, network socket attempt and no mutation of PIT/Alpha/WP170/legacy source run/verify. Re-test code-bounded abort/resume and zero forbidden touch. Keep test list lean; representative adversarial cases, not hundreds of redundant parametrizations.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|discovery|src01_native_reuse|verified_native_corpus|REQUIRE|native_related_candidates_only|requirements.r001|R001
+NR002|rule|rule_identity|source_and_cutoff|REQUIRE|hash_bound_rule_and_orientation|requirements.r002|R002
+NR003|logic|formal_payouts|finite_state_proof|REQUIRE|exhaustive_counterexample_checked|requirements.r003|R003
+NR004|economics|conditional_basket|relation_is_formally_valid|REQUIRE|native_aware_fee_depth_math|requirements.r004|R004
+NR005|limits|unknown_fees_and_atomicity|real_trade_not_proved|REJECT|no_executable_profit_promotion|requirements.r005|R005
+NR006|integration|src01_related_and_cold_verify|opt_in_external_scratch|REQUIRE|replayable_actual_native_caller|requirements.r006|R006
+NR007|benchmark|frozen_same_case_corpus|synthetic_at_least_40|REQUIRE|honest_baseline_denominators|requirements.r007|R007
+NR008|authority|negative_matrix_and_roadmap|out_of_scope_or_unsupported|REJECT|no_authority_or_adoption_expansion|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 8. Minimum complete test/evidence plan and hard stops
+
+Each normative row R001-R008 maps to one real executed pytest node (exact command and expected semantic assertion in native JSON spec):
+- R001 `test_rel_native_src01_call_path_and_candidate_generation` — Existing source-grounding CLI calls a real native Alpha/PIT universe, cold-verifies its SRC-01 receipt, discovers bounded related candidates and preserves market/event/condition/outcome/rule/source identities without trusting titles, PR268 or invented Gamma events.
+- R002 `test_rel_hash_bound_rule_semantics_and_orientation` — Strict per-market native source/rule hash and cutoff binding; YES/NO orientation, rule source hierarchy, ambiguity and human-review flags, same/different resolution windows and non-Polymarket venue claims are checked. No free-text or LLM assertion is promoted to verified real relation.
+- R003 `test_rel_exhaustive_truth_tables_and_counterexamples` — Re-derive finite-state payout tables for implication, exclusivity, complement, same_event and event_sum, including directional counterexamples. Tie, void, cancellation, reschedule, fractional resolution and outcome reversal refuse or remain inconclusive if their actual payout semantics are unavailable.
+- R004 `test_rel_conditional_oracle3_baskets_and_native_costs` — When a relationship has a bounded formal payoff proof, enumerate its canonical basket legs and minimum payoff via adapted pinned Oracle3 formulas, use native offline venue-snapshot/fee/minimum/depth/freshness mechanics wherever compatible, and never invoke unauthorized WP172 executable-edge decisions.
+- R005 `test_rel_economic_unknown_fee_depth_clock_and_atomicity` — After-cost statuses require matched point-in-time native per-leg venue evidence, explicit current fee provenance and conservative round-up, valid depth/minimum, exact orientation and decision cutoff. Missing, expired or untrusted fees/quote, simultaneous-fill and cross-venue atomicity are explicit unknowns; never label executable or profit-proven.
+- R006 `test_rel_source_grounding_related_subcommand_and_cold_verify` — The existing source-grounding CLI obtains an opt-in related subcommand backed by the new runner, preserving unchanged run/verify behavior. Runner writes one content-addressed external scratch receipt; verify cold-rederives inputs, code, market/rule/quote identifiers and hash chains with zero writes/network.
+- R007 `test_rel_frozen_40_cases_baseline_denominators` — A frozen inline >=40-case SANITIZED_SYNTHETIC relation/nonrelation corpus compares the new verifier with a constructed native field/event grouping baseline on identical cases. Report candidate proposals, true/false matches, proven formal models, unknowns, abstentions, evaluable after-cost cases and actual numerators/denominators; do not claim positive real-world alpha.
+- R008 `test_rel_negative_matrix_authority_and_adoption_truth` — Negative tests prove fail-closed missing/contradictory rules and outcome orientation, copied/invented source IDs, future/wrong group evidence, negative-risk/combo, unsupported fee regime, stale depth, sockets/credentials/order/Alpha/WP170 writes, legacy SRC-01 compatibility, exact 12-file scope and five R3 adoption IDs without falsely closing the other 31.
+
+Run affected native SRC-01, Alpha discovery/queue, PIT record/rule, execution feasibility, WP170, no-live/security/architecture and source/boundary regressions, then ONE full local suite on stable candidate commit, and exact-head hosted CI + 11 required jobs if current workflow routes them. Run generated artifact guard, Gitleaks/security checks where installed, changed-file diff scope, PR evidence consistency guard on re-fetched posted body and actual branch head. The repo state machine permits `PRIVATE_REPO_MANUAL_VERIFIED` only with genuine fields; do not claim posted verifier PASS if optional comment missing. Preserve failures/skips/warnings and re-run affected tests if code moves after full suite. `docs/status_entries/S10-R3-REL-01.md` must be non-self-referential; live PR head/check details belong in PR body.
+
+HARD STOP if: pre-branch native readiness fails and cannot be fixed in two authorized WP files without a material authority/scope change; native source hash/orientation/rule meaning cannot be bound; evidence requires unapproved real provider or cross-venue settlement authentication; a real-world verified relation cannot be established from actual bytes; all actual economic proof would require writing forbidden native execution-feasibility/WP172 files; mandatory tested minimum source/quote/fee contract impossible within twelve paths; source/skill boundary unavailable; a protected independent certificate is genuinely required but absent. **Per-case** ambiguous rule/unknown fee/late quote/unsupported protocol is a counted INCONCLUSIVE outcome, NOT a WP-wide STOP. Continue all safe tasks even when no real economic positive is supportable. If material blocker prevents any honest minimum complete implementation, report it once via consolidated blocker ZIP, not microtasks.
+
+# 9. Report-back, successor boundary, mandatory single CC return ZIP
+
+Maintain 36 capability IDs/accepted owner register with no removal; this branch has five targeted IDs R3-03/R3-04/R3-11/R3-19/R3-03-FEES and never automatically marks real value or provider adopters complete. Keep 12 parity candidates open; keep six separate provider lanes, R3-02 retrieval improvement, real-source forecasting/learning, Hermes specialist citations, and independent Lane B all explicitly deferred with owner and next evidence stage. The owner-supplied CSV reconciliation is external handoff input; do not edit it in repo or treat it as automatic roadmap law.
+
+Return **EXACTLY one** ZIP named `S10-R3-REL-01_CC_RETURN.zip` stored outside checkout, whether complete or blocked. Include: `COMPLETION_OR_BLOCKER.md`; actual changed-file inventory and git diffs/SHAs; exact final WP prompt/spec and raw SHA256; valid native pre-branch readiness and final `--check-diff` output; mandatory first Ponytail skill activation plus applicable SKILL.md proof ledger; R001-R008 tests with failure/repair history; full suite/skip/warnings, security/secret scans; at least one real CLI SRC->relation->basket conditional receipt + cold verify; frozen 40+ labeled benchmark and independent recalculated numerators, unknown/no-source cases; per-leg fee/amount/depth evidence/limitations; upstream source use; exact live PR head/posted body/hosted CI evidence and final authority truth. If blocked before PR, return a truthful blocker ZIP with proof and no invented PR.
+
+CC's final response MUST give Karl: **SEND TO: Side24**. **ATTACH:** `S10-R3-REL-01_CC_RETURN.zip` only. **MESSAGE:** `Side24 — attached is S10-R3-REL-01_CC_RETURN.zip. Independently refresh main/PR/head and examine actual SRC/Alpha/PIT rule related-market discovery, formal payout proof, Oracle3 conditional basket/fee-depth mechanics, source authenticity boundaries, >=40-case same-corpus benchmark and denominators, native readiness, skills, security, full/hosted CI, posted PR evidence and all five adoption IDs. Decide MERGE_READY, TARGETED_FOLLOW_UP_REQUIRED or BLOCKED_NOT_READY. No merge. Return concise disposition and exact next action.` **EXPECTED RESULT:** independent Side24 assessment. **AFTERWARD:** Karl alone decides merge or authorizes only material new scope. No other Side chats.

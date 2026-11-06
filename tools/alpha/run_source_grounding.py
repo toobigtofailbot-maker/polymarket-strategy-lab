@@ -2,6 +2,9 @@
 
   run    --case CASE.json --scratch-dir DIR   freeze the named local inputs, rank, write one receipt
   verify --scratch-dir DIR                    cold recompute from the frozen copies; fail closed
+  related --grounding-scratch DIR --request-file REQ --scratch-dir DIR
+                                              opt-in S10-R3-REL-01 related-market research over a
+                                              verified SRC-01 scratch (tools/alpha/run_related_market_alpha.py)
 
 Inputs are only caller-named, already-existing local files (a native PIT record store, an
 optional Alpha Factory registry, rule-text bytes and source bytes). No discovery of
@@ -179,7 +182,15 @@ def main(argv: list[str] | None = None) -> int:
     first.add_argument("--case", required=True, type=Path)
     first.add_argument("--scratch-dir", required=True, type=Path)
     sub.add_parser("verify").add_argument("--scratch-dir", required=True, type=Path)
+    related = sub.add_parser("related", help="opt-in S10-R3-REL-01 related-market research (same run path)")
+    for flag in ("--grounding-scratch", "--request-file", "--scratch-dir"):
+        related.add_argument(flag, required=True, type=Path)
     args = parser.parse_args(argv)
+    if args.command == "related":
+        import tools.alpha.run_related_market_alpha as REL  # lazy: legacy run/verify never import it
+        result = REL.run_safe("run", args)
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result["status"] in REL.OK_STATUSES else 1
     try:
         result = run(args.case, args.scratch_dir) if args.command == "run" else verify(args.scratch_dir)
     except SG.GroundingStop as stop:

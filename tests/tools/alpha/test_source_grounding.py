@@ -584,7 +584,9 @@ def test_source_grounding_legacy_baseline_unchanged_and_no_authority(world, base
         tree = ast.parse(path.read_text(encoding="utf-8"))
         names = {n.module for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)} | \
                 {a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names}
-        assert names <= allowed | {"argparse", "contextlib", "shutil", "socket", "sys", "time"}, names
+        # S10-R3-REL-01: the only addition is the lazy opt-in `related` hook (never imported by run/verify).
+        assert names <= allowed | {"argparse", "contextlib", "shutil", "socket", "sys", "time",
+                                   "tools.alpha.run_related_market_alpha"}, names
     assert receipt["core"]["inputs"]["file_sha256"]["pit.sqlite3"] == before[world["pit"]]
 
 
@@ -661,3 +663,31 @@ def test_source_grounding_report_truthful_adoption_receipt(baseline_run):
     assert "elapsed_ms" in receipt["non_identity"] and "non_identity" not in core
     contract = (REPO_ROOT / "docs" / "source_grounding_contract.md").read_text(encoding="utf-8")
     assert CORPUS_SHA256 in contract and SG.RANKER_ID in contract and SG.BASELINE_ID in contract
+
+
+# ------------------------------------------------------------------ S10-R3-REL-01 compatibility
+
+
+def test_related_subcommand_is_opt_in_and_legacy_commands_unchanged(world, baseline_run, tmp_path, capsys):
+    """run/verify keep their outputs and exit meanings; `related` is additive and lazily imported."""
+    import subprocess
+    import sys
+    probe = ("import sys; import tools.alpha.run_source_grounding as C; "
+             "print('tools.alpha.run_related_market_alpha' in sys.modules)")
+    out = subprocess.run([sys.executable, "-B", "-c", probe], cwd=REPO_ROOT, capture_output=True, text=True, check=True)
+    assert out.stdout.strip() == "False"
+    code, scratch, receipt = _run(tmp_path, world["case"])
+    assert code == 0 and receipt["receipt_id"] == baseline_run[1]["receipt_id"]
+    capsys.readouterr()
+    assert CLI.main(["verify", "--scratch-dir", str(scratch)]) == 0
+    assert set(json.loads(capsys.readouterr().out)) == {"failures", "network_attempts", "receipt_id", "status"}
+    assert CLI.main(["verify", "--scratch-dir", str(tmp_path / "missing")]) == 1
+    capsys.readouterr()
+    # `related` refuses closed (sanitized) on an unusable request and never touches the legacy scratch.
+    before = {p: p.read_bytes() for p in scratch.rglob("*") if p.is_file()}
+    assert CLI.main(["related", "--grounding-scratch", str(scratch), "--request-file", str(tmp_path / "absent.json"),
+                     "--scratch-dir", str(tmp_path / "rel")]) == 1
+    assert json.loads(capsys.readouterr().out) == {"reason_code": "REQUEST_UNREADABLE", "status": "STOPPED"}
+    assert {p: p.read_bytes() for p in scratch.rglob("*") if p.is_file()} == before
+    with pytest.raises(SystemExit):
+        CLI.main(["related", "--scratch-dir", str(tmp_path / "rel2")])
