@@ -1,5 +1,14 @@
 # Deferred Items Log
 
+## S10-R3-LEARN-01 outcome learning feedback limitations
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-LEARN-01-D001 | The functional outcome -> score -> proposal loop runs only on SANITIZED_SYNTHETIC forecasts and synthetic later labels; no genuine prospectively collected outcome corpus exists | NOT_VALUE_VERIFIED | P1 | Caller-run `LOCAL_REAL_PIT` forecast receipts frozen before resolution, independently admitted later outcomes, then independent review, before any value/OOS/qualification claim | Receipt hard-codes `lift_status` `DIAGNOSTIC_ONLY_NOT_OOS_LIFT_NOT_VALUE`, `real_value_verified` false and `value_status` `NO_REAL_VALUE_VERIFIED`; S10-R3-FORECAST-01-D001 stays open. |
+| S10-R3-LEARN-01-D002 | Outcome source bytes cannot be attached, so any claimed `source_content_sha256` is refused as `SOURCE_CLAIM_UNVALIDATED`; imported labels stay `CALLER_IMPORTED_ORIGIN_UNAUTHENTICATED` | RECORDED_LIMITATION | P2 | A future owner-governed WP admitting immutable local settlement-evidence bytes (and, separately, an independent settlement origin) through native SRC-01/PIT source admission | `settlement_origin_verified` is always false; a local packet hash proves local integrity only. No provider, network or settlement source is contacted. |
+| S10-R3-LEARN-01-D003 | Future-research proposals are advisory receipt content only; nothing enters canonical Alpha memory, the priority queue, ResearchEpisodes, qualification or WP170 | OWNER_DECISION_PENDING | P2 | A separately authorized decision or WP that adopts selected proposals through native Alpha Factory builders | Alpha registry is opened read-only (`mode=ro`), the frozen copy is byte-identical to the caller file and no writer is referenced; unmatched groups are `ALPHA_LINK_UNVERIFIED` with no invented ids. |
+| S10-R3-LEARN-01-D004 | The local Windows host refuses unprivileged symlink creation (WinError 1314), so the symlink branch of the path-attack test skips locally | RECORDED_LOCAL_HOST_LIMITATION | P3 | Linux full-suite and exact-head hosted CI execute the branch | Hard-link, relative, in-repo and non-empty-scratch refusals run on every host; `is_symlink` refusal is shared with the merged FORECAST-01 operator. |
+
 ## S10-R3-FORECAST-01 forecast evaluation limitations
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
