@@ -55,7 +55,7 @@ Authority / Non-Authority: offline RESEARCH_ONLY and HUMAN_REVIEW_REQUIRED, exte
 
 # 3. Exact changed-file scope and compatibility limits
 Required = allowed = maximum 9 tracked paths:
-1. `src/data_layer/analytical_research/hermes_cooperation.py`
+1. `src/data_layer/analytical_research/research_cooperation.py`
 2. `tools/alpha/run_hermes_cooperation.py`
 3. `tests/tools/alpha/test_hermes_cooperation.py`
 4. `tests/tools/alpha/test_source_grounding.py`

@@ -19,7 +19,7 @@ import sys
 
 import pytest
 
-from src.data_layer.analytical_research import hermes_cooperation as HC
+from src.data_layer.analytical_research import research_cooperation as HC
 from src.data_layer.analytical_research import source_grounding as SG
 from src.research_runtime.hermes_controlled_runtime import models as HM
 from tests.data_layer.analytical_research.test_alpha_discovery import _alpha_registry, _pit_store
@@ -680,7 +680,7 @@ def test_coop_scope_adoption_negative_matrix_and_legacy_src(grounding, coop_run,
     assert SGCLI.main(["verify", "--scratch-dir", str(grounding["scratch"])]) == 0
     assert grounding["receipt"]["core"]["code_identity"] == SGCLI.code_identity()
     probe = ("import sys; import tools.alpha.run_source_grounding as C; "
-             "print('src.data_layer.analytical_research.hermes_cooperation' in sys.modules)")
+             "print('src.data_layer.analytical_research.research_cooperation' in sys.modules)")
     out = subprocess.run([sys.executable, "-B", "-c", probe], cwd=REPO_ROOT, capture_output=True, text=True, check=True)
     assert out.stdout.strip() == "False"
     allowed = {"__future__", "collections", "dataclasses", "json", "pathlib", "re", "argparse", "hashlib", "os",
@@ -694,7 +694,7 @@ def test_coop_scope_adoption_negative_matrix_and_legacy_src(grounding, coop_run,
         assert names <= allowed, names
         imported = {a.name for n in ast.walk(tree) if isinstance(n, ast.ImportFrom) for a in n.names}
         assert imported <= {"annotations", "Counter", "asdict", "Path", "source_grounding", "research_provenance", "models",
-                            "hermes_cooperation", "run_source_grounding"}, imported
+                            "research_cooperation", "run_source_grounding"}, imported
     core = coop_run[1]["core"]
     assert core["adoption"]["R3-05"] == "OFFLINE_RESEARCH_COOP_FUNCTIONAL_NOT_REAL_HERMES_DELEGATION_INTEGRATED"
     assert core["adoption"]["R3-05-CITATIONS"] == "OFFLINE_CITATION_LEDGER_FUNCTIONAL_NOT_VALUE_VERIFIED"

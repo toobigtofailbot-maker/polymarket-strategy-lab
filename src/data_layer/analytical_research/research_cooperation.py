@@ -43,7 +43,7 @@ RECEIPT_PREFIX = "hermescoop:sha256:"
 METHOD_ID = "two_role_cooperation_v1"
 BASELINE_ID = "baseline_single_role_v0"
 CALLER = ("tools/alpha/run_hermes_cooperation.py:run -> run_source_grounding.verify -> source_grounding.load_corpus/"
-          "bind_rule_texts/evaluate_sources/join_alpha_candidates -> hermes_cooperation.build_core")
+          "bind_rule_texts/evaluate_sources/join_alpha_candidates -> research_cooperation.build_core")
 ROLES = ("FORECASTER", "FALSIFIER")
 STANCES = ("FOR", "AGAINST", "UNCERTAIN")
 OPPOSITE_STANCE = {"FOR": "AGAINST", "AGAINST": "FOR"}  # UNCERTAIN never contradicts

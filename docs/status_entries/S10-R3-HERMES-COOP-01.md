@@ -15,7 +15,7 @@ Package prompt SHA256 `2d588f791a5769f21ef25a39586cbee2f07b61e7bbccbcc384e1bdb73
 
 ## Implementation
 
-Contract: `docs/hermes_cooperation_citation_contract.md`. One finite offline operator `tools/alpha/run_hermes_cooperation.py` (`run`/`verify`) over the library `src/data_layer/analytical_research/hermes_cooperation.py`.
+Contract: `docs/hermes_cooperation_citation_contract.md`. One finite offline operator `tools/alpha/run_hermes_cooperation.py` (`run`/`verify`) over the library `src/data_layer/analytical_research/research_cooperation.py`.
 
 - **Call path:** frozen copy of an SRC-01 scratch -> the real, unedited `run_source_grounding.verify` (must be `VERIFIED` and match the case's `grounding_receipt_id`) -> native `load_corpus`/`bind_rule_texts`/`evaluate_sources`/`join_alpha_candidates` -> per-question assessment -> one write-once content-addressed `hermescoop:sha256:` receipt with a native `ResearchProvenanceManifest`.
 - **SRC-01 compatibility:** `tools/alpha/run_source_grounding.py` is not edited (git blob `49eb952984c50d5f38d1afd8e11ff90f14af2a33` pinned by test); its `code_identity` and historic receipts stay valid; no Hermes module is imported by it.

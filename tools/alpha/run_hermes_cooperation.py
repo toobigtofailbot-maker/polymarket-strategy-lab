@@ -5,7 +5,7 @@
 
 Call path: copy of an existing S10-R3-SRC-01 scratch -> native ``run_source_grounding.verify``
 (cold recompute, must be VERIFIED) -> native ``load_corpus``/``bind_rule_texts``/
-``evaluate_sources``/``join_alpha_candidates`` -> ``hermes_cooperation.build_core`` -> one
+``evaluate_sources``/``join_alpha_candidates`` -> ``research_cooperation.build_core`` -> one
 content-addressed RESEARCH_ONLY receipt. The FORECASTER/FALSIFIER submissions in the case file
 are caller-supplied; this tool never runs Hermes, ``delegate_task``, a provider, a model or a
 socket (every socket entry point is blocked). Writes only inside one empty absolute scratch
@@ -30,7 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.data_layer.analytical_research import hermes_cooperation as HC  # noqa: E402
+from src.data_layer.analytical_research import research_cooperation as HC  # noqa: E402
 from src.data_layer.analytical_research import source_grounding as SG  # noqa: E402
 from src.research_runtime.hermes_controlled_runtime import models as HM  # noqa: E402
 from tools.alpha import run_source_grounding as SGCLI  # noqa: E402

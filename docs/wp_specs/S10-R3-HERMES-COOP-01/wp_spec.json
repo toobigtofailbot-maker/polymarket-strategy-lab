@@ -22,7 +22,7 @@
   },
   "scope": {
     "required_changed_files": [
-      "src/data_layer/analytical_research/hermes_cooperation.py",
+      "src/data_layer/analytical_research/research_cooperation.py",
       "tools/alpha/run_hermes_cooperation.py",
       "tests/tools/alpha/test_hermes_cooperation.py",
       "tests/tools/alpha/test_source_grounding.py",
@@ -33,7 +33,7 @@
       "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_spec.json"
     ],
     "allowed_changed_files": [
-      "src/data_layer/analytical_research/hermes_cooperation.py",
+      "src/data_layer/analytical_research/research_cooperation.py",
       "tools/alpha/run_hermes_cooperation.py",
       "tests/tools/alpha/test_hermes_cooperation.py",
       "tests/tools/alpha/test_source_grounding.py",
@@ -157,7 +157,7 @@
     "reason": "Nine exact authorized path changes; one new library+native CLI, existing SRC unchanged for historical content-addressed receipt compatibility.",
     "items": [
       {
-        "surface": "src/data_layer/analytical_research/hermes_cooperation.py",
+        "surface": "src/data_layer/analytical_research/research_cooperation.py",
         "before": "ABSENT",
         "after": "Pure source-verified two-role validation, citation ledger and claim reconciliation; read-only imports of source_grounding and native Hermes draft schema only.",
         "change_authorized": true,
