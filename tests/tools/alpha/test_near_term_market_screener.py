@@ -1244,3 +1244,303 @@ def test_prior_public_scan_replay_and_near_term_counterexample(tmp_path):
     assert m['summary']['assessment']=='EVIDENCE_INCOMPLETE'
     assert N.verify(root)['status']=='VERIFIED'
     test_missing_category_and_conservative_fee_bound_provenance(tmp_path)
+
+
+# S10-ALPHA-STRAT-01: opt-in category-stratified lanes; synthetic sources only.
+TAGS = [tag for tag, _ in N.LANES]
+V3 = 'near-term-market-screen@3.0.0'
+
+
+def lane_page(lane, start, count, delta=60, **changes):
+    return [market(100000 * (lane + 1) + start + i, delta=delta, **changes) for i in range(count)]
+
+
+def strat(tmp_path, lane_pages, days=3, transport=None, **kwargs):
+    """lane_pages maps tag -> list of pages (list, bytes or a status-class string)."""
+    calls = []
+
+    def fake(url, timeout, maximum):
+        calls.append(url)
+        if '/markets?' in url:
+            query = dict(N.urllib.parse.parse_qsl(N.urllib.parse.urlsplit(url).query))
+            pages = lane_pages.get(query['tag_id'], [])
+            i = int(query['offset']) // 100
+            value = pages[i] if i < len(pages) else []
+            if isinstance(value, str):
+                return value, None
+        else:
+            token = url.split('token_id=')[1]
+            value = book(by_token[token], token)
+        return 'HTTP_2XX', value if isinstance(value, bytes) else json.dumps(value).encode()
+
+    by_token = {t: m for pages in lane_pages.values() for page in pages if isinstance(page, list)
+                for m in page for t in json.loads(m['clobTokenIds'])}
+    root = tmp_path / ('strat-' + str(len(list(tmp_path.iterdir()))))
+    result = N.run(root, transport=transport or fake, clock_ns=kwargs.pop('clock_ns', lambda: NOW),
+                   horizon_days=days, **kwargs)
+    path = root / 'op-000001/manifest.json'
+    manifest = json.loads(path.read_bytes()) if path.exists() else None
+    return root, result, manifest, calls
+
+
+def _rehash_strat(root):
+    op = root / 'op-000001'; manifest = json.loads((op / 'manifest.json').read_bytes())
+    term = N.terminal('COMPLETED', N.digest((op / 'manifest.json').read_bytes()), manifest['summary'], V3)
+    (op / 'terminal.json').write_bytes(N.canonical(term) + b'\n')
+    (root / 'index-op-000001.json').write_bytes(N.canonical(dict(operation='op-000001',
+        terminal_sha256=N.digest((op / 'terminal.json').read_bytes()))) + b'\n')
+
+
+def _lanes(m):
+    return {lane['tag_id']: lane for lane in m['lanes']}
+
+
+def test_strat_legacy_default_and_all_horizons_unchanged(tmp_path):
+    root, _, m, calls = execute(tmp_path, [[market()]])
+    assert json.loads((root / 'config.json').read_bytes()) == N.CONFIG and 'lanes' not in m
+    assert m['schema_version'] == N.SCHEMA and calls[0] == N.discovery_url(0, NOW)
+    assert N.verify(root)['status'] == 'VERIFIED'
+    root, _, m, calls = execute(tmp_path, [[market()]], all_horizons=True)
+    assert json.loads((root / 'config.json').read_bytes()) == dict(N.CONFIG, window_s=0)
+    assert 'tag_id' not in calls[0] and N.verify(root)['status'] == 'VERIFIED'
+    # Opt-in conflicts and invalid horizons refuse before any write or dispatch.
+    for days, extra in [(3, dict(all_horizons=True)), (0, {}), (31, {}), (True, {}), ('3', {}), (3.0, {}), (-1, {})]:
+        target = tmp_path / ('refused-' + str(len(list(tmp_path.iterdir()))))
+        result = N.run(target, transport=lambda *a: pytest.fail('dispatch'), horizon_days=days, **extra)
+        assert result['status'] == 'BLOCKED' and not target.exists()
+    assert N.main(['verify', '--scratch-dir', str(root), '--horizon-days', '3']) == 1
+    assert N.main(['run', '--scratch-dir', str(tmp_path / 'cli'), '--horizon-days', 'x']) == 1
+    assert N.main(['run', '--scratch-dir', str(tmp_path / 'cli'), '--horizon-days', '31']) == 1
+    assert not (tmp_path / 'cli').exists()
+    # A tagged query is not a legacy v2 discovery receipt.
+    root, _, _, _ = execute(tmp_path, [[]])
+    op = root / 'op-000001'; receipt = json.loads((op / 'receipt-01.json').read_bytes())
+    receipt['url'] = N.strat_url('84', 0, NOW, 3)
+    (op / 'receipt-01.json').write_bytes(N.canonical(receipt) + b'\n')
+    (op / 'request-01.started.json').write_bytes(N.canonical({k: receipt[k] for k in N.FIELDS['request']}) + b'\n')
+    assert N.verify(root)['status'] == 'BLOCKED'
+
+
+def test_strat_four_verified_lanes_and_unknown_row_category(tmp_path):
+    pages = {tag: [lane_page(i, 0, 1, category=None)] for i, tag in enumerate(TAGS)}
+    root, result, m, calls = strat(tmp_path, pages)
+    assert result['status'] == 'COMPLETED' and N.verify(root)['status'] == 'VERIFIED'
+    assert TAGS == ['84', '100328', '74', '1']
+    assert calls[:4] == [N.strat_url(tag, 0, NOW, 3) for tag in TAGS]
+    config = json.loads((root / 'config.json').read_bytes())
+    assert config['tag_lanes'] == [['84', 'Weather'], ['100328', 'Economy'], ['74', 'Science'], ['1', 'Sports']]
+    assert [(l['tag_id'], l['label']) for l in m['lanes']] == [tuple(l) for l in config['tag_lanes']]
+    # The lane is query provenance; a missing row category stays missing.
+    assert [r['lane_tag_ids'] for r in m['markets']] == [[tag] for tag in TAGS]
+    assert {(r['category_key'], r['category_origin']) for r in m['markets']} == {('UNKNOWN', 'MISSING')}
+    assert m['categories'] == [{'category_key': 'UNKNOWN', 'label': 'UNKNOWN', 'market_count': 4, 'malformed_count': 4}]
+    for forged in ['2', '21', '084', ' 84', '', None, 84]:
+        with pytest.raises((ValueError, TypeError)):
+            N.strat_url(forged, 0, NOW, 3)
+    with pytest.raises(ValueError):
+        N.checked_url(N.strat_url('84', 0, NOW, 3).replace('tag_id=84', 'tag_id=2'))
+
+
+def test_strat_ordered_fixed_host_query_and_closed_invalid_query(tmp_path):
+    url = N.strat_url('100328', 300, NOW, 7)
+    assert url == ('https://gamma-api.polymarket.com/markets?closed=false&active=true&tag_id=100328'
+                   '&end_date_min=2026-10-28T12%3A00%3A00Z&end_date_max=2026-11-04T12%3A00%3A00Z'
+                   '&order=endDate&ascending=true&limit=100&offset=300')
+    assert N.checked_url(url, NOW) == N.checked_url(url) == url
+    base = 'https://gamma-api.polymarket.com/markets?'
+    query = url.split('?')[1]
+    bad = [url.replace('https://gamma-api', 'http://gamma-api'), url.replace('gamma-api.', 'gamma-api2.'),
+           url.replace('/markets?', '/events?'), url + '&tag_id=84', url + '&extra=1',
+           url.replace('&active=true', ''), base + '&'.join(reversed(query.split('&'))),
+           url.replace('order=endDate', 'order=startDate'), url.replace('ascending=true', 'ascending=false'),
+           url.replace('limit=100', 'limit=50'), url.replace('offset=300', 'offset=350'),
+           url.replace('offset=300', 'offset=2000'), url.replace('offset=300', 'offset=+300'),
+           url.replace('2026-11-04T12%3A00%3A00Z', '2026-11-04T12%3A00%3A01Z'),
+           N.strat_url('100328', 300, NOW, 30).replace('2026-11-27', '2026-11-28'),
+           url.replace('2026-10-28T12%3A00%3A00Z', '2026-10-28T12%3A00%3A00%2B00%3A00'),
+           url.replace('closed=false', 'closed=true'), url.replace('active=true', 'active=1')]
+    for candidate in bad:
+        with pytest.raises(ValueError):
+            N.checked_url(candidate)
+    with pytest.raises(ValueError):
+        N.checked_url(url, NOW + N.NS)  # lower bound must equal the run clock
+    # Reversed, missing and cross-page decreasing endDate stop only that lane.
+    reversed_page = lane_page(0, 0, 3); reversed_page[1]['endDate'] = text_time(NOW + 30 * N.NS)
+    missing = lane_page(1, 0, 2); missing[1].pop('endDate')
+    later = lane_page(2, 0, 100, delta=600); earlier = lane_page(2, 100, 5, delta=60)
+    root, _, m, calls = strat(tmp_path, {'84': [reversed_page], '100328': [missing], '74': [later, earlier],
+                                         '1': [lane_page(3, 0, 2)]})
+    lanes = _lanes(m)
+    assert [lanes[t]['stop_reason'] for t in TAGS] == ['ORDER_UNVERIFIED'] * 3 + ['PAGE_BOUND_REACHED']
+    assert m['coverage']['stop_reason'] == 'ORDER_UNVERIFIED'
+    assert m['summary']['assessment'] == 'EVIDENCE_INCOMPLETE'
+    assert lanes['74']['pages'] == 2 and lanes['74']['raw_rows'] == 105
+    assert N.verify(root)['status'] == 'VERIFIED'
+
+
+def test_strat_fair_paging_horizon_bounds_and_stop_denominators(tmp_path):
+    full = lambda lane, page: lane_page(lane, page * 100, 100)
+    # Fair rotation: a dominant lane cannot exhaust the shared page budget first.
+    root, _, m, calls = strat(tmp_path, {'84': [full(0, p) for p in range(4)] + [lane_page(0, 400, 1)],
+                                         '100328': [full(1, 0), lane_page(1, 100, 1)],
+                                         '74': [[]], '1': [lane_page(3, 0, 1)]})
+    discovery = [u for u in calls if '/markets?' in u]
+    assert discovery == [N.strat_url(t, o, NOW, 3) for t, o in [('84', 0), ('100328', 0), ('74', 0), ('1', 0),
+        ('84', 100), ('100328', 100), ('84', 200), ('84', 300), ('84', 400)]]
+    lanes = _lanes(m)
+    assert [(lanes[t]['pages'], lanes[t]['raw_rows'], lanes[t]['new_unique']) for t in TAGS] == [
+        (5, 401, 401), (2, 101, 101), (1, 0, 0), (1, 1, 1)]
+    assert {l['stop_reason'] for l in m['lanes']} == {'PAGE_BOUND_REACHED'} == {m['coverage']['stop_reason']}
+    assert m['coverage']['raw_rows'] == sum(l['raw_rows'] for l in m['lanes']) == 503
+    assert N.verify(root)['status'] == 'VERIFIED'
+    # Shared 20-page cap: five full pages per lane, every lane truncated, no 21st page.
+    root, _, m, calls = strat(tmp_path, {t: [full(i, p) for p in range(20)] for i, t in enumerate(TAGS)})
+    assert len([u for u in calls if '/markets?' in u]) == 20 and len(calls) <= N.CONFIG['request_cap']
+    assert [(l['pages'], l['stop_reason']) for l in m['lanes']] == [(5, 'COVERAGE_TRUNCATED')] * 4
+    assert m['coverage']['raw_rows'] == 2000 and m['coverage']['stop_reason'] == 'COVERAGE_TRUNCATED'
+    assert N.verify(root)['status'] == 'VERIFIED'
+    # Mixed lane failures keep lane-specific states; aggregate is the first incomplete lane.
+    root, _, m, _ = strat(tmp_path, {'84': [lane_page(0, 0, 1)], '100328': ['HTTP_4XX'],
+                                     '74': [full(2, 0), full(2, 0)], '1': ['HTTP_5XX']})
+    assert [_lanes(m)[t]['stop_reason'] for t in TAGS] == ['PAGE_BOUND_REACHED', 'FILTER_CONTRACT_UNVERIFIED',
+        'SORT_OR_PAGINATION_UNVERIFIED', 'SOURCE_UNAVAILABLE']
+    assert m['coverage']['stop_reason'] == 'FILTER_CONTRACT_UNVERIFIED' and _lanes(m)['74']['identical_duplicates'] == 100
+    assert N.verify(root)['status'] == 'VERIFIED'
+    root, _, m, _ = strat(tmp_path, {'84': [b'[{']} | {t: [[]] for t in TAGS[1:]})
+    assert _lanes(m)['84']['stop_reason'] == 'SOURCE_INVALID' and N.verify(root)['status'] == 'VERIFIED'
+    # Horizon is a whole-day window from the run clock.
+    edge = [market(1, delta=3 * 86400), market(2, delta=3 * 86400 + 1)]
+    _, _, m, _ = strat(tmp_path, {'84': [edge]})
+    assert [r['time_state'] for r in m['markets']] == ['IN_WINDOW', 'FUTURE_OUTSIDE']
+    assert m['markets'][1]['filter_state'] == 'FILTER_MISMATCH'
+    # Monotonic budget expiry leaves the remaining active lanes honestly exhausted.
+    seen = []
+    tick = lambda: 0.0 if len(seen) < 2 else 300.0
+    def counted(url, *args):
+        seen.append(url); return 'HTTP_2XX', json.dumps(full(len(seen), 0)).encode()
+    _, _, m, _ = strat(tmp_path, {}, transport=counted, monotonic=tick)
+    assert [_lanes(m)[t]['stop_reason'] for t in TAGS] == ['ACQUISITION_BUDGET_EXHAUSTED'] * 4
+    assert [_lanes(m)[t]['pages'] for t in TAGS] == [1, 1, 0, 0] and len(seen) == 2
+
+
+def test_strat_dedup_conflict_and_cold_provenance_tamper(tmp_path, monkeypatch):
+    shared, conflict = market(7), market(8)
+    changed = dict(conflict, question='different')
+    root, _, m, _ = strat(tmp_path, {'84': [[shared]], '100328': [[conflict]], '74': [[changed]], '1': [[shared]]})
+    rows = {r['market_id']: r for r in m['markets']}
+    assert rows['7']['lane_tag_ids'] == ['84', '1'] and rows['8']['lane_tag_ids'] == ['100328', '74']
+    assert 'PAGE_CONFLICT' in rows['8']['reason_codes'] and rows['8']['selection_state'] == 'INELIGIBLE'
+    assert (m['coverage']['identical_duplicates'], m['coverage']['conflicting_ids'], m['coverage']['unique_ids']) == (1, 1, 2)
+    lanes = _lanes(m)
+    assert [(lanes[t]['new_unique'], lanes[t]['identical_duplicates'], lanes[t]['conflicting_ids']) for t in TAGS] == [
+        (1, 0, 0), (1, 0, 0), (0, 0, 1), (0, 1, 0)]
+    assert m['sources'][0]['raw_sha256'] == N.digest((root / 'op-000001/raw-01.bin').read_bytes())
+    monkeypatch.setattr(socket, 'socket', lambda *a, **k: pytest.fail('network in verify'))
+    assert N.verify(root)['status'] == 'VERIFIED'
+    original = {p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}
+
+    def restore():
+        for rel, raw in original.items():
+            (root / rel).write_bytes(raw)
+
+    def manifest_edit(change):
+        value = json.loads((root / 'op-000001/manifest.json').read_bytes()); change(value)
+        (root / 'op-000001/manifest.json').write_bytes(N.canonical(value) + b'\n'); _rehash_strat(root)
+
+    def record_edit(name, change):
+        path = root / name; value = json.loads(path.read_bytes()); change(value)
+        path.write_bytes(N.canonical(value) + b'\n')
+
+    tampers = [
+        lambda: manifest_edit(lambda v: v['lanes'][0].update(tag_id='2')),
+        lambda: manifest_edit(lambda v: v['lanes'][2].update(conflicting_ids=0)),
+        lambda: manifest_edit(lambda v: v['markets'][0].update(lane_tag_ids=['84'])),
+        lambda: manifest_edit(lambda v: v['coverage'].update(identical_duplicates=0)),
+        lambda: manifest_edit(lambda v: v.update(schema_version=N.SCHEMA)),
+        lambda: manifest_edit(lambda v: v.pop('lanes')),
+        lambda: record_edit('config.json', lambda v: v.update(window_s=4 * 86400)),
+        lambda: record_edit('config.json', lambda v: v.update(tag_lanes=v['tag_lanes'][::-1])),
+        lambda: record_edit('op-000001/started.json', lambda v: v.update(schema_version=N.SCHEMA)),
+        lambda: (root / 'op-000001/raw-02.bin').write_bytes(b'[]'),
+    ]
+    for tag in ['74', '2']:  # forged lane in both the request and its receipt
+        def swap(tag=tag):
+            for name in ['op-000001/receipt-01.json', 'op-000001/request-01.started.json']:
+                record_edit(name, lambda v: v.update(url=v['url'].replace('tag_id=84', 'tag_id=' + tag)))
+        tampers.append(swap)
+    tampers.append(lambda: [record_edit(n, lambda v: v.update(url=v['url'].replace('offset=0', 'offset=100')))
+                            for n in ['op-000001/receipt-02.json', 'op-000001/request-02.started.json']])
+    for tamper in tampers:
+        restore(); assert N.verify(root)['status'] == 'VERIFIED'
+        tamper(); assert N.verify(root)['status'] == 'BLOCKED'
+    # Cross-version: v3 capture under a v2 config, and v2 records under a v3 config.
+    restore()
+    (root / 'config.json').write_bytes(N.canonical(N.CONFIG) + b'\n')
+    assert N.verify(root)['status'] == 'BLOCKED'
+    legacy, _, _, _ = execute(tmp_path, [[market()]])
+    (legacy / 'config.json').write_bytes(N.canonical(N.strat_config(3)) + b'\n')
+    assert N.verify(legacy)['status'] == 'BLOCKED'
+
+
+def test_strat_neg_risk_and_no_ask_remain_inconclusive(tmp_path):
+    neg, empty, ok = dict(market(1), negRisk=True), market(2, delta=120), market(3, delta=180)
+    root, _, m, calls = strat(tmp_path, {'84': [[neg]], '100328': [[empty]], '1': [[ok]]})
+    rows = {r['market_id']: r for r in m['markets']}
+    assert 'NEG_RISK_UNSUPPORTED' in rows['1']['reason_codes'] and rows['1']['selection_state'] == 'INELIGIBLE'
+    assert [r['selection_state'] for r in (rows['2'], rows['3'])] == ['SELECTED', 'SELECTED']
+    assert not any(t['market_id'] == '1' for t in m['tokens'])
+    # A no-ask or stale book is never upgraded to a mechanical pass in the new mode.
+    for change in [dict(asks=[]), dict(timestamp=str(NOW // 10**6 - 30001))]:
+        def transport(url, *a, change=change):
+            if '/markets?' in url:
+                tag = dict(N.urllib.parse.parse_qsl(N.urllib.parse.urlsplit(url).query))['tag_id']
+                return 'HTTP_2XX', json.dumps([empty] if tag == '84' else []).encode()
+            token = url.split('token_id=')[1]
+            return 'HTTP_2XX', json.dumps(dict(book(empty, token), **change)).encode()
+        _, _, m, _ = strat(tmp_path, {}, transport=transport)
+        assert len(m['tokens']) == 2 and all(t['state'] == UNKNOWN for t in m['tokens'])
+        assert all(t['shares'] is None and t['all_in_usd'] is None for t in m['tokens'])
+    assert N.FEE_EXPIRY == 1793750400 * 10**9
+    assert {t['fee_policy_expiry_utc'] for t in m['tokens']} == {'2026-11-04T00:00:00Z'}
+    assert m['summary']['claim'] == 'RESEARCH_ONLY' and m['summary']['resolution_within_120m_confirmed_count'] == 0
+    # After fee-policy expiry the stratified mode does not extend it.
+    after = dict(market(4), endDate=text_time(N.FEE_EXPIRY + 60 * N.NS))
+    _, _, late, _ = strat(tmp_path, {'84': [[after]]}, clock_ns=lambda: N.FEE_EXPIRY)
+    assert len(late['tokens']) == 2 and all(t['state'] == UNKNOWN for t in late['tokens'])
+
+
+def test_strat_offline_fixture_zero_product_network(tmp_path, monkeypatch):
+    monkeypatch.setattr(socket, 'socket', lambda *a, **k: pytest.fail('product network'))
+    monkeypatch.setattr(socket, 'create_connection', lambda *a, **k: pytest.fail('product network'))
+    monkeypatch.setattr(N.urllib.request.OpenerDirector, 'open', lambda *a, **k: pytest.fail('product network'))
+    root, result, m, calls = strat(tmp_path, {t: [lane_page(i, 0, 1)] for i, t in enumerate(TAGS)})
+    assert result['status'] == 'COMPLETED' and N.verify(root)['status'] == 'VERIFIED'
+    assert len(calls) == 4 + 8 and all(u.startswith(('https://gamma-api.polymarket.com/markets?',
+        'https://clob.polymarket.com/book?token_id=')) for u in calls)
+    assert len([u for u in calls if 'book?' in u]) <= N.CONFIG['book_cap']
+    # The sole real transport refuses forged lane queries before any connection attempt.
+    for url in [N.strat_url('84', 0, NOW, 3).replace('tag_id=84', 'tag_id=2'), N.strat_url('84', 0, NOW, 3) + '&x=1']:
+        with pytest.raises(ValueError):
+            N.public_read(url, 15, 100)
+
+
+def test_strat_report_schema_and_source_confidence(tmp_path):
+    root, result, m, _ = strat(tmp_path, {'84': [[market(1)]], '74': [[market(2, category='Science')]]}, days=1)
+    op = root / 'op-000001'
+    records = [json.loads(p.read_bytes()) for p in sorted(op.glob('*.json'))]
+    assert {r['schema_version'] for r in records} == {V3} and result['schema_version'] == V3
+    assert json.loads((root / 'config.json').read_bytes()) == N.strat_config(1)
+    assert N.strat_config(1)['window_s'] == 86400 and set(N.strat_config(1)) == set(N.CONFIG) | {'tag_lanes'}
+    assert set(m) == set(N.FIELDS['strat_manifest']) and all(set(l) == set(N.FIELDS['lane']) for l in m['lanes'])
+    assert all(set(r) == set(N.FIELDS['strat_market']) for r in m['markets'])
+    assert set(m['coverage']) == set(N.FIELDS['coverage'])
+    assert m['coverage']['external_universe_completeness'] == m['summary']['external_universe_completeness'] == 'UNPROVEN'
+    assert m['summary']['claim'] == 'RESEARCH_ONLY'
+    verified = N.verify(root)
+    assert verified['status'] == 'VERIFIED' and verified['schema_version'] == N.SCHEMA
+    assert verified['network_attempts'] == verified['provider_dispatches'] == 0
+    raw = (op / 'manifest.json').read_text()
+    assert 'Weather' in raw and 'gamma-api' not in raw  # lane labels, never source URLs
+    contract = (Path(__file__).parents[3] / 'docs/near_term_market_screener_contract.md').read_text()
+    for text in [V3, '--horizon-days', 'tag_id=84', '100328', 'lane_tag_ids', 'RESEARCH_ONLY', 'not row-level']:
+        assert text in contract
