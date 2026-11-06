@@ -1,0 +1,533 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-REL-01",
+    "title": "Rule-Verified Related-Market Discovery and Conditional Basket Economics",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_RELATED_MARKET_RULE_AND_BASKET_ECONOMICS",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-rel-01",
+    "required_predecessor": {
+      "pr_number": 271,
+      "head_sha": "008df16232caeb8cfde3cb2f1696955bcab6a905",
+      "merge_sha": "05a5e6a0c98f4ebd468fe0bdbf81ac07394a3474"
+    },
+    "objective": "One callable native SRC-01/Alpha/PIT-grounded related-market discovery and conditional economic assessment operator covering owner-approved R3-REL-01 plus R3-REL-ECON-01: verify rule-byte/source and admissible payout identity, enumerate logical relations and Oracle3-style baskets, measure conservative native multi-leg quotes/fees/depth when supportable, compare on a frozen 40+ same-case corpus, publish one cold-verifiable read-only research receipt. No unapproved provider, fee-policy extension, funds, positions, orders, execution, Hermes or canonical-store changes.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/related_market.py",
+      "src/data_layer/analytical_research/related_market_economics.py",
+      "tools/alpha/run_related_market_alpha.py",
+      "tools/alpha/run_source_grounding.py",
+      "tests/tools/alpha/test_related_market_alpha.py",
+      "tests/tools/alpha/test_related_market_economics.py",
+      "tests/tools/alpha/test_source_grounding.py",
+      "docs/related_market_alpha_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-REL-01.md",
+      "docs/wp_specs/S10-R3-REL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-REL-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/related_market.py",
+      "src/data_layer/analytical_research/related_market_economics.py",
+      "tools/alpha/run_related_market_alpha.py",
+      "tools/alpha/run_source_grounding.py",
+      "tests/tools/alpha/test_related_market_alpha.py",
+      "tests/tools/alpha/test_related_market_economics.py",
+      "tests/tools/alpha/test_source_grounding.py",
+      "docs/related_market_alpha_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-REL-01.md",
+      "docs/wp_specs/S10-R3-REL-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-REL-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 12,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tools/alpha/run_source_grounding.py",
+      "tests/tools/alpha/test_source_grounding.py"
+    ],
+    "rollback_surface": "Revert only twelve exact changed files. Keep PR268 branch and code, original SRC-01 source-grounding run/verify outputs, legacy ALPHA/PIT/WP170/strategy/execution/Hermes workflows, fixed fee expiry, other provider/lane-B owner state untouched. Scratch receipts outside checkout are not committed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One L-sized integrated source->formal-rule->conditional-basket native research path. There are two pure source modules, one caller and one compatibility-only existing CLI hook; no new framework.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/related_market.py",
+        "before": "No rule-grounded related-market candidate verifier native to the merged Alpha/SRC discovery paths.",
+        "after": "Pure bounded models, closed rule-binding/finite-payout verifier, counterexample and abstention output.",
+        "change_authorized": true,
+        "compatibility_requirement": "Read only SG.load_corpus / alpha_discovery ObservedMarketState, PIT rule snapshots; no native registry or cached untrusted LLM relation authoritativeness.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/related_market_economics.py",
+        "before": "No native research-only conditional basket composer for independently verified related markets.",
+        "after": "Pure Oracle3-like per-relation payoff lower bound and fee/depth/quote/atomicity assessment; no tradeable label.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use compatible native execution_feasibility/public_market normalization and economic math; no replacement WP172 executor or invented current fee regime.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_related_market_alpha.py",
+        "before": "No finite directly callable SRC->related candidates->basket economics->cold verify operator.",
+        "after": "run/verify CLI with external bounded frozen scratch, no socket, immutable receipt, exact counters and noncanonical research output.",
+        "change_authorized": true,
+        "compatibility_requirement": "Cold-verify native SRC-01 receipt and native PIT store; no copy of source bytes without verified hash or external DB mutation.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_source_grounding.py",
+        "before": "Existing run/verify commands only; no opt-in downstream related-market composition.",
+        "after": "Add only an opt-in related subcommand that delegates to new run_related_market_alpha using existing receipt and request files.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing run/verify CLI behavior, receipts and verification must remain byte-stable; retain no network/credential/order behavior.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_related_market_alpha.py",
+        "before": "No related-market native end-to-end tests.",
+        "after": "R001-R003/R006-R008 concentrated source/logic/benchmark/negative tests and reproducible corpus.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use original SRC-01 synthetic fixture and native PIT builders, never monkeypatch a fake success into the actual CLI.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_related_market_economics.py",
+        "before": "No native Oracle3/fee/depth relation economics regression vectors.",
+        "after": "R004/R005 plus exhaustive payout, fee, depth, sensitivity, stale/unknown and unsupported-protocol vectors.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use no non-native trading client/network; conditional test profits not live returns.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_source_grounding.py",
+        "before": "Existing SRC-01 baseline tests.",
+        "after": "Add narrow regression assertions for new optional related subcommand and byte-equivalent old run/verify.",
+        "change_authorized": true,
+        "compatibility_requirement": "No existing negative tests, regex/guard or feature test removed or weakened.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "docs/related_market_alpha_contract.md",
+        "before": "No durable frozen relation proof/conditional economics receipt contract.",
+        "after": "Exact trust levels, schemas, denial precedence, retention, CLI I/O, 40+ benchmark and future real-source proof limitations.",
+        "change_authorized": true,
+        "compatibility_requirement": "Single reference document, no second authority policy or parallel Alpha roadmap.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "R001-R008 each directly bind a normative rule and a uniquely named observable test in one of two focused test modules.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Existing source-grounding CLI calls a real native Alpha/PIT universe, cold-verifies its SRC-01 receipt, discovers bounded related candidates and preserves market/event/condition/outcome/rule/source identities without trusting titles, PR268 or invented Gamma events.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Existing source-grounding CLI calls a real native Alpha/PIT universe, cold-verifies its SRC-01 receipt, discovers bounded related candidates and preserves market/event/condition/outcome/rule/source identities without trusting titles, PR268 or invented Gamma events.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Strict per-market native source/rule hash and cutoff binding; YES/NO orientation, rule source hierarchy, ambiguity and human-review flags, same/different resolution windows and non-Polymarket venue claims are checked. No free-text or LLM assertion is promoted to verified real relation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Strict per-market native source/rule hash and cutoff binding; YES/NO orientation, rule source hierarchy, ambiguity and human-review flags, same/different resolution windows and non-Polymarket venue claims are checked. No free-text or LLM assertion is promoted to verified real relation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Re-derive finite-state payout tables for implication, exclusivity, complement, same_event and event_sum, including directional counterexamples. Tie, void, cancellation, reschedule, fractional resolution and outcome reversal refuse or remain inconclusive if their actual payout semantics are unavailable.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Re-derive finite-state payout tables for implication, exclusivity, complement, same_event and event_sum, including directional counterexamples. Tie, void, cancellation, reschedule, fractional resolution and outcome reversal refuse or remain inconclusive if their actual payout semantics are unavailable.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "When a relationship has a bounded formal payoff proof, enumerate its canonical basket legs and minimum payoff via adapted pinned Oracle3 formulas, use native offline venue-snapshot/fee/minimum/depth/freshness mechanics wherever compatible, and never invoke unauthorized WP172 executable-edge decisions.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "When a relationship has a bounded formal payoff proof, enumerate its canonical basket legs and minimum payoff via adapted pinned Oracle3 formulas, use native offline venue-snapshot/fee/minimum/depth/freshness mechanics wherever compatible, and never invoke unauthorized WP172 executable-edge decisions.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "After-cost statuses require matched point-in-time native per-leg venue evidence, explicit current fee provenance and conservative round-up, valid depth/minimum, exact orientation and decision cutoff. Missing, expired or untrusted fees/quote, simultaneous-fill and cross-venue atomicity are explicit unknowns; never label executable or profit-proven.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "After-cost statuses require matched point-in-time native per-leg venue evidence, explicit current fee provenance and conservative round-up, valid depth/minimum, exact orientation and decision cutoff. Missing, expired or untrusted fees/quote, simultaneous-fill and cross-venue atomicity are explicit unknowns; never label executable or profit-proven.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "The existing source-grounding CLI obtains an opt-in related subcommand backed by the new runner, preserving unchanged run/verify behavior. Runner writes one content-addressed external scratch receipt; verify cold-rederives inputs, code, market/rule/quote identifiers and hash chains with zero writes/network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The existing source-grounding CLI obtains an opt-in related subcommand backed by the new runner, preserving unchanged run/verify behavior. Runner writes one content-addressed external scratch receipt; verify cold-rederives inputs, code, market/rule/quote identifiers and hash chains with zero writes/network.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A frozen inline >=40-case SANITIZED_SYNTHETIC relation/nonrelation corpus compares the new verifier with a constructed native field/event grouping baseline on identical cases. Report candidate proposals, true/false matches, proven formal models, unknowns, abstentions, evaluable after-cost cases and actual numerators/denominators; do not claim positive real-world alpha.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A frozen inline >=40-case SANITIZED_SYNTHETIC relation/nonrelation corpus compares the new verifier with a constructed native field/event grouping baseline on identical cases. Report candidate proposals, true/false matches, proven formal models, unknowns, abstentions, evaluable after-cost cases and actual numerators/denominators; do not claim positive real-world alpha.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Negative tests prove fail-closed missing/contradictory rules and outcome orientation, copied/invented source IDs, future/wrong group evidence, negative-risk/combo, unsupported fee regime, stale depth, sockets/credentials/order/Alpha/WP170 writes, legacy SRC-01 compatibility, exact 12-file scope and five R3 adoption IDs without falsely closing the other 31.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Negative tests prove fail-closed missing/contradictory rules and outcome orientation, copied/invented source IDs, future/wrong group evidence, negative-risk/combo, unsupported fee regime, stale depth, sockets/credentials/order/Alpha/WP170 writes, legacy SRC-01 compatibility, exact 12-file scope and five R3 adoption IDs without falsely closing the other 31.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "RESEARCH_ONLY relation candidates + conditional formal payoff/economics assessments + integrity-verifiable external scratch; no fabricated semantic origin, guarantee of fill, strategy/edge acceptance, automatic Alpha/WP170 mutation or real-profit claim",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Local-only content-addressed scratch identity and cold-replay receipt are defined in docs/related_market_alpha_contract.md; no change or substitute to native PIT, SRC-01, Alpha or WP170 canonical derivation.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exact native WP159 state chain; deterministic RUNTIME readiness precedes standing owner authorization and implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Run actual native RUNTIME readiness on complete final prompt/spec bytes from clean main and verify source/scope/authority; never create a certificate independently.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly approved bounded offline R3-REL-01 plus R3-REL-ECON-01 and standing in-scope implementation after readiness, without trading/provider/capital authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Implement 12 exact paths and actual source-grounded relation CLI, R001-R008 tests, cold verification, native scope/diff/negative/full/hosted validation and real PR evidence.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Keep the exact native WP159 fixed failure precedence. Product-specific learning refusal priority is defined solely in docs/outcome_learning_feedback_contract.md.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "The exact frozen SANITIZED_SYNTHETIC and counterexample cases live inline with the tests. No duplicate example object family or unverified truth is imported into governance specification.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "One actual, named pytest test for each normative R001-R008 requirement; separate integrated and economics fixtures retain actual historical negatives.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_rel_native_src01_call_path_and_candidate_generation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_alpha.py::test_rel_native_src01_call_path_and_candidate_generation",
+        "expected_result": "Existing source-grounding CLI calls a real native Alpha/PIT universe, cold-verifies its SRC-01 receipt, discovers bounded related candidates and preserves market/event/condition/outcome/rule/source identities without trusting titles, PR268 or invented Gamma events."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_rel_hash_bound_rule_semantics_and_orientation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_alpha.py::test_rel_hash_bound_rule_semantics_and_orientation",
+        "expected_result": "Strict per-market native source/rule hash and cutoff binding; YES/NO orientation, rule source hierarchy, ambiguity and human-review flags, same/different resolution windows and non-Polymarket venue claims are checked. No free-text or LLM assertion is promoted to verified real relation."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_rel_exhaustive_truth_tables_and_counterexamples",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_alpha.py::test_rel_exhaustive_truth_tables_and_counterexamples",
+        "expected_result": "Re-derive finite-state payout tables for implication, exclusivity, complement, same_event and event_sum, including directional counterexamples. Tie, void, cancellation, reschedule, fractional resolution and outcome reversal refuse or remain inconclusive if their actual payout semantics are unavailable."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_rel_conditional_oracle3_baskets_and_native_costs",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_economics.py::test_rel_conditional_oracle3_baskets_and_native_costs",
+        "expected_result": "When a relationship has a bounded formal payoff proof, enumerate its canonical basket legs and minimum payoff via adapted pinned Oracle3 formulas, use native offline venue-snapshot/fee/minimum/depth/freshness mechanics wherever compatible, and never invoke unauthorized WP172 executable-edge decisions."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_rel_economic_unknown_fee_depth_clock_and_atomicity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_economics.py::test_rel_economic_unknown_fee_depth_clock_and_atomicity",
+        "expected_result": "After-cost statuses require matched point-in-time native per-leg venue evidence, explicit current fee provenance and conservative round-up, valid depth/minimum, exact orientation and decision cutoff. Missing, expired or untrusted fees/quote, simultaneous-fill and cross-venue atomicity are explicit unknowns; never label executable or profit-proven."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_rel_source_grounding_related_subcommand_and_cold_verify",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_alpha.py::test_rel_source_grounding_related_subcommand_and_cold_verify",
+        "expected_result": "The existing source-grounding CLI obtains an opt-in related subcommand backed by the new runner, preserving unchanged run/verify behavior. Runner writes one content-addressed external scratch receipt; verify cold-rederives inputs, code, market/rule/quote identifiers and hash chains with zero writes/network."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_rel_frozen_40_cases_baseline_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_alpha.py::test_rel_frozen_40_cases_baseline_denominators",
+        "expected_result": "A frozen inline >=40-case SANITIZED_SYNTHETIC relation/nonrelation corpus compares the new verifier with a constructed native field/event grouping baseline on identical cases. Report candidate proposals, true/false matches, proven formal models, unknowns, abstentions, evaluable after-cost cases and actual numerators/denominators; do not claim positive real-world alpha."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_rel_negative_matrix_authority_and_adoption_truth",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_related_market_alpha.py::test_rel_negative_matrix_authority_and_adoption_truth",
+        "expected_result": "Negative tests prove fail-closed missing/contradictory rules and outcome orientation, copied/invented source IDs, future/wrong group evidence, negative-risk/combo, unsupported fee regime, stale depth, sockets/credentials/order/Alpha/WP170 writes, legacy SRC-01 compatibility, exact 12-file scope and five R3 adoption IDs without falsely closing the other 31."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-HERMES-COOP-01",
+    "next_title": "Hermes specialist/citations and owner-gated real source validation, only after merged relation WP and independent owner priority check.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-REL-01",
+    "forbidden_in_this_wp": [
+      "No external Kairos/Synpath/PMXT/Reach/LSE/Becker source calls, API, credentials, paid queries, inferred approval or hidden provider dependency. All six separate owner grants remain pending.",
+      "No change to immutable native PIT, Alpha, WP170, qualification, STRAT-LIFE, Hermes policy, Gate C, WP172/173, live pilot or paper engine. No automatic candidate registry append or reprioritization.",
+      "No production-ready proof from caller-supplied formal tables, title similarity, unknown settlement text, test-only vector or synthetic positive score. Semantic and source-origin unknown must remain inconclusive.",
+      "No executable profitable arbitrage or guaranteed atomic multi-leg fill inference from quote sums or native single-leg feasibility; no orders, funds, capital, price-refresh network, scheduler or automated strategies.",
+      "No extension or replacement of expired 2026-11-04 fee policy without separate verified authority. No zero-fee assumption, no per-market fee class guess, no unpriced combinational order/neg-risk fallback.",
+      "No stacking, merging, cherry-picking or editing open PR268; no merging of this WP by Claude Code. Preserve 12 parity candidates, Lane B and all other 36 capability IDs."
+    ]
+  }
+}
