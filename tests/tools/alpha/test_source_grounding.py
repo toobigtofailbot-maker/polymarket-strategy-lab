@@ -691,3 +691,23 @@ def test_related_subcommand_is_opt_in_and_legacy_commands_unchanged(world, basel
     assert {p: p.read_bytes() for p in scratch.rglob("*") if p.is_file()} == before
     with pytest.raises(SystemExit):
         CLI.main(["related", "--scratch-dir", str(tmp_path / "rel2")])
+
+
+# ------------------------------------------------------------------ S10-R3-HERMES-COOP-01 compatibility
+
+
+def test_hermes_cooperation_is_a_separate_caller_and_legacy_cli_bytes_unchanged(world, baseline_run, tmp_path, capsys):
+    """The cooperation operator calls SRC-01 verify; it never edits this CLI or its receipt code identity."""
+    import subprocess
+    import sys
+    data = Path(CLI.__file__).read_bytes().replace(b"\r\n", b"\n")
+    assert hashlib.sha1(b"blob %d\x00" % len(data) + data).hexdigest() == "49eb952984c50d5f38d1afd8e11ff90f14af2a33"
+    probe = ("import sys; import tools.alpha.run_source_grounding as C; "
+             "print(sorted(m for m in sys.modules if 'hermes' in m))")
+    out = subprocess.run([sys.executable, "-B", "-c", probe], cwd=REPO_ROOT, capture_output=True, text=True, check=True)
+    assert out.stdout.strip() == "[]"
+    assert baseline_run[1]["core"]["code_identity"] == CLI.code_identity()
+    assert CLI.main(["verify", "--scratch-dir", str(baseline_run[0])]) == 0
+    assert json.loads(capsys.readouterr().out)["status"] == "VERIFIED"
+    with pytest.raises(SystemExit):
+        CLI.main(["cooperate", "--scratch-dir", str(tmp_path / "x")])  # no cooperation subcommand was added

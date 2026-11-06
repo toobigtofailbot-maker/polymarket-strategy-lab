@@ -1,0 +1,533 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-HERMES-COOP-01",
+    "title": "Offline Hermes Specialist Cooperation and Evidence-Grounded Citations",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_HERMES_SPECIALIST_COOP_CITATIONS",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-hermes-coop-01",
+    "required_predecessor": {
+      "pr_number": 272,
+      "head_sha": "11fa10f9d30f821709d94cced78d65b53e4758e8",
+      "merge_sha": "105eb6c6bd366f1e585e83a03766ad27cf9b9616"
+    },
+    "objective": "Add one genuine executable, finite, network-denied source-grounded two-role research cooperation operator over a cold-verified SRC-01 snapshot. Validate immutable claim-citation/quote evidence, preserve forecaster/falsifier disagreements, produce a cold-replayable receipt and matched single-role versus two-role benchmark. Roles are caller-submitted and NOT evidence of real Hermes delegation; actual Hermes provider/delegation remains separately gated. No trading or canonical state writes.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/research_cooperation.py",
+      "tools/alpha/run_hermes_cooperation.py",
+      "tests/tools/alpha/test_hermes_cooperation.py",
+      "tests/tools/alpha/test_source_grounding.py",
+      "docs/hermes_cooperation_citation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-HERMES-COOP-01.md",
+      "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/research_cooperation.py",
+      "tools/alpha/run_hermes_cooperation.py",
+      "tests/tools/alpha/test_hermes_cooperation.py",
+      "tests/tools/alpha/test_source_grounding.py",
+      "docs/hermes_cooperation_citation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-HERMES-COOP-01.md",
+      "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 9,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/tools/alpha/test_source_grounding.py"
+    ],
+    "rollback_surface": "Revert only these nine paths. Preserve original SRC-01 code/receipts, Alpha/PIT/WP170, controlled Hermes v0.21.3 config/tools/providers, PR268 and all unrelated runtime, paper, live and owner state; external scratch outputs stay out of git.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Nine exact authorized path changes; one new library+native CLI, existing SRC unchanged for historical content-addressed receipt compatibility.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/research_cooperation.py",
+        "before": "ABSENT",
+        "after": "Pure source-verified two-role validation, citation ledger and claim reconciliation; read-only imports of source_grounding and native Hermes draft schema only.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_hermes_cooperation.py",
+        "before": "ABSENT",
+        "after": "Finite CLI run --grounding-scratch ABS --case ABS --scratch-dir ABS, verify --scratch-dir ABS; cold-verify source, freeze local inputs, make one external scratch receipt, zero network, no repo writes.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_hermes_cooperation.py",
+        "before": "ABSENT",
+        "after": "R001-R008 real executed positive/negative tests and >=40 frozen same-corpus benchmark.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_source_grounding.py",
+        "before": "Existing file with prior behavior that must remain intact.",
+        "after": "Historical source grounding CLI/SRC receipts remain byte/behavior compatible; no CLI rewrite.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "docs/hermes_cooperation_citation_contract.md",
+        "before": "ABSENT",
+        "after": "One bounded format, exact citation quote and provenance rules, counters, failure precedence, frozen input/output schema, no independent Hermes-execution claim.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "Existing file with prior behavior that must remain intact.",
+        "after": "Record real delegation/provider citation origin and real empirical validation as pending separately gated items.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-HERMES-COOP-01.md",
+        "before": "ABSENT",
+        "after": "Stable non-self-referential status fragment and truthful validation/results.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "Native frozen normative instruction.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-HERMES-COOP-01/wp_spec.json",
+        "before": "ABSENT",
+        "after": "Native frozen strict machine spec.",
+        "change_authorized": true,
+        "compatibility_requirement": "Do not edit other native protected code, provider policy, stores or project runtime; preserved legacy receipts and 36 ID owner boundaries.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight minimum-complete normative requirements with falsifiable case/source/evidence and negative assertions, no separate live runtime authority.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Call real tools/alpha/run_hermes_cooperation.py run/verify on an existing S10-R3-SRC-01 frozen scratch and confirm native source_grounding.verify succeeds; rejected/tampered grounding never yields a cooperation receipt.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Call real tools/alpha/run_hermes_cooperation.py run/verify on an existing S10-R3-SRC-01 frozen scratch and confirm native source_grounding.verify succeeds; rejected/tampered grounding never yields a cooperation receipt.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exactly FORECASTER and FALSIFIER caller-supplied submissions bind the same frozen question, market/candidate, information cutoff, native rule hash and source allowlist; duplicate/role swap/mismatched ids refuse or abstain, never invent independent agent execution.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exactly FORECASTER and FALSIFIER caller-supplied submissions bind the same frozen question, market/candidate, information cutoff, native rule hash and source allowlist; duplicate/role swap/mismatched ids refuse or abstain, never invent independent agent execution.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Content-addressed source id -> deterministic citation integer ledger; each material claim binds admitted SRC source refs, verified literal quote bytes, provenance/timestamp. Unknown URL, fabricated quote, citation gap, conflicting source or post-cutoff source is rejected or counted as unsupported.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Content-addressed source id -> deterministic citation integer ledger; each material claim binds admitted SRC source refs, verified literal quote bytes, provenance/timestamp. Unknown URL, fabricated quote, citation gap, conflicting source or post-cutoff source is rejected or counted as unsupported.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Two distinct-role submissions are reconciled without auto-voting true: evidence for/against, disagreement, falsification, uncertainty, unsupported claims and missing role give closed human-review/abstention status. No inferred probability, value, authority or profit.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Two distinct-role submissions are reconciled without auto-voting true: evidence for/against, disagreement, falsification, uncertainty, unsupported claims and missing role give closed human-review/abstention status. No inferred probability, value, authority or profit.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "When compatible, reuse native validate_research_draft (not override); check exact request id and sanctioned source refs, and prove no controlled Hermes subprocess, FakeHermesBackend masquerading as a real delegate, config/policy edit, credentials or child tool escalation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "When compatible, reuse native validate_research_draft (not override); check exact request id and sanctioned source refs, and prove no controlled Hermes subprocess, FakeHermesBackend masquerading as a real delegate, config/policy edit, credentials or child tool escalation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Frozen >=40 SANITIZED_SYNTHETIC cases evaluated on exactly same grounding/source/label corpus for single FORECASTER vs two-role cooperation. Exact denominators for valid cites, claim coverage, unsupported and false quotes, conflicts, abstentions, latency/counting; no fabricated lift or real performance claim.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Frozen >=40 SANITIZED_SYNTHETIC cases evaluated on exactly same grounding/source/label corpus for single FORECASTER vs two-role cooperation. Exact denominators for valid cites, claim coverage, unsupported and false quotes, conflicts, abstentions, latency/counting; no fabricated lift or real performance claim.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run emits one bounded sanitized external scratch receipt with hashed manifest and SOURCE_ORIGIN_UNVERIFIED; cold verify recomputes from frozen bytes, idempotent repeats agree, mismatches/altered output/paths/symlinks/sockets/secret-shaped inputs fail closed and zero network attempts.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run emits one bounded sanitized external scratch receipt with hashed manifest and SOURCE_ORIGIN_UNVERIFIED; cold verify recomputes from frozen bytes, idempotent repeats agree, mismatches/altered output/paths/symlinks/sockets/secret-shaped inputs fail closed and zero network attempts.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Native legacy SRC-01 run/verify/related remains unchanged; no canonical PIT/Alpha/WP170, Hermes runtime policy, scheduler, provider, paper, execution, capital or automatic promotion. R3-05 and R3-05-CITATIONS advance offline only; R3-29 parity, 12 parity candidates, six provider gates and Lane B are not self-closed.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native legacy SRC-01 run/verify/related remains unchanged; no canonical PIT/Alpha/WP170, Hermes runtime policy, scheduler, provider, paper, execution, capital or automatic promotion. R3-05 and R3-05-CITATIONS advance offline only; R3-29 parity, 12 parity candidates, six provider gates and Lane B are not self-closed.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY, CITATION_INTEGRITY_NOT_FACT_TRUTH, ROLE_ORIGIN_NOT_VERIFIED, NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No changes to native SRC/PIT/Alpha/Hermes identity derivation; new scratch receipt derives a versioned content hash, specified in the linked contract.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exact native WP state chain; RUNTIME deterministic readiness before standing owner authorization and execution.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME readiness against exact final prompt/spec on clean merged PR272 main, after mandatory first skill; no independent certificate issued.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly authorized bounded offline continuation of 36-capability implementation, including R3-05/CITATIONS, after mandatory native readiness; provider/model delegation remains ungranted.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Implement exactly nine authorized paths and one actual native SRC-bound cooperation caller, with R001-R008, skill ledger, cold verify, exact-head CI and PR evidence.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Positive and negative source/citation/role examples are frozen as executable named pytest cases and documented in the user contract; no normative example table in the WP spec.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R008 each has a named pytest node and complete exact path, bounded expected behavior; no permission expansion or performance assertion.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_coop_verified_src01_native_operator_and_cold_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_verified_src01_native_operator_and_cold_binding",
+        "expected_result": "Call real tools/alpha/run_hermes_cooperation.py run/verify on an existing S10-R3-SRC-01 frozen scratch and confirm native source_grounding.verify succeeds; rejected/tampered grounding never yields a cooperation receipt."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_coop_two_specialists_bound_same_scope_and_role_origin",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_two_specialists_bound_same_scope_and_role_origin",
+        "expected_result": "Exactly FORECASTER and FALSIFIER caller-supplied submissions bind the same frozen question, market/candidate, information cutoff, native rule hash and source allowlist; duplicate/role swap/mismatched ids refuse or abstain, never invent independent agent execution."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_coop_citation_ledger_literal_source_quote_and_claim_coverage",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_citation_ledger_literal_source_quote_and_claim_coverage",
+        "expected_result": "Content-addressed source id -> deterministic citation integer ledger; each material claim binds admitted SRC source refs, verified literal quote bytes, provenance/timestamp. Unknown URL, fabricated quote, citation gap, conflicting source or post-cutoff source is rejected or counted as unsupported."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_coop_bounded_falsifier_forecaster_disagreement_and_abstention",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_bounded_falsifier_forecaster_disagreement_and_abstention",
+        "expected_result": "Two distinct-role submissions are reconciled without auto-voting true: evidence for/against, disagreement, falsification, uncertainty, unsupported claims and missing role give closed human-review/abstention status. No inferred probability, value, authority or profit."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_coop_native_hermes_validator_compatibility_and_no_invocation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_native_hermes_validator_compatibility_and_no_invocation",
+        "expected_result": "When compatible, reuse native validate_research_draft (not override); check exact request id and sanctioned source refs, and prove no controlled Hermes subprocess, FakeHermesBackend masquerading as a real delegate, config/policy edit, credentials or child tool escalation."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_coop_frozen_same_case_single_vs_pair_benchmark_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_frozen_same_case_single_vs_pair_benchmark_denominators",
+        "expected_result": "Frozen >=40 SANITIZED_SYNTHETIC cases evaluated on exactly same grounding/source/label corpus for single FORECASTER vs two-role cooperation. Exact denominators for valid cites, claim coverage, unsupported and false quotes, conflicts, abstentions, latency/counting; no fabricated lift or real performance claim."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_coop_cold_replay_tamper_idempotence_and_network_denial",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_cold_replay_tamper_idempotence_and_network_denial",
+        "expected_result": "Run emits one bounded sanitized external scratch receipt with hashed manifest and SOURCE_ORIGIN_UNVERIFIED; cold verify recomputes from frozen bytes, idempotent repeats agree, mismatches/altered output/paths/symlinks/sockets/secret-shaped inputs fail closed and zero network attempts."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_coop_scope_adoption_negative_matrix_and_legacy_src",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_cooperation.py::test_coop_scope_adoption_negative_matrix_and_legacy_src",
+        "expected_result": "Native legacy SRC-01 run/verify/related remains unchanged; no canonical PIT/Alpha/WP170, Hermes runtime policy, scheduler, provider, paper, execution, capital or automatic promotion. R3-05 and R3-05-CITATIONS advance offline only; R3-29 parity, 12 parity candidates, six provider gates and Lane B are not self-closed."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-PARITY-01",
+    "next_title": "Owner-prioritized protocol/parity callable-evidence closure or separately certified real Hermes delegation campaign; never auto-authorized provider/model spending.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-HERMES-COOP-01",
+    "forbidden_in_this_wp": [
+      "No real Hermes delegation, paid provider/model/web request, toolset broadening, config modification, credentials, actual specialist-agent invocation or campaign activation. Explicit offline caller-submitted roles are NOT independent agents.",
+      "No modifications to SRC CLI/verified historical receipt code identity, Hermes runtime models/policy/controller/context files, protected source/account/runtime, dependencies, workflows, capital or trade paths.",
+      "No self-promotion of validated quote into factual correctness, market resolution or independent source authenticity. A cited URL and authored text remain untrusted until linked to admitted frozen source bytes.",
+      "No canonical Alpha/PIT/WP170 mutation, no strategy or research priority change, no accepted probability, edge, paper/live, merge or human authority.",
+      "No PR268 merge/cherry-pick/stacking; preserve all six provider lanes, R3-02/forecast/learning real validation, 12 parity IDs, Lane B and 36 capability rows."
+    ]
+  }
+}
