@@ -179,6 +179,7 @@ def discover_candidates(universe: AD.AlphaUniverseSnapshot, search: dict) -> dic
                 propose(relation, ids, "SHARED_RECORDED_EVENT", noncandidates)
             propose("IMPLICATION", ids, "SHARED_RECORDED_EVENT", noncandidates)
             propose("IMPLICATION", ids[::-1], "SHARED_RECORDED_EVENT", noncandidates)
+    # shortcut: O(markets^2) pair scan, fine for bounded local stores; add a category index before large real stores.
     terms = {m.market_id: set(SG.tokenize(m.question_text)) for m in eligible}
     for a, b in combinations(sorted(eligible, key=lambda m: m.market_id), 2):
         if a.category and a.category == b.category and len(terms[a.market_id] & terms[b.market_id]) >= search["min_shared_terms"]:

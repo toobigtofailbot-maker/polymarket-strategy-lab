@@ -457,6 +457,16 @@ def test_rel_source_grounding_related_subcommand_and_cold_verify(world, baseline
                        "--scratch-dir", str(scratch)]) == 0
     assert last_output(capsys)["status"] == "IDEMPOTENT_VERIFIED"
     assert {p: p.read_bytes() for p in scratch.rglob("*") if p.is_file()} == before
+    # A changed venue body behind an identical request is NOT an idempotent repeat.
+    clob = Path(request["venue"][0]["clob_file"])
+    original = clob.read_bytes()
+    clob.write_bytes(clob_body("oh-dem", "YES", [("0.44", "50")]))
+    try:
+        assert SGCLI.main(["related", "--grounding-scratch", str(world["grounding"]), "--request-file", str(req),
+                           "--scratch-dir", str(scratch)]) == 1
+        assert last_output(capsys)["reason_code"] == "SCRATCH_NOT_EMPTY"
+    finally:
+        clob.write_bytes(original)
     # Tamper matrix: each frozen artifact, generated result or identity change is detected.
     tampers = {
         "venue quote": lambda s: (s / "inputs" / "venue" / "000-clob.bin").write_bytes(clob_body("oh-dem", "YES", [("0.01", "50")])),
@@ -641,6 +651,11 @@ def test_rel_negative_matrix_authority_and_adoption_truth(world, baseline, tmp_p
             assert basket["executable_edge"] is False and basket["guaranteed_arbitrage"] is False and basket["profit_proven"] is False
     statuses = {b["status"] for r in receipt["core"]["results"] for b in r["economics"]["baskets"]}
     assert not statuses & {"EXECUTABLE_EDGE_PASS", "GUARANTEED_ARBITRAGE"}
+    # Malformed per-model / per-venue fields are counted per item, never a whole-run crash.
+    assert not REL._model_fields_ok(dict(MODELS[0], claimed_rule_sha256=[[1], [2]]))
+    odd = build_request(world, venue=[dict(world["venue"][0], market_id=["x"])])
+    code, _, odd_receipt = run_rel(tmp_path, world, odd, name="odd-venue")
+    assert code == 0 and odd_receipt["core"]["venue"]["counts"] == {"VENUE_FIELDS_INVALID": 1}
     # Imports stay inside the native research/feasibility boundary (no WP170/WP172, live, paper, gateway, Hermes).
     allowed = {"__future__", "argparse", "collections", "datetime", "decimal", "hashlib", "itertools", "json", "os", "pathlib",
                "re", "shutil", "stat", "sys", "time", "types", "src.data_layer.analytical_research",

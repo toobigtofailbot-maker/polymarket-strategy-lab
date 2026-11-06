@@ -129,6 +129,15 @@ def _caller_path(value: object, *, directory: bool, scratch: Path | None) -> Pat
     return resolved
 
 
+def _read_capped(path: Path | None, limit: int) -> bytes:
+    """Bounded read (no stat-then-read race); oversize reads as unusable."""
+    if path is None:
+        return b""
+    with open(path, "rb") as handle:
+        data = handle.read(limit + 1)
+    return data if len(data) <= limit else b""
+
+
 def _strict_json(raw: bytes, code: str):
     return SGCLI._strict_json(raw, code)
 
@@ -248,7 +257,7 @@ def freeze(grounding_dir: Path, request_path: Path, scratch: Path) -> None:
     grounding = _caller_path(str(grounding_dir), directory=True, scratch=scratch)
     _require(grounding is not None, "GROUNDING_SCRATCH_UNUSABLE")
     source = _caller_path(str(request_path), directory=False, scratch=scratch)
-    raw = source.read_bytes() if source is not None and source.stat().st_size <= MAX_REQUEST_BYTES else b""
+    raw = _read_capped(source, MAX_REQUEST_BYTES)
     _require(0 < len(raw), "REQUEST_UNREADABLE")
     _require(SG.SECRET_RE.search(raw.decode("utf-8", "replace")) is None, "SECRET_MATERIAL_REJECTED")
     request = _strict_json(raw, "REQUEST_JSON_INVALID")
@@ -268,7 +277,7 @@ def freeze(grounding_dir: Path, request_path: Path, scratch: Path) -> None:
         for role in ("gamma", "clob"):
             rel = f"venue/{number:03d}-{role}.bin"
             path = _caller_path(entry.get(f"{role}_file") if isinstance(entry, dict) else None, directory=False, scratch=scratch)
-            data = path.read_bytes() if path is not None and path.stat().st_size <= MAX_VENUE_BYTES else b""
+            data = _read_capped(path, MAX_VENUE_BYTES)
             # An unusable path freezes as an empty file so the core counts it per leg, never silently drops it.
             (inputs / rel).write_bytes(data)
             frozen_entry[f"{role}_file"] = rel
@@ -287,7 +296,7 @@ def _venue_snapshots(entries: list, markets: dict, read) -> tuple[dict, dict, li
     outcomes = []
     for number, entry in enumerate(entries):
         status, side, snapshot_id = "BOUND", None, None
-        market = markets.get(entry.get("market_id")) if isinstance(entry, dict) else None
+        market = markets.get(entry.get("market_id")) if isinstance(entry, dict) and type(entry.get("market_id")) is str else None
         gamma, clob = read(entry["gamma_file"]) if isinstance(entry, dict) else b"", read(entry["clob_file"]) if isinstance(entry, dict) else b""
         if not isinstance(entry, dict) or set(entry) != VENUE_KEYS or not all(type(entry[k]) is str for k in VENUE_KEYS):
             status = "VENUE_FIELDS_INVALID"
@@ -343,7 +352,8 @@ def _model_fields_ok(model: object) -> bool:
             and type(model["timezones"]) is list and len(model["timezones"]) == n and all(type(t) is str for t in model["timezones"])
             and (model["yes_token_ids"] is None or (type(model["yes_token_ids"]) is list and len(model["yes_token_ids"]) == n))
             and (model["claimed_rule_sha256"] is None or (type(model["claimed_rule_sha256"]) is list
-                                                         and len(model["claimed_rule_sha256"]) == n))
+                                                         and len(model["claimed_rule_sha256"]) == n
+                                                         and all(type(d) is str for d in model["claimed_rule_sha256"])))
             and (model["cross_venue"] is None or _label(model["cross_venue"])) and type(model["combo"]) is bool
             and model["expected"] in EXPECTED_LABELS and type(model["claimed_verdict"]) in (type(None), bool, str))
 
@@ -584,10 +594,19 @@ def _repeat(grounding_dir: Path, request_path: Path, scratch: Path) -> dict:
     _require(checked["status"] == "VERIFIED", "SCRATCH_NOT_EMPTY")
     source = _caller_path(str(request_path), directory=False, scratch=scratch)
     grounding = _caller_path(str(grounding_dir), directory=True, scratch=scratch)
-    same = source is not None and grounding is not None and \
-        source.read_bytes() == (scratch / "inputs" / "request.source.json").read_bytes() and \
-        (grounding / "receipt.json").read_bytes() == (scratch / "inputs" / "grounding" / "receipt.json").read_bytes()
-    _require(same, "SCRATCH_NOT_EMPTY")
+    raw = _read_capped(source, MAX_REQUEST_BYTES)
+    frozen = scratch / "inputs"
+    _require(grounding is not None and raw == (frozen / "request.source.json").read_bytes(), "SCRATCH_NOT_EMPTY")
+    # Every caller byte the receipt depends on must be identical: the grounding tree and each venue body.
+    current = {"grounding/" + p.relative_to(grounding).as_posix(): _sha(p.read_bytes()) for p in _grounding_files(grounding)}
+    for number, entry in enumerate(_strict_json(raw, "SCRATCH_NOT_EMPTY")["venue"]):
+        for role in ("gamma", "clob"):
+            path = _caller_path(entry.get(f"{role}_file") if isinstance(entry, dict) else None, directory=False, scratch=scratch)
+            current[f"venue/{number:03d}-{role}.bin"] = _sha(_read_capped(path, MAX_VENUE_BYTES))
+    stored = {"grounding/" + p.relative_to(frozen / "grounding").as_posix(): _sha(p.read_bytes())
+              for p in (frozen / "grounding").rglob("*") if p.is_file()}
+    stored.update({rel: _sha((frozen / rel).read_bytes()) for rel in current if rel.startswith("venue/") and (frozen / rel).is_file()})
+    _require(stored == current, "SCRATCH_NOT_EMPTY")
     return {"status": "IDEMPOTENT_VERIFIED", "receipt_id": checked["receipt_id"], "network_attempts": 0}
 
 
