@@ -1,0 +1,120 @@
+Package Identity:
+  WP ID: S10-R3-HERMES-COOP-01
+  Title: Offline Hermes Specialist Cooperation and Evidence-Grounded Citations
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Frozen merged main / predecessor: 105eb6c6bd366f1e585e83a03766ad27cf9b9616
+  Required predecessor: PR #272, head 11fa10f9d30f821709d94cced78d65b53e4758e8, merged at 105eb6c6bd366f1e585e83a03766ad27cf9b9616
+  Open unrelated PR #268: NOT INCLUDED or stacked; head 9a5a00cd61effa4e28b82f830427440b23aba86c
+  Suggested branch: codex/s10-r3-hermes-coop-01
+  Package class: OFFLINE_HERMES_SPECIALIST_COOP_CITATIONS
+  Package size class: M (exact 9 files)
+  Governance track expected: RUNTIME
+  Risk level: 3
+  Evidence mode expected: native evidence state machine at actual PR closure
+  Runtime impact: finite foreground standalone offline operator only
+  Network impact: ZERO product/provider/market; GitHub workflow only
+  Credential, dependency, scheduler, strategy, paper, execution, live impact: NONE
+  Capital/orders: USD0 / 0
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+
+# 1. Objective and owner authorization: one genuine offline native consumer, no provider masquerade
+Karl grants standing implementation authorization for this exact bounded 9-file R3-05/R3-05-CITATIONS work after successful actual native readiness. Side24 is the sole WP drafting/independent assessment chat; Claude Code implements, debugs/tests and creates the PR autonomously. Karl merges. No additional routine owner approval once the correct gate passes. This package is NOT a real Hermes delegate invocation authorization, and its title does not change that fact.
+
+Build ONE finite local **actual callable native operator** over already merged SRC-01 frozen source-grounding: verify SRC-01 from its real `tools.alpha.run_source_grounding.verify` API, bind target market/candidate/claim/source to a frozen source/RULE identity, admit separately provided FORECASTER and FALSIFIER research submissions, check material claim citations against the literal frozen accepted source bytes and UTC cutoff, reconcile contradiction/counterevidence/unknown without asserting factual truth, compare one-role baseline vs two-role workflow on frozen same-corpus cases, return an immutable scratch receipt with cold verifier. Both contributions may come from caller text or native validated research-draft bytes; their unproven execution origin must remain clearly identified. Reuse native Hermes v0.21.3 draft validation when its exact contract is compatible; do not bypass it or assert actual child invocations.
+
+Actual native integration is via new `tools/alpha/run_hermes_cooperation.py run --grounding-scratch ABS --case ABS --scratch-dir ABS` and `verify --scratch-dir ABS`. The existing src-01 CLI can be invoked immediately before it (`run_source_grounding.py verify ...`); code must actually call the native verify/rebuild internally. Do NOT modify original CLI: its `code_identity()` hashes its own file, so modifying it would break historical receipt reproducibility. New standalone owner-facing operator over existing native verified evidence is a real call path, NOT a test-only demo. No new daemon/registry/framework.
+
+Authority / Non-Authority: offline RESEARCH_ONLY and HUMAN_REVIEW_REQUIRED, external scratch records. Source references are proof of byte correspondence, not independent document authenticity, truth, model independence or access to a real paid provider. This WP does not operate controlled Hermes runtime, `delegate_task`, HERMES_HOME, agent tools, paid providers, real source web retrieval, credential stores, canonical Alpha/PIT/WP170, risk/strategy, Gate-C, paper, execution, live or capital. Do not equate valid two-role agreement with alpha or qualification.
+
+# 2. Mandatory startup, first skill, native exact-byte readiness and branch
+1. Read `AGENTS.md` -> `AI_CODING_AGENT_START_HERE.md` -> `CLAUDE_START_HERE.md` -> `docs/project_status.md` -> `docs/repo_truth_index.md` -> `docs/deferred_items_log.md` -> `docs/ai/codex/README.md` -> `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, and current `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md`, `CONCISE_REPORTING_RULES.md`, evidence/validation guidance. Read current task-relevant sections, not histories indiscriminately.
+2. Discover installed skill catalog and exact SKILL.md locations. FIRST actually invoked skill is `$ponytail` in **LITE** mode, after required startup reads and before substantive code/draft/review activity. Record exact invocation and real prune/reuse output. If mandatory skill genuinely missing, STOP with documented PONYTAIL_UNAVAILABLE; never simulate. Apply applicable actually installed `$wp-predraft-inspector`, `$hermes-alpha-reuse-check`, `$wp-minimum-test-plan`, `$canonical-evidence-audit`, `$runtime-authority-boundary-review`, `$wp-readiness-preflight`, `$wp-one-shot-review`, `$security-review`, `$verification-before-completion`, `$code-simplifier`, `$find-bugs`, `$spec-to-code-compliance`, `$pr-evidence-reconcile`; conditional `$systematic-debugging` and other repo-required skills when triggered. Read and INVOKE actual instructions, do not count discovery as execution; concise USED/NOT_APPLICABLE/UNAVAILABLE with concrete contribution.
+3. Pre-branch exact main sync: `git fetch origin --prune`; `git switch main`; `git pull --ff-only origin main`; `git rev-parse HEAD`; `git rev-parse origin/main`; `git status --short --branch`; `python -B tools/git/preflight_generated_artifact_guard.py`. Require clean main and PR272 merge `105eb6c6bd366f1e585e83a03766ad27cf9b9616` in ancestry, with no other in-progress branch for this WP. PR268 open and unmerged; do not stack, merge or cherry-pick. A later main that still contains predecessor may be reconciled only after exact relevant compatibility inspection and rerun of the gate; do not silently rewrite owner scope.
+4. Read source references; verify SHA256SUMS and final local prompt/spec. On clean main, BEFORE creating a branch/source edits, run native `python -B tools/wp/wp_readiness_gate.py --wp <EXTRACTED_PACKAGE>/docs/wp_specs/S10-R3-HERMES-COOP-01/wp_prompt.txt --spec <EXTRACTED_PACKAGE>/docs/wp_specs/S10-R3-HERMES-COOP-01/wp_spec.json --repo-root . --format json`. Require exit0, IMPLEMENTATION_READY, scope9, RUNTIME/DETERMINISTIC, no certificate_required. If an exact final prompt/spec technical defect exists, repair ONLY these two authorized WP paths, update hashes, rerun gate and implement once PASS. No self-made independent PROTECTED certificate. If a material authority/other-path change is essential, STOP and return one blocker ZIP with exact code and proof. Once passed, create one dedicated branch/worktree. The actual committed final prompt/spec MUST hash-match the passed version. Full in-scope implementation authority is already granted by Karl after readiness.
+
+# 3. Exact changed-file scope and compatibility limits
+Required = allowed = maximum 9 tracked paths:
+1. `src/data_layer/analytical_research/hermes_cooperation.py`
+2. `tools/alpha/run_hermes_cooperation.py`
+3. `tests/tools/alpha/test_hermes_cooperation.py`
+4. `tests/tools/alpha/test_source_grounding.py`
+5. `docs/hermes_cooperation_citation_contract.md`
+6. `docs/deferred_items_log.md`
+7. `docs/status_entries/S10-R3-HERMES-COOP-01.md`
+8. `docs/wp_specs/S10-R3-HERMES-COOP-01/wp_prompt.txt`
+9. `docs/wp_specs/S10-R3-HERMES-COOP-01/wp_spec.json`
+
+Forbidden prefixes (all unmodified): `.github/`, `src/research_runtime/`, `src/execution_gateway/`, `src/live_pilot/`, `src/paper_trading/`, `src/data_layer/point_in_time_market_research/`, `tools/hermes/`, `agent_memory/`, `agent_runtime/`, `tools/execution/`, `tools/deployment/`, `local_data/`, `credentials/`, `secrets/`, `config/`, all dependency/lock files and outside paths. No changes to historical WP specs. `tests/tools/alpha/test_source_grounding.py` is the only allowed compatibility edit. One PR. Karl decides merge. Rollback only these 9; original SRC verified receipts untouched.
+
+# 4. Frozen native sources and bounded operator contract
+Inspect actual merged signatures and reuse, not presumed names: SRC-01 `verify`, `load_corpus`, `bind_rule_texts`, `RawEvidenceReference` / provenance manifest; `source_grounding` native accepted source entry byte-hash/UTC/market links; Hermes `validate_research_draft` and sanitized `source_references`; read-only Alpha registry and PIT rule/event metadata. If a claimed draft is already in native Hermes schema, require native validator to accept exact request id + allowed refs; if incompatible, use the narrow explicitly described offline caller-supplied role schema, never silently convert arbitrary text into native validated research draft. Do not modify Hermes policy to make it accept an incompatible shape. Record that the two input files DO NOT prove real independent model invocations. Legacy manual WP133 response is structural only and cannot authenticate citations.
+
+Input: an existing SRC-01 scratch path; one bounded local JSON case file with exact schema/version, `grounding_receipt_id`, `as_of`, frozen one question/candidate ID native or explicit absent, two roles FORECASTER/FALSIFIER with separate author-supplied immutable response ids, material claim IDs/text, each claim's source reference id + literal excerpt, evidence side FOR/AGAINST/UNCERTAIN, and explicit source cutoff. No credentials/paths/URLs in claim payloads, no prompt/tool permission fields, no raw model stderr or secret text. Max 32 sources, 64 claims total, 16 citations per role, 256KiB case, 2MiB per source and max 64MiB freeze input; no symlink/reparse/hardlink, no nonregular files, no path outside explicit sources/scratch and no secret directory. Resolve omitted or unsupported fields as closed case/item rejection, never as positive evidence. If native SRC accepted source raw text is unavailable because SRC receipt does not retain it, report `EVIDENCE_BYTES_UNAVAILABLE`, not fabricated quote_verified. Real SRC origin remains unverified. The implementation may refine exact limits and schema for compatibility, documenting any materially tighter limits; no new fields that grant authority.
+
+CLI run reads inputs, cold-verifies SRC-01, snapshots byte-preserved inputs to an empty absolute scratch outside checkout, computes deterministic evidence summary from frozen records, writes one content-addressed closed receipt and manifest. CLI verify reads only frozen copies, recomputes identities/quoting/reconciliation and fails on any mutation; never imports old runtime in a way that initiates Hermes or network. Exit0 for complete or verified closed research result, exit1 for real refusal/tamper, exit2 for sanitized usage error. Stop on whole-file invalid source/secret; per-case missing citation, contradictory specialist claims or missing falsifier are counted abstentions, not a request to expand scope.
+
+# 5. Specialist and grounded-citations semantics (truthful)
+- Two declared roles must share exact question ID, native market/candidate ID, frozen source/cutoff and rule context. Different role strings or response hashes do not authenticate separate providers/humans; output `SPECIALIST_ORIGIN=CALLER_SUPPLIED_NOT_INDEPENDENTLY_VERIFIED`. When a real separate existing validated native Hermes receipt is available, validate it without execution or semantic promotion; otherwise preserve absent execution provenance.
+- Fixed source ledger maps *verified admitted SRC-01 source ids* to stable indexes, never sources hallucinated from URLs. The `citation_id -> source_ref -> sha256 -> excerpt` chain must be exact. Quotes must be literal present in the frozen admitted bytes and before cutoff; no authored quote can authenticate the document's real public origin, and quote match does not entail the truth of the claimed implication.
+- For each claim: SUPPORTED_QUOTE_PRESENT / CONTRADICTED_BY_OTHER_ROLE / UNSUPPORTED_OR_UNCITED / SOURCE_UNAVAILABLE / POST_CUTOFF / UNKNOWN. Report separate syntax validity, quote integrity, source origin, semantic fact verification and reviewer action. Reconcile evidence_for, evidence_against, falsification and uncertainty without conflating proposal with verified fact. Same source reused by both roles counts once as a source; two claims with identical source/quote are not independent support.
+- No majority vote, no automated agreement->truth/probability/strategy. A two-role disagreement without decisive source proof remains DISAGREEMENT_REVIEW_REQUIRED; no positive Alpha finding. Empty/no valid citations, conflicting rule, truncated/blocked source or unsupported quote -> INCONCLUSIVE, with full observed denominators.
+
+# 6. Benchmark and quantitative evidence
+Frozen inline >=40 SANITIZED_SYNTHETIC cases **set before method selection**. Compare single-role forecaster-only output and combined forecaster/falsifier over SAME question, source corpus, claim labels, cutoff and target IDs. Report total, eligible, source present/absent, cited/uncited claims, quote verified/false, conflict found/missed, disagreement, abstained, unsupported source, comparison-only cases and valid paired denominators. The constructed native baseline must be named `baseline_single_role_v0` rather than described as a previously existing production baseline. No real-world accuracy claim, no fake uplift; no artificial Brier/profit or real model latency numbers. Counts null when genuinely unmeasured. Distinguish A/B improved quote/citation completeness from real factual research quality; no real Hermes agent invocation occurred. All test fixtures fully offline, no HTTP, paid model or external provider even in CI.
+
+# 7. Normative-rule matrix / contradiction closure
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|native|src01_grounding|actual_cold_verification|REQUIRE|native_caller_verified|requirements.r001|R001
+NR002|roles|forecaster_falsifier|same_frozen_scope|REQUIRE|two_distinct_role_records|requirements.r002|R002
+NR003|citations|claim_source_quote|admitted_frozen_bytes|REQUIRE|quote_literal_integrity|requirements.r003|R003
+NR004|cooperation|disagreement_abstention|untrusted_claims|REQUIRE|no_consensus_as_fact|requirements.r004|R004
+NR005|hermes|native_validator|existing_fixed_policy|REQUIRE|native_draft_semantics_unchanged|requirements.r005|R005
+NR006|benchmark|same_corpus_comparison|synthetic_min40|REQUIRE|honest_paired_denominators|requirements.r006|R006
+NR007|replay|content_addressed_receipts|frozen_inputs|REQUIRE|tamper_and_network_fail_closed|requirements.r007|R007
+NR008|authority|scope_and_all_ids|no_provider_and_trade|FORBID|no_unapproved_promotion|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 8. Minimum-complete negative test matrix, evidence plan and hard stops
+R001–R008 are exact named pytest nodes in spec; run all eight plus adjacent SRC-01, PIT/SRC source bytes, Hermes model validator, citation/manual response, and strict no-live/no-network guards. Negative cases: modified/bad/undated/future SRC source, forged source/hash/quote, multiple roles same opaque execution claim, role mismatch, contradictory sources, missing falsifier, duplicate citation refs, evidence-as-instruction, bad UTC/cutoff, malformed rule, irrelevant source, untrusted URL, case/receipt tamper, safe scratch path, socket calls, secret-shaped fields, native Hermes invalid draft, and all forbidden promotions. Benchmark >=40 same-corpus with actual denominators. Do not weaken existing tests; avoid unrelated hardening.
+
+After implementation run focused+adjacent, exactly one authoritative full local suite on stable code commit, full secret/security and generated-artifact guard, native readiness `--check-diff --base 105eb6c6bd366f1e585e83a03766ad27cf9b9616 --head HEAD`, exact-head hosted required CI and all 11 jobs if routed. Verify actual PR body and PR evidence consistency guard on posted GitHub API bytes, use accurate `PRIVATE_REPO_MANUAL_VERIFIED` if optional final comment means posted verifier fails. Provide genuine skill logs, no fabricated passed tests/CI; if code changes after full suite rerun affected checks. Review and fix material bugs within 9 files without a new WP. The status fragment is non-self-referential; live head/CI belong in PR body.
+
+HARD STOP if native readiness fails after reasonable authorized spec repair; if source IDs cannot be linked to accepted frozen SRC bytes; if existing v0.21.3 strict validator cannot be obeyed without changing protected Hermes models/policy; if historical SRC-01 receipt verification would require modifying frozen existing CLI; if mandatory Ponytail LITE is unavailable; if source/authentication claims require new provider/campaign, credentials or protected runtime authority; or if task cannot be completed within nine files. A per-case missing source/role/quote is an inconclusive evidence row, not a WP-wide stop. No mock model proof of provider/independence allowed.
+
+# 9. Exact report-back and successor boundary
+Keep all 36 capability IDs. Only R3-05/R3-05-CITATIONS are targeted. Their result can be OFFLINE_RESEARCH_COOP_FUNCTIONAL but NOT REAL_HERMES_DELEGATION_INTEGRATED until separately authorized real native delegate proof; R3-29 parity remains open. Preserve PR272 relation conditional value, synthetic no-alpha claims, R3-02 real semantic retrieval, forecasting/learning real outcome gap, six named provider decisions, 12 parity candidates and independent Lane B.
+
+Return **one consolidated** `S10-R3-HERMES-COOP-01_CC_RETURN.zip` outside checkout on complete or genuine blocker, including `COMPLETION_OR_BLOCKER.md`, exact final prompt/spec SHA256 + readiness exit/output (pre-branch and --check-diff), actual changed-file inventory/head/diff, Ponytail-first and real skill ledger, native CLI run+verify receipts, >=40-case raw benchmark and recalculated denominators, R001-R008 and negative tests, security, full-suite and hosted exact-head CI, upstream source pin/copy status, PR re-fetch/evidence guard, authority/provenance claims and known limitations. If blocked, still return the one ZIP with proof and no invented PR.
+
+CC final handoff to Karl MUST say: SEND TO Side24; ATTACH `S10-R3-HERMES-COOP-01_CC_RETURN.zip` only; MESSAGE "Side24 — attached is S10-R3-HERMES-COOP-01_CC_RETURN.zip. Independently verify exact live main/head/PR/changed paths, true SRC-01 native call path, two-role source binding, citation/quote ledger and abstention, honest >=40 same-corpus comparison, no real delegate/provider/authority promotion, actual gate, Ponytail/other skills, source/security, full/hosted CI and posted PR evidence. Decide MERGE_READY/TARGETED_FOLLOW_UP_REQUIRED/BLOCKED_NOT_READY. Do not merge. Return concise disposition and exact next action." EXPECTED RESULT: independent Side24 disposition; AFTERWARD: Karl alone decides merge. No other Side chat.
+
+<!-- R001 test_coop_verified_src01_native_operator_and_cold_binding: Call real tools/alpha/run_hermes_cooperation.py run/verify on an existing S10-R3-SRC-01 frozen scratch and confirm native source_grounding.verify succeeds; rejected/tampered grounding never yields a cooperation receipt. -->
+<!-- R002 test_coop_two_specialists_bound_same_scope_and_role_origin: Exactly FORECASTER and FALSIFIER caller-supplied submissions bind the same frozen question, market/candidate, information cutoff, native rule hash and source allowlist; duplicate/role swap/mismatched ids refuse or abstain, never invent independent agent execution. -->
+<!-- R003 test_coop_citation_ledger_literal_source_quote_and_claim_coverage: Content-addressed source id -> deterministic citation integer ledger; each material claim binds admitted SRC source refs, verified literal quote bytes, provenance/timestamp. Unknown URL, fabricated quote, citation gap, conflicting source or post-cutoff source is rejected or counted as unsupported. -->
+<!-- R004 test_coop_bounded_falsifier_forecaster_disagreement_and_abstention: Two distinct-role submissions are reconciled without auto-voting true: evidence for/against, disagreement, falsification, uncertainty, unsupported claims and missing role give closed human-review/abstention status. No inferred probability, value, authority or profit. -->
+<!-- R005 test_coop_native_hermes_validator_compatibility_and_no_invocation: When compatible, reuse native validate_research_draft (not override); check exact request id and sanctioned source refs, and prove no controlled Hermes subprocess, FakeHermesBackend masquerading as a real delegate, config/policy edit, credentials or child tool escalation. -->
+<!-- R006 test_coop_frozen_same_case_single_vs_pair_benchmark_denominators: Frozen >=40 SANITIZED_SYNTHETIC cases evaluated on exactly same grounding/source/label corpus for single FORECASTER vs two-role cooperation. Exact denominators for valid cites, claim coverage, unsupported and false quotes, conflicts, abstentions, latency/counting; no fabricated lift or real performance claim. -->
+<!-- R007 test_coop_cold_replay_tamper_idempotence_and_network_denial: Run emits one bounded sanitized external scratch receipt with hashed manifest and SOURCE_ORIGIN_UNVERIFIED; cold verify recomputes from frozen bytes, idempotent repeats agree, mismatches/altered output/paths/symlinks/sockets/secret-shaped inputs fail closed and zero network attempts. -->
+<!-- R008 test_coop_scope_adoption_negative_matrix_and_legacy_src: Native legacy SRC-01 run/verify/related remains unchanged; no canonical PIT/Alpha/WP170, Hermes runtime policy, scheduler, provider, paper, execution, capital or automatic promotion. R3-05 and R3-05-CITATIONS advance offline only; R3-29 parity, 12 parity candidates, six provider gates and Lane B are not self-closed. -->
