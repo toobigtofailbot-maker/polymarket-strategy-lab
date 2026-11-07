@@ -1,0 +1,123 @@
+Package Identity:
+  WP ID: S10-R3-REAL-PUBLIC-GET-01B
+  Title: Official SDK one-shot owner activation pin (Phase B-preparation)
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Required predecessor: PR #276 head 65c8bbac4fdce221ea9ac984cd9cf13f1b8bb7ba merged as ec15c9a5feb3d7502e03ecdde5c00ae58f6ea6ba
+  Suggested branch: codex/s10-r3-real-public-get-01b
+  Package class: OWNER_GATED_PUBLIC_SDK_ACTIVATION_PIN
+  Package size class: M (seven authorized paths)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED or PUBLIC_VERIFIER_PASS
+  Runtime impact: only the existing sealed SDK probe's owner-activation digest becomes pinned after review
+  Product impact: NONE DURING IMPLEMENTATION; single future manual SDK public GET after separate merge
+  Network impact: narrowly scoped one public GET is prepared; no network executed in this PR
+  Credential impact: none
+  Dependency impact: none; use already pinned polymarket-client==0.10.0
+  Trading impact: none, USD 0
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: HIGH for one-time owner authorization, otherwise efficient
+  Reason: a one-line activation pin can unlock a real read-only HTTP path after merge
+  Escalate to higher reasoning or STOP if: owner authorization missing, pin/source differs, native readiness or mock-only safety fails, or exact pinned scratch is unusable
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Objective — exact owner approval / non-authority
+
+Karl wishes to adopt upstream technology rather than rewrite it. PR275 introduced the ACTUAL installed `polymarket-client==0.10.0` `PublicClient.search(...).first_page()` call; PR276 prepared a real public GET with `OWNER_ACTIVATION_SHA256 = None`. This WP changes only the one digest pin and required documentation/tests, allowing the already merged bounded transport to be used later after Karl merges this pin PR. NO new search, adapter, data plane, or custom framework.
+
+**The file `PROPOSED_KARL_ACTIVATION_RECORD_PENDING_OWNER_SEND.json` is not authorization by itself.** It becomes owner-approved ONLY if Karl personally sends the separate first-person bootstrap identifying the exact SHA-256 `a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a` and explicitly accepting the scope. CC must preserve the exact UTF-8 bytes; cannot change scratch/date, compute a different digest, or claim own approval. Any changed record requires fresh Karl authorization; halt without creating activation PR. This approval is for the pin and its narrowly scoped future one-request capability. It does NOT authorize CC to run the request before the owner-merging of the activation PR. AFTER MERGE, a deliberate operator command is still required. No background work.
+
+Authority / Non-Authority Posture: implementation and local offline tests only during this PR; limited future manual unauthenticated product-network GET only after the pin PR is reviewed/merged and one deliberate invocation, never on a branch. `network:true` in the machine spec acknowledges that pinning prepares a real network capability; it grants NO permission to call during implementation. `credentials:false`, `execution:false`, `live:false`, `paper:false`, `scheduler:false`, `hermes_runtime:false`, `dependencies:false`, `strategy:false`. Canonical evidence stays read-only and existing receipts unchanged. `docs/ai/codex/PROTECTED_PATHS.md` controls all sixteen boundary groups. No trading/capital authority.
+
+# 2. Mandatory startup, merge gate, readiness, skill order
+
+- Read `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, current `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, `WP_DRAFTING_STANDARD.md`, `WP_SPEC_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, relevant skills and PR evidence discipline. Read existing PR276 status/contract, original SDK bridge/probe and tests, not the whole repo. The repo is the source of truth.
+- **Ponytail LITE must be FIRST ACTUALLY INVOKED skill** after mandatory startup reads. Next invoke genuinely relevant installed skills: `runtime-authority-boundary-review`, `hermes-alpha-reuse-check`, `security-review`, `find-bugs`, `verification-before-completion`, `pr-evidence-reconcile`, plus readiness/negative-test/other mandatory installed skills. No pretend invocations. Be economical; no bureaucratic new cycles.
+- Hard merge gate: `git fetch origin --prune; git checkout main; git pull --ff-only origin main; git rev-parse HEAD; git status --short --branch`. Must equal `ec15c9a5feb3d7502e03ecdde5c00ae58f6ea6ba` unless only benign independent merges; mandatory PR276 merged head `65c8bbac4fdce221ea9ac984cd9cf13f1b8bb7ba`, merge `ec15c9a5feb3d7502e03ecdde5c00ae58f6ea6ba` is ancestor. PR268 independent, untouched. No overlapping active branch/PR for S10-R3-REAL-PUBLIC-GET-01B. No dirty tree or generated artifacts. A new main SHA without benign reconciliation is STATE_DRIFT STOP, not silently assumed.
+- On CLEAN synced main BEFORE branch/source changes, run the actual native `tools/wp/wp_readiness_gate.py` against the EXACT final attached prompt/spec bytes, not merely a homegrown checker. Exit 0, IMPLEMENTATION_READY (RUNTIME, no certificate unless actual repo gate says otherwise). If a heading-only issue emerges, CC may make minimal same-authority correction, rerun gate before branch; no change to approval record/sha/scope/permissions. Do NOT assume a certificate or owner network execution approval.
+- All changes confined to the seven exact paths in section 3. CC has full autonomy to fix in-scope defects and revalidate. Do not ask for routine approvals or expand to unrelated files.
+
+# 3. Exact changed-file set and forbidden crossing
+
+- `docs/deferred_items_log.md`
+- `docs/official_sdk_public_probe_contract.md`
+- `docs/status_entries/S10-R3-REAL-PUBLIC-GET-01B.md`
+- `docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_prompt.txt`
+- `docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_spec.json`
+- `src/data_layer/analytical_research/official_sdk_public_probe.py`
+- `tests/tools/alpha/test_official_sdk_public_probe.py`
+
+Only change `OWNER_ACTIVATION_SHA256` to the exact literal approved hash in `official_sdk_public_probe.py`, preserving request guard, method, URL, SDK, receipt semantics and public GET lifecycle. The remaining changes are tests, concise contract/status/deferred documentation, and the WP prompt/spec. Do not edit `tools/alpha/run_official_sdk_public_probe.py` (existing operator). No dependencies, CI/workflow, SDK, environment/config, Source-01/PIT, Hermes/strategy, paper/trading/execution or another R3 WP. The existing raw-output scratch stays external/uncommitted; the proposed activation record stays inside the handoff ZIP, NOT committed to git.
+
+**Compatibility / Impossibility check:** demonstrate actual upstream `PublicClient.search` remains installed and used. Inspect existing Phase A tests that assert sealed behavior and adapt ONLY those to owner-approved digest; do not weaken refusal, API or no-network tests. Existing `check`, `live`, `verify` CLI stays the same. Verify proposed scratch parent `C:\Users\Public\Documents` is an actual safe, writable external path on the intended Windows operator BEFORE making the pin branch; if impossible STOP `OWNER_SCRATCH_UNUSABLE` rather than change the owner record. Other system CI runners must only run injected-transport tests.
+
+# 4. Frozen owner-approved one-request activation envelope
+
+- Exact record input filename: `PROPOSED_KARL_ACTIVATION_RECORD_PENDING_OWNER_SEND.json`; it is approved only when Karl sends the FIRST-PERSON bootstrap matching SHA-256 below.
+- Record raw SHA-256: `a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a` (hash raw UTF-8 bytes verbatim, including newline). Do not reserialize before hashing. Commit exactly `OWNER_ACTIVATION_SHA256 = "a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a"`.
+- Record `scratch_dir`: `C:\Users\Public\Documents\polymarket-r3-sdk-one-get-20261107`; exact-time window `2026-11-07T00:00:00Z` through `2026-11-21T23:59:59Z` inclusive. If expired, stop and request a NEW explicitly authorized record, do NOT extend locally.
+- Record must preserve schema and `wp_id=S10-R3-REAL-PUBLIC-GET-01` (the existing CLI WP; the new change WP is S10-R3-REAL-PUBLIC-GET-01B).
+- Existing expected `envelope_sha256`: `110be3589860cc1e03f69eb41437941ea5685afb25109cd87cc53b722e82a3e9`; verify via offline `check`, not assumptions.
+- Exactly ONE unauthenticated SDK `GET https://gamma-api.polymarket.com/public-search?q=bitcoin&page=1&limit_per_type=2`, q=bitcoin, page 1, per-type limit=2. No redirects/retries/proxies/auth/cookies, no pagination follow; TLS verify; 1 MiB body; 15 s wall. Request counted before dial; a failed attempt is consumed. No second attempt, another run, another host or another scratch for the same approval. This is an operator-level single-use agreement, not a globally enforced lock or cryptographic signature.
+- No live call while implementing this WP, even if the record is signed and pin is in the branch. After merge, use the identical record and exactly one manual operator `python -B tools/alpha/run_official_sdk_public_probe.py live --scratch-dir "C:\Users\Public\Documents\polymarket-r3-sdk-one-get-20261107" --activation-record <absolute-path-to-exact-owner-record>` when the operator is explicitly instructed after merge. Never run it in hosted CI or autonomously in background.
+
+# 5. R001–R008 normative behavior and negative-test matrix
+
+R001 — Pinned record exact source and owner transmission: Verify the exact attached record bytes SHA-256 equal the constant and declared manifest; no assistant/CC-generated replacement or rehash. Sending the explicit first-person Karl bootstrap authorizes this record only. Commit exactly this digest in OWNER_ACTIVATION_SHA256 with no other request/config changes.
+R002 — Pre-merge and CI egress prohibition: During the entire WP, CC may run only check, verify, mock and socket-blocked tests. No CLI live without fully owner-merged exact pin; no actual requests, redirects or DNS. Hosted CI stays offline; source pin being present in branch is not an execution grant.
+R003 — Exact record scope and negative refusals: Verify owner record fields wp_id S10-R3-REAL-PUBLIC-GET-01, schema, approved_by, single URL, exact envelope SHA-256, max_attempts=1, exact Windows absolute scratch directory, UTC window 2026-11-07 to 2026-11-21, SHA-256. Wrong/missing/modified values, extra fields, window/scratch mismatch fail closed before network.
+R004 — One-shot claimed attempt: Mock-only prove the original implementation writes attempt_claimed.json before transport dialing, caps one HTTP GET attempt including failed requests, no retry, redirect, follow-up page or second dial, and refuses consumed attempts. Explain local single-attempt not globally enforceable across modified copies.
+R005 — Existing source/receipt replay: Reuse actual pinned polymarket-client 0.10.0 PublicClient.search first_page and existing SDK/PIT/SRC-01 read-only replay. Demonstrate tamper refusal, no source-origin or settlement claims, truthfully report no real GET made in this PR.
+R006 — Historical compatibility: Maintain unchanged original S10-R3-REAL-PUBLIC-GET-01 URI, source seam, SDK pinned tag and historical receipt policy. No changes to neighboring historical SRC/EXT/SDK-DIRECT receipts or to PR268; ensure old Phase A seal-only expectations updated without weakening guards.
+R007 — Negative security and safety: Run exact negative matrix for wrong host/path/method/query/headers, oversized body, redirects/gzip/timeout, repeated attempt, forbidden auth, unexpected HTTPS/proxy and fake approval. No real HTTP in tests; no secrets/log raw inputs; no new dependencies or protected runtime.
+R008 — Native gates and owner-controlled post-merge transition: Prebranch native readiness IMPLEMENTATION_READY, Ponytail LITE first, in-scope tests and full suite, hosted exact-head 11 checks, posted PR evidence. Stop after one PR + consolidated return ZIP; do not merge or execute. Karl may merge, then separately trigger one explicit operator CLI with the pinned record; preserve 36 IDs and pending value acceptance.
+
+Negative tests (mock only): wrong hash, wrong `approved_by` / schema / attempt id, conflicting URL/envelope, additional keys, scratch mismatch, naive/expired window, second request, response oversize, SSL/proxy/headers/cookies/auth, record rewrite after approval, prior attempt marker, corrupted receipt, wrong SDK source, and all Phase A nearby test families. Require tests to demonstrate no real product HTTP; monkeypatch/inject transport and block sockets. Do not create brittle code-path guards that forbid real upstream method use.
+
+# 6. Test, evidence plan, hard stops
+
+All eight required evidence nodes must have real runnable assertions and honest results. Exact commands specified by the machine spec. Run focused tests and neighboring Phase A SDK-PIT research suites, native diff-scope test, negative matrix, full Linux test suite, hosted exact-head 11 checks incl Windows, gitleaks and security, generated-artifact scan, posted PR body consistency and independent human review. Preserve historical receipts and idempotence. Log any skipped tests with reasons. Tests MUST NOT dial real Gamma or providers. Re-fetch posted body and compare with final head. `Ready for review: YES` only after exact-head CI and posted evidence complete.
+
+Hard stops: no first-person owner authorization, record/sha mismatch, unsafe/missing scratch parent, permission boundary, unexpected real HTTP, second attempt, SDK identity drift, unauthorized changed file, native readiness not pass, required test failing, hosted CI incomplete. Routine in-scope defects may be fixed autonomously; any changed raw activation record requires new Karl approval. A private-repo posted-body evidence verifier may be UNAVAILABLE only when correctly disclosed, as permitted by current repo state machine; final comment optional.
+
+# 7. Normative rule matrix, evidence plan and report-back
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|authority|approved_exact_owner_record|specified_behavior|REQUIRE|approved_exact_owner_record_verified|requirements.r001|R001
+NR002|network|no_product_network_during_pr|specified_behavior|REQUIRE|no_product_network_during_pr_verified|requirements.r002|R002
+NR003|authority|activation_record_refusals|specified_behavior|REQUIRE|activation_record_refusals_verified|requirements.r003|R003
+NR004|network|attempt_claim_one_shot|specified_behavior|REQUIRE|attempt_claim_one_shot_verified|requirements.r004|R004
+NR005|evidence|cold_sdk_replay|specified_behavior|REQUIRE|cold_sdk_replay_verified|requirements.r005|R005
+NR006|compatibility|historical_guard_compatibility|specified_behavior|REQUIRE|historical_guard_compatibility_verified|requirements.r006|R006
+NR007|security|negative_security|specified_behavior|REQUIRE|negative_security_verified|requirements.r007|R007
+NR008|governance|native_gates_and_36_ids|specified_behavior|REQUIRE|native_gates_and_36_ids_verified|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+Requirement-to-evidence mapping is the canonical `evidence_plan` in `wp_spec.json` (R001-R008), with exact pytest node commands and expected assertions. The result and evidence must be posted on GitHub PR, not claimed in this prompt.
+
+# 8. Successor boundary and reporting
+
+Create ONE branch, ONE coherent PR and EXACTLY ONE consolidated `S10-R3-REAL-PUBLIC-GET-01B_CC_RETURN.zip` containing hashes, owner-message proof, readiness and skills ledger, test/gate/CI/security evidence, final posted PR body, all seven changed paths and no actual product GET. Or one precise blocker ZIP. Do not merge. Karl merges, then the separately deliberate post-merge `live` command can consume this one activation record, and a single operator receipt returns for Side24 verification (without opening a new implementation PR). After the real GET, propose `S10-R3-REAL-SOURCE-BENCH-01` only if the source evidence is genuine and useful. In particular, do NOT claim a one-page smoke is real retrieval lift or proof of trading edge. All 29 repos / 36 R3 IDs remain tracked; only R3-23 can advance to one-source-observed after a genuinely executed probe, not on this pin PR. PR268 stays separate.
+
+REPORT-BACK: Return PR link, exact branch/main/head SHA, true real GET count 0, one ZIP, and explicit Phase B post-merge manual execution instructions. No other Side chat.

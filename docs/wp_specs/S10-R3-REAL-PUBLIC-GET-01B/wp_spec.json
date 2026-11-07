@@ -1,0 +1,512 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-REAL-PUBLIC-GET-01B",
+    "title": "Owner-approved one-shot Polymarket SDK public GET activation pin",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OWNER_GATED_PUBLIC_SDK_ACTIVATION_PIN",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-real-public-get-01b",
+    "required_predecessor": {
+      "pr_number": 276,
+      "head_sha": "65c8bbac4fdce221ea9ac984cd9cf13f1b8bb7ba",
+      "merge_sha": "ec15c9a5feb3d7502e03ecdde5c00ae58f6ea6ba"
+    },
+    "objective": "Under Karl explicit approval transmitted with this exact package, pin one exact activation-record digest for the already merged official SDK one-request probe. Validate entirely offline in one PR. Real product GET is forbidden before Karl merges the reviewed pin PR; post-merge requires a separate deliberate operator command using the same record and only once.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/official_sdk_public_probe_contract.md",
+      "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01B.md",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_spec.json",
+      "src/data_layer/analytical_research/official_sdk_public_probe.py",
+      "tests/tools/alpha/test_official_sdk_public_probe.py"
+    ],
+    "allowed_changed_files": [
+      "docs/deferred_items_log.md",
+      "docs/official_sdk_public_probe_contract.md",
+      "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01B.md",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_spec.json",
+      "src/data_layer/analytical_research/official_sdk_public_probe.py",
+      "tests/tools/alpha/test_official_sdk_public_probe.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only these seven paths to restore OWNER_ACTIVATION_SHA256=None. No historical receipt, source-grounding, identity, SDK, runtime, risk, config, provider or CI changes. No public egress during implementation or hosted CI.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Seven-path phase-B exact owner activation pin of the existing official SDK public GET, not a new data client or search framework. Absolutely no real GET during code implementation or PR review.",
+    "items": [
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "EXISTING",
+        "after": "Record exact owner-gated Phase B status, one-attempt cap and pending operator execution; no 36-ID closure",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      },
+      {
+        "surface": "docs/official_sdk_public_probe_contract.md",
+        "before": "EXISTING",
+        "after": "Document approved record digest, local scratch, two-stage owner merge and operator procedure, limitations",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01B.md",
+        "before": "ABSENT",
+        "after": "Truthful readiness, exact head tests, CI, skill ledger, no actual GET in PR, pending post-merge operation",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "Canonical exact prompt with narrow owner activation authorization and R001-R008",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_spec.json",
+        "before": "ABSENT",
+        "after": "Canonical matching RUNTIME machine specification",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/official_sdk_public_probe.py",
+        "before": "OWNER_ACTIVATION_SHA256 = None",
+        "after": "Only change the seal to SHA-256 of the exact approved activation record; no new request logic, no unbounded network",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_official_sdk_public_probe.py",
+        "before": "Existing Phase-A tests",
+        "after": "Adapt seal-specific assertions and add eight mock-only activation regression tests; ensure no real egress in CI",
+        "change_authorized": true,
+        "compatibility_requirement": "Phase B code pin only. Real product GET forbidden until this PR is owner-merged and a subsequent deliberate operator action. Upstream SDK 0.10.0, PIT, historical receipts and all authority boundaries remain unchanged.",
+        "authority": "KARL_EXPLICIT_RECORD_APPROVAL_IF_HE_SENDS_BOOTSTRAP_PHASE_B_OFFLINE_PIN_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight concrete phase-B pin, origin, egress, regression and governance assertions; no request performed in this WP.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verify the exact attached record bytes SHA-256 equal the constant and declared manifest; no assistant/CC-generated replacement or rehash. Sending the explicit first-person Karl bootstrap authorizes this record only. Commit exactly this digest in OWNER_ACTIVATION_SHA256 with no other request/config changes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verify the exact attached record bytes SHA-256 equal the constant and declared manifest; no assistant/CC-generated replacement or rehash. Sending the explicit first-person Karl bootstrap authorizes this record only. Commit exactly this digest in OWNER_ACTIVATION_SHA256 with no other request/config changes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "During the entire WP, CC may run only check, verify, mock and socket-blocked tests. No CLI live without fully owner-merged exact pin; no actual requests, redirects or DNS. Hosted CI stays offline; source pin being present in branch is not an execution grant.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "During the entire WP, CC may run only check, verify, mock and socket-blocked tests. No CLI live without fully owner-merged exact pin; no actual requests, redirects or DNS. Hosted CI stays offline; source pin being present in branch is not an execution grant.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verify owner record fields wp_id S10-R3-REAL-PUBLIC-GET-01, schema, approved_by, single URL, exact envelope SHA-256, max_attempts=1, exact Windows absolute scratch directory, UTC window 2026-11-07 to 2026-11-21, SHA-256. Wrong/missing/modified values, extra fields, window/scratch mismatch fail closed before network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verify owner record fields wp_id S10-R3-REAL-PUBLIC-GET-01, schema, approved_by, single URL, exact envelope SHA-256, max_attempts=1, exact Windows absolute scratch directory, UTC window 2026-11-07 to 2026-11-21, SHA-256. Wrong/missing/modified values, extra fields, window/scratch mismatch fail closed before network.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Mock-only prove the original implementation writes attempt_claimed.json before transport dialing, caps one HTTP GET attempt including failed requests, no retry, redirect, follow-up page or second dial, and refuses consumed attempts. Explain local single-attempt not globally enforceable across modified copies.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Mock-only prove the original implementation writes attempt_claimed.json before transport dialing, caps one HTTP GET attempt including failed requests, no retry, redirect, follow-up page or second dial, and refuses consumed attempts. Explain local single-attempt not globally enforceable across modified copies.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse actual pinned polymarket-client 0.10.0 PublicClient.search first_page and existing SDK/PIT/SRC-01 read-only replay. Demonstrate tamper refusal, no source-origin or settlement claims, truthfully report no real GET made in this PR.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuse actual pinned polymarket-client 0.10.0 PublicClient.search first_page and existing SDK/PIT/SRC-01 read-only replay. Demonstrate tamper refusal, no source-origin or settlement claims, truthfully report no real GET made in this PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Maintain unchanged original S10-R3-REAL-PUBLIC-GET-01 URI, source seam, SDK pinned tag and historical receipt policy. No changes to neighboring historical SRC/EXT/SDK-DIRECT receipts or to PR268; ensure old Phase A seal-only expectations updated without weakening guards.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Maintain unchanged original S10-R3-REAL-PUBLIC-GET-01 URI, source seam, SDK pinned tag and historical receipt policy. No changes to neighboring historical SRC/EXT/SDK-DIRECT receipts or to PR268; ensure old Phase A seal-only expectations updated without weakening guards.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run exact negative matrix for wrong host/path/method/query/headers, oversized body, redirects/gzip/timeout, repeated attempt, forbidden auth, unexpected HTTPS/proxy and fake approval. No real HTTP in tests; no secrets/log raw inputs; no new dependencies or protected runtime.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run exact negative matrix for wrong host/path/method/query/headers, oversized body, redirects/gzip/timeout, repeated attempt, forbidden auth, unexpected HTTPS/proxy and fake approval. No real HTTP in tests; no secrets/log raw inputs; no new dependencies or protected runtime.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Prebranch native readiness IMPLEMENTATION_READY, Ponytail LITE first, in-scope tests and full suite, hosted exact-head 11 checks, posted PR evidence. Stop after one PR + consolidated return ZIP; do not merge or execute. Karl may merge, then separately trigger one explicit operator CLI with the pinned record; preserve 36 IDs and pending value acceptance.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Prebranch native readiness IMPLEMENTATION_READY, Ponytail LITE first, in-scope tests and full suite, hosted exact-head 11 checks, posted PR evidence. Stop after one PR + consolidated return ZIP; do not merge or execute. Karl may merge, then separately trigger one explicit operator CLI with the pinned record; preserve 36 IDs and pending value acceptance.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_ACTIVATION_PIN_ONLY; REAL_GET_NOT_EXECUTED; OWNER_MERGE_REQUIRED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; NO_TRADING",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No change to canonical PIT or historical SRC/SDK receipts; new isolated evidence receipt is deterministic over captured bytes, SDK identity and bounded request envelope.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic readiness plus Karl explicit owner acceptance of exact record for code pin; no actual public call during PR implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Clean synchronized main exactly ec15c9a5feb3d7502e03ecdde5c00ae58f6ea6ba, PR276 merged head 65c8bbac4fdce221ea9ac984cd9cf13f1b8bb7ba. Run final exact prompt/spec native RUNTIME readiness exit 0 before branching; no conflicting PR or overlap.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly sends the first-person owner approval bootstrap with the immutable activation-record SHA-256 a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a; code pin authorization only, real product GET forbidden until Karl merges that PR and deliberately triggers one operator call.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Seven changed paths, one pin plus offline mock tests and truthful evidence, full required local/hosted checks, single CC completion/blocker ZIP. No real GET, no credentials, no phase-B operator execution, no merge by CC.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest negative/positive cases are the one canonical executable examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight exact named mock-only tests and live PR/CI checks prove pin integrity, no premature GET, SDK reuse and one-shot safety.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_phaseb_owner_record_pinned_exact_source",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_owner_record_pinned_exact_source",
+        "expected_result": "The sent owner record has exact SHA-256, exact approved fields and exact constant pin; use genuine upstream SDK and existing guarded probe."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_phaseb_no_product_network_before_owner_merge",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_no_product_network_before_owner_merge",
+        "expected_result": "All tests are mock-only and block sockets; real public GET never executed in source branch/CI; branch pin not considered merge authorization."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_phaseb_owner_activation_strict_binding_and_refusals",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_owner_activation_strict_binding_and_refusals",
+        "expected_result": "Wrong field, altered raw record byte, wrong host/scratch/date/time window/attempt count and invalid content all refuse before transport."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_phaseb_one_shot_attempt_claim_and_idempotence",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_one_shot_attempt_claim_and_idempotence",
+        "expected_result": "Using injected transport, attempt claimed write-once before dial, one request and no repeat; retries/second GET/redirect/oversize refuse."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_phaseb_sdk_replay_and_native_readonly_crosscheck",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_sdk_replay_and_native_readonly_crosscheck",
+        "expected_result": "Unchanged SDK PublicClient.search, strict offline cold replay, native PIT cross-check, quote/source/side limitations stay explicit."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_phaseb_historical_phasea_and_sibling_regression",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_historical_phasea_and_sibling_regression",
+        "expected_result": "Existing phase A tests adapted to authorized pin safely and old receipt/code identity compatibility preserved."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_phaseb_negative_security_and_no_credentials",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_negative_security_and_no_credentials",
+        "expected_result": "Wrong headers, cookies, proxy, gzip, unsafe path and invalid record refuse; no secrets or historical protected paths changed."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_phaseb_scope_governance_and_capability_accounting",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_phaseb_scope_governance_and_capability_accounting",
+        "expected_result": "7-path exact diff; actual owner message authorization; Ponytail LITE and gates; 36 IDs retained and no value acceptance; post-merge only manual operation."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-REAL-SOURCE-BENCH-01",
+    "next_title": "After Karl merges pin and separately triggers exactly one manual SDK GET, perform cold-replayed data review and bounded real-source coverage/quality benchmarking before any value acceptance",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-REAL-PUBLIC-GET-01B",
+    "forbidden_in_this_wp": [
+      "No actual Gamma or any other product HTTP during implementation, verification, CI, or PR closeout. Owner-merging the pin must happen before a deliberate one-shot manual CLI.",
+      "No modification of the activated record after owner sends it; change requires new Karl approval and new hash/pin; do not self-authorize.",
+      "No custom search or SDK substitute, new dependency, SDK upgrade, CCXT rewrite, Hermes, provider, model, credentials, account, trading, order, strategy, capital, scheduler or protected runtime.",
+      "No change to original SRC-01, EXT-CONTRACTS-01, SDK-DIRECT-01 receipts or to PR268; no new canonical writes.",
+      "No second GET, redirect/retry/follow-up page, no real API calls in CI/tests, no owner value or upstream completion auto-acceptance; preserve 36 R3 IDs."
+    ]
+  }
+}

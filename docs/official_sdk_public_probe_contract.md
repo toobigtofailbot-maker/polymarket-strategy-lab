@@ -1,7 +1,7 @@
 # Official SDK public search probe contract (S10-R3-REAL-PUBLIC-GET-01)
 
-Status: Phase A, dormant. `ACTUAL_LIVE_GET_EXECUTED=NO`. Research only; no credentials, orders,
-strategy, paper, capital or live-trading authority.
+Status: Phase B pin (S10-R3-REAL-PUBLIC-GET-01B), not executed. `ACTUAL_LIVE_GET_EXECUTED=NO`.
+Research only; no credentials, orders, strategy, paper, capital or live-trading authority.
 
 ## What it is
 
@@ -32,20 +32,45 @@ The `OneShotTransport` guard enforces at transport level:
 | Proxy, environment | none; `trust_env=False` on client and transport |
 | TLS | verified, hostname checked, HTTP/1.1, one connection |
 | Body | at most 1 MiB read before the SDK parses; content encoding other than identity refused |
-| Time | connect/read/write 4 s, pool 1 s; a read that could cross 15 s is not started; the worker is abandoned at 15 s + 1 s |
+| Time | connect/read/write 4 s, pool 1 s; a read that could cross 15 s is not started; the## Activation (Phase A sealed; Phase B pinned by S10-R3-REAL-PUBLIC-GET-01B)
 
-## Activation (sealed in Phase A)
+Phase A shipped `OWNER_ACTIVATION_SHA256 = None`. While it is `None`, `live` returns
+`LIVE_ACTIVATION_SEALED` before reading any input or building any transport.
 
-`OWNER_ACTIVATION_SHA256 = None`. While it is `None`, `live` returns `LIVE_ACTIVATION_SEALED` before
-reading any input or building any transport.
+`live` requires one activation record (closed keys: `schema_id`, `wp_id`, `approved_by`, `attempt_id`,
+`request_url`, `max_attempts`, `scratch_dir`, `not_before_utc`, `not_after_utc`, `envelope_sha256`) that
+is byte-identical to the pin, with the exact URL, envelope and scratch directory, `max_attempts` 1 and
+the current UTC time inside the window.
 
-Phase B needs a separate exact owner instruction. The owner writes one activation record (closed keys:
-`schema_id`, `wp_id`, `approved_by`, `attempt_id`, `request_url`, `max_attempts`, `scratch_dir`,
-`not_before_utc`, `not_after_utc`, `envelope_sha256`). Its SHA-256 is pinned by a reviewed change that
-only the owner merges. `live` then requires the byte-identical record, the exact URL, envelope and
-scratch directory, `max_attempts` 1 and the current UTC time inside the window.
+S10-R3-REAL-PUBLIC-GET-01B pins Karl's explicitly approved record:
+
+| Field | Value |
+|---|---|
+| Raw record SHA-256 (`OWNER_ACTIVATION_SHA256`) | `a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a` |
+| `attempt_id` | `R3-SDK-PUBLICGET-20261107-01` |
+| `scratch_dir` | `C:\Users\Public\Documents\polymarket-r3-sdk-one-get-20261107` |
+| Window (UTC, inclusive) | `2026-11-07T00:00:00Z` .. `2026-11-21T23:59:59Z` |
+| `envelope_sha256` | `110be3589860cc1e03f69eb41437941ea5685afb25109cd87cc53b722e82a3e9` |
+
+The record file stays in the owner handoff package and is not committed. Changing any byte needs a new
+owner approval and a new reviewed pin; an expired window is never extended locally.
 
 The pin is a repository review control, not a cryptographic signature. A caller-created file, flag or
+fixture never satisfies it. The `attempt_claimed.json` marker is local to one scratch directory: it
+cannot stop a modified copy, another host or another scratch. The one-attempt limit is the owner's
+operator-level agreement, not a global lock.
+
+### Two-stage owner procedure
+
+1. Karl reviews and merges the pin PR. A pin on an unmerged branch is not an execution grant. No test,
+   CI job or review step runs `live`; every test uses an injected transport with sockets blocked.
+2. Only after a deliberate post-merge instruction, one operator on the intended Windows host runs, once,
+   from merged `main`:
+   `python -B tools/alpha/run_official_sdk_public_probe.py live --scratch-dir "C:\Users\Public\Documents\polymarket-r3-sdk-one-get-20261107" --activation-record <absolute path to the exact owner record, outside the scratch>`
+   then `verify` on the same scratch. A failed or timed-out attempt is still the one attempt; there is
+   no retry, rerun, other host or other scratch under this approval.
+
+ flag or
 fixture never satisfies it.
 
 ## Freeze, receipt and replay

@@ -36,8 +36,8 @@ RECEIPT_SCHEMA = "s10-r3-real-public-get01-receipt-v1"
 RECEIPT_PREFIX = "sdkpublicget:sha256:"
 ACTIVATION_SCHEMA = "s10-r3-real-public-get01-owner-activation-v1"
 
-# Phase A: sealed. Phase B needs a separately reviewed, owner-merged pin of one exact activation record.
-OWNER_ACTIVATION_SHA256: str | None = None
+# Phase B (S10-R3-REAL-PUBLIC-GET-01B): SHA-256 of Karl's exact approved record; usable only once owner-merged.
+OWNER_ACTIVATION_SHA256: str | None = "a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a"
 
 GAMMA_BASE = "https://gamma-api.polymarket.com"
 HOST = "gamma-api.polymarket.com"
