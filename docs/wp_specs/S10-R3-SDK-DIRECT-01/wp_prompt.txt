@@ -1,0 +1,103 @@
+Package Identity:
+  WP ID: S10-R3-SDK-DIRECT-01
+  Title: Direct Official Polymarket SDK Public Search Reuse in Native Research
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Execution baseline: main 84c0c67e70470daf20eb1d4afdb126af61b3987d (PR #274 merged)
+  Required predecessor: PR #274 exact head 6d9b1828c5591626c23fecf446175fa0003b3a96 merged as 84c0c67e70470daf20eb1d4afdb126af61b3987d, verified by Side24 on 2026-11-06; independently re-verify at CC startup and require main ancestry. Do not merge or re-run PR274.
+  Separate PR #268: open/unmerged, no consumption of its expired fee-policy assumptions
+  Suggested branch: codex/s10-r3-sdk-direct-01
+  Package class: OFFLINE_DIRECT_OFFICIAL_SDK_SEARCH_REUSE
+  Package size class: M; exactly 8 changed paths
+  Risk level: 3
+  Governance track expected: RUNTIME
+  Readiness basis: deterministic; independent certificate only if the native gate actually requires one
+  Dependencies, network, credentials, Hermes, scheduler, paper, execution, live, capital: ZERO NEW AUTHORITY
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Objective and Karl's explicit authority / non-authority
+
+Karl authorizes one bounded **offline** WP to directly USE, IMPORT AND INVOKE the already declared genuine upstream `polymarket-client==0.10.0` `PublicClient.search()` method, not rebuild its search algorithm. The prior EXT-CONTRACTS-01 is useful but it is *custom* conceptual parity, with synthetic recall 49/58 versus 52/58 baseline; this is not direct SDK adoption or live value. Do not rewrite or replace that code. Build the smallest SDK-to-native research staging adapter using the existing SRC-01 PIT/Alpha provenance and the merged EXT comparison. Scope is one native research library, one finite CLI, one focused test, one concise contract, deferred log, status and WP files. The method must be the real installed upstream package, not an imitation class. No external public requests, paid providers, SDK upgrade, credentials, signing, authenticated endpoints, private data, capital or orders are authorized. No canonical write or strategy promotion. All 36 adoption IDs remain tracked.
+
+# 2. Mandatory startup, first actual skill, owner/dependency preflight and native readiness
+
+1. Read actual repo `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/ai/codex/README.md`, `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md` and relevant native SDK/PIT/SRC/EXT docs. Use live signatures and actual repo contracts as authority.
+2. FIRST actual skill invocation after mandatory startup reading: **Ponytail LITE**; record real invocation/result. Then invoke applicable `hermes-alpha-reuse-check`, `wp-predraft-inspector`, `wp-minimum-test-plan`, `runtime-authority-boundary-review`, `canonical-evidence-audit`, `security-review`, `spec-to-code-compliance`, `find-bugs`, `code-simplifier`, `verification-before-completion`, `pr-evidence-reconcile` and genuinely mandatory skills. An unavailable required skill blocks per actual repo policy; never fake use. Avoid mechanical skill bloat when work is already completed.
+3. `git fetch origin --prune`, sync main fast-forward, require clean main. Verify PR #274 merged at EXACT head 6d9b1828c5591626c23fecf446175fa0003b3a96, its merge in current-main ancestry, PR #268 separately open/unmerged and no overlapping direct-SDK PR. If this PR #274 merge is not present in actual main ancestry, or main has materially incompatible changes: stop with one blocker ZIP. Do not merge PR #274 yourself.
+4. Verify SHA256SUMS package manifest, frozen prompt/spec and source pins, installation of `polymarket-client==0.10.0`; verify actual SDK `PublicClient.search` and `httpx.MockTransport` injection seam from exact `polymarket-client-v0.10.0` tag commit 579bb2e56be9cc5d152546985870ee6ad795ec52 (plus upstream test). This version's `.search` already exists; do NOT add dependency or upgrade merely to obtain search. Verify there is no new network/auth or protected semantic crossing at import. If absent or unusable, one precise blocker; do NOT silently implement a replacement.
+5. **Before branch/code modifications** execute actual native `python -B tools/wp/wp_readiness_gate.py --wp <package>/docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_prompt.txt --spec <package>/docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_spec.json --repo-root . --format json`. Require exit 0, IMPLEMENTATION_READY, RUNTIME/DETERMINISTIC, eight scoped paths, no errors, and independent certificate if actual gate demands one. Routine wording-only repair permitted within identical authority and scope, then recompute hashes and rerun on exact final bytes; material authorization change stops.
+6. Branch only after pass. CC may implement/refactor/test/fix all in-scope failures independently; must not ask Karl for routine code review; do not modify protected paths, historical allowlists, or remove passing tests. Final native diff gate and hosted CI required.
+
+# 3. Exact scope and forbidden surfaces
+
+Required = allowed = max 8 changed paths (nothing else):
+1. `src/data_layer/analytical_research/official_sdk_search_bridge.py`
+2. `tools/alpha/run_official_sdk_search.py`
+3. `tests/tools/alpha/test_official_sdk_search.py`
+4. `docs/official_sdk_search_bridge_contract.md`
+5. `docs/deferred_items_log.md`
+6. `docs/status_entries/S10-R3-SDK-DIRECT-01.md`
+7. `docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_spec.json`
+
+Do not edit native SRC-01 `tools/alpha/run_source_grounding.py` or `source_grounding.py` (their hashes define legacy receipts), existing EXT-CONTRACTS parity source/CLI (its receipts depend on code identity), Polymarket `public_client.py`, native PIT/Alpha registries, Hermes runtime, pyproject/lock, fees/PR268, CI, SDK internals, network adapter, production/strategy, or any protected path. A measured need to change another path requires a new exact owner-authorized scope, not quiet expansion.
+
+# 4. Upstream-first decision, true callable SDK seam and source provenance
+
+Version/classification: Polymarket/py-sdk `polymarket-client-v0.10.0` tag `579bb2e56be9cc5d152546985870ee6ad795ec52`, `src/polymarket/clients/public.py` Git blob `abe091d10ba65132e0674605c6a48023b0317bff`; method `PublicClient.search(q=...,page_size=...) -> Paginator[SearchResults]`, actual `.first_page()`. Upstream exact test `tests/unit/test_paginate_transport.py` blob `f2a608f025c2eb74c4d1d49365541c86ab188d81` demonstrates injecting a `SyncTransport` backed by `httpx.Client(transport=httpx.MockTransport(handler))` into `dataclasses.replace(client._ctx, gamma=...)`. This private seam is version-pinned; do not rely on generic monkeypatch of method. The already-declared project dependency is `polymarket-client==0.10.0`. Original R3 source research pin `aa94ec...` is a DIFFERENT upstream revision, not the exact v0.10 binary.
+
+For offline test/operator work, invoke actual SDK-owned `PublicClient.search(...).first_page()` using strictly one caller-supplied frozen Gamma-shaped response page via the above mock transport. Prove the callback was reached exactly once and the SDK returned typed `SearchResults`. Do NOT use a fake class, write your own SDK response parser or access real web endpoints. Make redirect/continuation/retry safely refuse. Offline source bytes remain `LOCAL_FIXTURE_UNAUTHENTICATED`; successfully parsing SDK-typed objects never authenticates an online response. Do not expose imported client to higher-level modules or authenticated methods. Honor SDK license/version evidence; no code copied.
+
+Use existing `run_source_grounding.verify` and native `source_grounding.load_corpus/bind_rule_texts` and `alpha_discovery` to cross-check typed SDK events/markets against native market/condition/event identities/cutoff. A `SOURCE_REJECTED` or unknown mapping is an explicit abstention, never a canonical source write or a fabricated YES token. Reuse existing `public_market_contract_parity` and `source_grounding.rank_markets` as comparators, NOT duplicate ranking engines. Real admissible local PIT bytes may be used if caller provides them; no synthetic substitution under LOCAL_REAL_PIT.
+
+# 5. Required callable operator and same-corpus evidence
+
+Implement a finite scratch-only `run` and cold `verify` CLI with explicitly bounded cases and raw response pages. Accept only caller-named absolute external paths and a previously verified SRC-01 scratch; freeze all response bytes, receipt identities and SDK version + code identity, reject symlinks/hardlinks/aliasing/oversize/secret-shaped fields; write exactly one content-addressed report in one clean external scratch. Cold `verify` must re-invoke the real installed SDK parser through MockTransport on frozen bytes, reproduce all output and write nothing. Repeat identical inputs should return existing verified receipt. Use native strict JSON and path guards; do not create a second framework.
+
+Benchmark on >=50 frozen identical synthetic labelled cases already defined for EXT-CONTRACTS-01 (reuse tests/helpers, do not copy their implementation). Compare real offline SDK typed search-page projections, existing EXT field-aware and native SRC BM25 with truthful query eligible and paired denominators, source/page coverage, identities, abstentions, recall/precision when comparable, and bounded CPU/memory/SDK parser overhead. No invented SDK retrieval lift: these are supplied fixture pages. A real-source benchmark not provided means `NOT_RUN_REAL_DATA`, no success claim. Preserve R3-23 as `DIRECT_UPSTREAM_INTEGRATION_OFFLINE_PENDING_OWNER_VALUE`; R3-27 remains `CUSTOM_ADAPTED_IMPLEMENTATION`/unaccepted, no parity auto-acceptance.
+
+# 6. Negative test matrix, evidence plan and hard stops
+
+Implement exact R001-R008 pytest entrypoints in spec and execute all 8. Cover wrong SDK version or import path, method not actually called, fake typed response, MockTransport missed and attempted socket, redirect or pagination beyond one page, malformed/event/source payload, mismatched native market id, ambiguous event, token orientation, no real-source provenance, expired timestamps, duplicate/collision, wrong/unknown fields, overlarge output, malformed JSON/NaN, secret content, symlink/hardlink/path escape, receipt tamper, idempotent run and verifier no writes. Test actual SDK typed behavior and upstream-aligned failure boundaries; no manual JSON projection as a substitute.
+
+Run focus/adjacent/full suites, Linux & Windows CI, actual native scope/check-diff, security and gitleaks (hosted if local unavailable), version + license, true source proof. Preserve all legacy receipts and old allowlists. Do not claim local missing tools as success. Hard stop if SDK cannot load, actual source method unavailable, exact gate fails, security/authority unproven, task demands public network or dependency change, PR274 not merged, or protected edit required. Return truthful blocker ZIP rather than broadening or building imitation.
+
+# 7. Normative rule matrix / cross-check
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|upstream|sdk_real_import_and_search|specified_behavior|REQUIRE|sdk_real_import_and_search_verified|requirements.r001|R001
+NR002|upstream|sdk_offline_transport_and_page_contract|specified_behavior|REQUIRE|sdk_offline_transport_and_page_contract_verified|requirements.r002|R002
+NR003|native|sdk_native_pit_verified_crossing|specified_behavior|REQUIRE|sdk_native_pit_verified_crossing_verified|requirements.r003|R003
+NR004|benchmark|sdk_vs_existing_native_methods|specified_behavior|REQUIRE|sdk_vs_existing_native_methods_verified|requirements.r004|R004
+NR005|failure|sdk_fail_closed_adversarial|specified_behavior|REQUIRE|sdk_fail_closed_adversarial_verified|requirements.r005|R005
+NR006|evidence|sdk_benchmark_fixed_denominators|specified_behavior|REQUIRE|sdk_benchmark_fixed_denominators_verified|requirements.r006|R006
+NR007|security|sdk_cold_receipt_security|specified_behavior|REQUIRE|sdk_cold_receipt_security_verified|requirements.r007|R007
+NR008|authority|sdk_upstream_adoption_and_authority|specified_behavior|FORBID|sdk_upstream_adoption_and_authority_verified|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 8. Evidence plan, validation, report-back and exactly one CC return ZIP
+
+Use exact R001-R008 tests. After implementation and each final change: native diff readiness gate, `diff_scope_summary.py` exact scope, generated-artifact guard, focused + adjacent families + full repo suite, external source license/security, successful exact-head hosted CI (all required jobs), PR evidence re-fetch and A-P consistency guard. Record Ponytail-first and every materially used mandatory installed skill. An optional final comment is not mandatory; if posted verifier fails only on absence of optional comment, report PRIVATE_REPO_MANUAL_VERIFIED honestly, do not manufacture PASS. One PR, no merge. Return **exactly one** `S10-R3-SDK-DIRECT-01_CC_RETURN.zip` with complete source/head/path/gate/skills/test/benchmark/receipt/negative/security/hosted PR evidence and honest remaining limitations, or one true blocker. Return it to Karl for Side24 independent assessment.
+
+# 9. Successor boundary and 36-capability preservation
+
+This WP is one authentic upstream SDK integration **under an offline injected transport**; not live-source activation, not full provider-contract parity, not demonstrated Alpha or research value. Source authenticity remains caller-unknown. Future public Gamma GET needs exact owner approval on host/path/request counts, bytes, timeout, redirects, credentialless posture and native protected gate; no automatic spend, no market-facing runtime grant. R3-27 CCXT prediction direct reuse remains a distinct decision, R3-02 semantic retrieval remains open, Hermes two real controlled sessions separately gated, forecast real outcomes/learning consumer, Oracle3 upstream selective reuse, all 12 parity ids, 6 provider lanes, Lane B methods and separate PR268 remain tracked. No automatic cap/strategy/Alpha/owner acceptance.
