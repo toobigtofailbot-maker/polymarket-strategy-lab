@@ -1,0 +1,523 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-SDK-DIRECT-01",
+    "title": "Direct Official Polymarket SDK Public Search Reuse in Native Research",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_DIRECT_OFFICIAL_SDK_SEARCH_REUSE",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-sdk-direct-01",
+    "required_predecessor": {
+      "pr_number": 274,
+      "head_sha": "6d9b1828c5591626c23fecf446175fa0003b3a96",
+      "merge_sha": "84c0c67e70470daf20eb1d4afdb126af61b3987d"
+    },
+    "objective": "Invoke the actual already pinned upstream polymarket-client==0.10.0 PublicClient.search on a strictly offline injected transport and bind typed results to previously verified native PIT/SRC evidence; no custom replacement search, no live GET or trading permission; compare on frozen matched cases with the merged native baseline.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/official_sdk_search_bridge.py",
+      "tools/alpha/run_official_sdk_search.py",
+      "tests/tools/alpha/test_official_sdk_search.py",
+      "docs/official_sdk_search_bridge_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-SDK-DIRECT-01.md",
+      "docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/official_sdk_search_bridge.py",
+      "tools/alpha/run_official_sdk_search.py",
+      "tests/tools/alpha/test_official_sdk_search.py",
+      "docs/official_sdk_search_bridge_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-SDK-DIRECT-01.md",
+      "docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly eight WP files; do not edit SDK package, SRC-01, EXT-CONTRACTS, native PIT/Alpha, Hermes or guarded paths. PR274 must already be merged at its exact head before branch/code. The new scratch is external-only.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Eight explicit changes: direct pinned upstream SDK search invocation with injected offline transport, existing native PIT/SRC/EXT comparison, and evidence; no dependency upgrade or network permission.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/official_sdk_search_bridge.py",
+        "before": "ABSENT",
+        "after": "Direct upstream PublicClient.search + typed SDK result -> native PID/SRC staging research bridge; no live or auth.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_official_sdk_search.py",
+        "before": "ABSENT",
+        "after": "Finite offline mocked-Gamma SDK caller run/verify, content-addressed receipt and no socket.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_official_sdk_search.py",
+        "before": "ABSENT",
+        "after": "R001-R008 real pinned SDK import/typed parser, native PIT, matched benchmark, no-network/security tests.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/official_sdk_search_bridge_contract.md",
+        "before": "ABSENT",
+        "after": "Short operator/raw-fixture schema/SDK-version/provenance and limitations contract.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "Existing log",
+        "after": "Record PR274 contract-only status, actual upstream method integration, real GET and all 36 deferred.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-SDK-DIRECT-01.md",
+        "before": "ABSENT",
+        "after": "Truthful exact-head results/limitations after validation, not anticipatory PASS.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "Normative prompt bytes; readiness gate must be run before branch.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-SDK-DIRECT-01/wp_spec.json",
+        "before": "ABSENT",
+        "after": "Canonical WP spec bytes; readiness gate must be run before branch.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve SRC-01, EXT-CONTRACTS, native PIT, SDK dependency pin, protected permissions, source authenticity and 36 program rows; no new network or provider.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight genuine upstream-first SDK implementation requirements, with exact test mapping and failed closed boundaries.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "The production offline bridge must actually import the pinned installed polymarket-client 0.10.0 PublicClient and call its real PublicClient.search(q=...,page_size=...).first_page() over a MockTransport-backed gamma transport; prove real SDK method and typed SearchResults were reached. A fake replacing the SDK method or a hand-parsed substitute cannot pass.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The production offline bridge must actually import the pinned installed polymarket-client 0.10.0 PublicClient and call its real PublicClient.search(q=...,page_size=...).first_page() over a MockTransport-backed gamma transport; prove real SDK method and typed SearchResults were reached. A fake replacing the SDK method or a hand-parsed substitute cannot pass.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Use the v0.10.0 upstream-tested injected SyncTransport+httpx.MockTransport seam; strictly one bounded page and one request per case, no socket, no redirect, no implicit paging/retries, no credential or other method calls. Source fixture raw response bytes, request params, version, parsers and status are hash-bound; unsupported tag/profile semantics are reported, never claimed as market success.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Use the v0.10.0 upstream-tested injected SyncTransport+httpx.MockTransport seam; strictly one bounded page and one request per case, no socket, no redirect, no implicit paging/retries, no credential or other method calls. Source fixture raw response bytes, request params, version, parsers and status are hash-bound; unsupported tag/profile semantics are reported, never claimed as market success.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Cold-verify a caller-named SRC-01 scratch using its unchanged native verify; reconstruct real AlphaUniverseSnapshot and native rule/identity/cutoff fields; cross-check actual SDK typed event and market identities against native market/condition ids; produce a source-labelled noncanonical research staging result. Never convert arbitrary SDK data into trusted PIT, canonical Alpha, or verified outcome orientation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Cold-verify a caller-named SRC-01 scratch using its unchanged native verify; reconstruct real AlphaUniverseSnapshot and native rule/identity/cutoff fields; cross-check actual SDK typed event and market identities against native market/condition ids; produce a source-labelled noncanonical research staging result. Never convert arbitrary SDK data into trusted PIT, canonical Alpha, or verified outcome orientation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "On the same frozen queries and labels, compare real SDK typed search fixture results, the prior EXT-CONTRACTS field-aware method, and SRC-01 BM25. Distinguish SDK returned candidate coverage from local ranking precision/recall; do not conflate external-source coverage with ranking lift or selection of different corpora.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "On the same frozen queries and labels, compare real SDK typed search fixture results, the prior EXT-CONTRACTS field-aware method, and SRC-01 BM25. Distinguish SDK returned candidate coverage from local ranking precision/recall; do not conflate external-source coverage with ranking lift or selection of different corpora.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Negative and inconclusive cases: malformed JSON and SDK parse rejection, non-UTF8, extra/ambiguous markets, duplicates and changed IDs, post-cutoff source, missing rule, conflicting events, unproven outcome/token orientation, invalid event/market, page continuation, unsupported fields, oversized page, SDK-version mismatch; no source authenticity or real profit claims.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Negative and inconclusive cases: malformed JSON and SDK parse rejection, non-UTF8, extra/ambiguous markets, duplicates and changed IDs, post-cutoff source, missing rule, conflicting events, unproven outcome/token orientation, invalid event/market, page continuation, unsupported fields, oversized page, SDK-version mismatch; no source authenticity or real profit claims.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Freeze >=50 same-corpus synthetic labelled queries before comparison, record submitted, refused, eligible, paired, SDK typed result usable, no-match, abstention, query and source coverage, recall@10, precision@10 and latency/memory where measured; use actual numerators; a missing genuine real-source corpus means real-value NOT_RUN not success.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Freeze >=50 same-corpus synthetic labelled queries before comparison, record submitted, refused, eligible, paired, SDK typed result usable, no-match, abstention, query and source coverage, recall@10, precision@10 and latency/memory where measured; use actual numerators; a missing genuine real-source corpus means real-value NOT_RUN not success.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run/verify CLI, frozen SDK page/request/fixture bytes, source-root identity and exact installed distribution version; content-addressed write-once external scratch receipt, repeat-idempotence, tamper and malicious input rejection, no socket, no environment/credential/secret access, no external API call; preserve existing SRC/EXT code identities and historic receipts.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run/verify CLI, frozen SDK page/request/fixture bytes, source-root identity and exact installed distribution version; content-addressed write-once external scratch receipt, repeat-idempotence, tamper and malicious input rejection, no socket, no environment/credential/secret access, no external API call; preserve existing SRC/EXT code identities and historic receipts.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Prove actual upstream SDK method invocation with a precise version/commit and SDK-owned parsing, not conceptual parity; R3-23 can advance only to DIRECT_UPSTREAM_INTEGRATION_OFFLINE, while operational value and Karl acceptance remain pending. No CCXT or other R3 auto closure, no PR268 changes or expired fee assumption, no provider/Hermes/trading/strategy/paper/network/canonical write/merge permission. All 36 tracked.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Prove actual upstream SDK method invocation with a precise version/commit and SDK-owned parsing, not conceptual parity; R3-23 can advance only to DIRECT_UPSTREAM_INTEGRATION_OFFLINE, while operational value and Karl acceptance remain pending. No CCXT or other R3 auto closure, no PR268 changes or expired fee assumption, no provider/Hermes/trading/strategy/paper/network/canonical write/merge permission. All 36 tracked.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; DIRECT_UPSTREAM_SDK_METHOD_INVOKED_ON_FIXTURE; SOURCE_ORIGIN_UNVERIFIED; REAL_VALUE_NOT_VERIFIED; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No change to native PIT/Alpha/SRC canonical identity; new external scratch receipt uses versioned deterministic content hash described in contract.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exact native authorization chain and RUNTIME deterministic readiness, gate before branch/code.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "The actual native RUNTIME exact-byte gate passes on clean synchronized main 84c0c67e70470daf20eb1d4afdb126af61b3987d, after Ponytail LITE first skill, with exact PR274 head 6d9b1828c5591626c23fecf446175fa0003b3a96 merged into main ancestry; stop on incompatible main movement.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl authorizes bounded upstream-first offline implementation, conditional on true repo readiness. Network, credentials, protected SDK upgrade, provider/Hermes/trading/merge rights are NOT granted.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Actual upstream pinned SDK PublicClient.search method is imported and invoked on MockTransport with typed results, native verified SRC/PIT crossing, one 8-file PR, R001-R008, full exact-head CI and one return ZIP.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Executed positive/negative test vectors are canonical examples; no separate duplicate normative examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight exact callable actual SDK method, native source, matched benchmark, negative, and authority tests; no fake method or live network.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_sdk_sdk_real_import_and_search",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_real_import_and_search",
+        "expected_result": "The production offline bridge must actually import the pinned installed polymarket-client 0.10.0 PublicClient and call its real PublicClient.search(q=...,page_size=...).first_page() over a MockTransport-backed gamma transport; prove real SDK method and typed SearchResults were reached. A fake replacing the SDK method or a hand-parsed substitute cannot pass."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_sdk_sdk_offline_transport_and_page_contract",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_offline_transport_and_page_contract",
+        "expected_result": "Use the v0.10.0 upstream-tested injected SyncTransport+httpx.MockTransport seam; strictly one bounded page and one request per case, no socket, no redirect, no implicit paging/retries, no credential or other method calls. Source fixture raw response bytes, request params, version, parsers and status are hash-bound; unsupported tag/profile semantics are reported, never claimed as market success."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_sdk_sdk_native_pit_verified_crossing",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_native_pit_verified_crossing",
+        "expected_result": "Cold-verify a caller-named SRC-01 scratch using its unchanged native verify; reconstruct real AlphaUniverseSnapshot and native rule/identity/cutoff fields; cross-check actual SDK typed event and market identities against native market/condition ids; produce a source-labelled noncanonical research staging result. Never convert arbitrary SDK data into trusted PIT, canonical Alpha, or verified outcome orientation."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_sdk_sdk_vs_existing_native_methods",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_vs_existing_native_methods",
+        "expected_result": "On the same frozen queries and labels, compare real SDK typed search fixture results, the prior EXT-CONTRACTS field-aware method, and SRC-01 BM25. Distinguish SDK returned candidate coverage from local ranking precision/recall; do not conflate external-source coverage with ranking lift or selection of different corpora."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_sdk_sdk_fail_closed_adversarial",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_fail_closed_adversarial",
+        "expected_result": "Negative and inconclusive cases: malformed JSON and SDK parse rejection, non-UTF8, extra/ambiguous markets, duplicates and changed IDs, post-cutoff source, missing rule, conflicting events, unproven outcome/token orientation, invalid event/market, page continuation, unsupported fields, oversized page, SDK-version mismatch; no source authenticity or real profit claims."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_sdk_sdk_benchmark_fixed_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_benchmark_fixed_denominators",
+        "expected_result": "Freeze >=50 same-corpus synthetic labelled queries before comparison, record submitted, refused, eligible, paired, SDK typed result usable, no-match, abstention, query and source coverage, recall@10, precision@10 and latency/memory where measured; use actual numerators; a missing genuine real-source corpus means real-value NOT_RUN not success."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_sdk_sdk_cold_receipt_security",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_cold_receipt_security",
+        "expected_result": "Run/verify CLI, frozen SDK page/request/fixture bytes, source-root identity and exact installed distribution version; content-addressed write-once external scratch receipt, repeat-idempotence, tamper and malicious input rejection, no socket, no environment/credential/secret access, no external API call; preserve existing SRC/EXT code identities and historic receipts."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_sdk_sdk_upstream_adoption_and_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_search.py::test_sdk_sdk_upstream_adoption_and_authority",
+        "expected_result": "Prove actual upstream SDK method invocation with a precise version/commit and SDK-owned parsing, not conceptual parity; R3-23 can advance only to DIRECT_UPSTREAM_INTEGRATION_OFFLINE, while operational value and Karl acceptance remain pending. No CCXT or other R3 auto closure, no PR268 changes or expired fee assumption, no provider/Hermes/trading/strategy/paper/network/canonical write/merge permission. All 36 tracked."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-REAL-PUBLIC-GET-01",
+    "next_title": "Separately owner-authorized small credentialless public Gamma GET source pilot, measured source coverage and consented data provenance",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-SDK-DIRECT-01",
+    "forbidden_in_this_wp": [
+      "No external HTTP requests/real Gamma GET/SDK provider call (only the real SDK method over offline httpx.MockTransport); no credentials or authenticated search.",
+      "No SDK dependency version change, no full CCXT install, no ad hoc custom search replacement, no copying of SDK source.",
+      "No edit to existing SRC/EXT/native PIT or Alpha canonical identities, old receipt code paths, SDK package source or protected paths.",
+      "No provider, Hermes, scheduler, capital, strategy, risk override, signing, order, paper, live or merge authority.",
+      "No automatic R3-23 value/owner acceptance, R3-27 closure, six provider pilots, 12 parity and Lane B closure; PR268 remains separate and its fees expired.",
+      "Do not execute unless PR274 exact head 6d9b1828 is merged and native readiness gate passes on final exact bytes."
+    ]
+  }
+}
