@@ -615,7 +615,7 @@ def test_ext_no_unapproved_authority_or_parity_owner_auto_acceptance(baseline, w
                 assert all(n in allowed for n in names), (path.name, names)
         lowered = source.casefold()
         assert "subprocess" not in lowered and "urllib" not in lowered and "requests" not in lowered
-        assert "hermes" not in path.name and "mnemonic" not in lowered
+        assert "hermes" not in path.name and "environ" not in lowered and "getenv" not in lowered
     doc = (REPO_ROOT / "docs" / "public_market_contract_parity.md").read_text(encoding="utf-8")
     for phrase in ("OWNER_ACCEPTANCE_PENDING", "R3-24", "ts/src/prediction/polymarket.ts", "ORIENTATION_UNPROVEN",
                    "TAG_OR_PROFILE_UNSUPPORTED", "NOT_RUN", "36"):
