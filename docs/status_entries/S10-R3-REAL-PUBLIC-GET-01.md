@@ -61,6 +61,19 @@ All 36 R3 rows stay tracked, with 0 owner value acceptances. R3-23 is `DIRECT_UP
 
 ## Validation state
 
-LOCAL_VALIDATION_PENDING.
+LOCAL_VALIDATION_PASSED. Validated implementation commit: `5c7baa2`. Later commits on this branch change only this status fragment.
+
+- **Full suite on `5c7baa2`:** `python -B -m pytest -q -p no:cacheprovider --basetemp /tmp/full -ra` gave 14720 passed, 15 skipped, 0 failed (1128s).
+  - Image `s10-canary-siwc-validation:20261024`, `polymarket-client` 0.10.0, httpx 0.28.1.
+  - `--network none --read-only`, tmpfs `/tmp` and uid-1000 0700 HOME, disposable LF clone with `origin/main` ref = `72d077c`; no pull or install.
+  - The skips are the same pre-existing environment gates as SDK-DIRECT-01: strict DuckDB, pinned Hermes checkout, gitleaks binary, frontend Node and native Windows cases.
+- **Focused (Windows host):** `tests/tools/alpha/test_official_sdk_public_probe.py` 8 passed (R001-R008), with `-W error::pytest.PytestUnhandledThreadExceptionWarning`. The symlink branch of R006 is exercised on Linux only, because the Windows host refuses unprivileged symlinks (same as SDK-DIRECT-01 D005).
+- **Adjacent (Windows host):** `test_official_sdk_search.py`, `test_public_market_contract_parity.py`, `test_source_grounding.py`, `test_architecture_boundaries.py`: 82 passed.
+- **Native gate diff check** on `5c7baa2` against `origin/main`: exit 0 `IMPLEMENTATION_READY`, error_codes empty. **Exact scope:** `diff_scope_summary.py --require-exact-scope --fail-on-warning` pass, 0 warnings. **Generated-artifact guard:** passed.
+- **Secret scan:** native `SG.SECRET_RE` over all 1869 added lines found 0 hits. There is no local gitleaks binary, so the hosted pinned gitleaks gate is authoritative.
+- **Real-subprocess CLI smoke** (offline):
+  - `check` gave `CHECKED`, `live_activation: SEALED`, `actual_live_get_executed: false`, envelope `110be3589860cc1e03f69eb41437941ea5685afb25109cd87cc53b722e82a3e9`;
+  - `live` with a self-authored record gave `STOPPED LIVE_ACTIVATION_SEALED`, exit 1, scratch not created;
+  - `verify` on an empty directory gave `STOPPED RECEIPT_UNREADABLE`; bad usage gave exit 2.
 
 Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
