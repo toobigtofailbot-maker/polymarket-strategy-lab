@@ -37,6 +37,18 @@ All 36 R3 rows stay tracked, with 0 owner value acceptances. R3-23 stays `DIRECT
 
 ## Validation state
 
-LOCAL_VALIDATION_PENDING.
+LOCAL_VALIDATION_PASSED. Validated implementation commit: `83cc074`. Later commits on this branch change only this status fragment.
+
+- **Full suite on `83cc074`:** `python -B -m pytest -q -p no:cacheprovider --basetemp /tmp/full -ra` gave 14728 passed, 15 skipped, 0 failed (1949.84s).
+  - Image `s10-canary-siwc-validation:20261024`, `polymarket-client` 0.10.0, httpx 0.28.1.
+  - `--network none --read-only`, tmpfs `/tmp` and uid-1000 0700 HOME, disposable LF clone with `origin/main` ref = `ec15c9a`; no pull or install.
+  - The skips are the same pre-existing environment gates as Phase A: strict DuckDB, pinned Hermes checkout, gitleaks binary, frontend Node and native Windows cases.
+- **Focused (Windows host):** `tests/tools/alpha/test_official_sdk_public_probe.py` 16 passed (8 Phase A + 8 Phase B), with `-W error::pytest.PytestUnhandledThreadExceptionWarning`. Each of the 8 evidence-plan node commands passed on its own.
+- **Adjacent (Windows host):** together with `test_official_sdk_search.py`, `test_public_market_contract_parity.py`, `test_source_grounding.py` and `test_architecture_boundaries.py`: 98 passed.
+- **Red-green:** with the pin reverted to `None` in the working tree, the R001, R003 and R006 Phase B tests failed (3 failed). After restoring, they passed and the tree was clean.
+- **Native gate diff check** on `83cc074` against `origin/main`: exit 0 `IMPLEMENTATION_READY`, error_codes empty. **Exact scope:** `diff_scope_summary.py --require-exact-scope --fail-on-warning` pass, 0 warnings. **Generated-artifact guard:** passed.
+- **Secret scan:** native `SG.SECRET_RE` over all 1058 added lines found 0 hits. There is no local gitleaks binary, so the hosted pinned gitleaks gate is authoritative.
+- **Real-subprocess CLI smoke** (offline): `check` gave `CHECKED`, `live_activation: PINNED`, `actual_live_get_executed: false`, `network_attempts: 0`, envelope `110be3589860cc1e03f69eb41437941ea5685afb25109cd87cc53b722e82a3e9`. `live` was never run outside tests with an injected transport. `C:\Users\Public\Documents\polymarket-r3-sdk-one-get-20261107` still does not exist.
+- **Known wording residue (not edited, out of scope):** the module docstring of the probe source and the docstring of `tools/alpha/run_official_sdk_public_probe.py` still describe Phase A as sealed. The spec limits the probe change to the pin and forbids editing the operator.
 
 Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
