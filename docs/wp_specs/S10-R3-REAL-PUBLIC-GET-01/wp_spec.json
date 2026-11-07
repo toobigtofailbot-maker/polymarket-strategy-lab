@@ -1,0 +1,523 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-REAL-PUBLIC-GET-01",
+    "title": "Bounded Official SDK Real Public Search Pilot With Owner-Gated Activation",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_SDK_PUBLIC_GET_ACTIVATION",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-real-public-get-01",
+    "required_predecessor": {
+      "pr_number": 275,
+      "head_sha": "0f6ad340194c2b3cbf6ac5ddc6c78a78e34df534",
+      "merge_sha": "72d077cf3f3be6bd29df9d29a2c74299d3b46509"
+    },
+    "objective": "Reuse the installed pinned official Polymarket SDK to implement a strict one-request public Gamma acquisition and cold-verifiable native research receipt, while prohibiting real network execution until Karl separately authorizes the exact pilot.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/official_sdk_public_probe.py",
+      "tools/alpha/run_official_sdk_public_probe.py",
+      "tests/tools/alpha/test_official_sdk_public_probe.py",
+      "docs/official_sdk_public_probe_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01.md",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/official_sdk_public_probe.py",
+      "tools/alpha/run_official_sdk_public_probe.py",
+      "tests/tools/alpha/test_official_sdk_public_probe.py",
+      "docs/official_sdk_public_probe_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01.md",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert the eight in-scope files only. Preserve SDK-DIRECT-01, SRC-01, EXT-CONTRACTS-01 and PIT byte/code identities; never amend PR #268, dependencies, CI, Hermes, protected execution or real public truth runtimes. Pilot scratch external to repo. No real product GET in Phase A.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Minimal eight-file opt-in direct official SDK public-search pilot. Code capability is narrow, network execution is separately owner-gated.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/official_sdk_public_probe.py",
+        "before": "ABSENT",
+        "after": "Official SDK source-call supporting strict one-request public evidence guard",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "tools/alpha/run_official_sdk_public_probe.py",
+        "before": "ABSENT",
+        "after": "Finite manually gated SDK public GET CLI with offline replay",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "tests/tools/alpha/test_official_sdk_public_probe.py",
+        "before": "ABSENT",
+        "after": "Eight focused source/transport/authority/security tests",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "docs/official_sdk_public_probe_contract.md",
+        "before": "ABSENT",
+        "after": "Short binding/activation contract and refusal table",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "EXISTING",
+        "after": "Track public pilot and unresolved value without closing any R3 ids",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01.md",
+        "before": "ABSENT",
+        "after": "Truthful status and exact final evidence",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "Normative source-safe WP prompt",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_spec.json",
+        "before": "ABSENT",
+        "after": "Machine-readable spec and native readiness evidence",
+        "change_authorized": true,
+        "compatibility_requirement": "No live product GET until a distinct exact owner authorization; keep previous source and receipt identities, provider and trading boundaries unchanged.",
+        "authority": "PHASE_A_IMPLEMENTATION_ONLY_PRODUCT_NETWORK_EXECUTION_NOT_AUTHORIZED"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight exact bounded upstream SDK, egress, human gate, source, receipt, native evidence, security, and authority behaviors.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Actually import unchanged pinned polymarket-client==0.10.0 upstream PublicClient.search(q=\"bitcoin\", page_size=2).first_page(), use its typed SearchResults parser; prove SDK identity source blobs and no copied SDK logic, no new search algorithm. Offline test uses upstream MockTransport seam; no product network.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Actually import unchanged pinned polymarket-client==0.10.0 upstream PublicClient.search(q=\"bitcoin\", page_size=2).first_page(), use its typed SearchResults parser; prove SDK identity source blobs and no copied SDK logic, no new search algorithm. Offline test uses upstream MockTransport seam; no product network.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Dormant guarded public transport enforces exactly HTTPS GET gamma-api.polymarket.com/public-search with canonical query q=bitcoin,page=1,limit_per_type=2, no other parameters, host or verb, max one attempted request, no follow-up pagination, redirect, retry, proxy, cookies or auth. TLS verify true, trust_env false, connect/read timeout plus 15-second wall bound, <=1 MiB body before parse. Count failed attempts too.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Dormant guarded public transport enforces exactly HTTPS GET gamma-api.polymarket.com/public-search with canonical query q=bitcoin,page=1,limit_per_type=2, no other parameters, host or verb, max one attempted request, no follow-up pagination, redirect, retry, proxy, cookies or auth. TLS verify true, trust_env false, connect/read timeout plus 15-second wall bound, <=1 MiB body before parse. Count failed attempts too.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Separate Phase A implementation authority from Phase B product GET. Under Phase A any CLI invocation without a separately approved exact owner activation record must refuse before socket/HTTP; CC must not perform any live request while implementing, testing, running CI, proving read-only behavior or preparing PR. An arbitrary self-authored manifest is not proof of owner approval.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Separate Phase A implementation authority from Phase B product GET. Under Phase A any CLI invocation without a separately approved exact owner activation record must refuse before socket/HTTP; CC must not perform any live request while implementing, testing, running CI, proving read-only behavior or preparing PR. An arbitrary self-authored manifest is not proof of owner approval.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "For an authorized future acquisition, capture bounded raw HTTP response bytes once, URI host/path, exact request params, UTC acquired-start/end, monotonic duration, HTTP status, content type, byte count, SHA-256 and SDK source/code identities into external write-once scratch; preserve truthful response/failure counts and stable error codes without raw secret echo. Distinguish TLS transport origin from source authenticity.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "For an authorized future acquisition, capture bounded raw HTTP response bytes once, URI host/path, exact request params, UTC acquired-start/end, monotonic duration, HTTP status, content type, byte count, SHA-256 and SDK source/code identities into external write-once scratch; preserve truthful response/failure counts and stable error codes without raw secret echo. Distinguish TLS transport origin from source authenticity.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Reuse existing official_sdk_search_bridge.sdk_identity, typed parser and current native SRC-01 cold verifier and identity normalizer where compatible; cold-check optional caller-named local PIT snapshot without canonical write. If local PIT unavailable or differs, report NOT_CROSSED/UNKNOWN; never manufacture YES token orientation, settlement equivalence, alpha value or tradability.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Reuse existing official_sdk_search_bridge.sdk_identity, typed parser and current native SRC-01 cold verifier and identity normalizer where compatible; cold-check optional caller-named local PIT snapshot without canonical write. If local PIT unavailable or differs, report NOT_CROSSED/UNKNOWN; never manufacture YES token orientation, settlement equivalence, alpha value or tradability.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Provide explicit manual finite CLI prepare/verify (and sealed live action disabled pending separate authority); only caller-supplied absolute scratch, bounded paths and no symlink/hardlink/alias. Verify replays captured bytes OFFLINE through real SDK MockTransport and deterministically recomputes receipt without another GET; identical repeat idempotent, tamper stops. Never write to source tree or persistent polling.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Provide explicit manual finite CLI prepare/verify (and sealed live action disabled pending separate authority); only caller-supplied absolute scratch, bounded paths and no symlink/hardlink/alias. Verify replays captured bytes OFFLINE through real SDK MockTransport and deterministically recomputes receipt without another GET; identical repeat idempotent, tamper stops. Never write to source tree or persistent polling.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Adversarial tests prove refusal of wrong host/port/path/query/method, redirects, retries, 429, 5xx, malformed/bad-type/NaN/duplicate JSON, non-JSON, >1 MiB, slow response, source/time conflicts, invalid path, credential/proxy/env attempts, unexpected second request, missing approval, changed approval fingerprint, raw response tampering and SDK version drift. No external network during tests.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Adversarial tests prove refusal of wrong host/port/path/query/method, redirects, retries, 429, 5xx, malformed/bad-type/NaN/duplicate JSON, non-JSON, >1 MiB, slow response, source/time conflicts, invalid path, credential/proxy/env attempts, unexpected second request, missing approval, changed approval fingerprint, raw response tampering and SDK version drift. No external network during tests.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Preserve 36/36 R3 IDs and distinguish installed real SDK from optional future public source use. Phase A never marks R3-23 operational/value verified; real GET without owner activation remains prohibited, provider/Hermes/dependencies/fee PR268/scheduler/paper/strategy/credential/order/live/capital remain untouched. No automatic merge, broad real benchmark or claim of search lift.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Preserve 36/36 R3 IDs and distinguish installed real SDK from optional future public source use. Phase A never marks R3-23 operational/value verified; real GET without owner activation remains prohibited, provider/Hermes/dependencies/fee PR268/scheduler/paper/strategy/credential/order/live/capital remain untouched. No automatic merge, broad real benchmark or claim of search lift.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "PHASE_A_ONLY; PRODUCT_GET_NOT_AUTHORIZED; DIRECT_UPSTREAM_SDK; NO_CREDENTIALS; RESEARCH_ONLY; NO_TRADING",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No change to canonical PIT or historical SRC/SDK receipts; new isolated evidence receipt is deterministic over captured bytes, SDK identity and bounded request envelope.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Native deterministic RUNTIME gate first, then owner Phase A authority, then offline implementation and CI. Actual product GET remains an independent later owner decision.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "On clean synchronized main 72d077cf3f3be6bd29df9d29a2c74299d3b46509, confirm PR275 merged exact head 0f6ad340194c2b3cbf6ac5ddc6c78a78e34df534, require actual native prompt/spec RUNTIME gate exit 0 on final bytes before branching; reject incompatible drift.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl authorizes narrow Phase A code preparation when sending this exact package to CC; there is no independent Phase B actual public GET authorization in ADOPT LOOP.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Eight-file guarded offline-tested reusable SDK probe code, no actual product GET, full hosted CI, one PR and one consolidated return ZIP. Phase B remains BLOCKED_PENDING_EXACT_OWNER_AUTHORIZATION.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Focused pytest negative/positive cases are the one canonical executable examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight exact pytest gates prove real SDK reuse, one-GET egress envelope, separate human approval, receipts, native joins, replay, negative security and authority.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_probe_real_pinned_sdk_method",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_real_pinned_sdk_method",
+        "expected_result": "Actually import unchanged pinned polymarket-client==0.10.0 upstream PublicClient.search(q=\"bitcoin\", page_size=2).first_page(), use its typed SearchResults parser; prove SDK identity source blobs and no copied SDK logic, no new search algorithm. Offline test uses upstream MockTransport seam; no product network."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_probe_exact_one_request_transport",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_exact_one_request_transport",
+        "expected_result": "Dormant guarded public transport enforces exactly HTTPS GET gamma-api.polymarket.com/public-search with canonical query q=bitcoin,page=1,limit_per_type=2, no other parameters, host or verb, max one attempted request, no follow-up pagination, redirect, retry, proxy, cookies or auth. TLS verify true, trust_env false, connect/read timeout plus 15-second wall bound, <=1 MiB body before parse. Count failed attempts too."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_probe_activation_requires_independent_owner_gate",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_activation_requires_independent_owner_gate",
+        "expected_result": "Separate Phase A implementation authority from Phase B product GET. Under Phase A any CLI invocation without a separately approved exact owner activation record must refuse before socket/HTTP; CC must not perform any live request while implementing, testing, running CI, proving read-only behavior or preparing PR. An arbitrary self-authored manifest is not proof of owner approval."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_probe_raw_source_freeze_and_receipt",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_raw_source_freeze_and_receipt",
+        "expected_result": "For an authorized future acquisition, capture bounded raw HTTP response bytes once, URI host/path, exact request params, UTC acquired-start/end, monotonic duration, HTTP status, content type, byte count, SHA-256 and SDK source/code identities into external write-once scratch; preserve truthful response/failure counts and stable error codes without raw secret echo. Distinguish TLS transport origin from source authenticity."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_probe_native_pit_research_crosscheck",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_native_pit_research_crosscheck",
+        "expected_result": "Reuse existing official_sdk_search_bridge.sdk_identity, typed parser and current native SRC-01 cold verifier and identity normalizer where compatible; cold-check optional caller-named local PIT snapshot without canonical write. If local PIT unavailable or differs, report NOT_CROSSED/UNKNOWN; never manufacture YES token orientation, settlement equivalence, alpha value or tradability."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_probe_cold_replay_idempotence_and_no_repeat_network",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_cold_replay_idempotence_and_no_repeat_network",
+        "expected_result": "Provide explicit manual finite CLI prepare/verify (and sealed live action disabled pending separate authority); only caller-supplied absolute scratch, bounded paths and no symlink/hardlink/alias. Verify replays captured bytes OFFLINE through real SDK MockTransport and deterministically recomputes receipt without another GET; identical repeat idempotent, tamper stops. Never write to source tree or persistent polling."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_probe_negative_security_and_adversarial_matrix",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_negative_security_and_adversarial_matrix",
+        "expected_result": "Adversarial tests prove refusal of wrong host/port/path/query/method, redirects, retries, 429, 5xx, malformed/bad-type/NaN/duplicate JSON, non-JSON, >1 MiB, slow response, source/time conflicts, invalid path, credential/proxy/env attempts, unexpected second request, missing approval, changed approval fingerprint, raw response tampering and SDK version drift. No external network during tests."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_probe_owner_scope_and_36_adoption_boundary",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_owner_scope_and_36_adoption_boundary",
+        "expected_result": "Preserve 36/36 R3 IDs and distinguish installed real SDK from optional future public source use. Phase A never marks R3-23 operational/value verified; real GET without owner activation remains prohibited, provider/Hermes/dependencies/fee PR268/scheduler/paper/strategy/credential/order/live/capital remain untouched. No automatic merge, broad real benchmark or claim of search lift."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-REAL-SOURCE-BENCH-01",
+    "next_title": "After separately authorized one public GET, evaluate real-source coverage and then a predeclared genuine real PIT benchmark before any R3 value acceptance",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-REAL-PUBLIC-GET-01",
+    "forbidden_in_this_wp": [
+      "No real Polymarket or provider HTTP request in this implementation phase; actual public GET needs a separate explicit exact owner authorization and any required runtime/certificate controls.",
+      "No SDK version or dependency changes; no custom search algorithm or copied upstream SDK source.",
+      "No modifications to SRC-01, EXT-CONTRACTS-01, SDK-DIRECT-01 or PIT data/receipt identity; no new canonical writer.",
+      "No provider spending, Hermes sessions, credentials, strategy, scheduler, paper, execution, orders, capital or live trading authority.",
+      "No automatic acceptance of R3-23 live operational value, R3-27 CCXT parity, remaining native parity, provider pilots or Lane B; PR268 isolated.",
+      "No unbounded search requests, multiple pages, retries, redirect, proxy use, secret access or tests that dial a live network."
+    ]
+  }
+}

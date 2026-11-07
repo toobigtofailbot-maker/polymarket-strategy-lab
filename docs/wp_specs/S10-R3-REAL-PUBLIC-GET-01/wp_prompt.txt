@@ -1,0 +1,117 @@
+Package Identity:
+  WP ID: S10-R3-REAL-PUBLIC-GET-01
+  Title: Bounded Genuine Upstream SDK Public Search Activation (Phase A)
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Required predecessor: PR #275 head 0f6ad340194c2b3cbf6ac5ddc6c78a78e34df534 merged as 72d077cf3f3be6bd29df9d29a2c74299d3b46509
+  Suggested branch: codex/s10-r3-real-public-get-01
+  Package class: BOUNDED_SDK_PUBLIC_GET_ACTIVATION
+  Package size class: M (eight paths)
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED or PUBLIC_VERIFIER_PASS
+  Runtime impact: dormant manually gated one-GET preparation only
+  Product impact: NO PRODUCT NETWORK EXECUTION IN THIS WP
+  Network impact: NEW NARROW CODE CAPABILITY ONLY; LIVE CALL NOT AUTHORIZED
+  Credential impact: none
+  Dependency impact: none (reuse polymarket-client==0.10.0)
+  Trading impact: none, capital USD 0
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: HIGH for transport and authority, otherwise efficient
+  Reason: narrow sensitive public HTTP boundary with independent owner gate
+  Escalate to higher reasoning or STOP if: required native readiness, negative security, SDK source identity or one-GET bound cannot be proved
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+
+# 1. Objective, authority / non-authority, hard distinction between code and activation
+
+Karl authorizes **Phase A only**: build and validate a guarded, manually invoked, one-public-GET native research probe around the *actual installed upstream* `polymarket-client==0.10.0` SDK. The current repo already directly imports and invokes `PublicClient.search(...).first_page()` offline (PR275). Reuse it; do not create a search engine, duplicate SDK parser, alter its public adapter, or install another SDK. The new capability proves bounded source acquisition and offline cold replay, not Alpha lift. This WP has `network: true` solely to authorize implementing the narrowly scoped dormant network-capable code, but Karl has NOT authorized CC to execute a real product HTTP call. **Phase B = actual one-GET smoke requires a separate explicit post-implementation owner authorization of the exact attempt on the approved head, even if code tests pass.** The human approval cannot be replaced by a caller-created JSON file, boolean or test fixture. Do not represent either as a cryptographic proof of owner approval.
+
+Implementation authority: eight files after native RUNTIME readiness. Report/export authority: sanitized external scratch only. Canonical evidence authority: exact WP spec/status, not PIT write. Paper, execution, live, credentials, Hermes, scheduler, strategy, capital, protected-runtime deployment: NONE. Dependency-change authority: NONE. Network authority: dormant bounded code only, actual GET prohibited during this WP. No separate owner public activation certificate has been supplied. After Phase A merge, an explicitly approved operator can later execute one manual first GET without a new code framework. No broad value benchmark or recurring data acquisition is authorized.
+
+# 2. Mandatory startup, Ponytail LITE first, hard merge gate, native readiness
+
+- Read actual `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, and current docs under `docs/ai/codex/` (state machine, WP standards, protected paths, negative test matrix, reporting, token discipline). Read exact predecessor SDK-DIRECT-01 status, contract, source/CLI and public market truth GET policy. Read upstream pinned SDK source and transport tests only as needed; no broad audit.
+- First actual installed skill invocation after mandatory startup reads: **Ponytail LITE**. Then applicable mandatory and useful skills: `hermes-alpha-reuse-check`, `wp-predraft-inspector`, `wp-minimum-test-plan`, `runtime-authority-boundary-review`, `security-review`, `canonical-evidence-audit`, `find-bugs`, `code-simplifier`, `spec-to-code-compliance`, `verification-before-completion`, `pr-evidence-reconcile` and any required actual repo skills. Log genuine calls; no invented ledger or skill PASS. Do not waste time invoking irrelevant skills.
+- `git fetch origin --prune`; checkout main; `git pull --ff-only origin main`; prove clean main, exact predecessor PR275 head 0f6ad340194c2b3cbf6ac5ddc6c78a78e34df534 merged 72d077cf3f3be6bd29df9d29a2c74299d3b46509 and current-main ancestry; prove PR268 still separate/open if applicable and no overlapping same-WP PR/branch. No accidental successor stacking. If main moved with compatible updates, pin observed main anew and rerun readiness; if incompatible, STOP `STATE_DRIFT` with blocker ZIP.
+- Confirm delivered `SHA256SUMS.txt`, installed SDK version/source identity, available real native APIs, current /public-search contract and policy. **Before branch or source modifications**, execute `python -B tools/wp/wp_readiness_gate.py --wp <package>/docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_prompt.txt --spec <package>/docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_spec.json --repo-root . --format json`. Require `IMPLEMENTATION_READY`, exit 0, RUNTIME and eight paths. If an independent authorization/certificate is required by current repo, stop until obtained; do not self-certify. Wording-only internal same-authority fixes may be made as a single batch; preserve material scope and owner network non-activation. Complete native diff gate again on final head.
+
+# 3. Exact changed-file scope, minimum integration and compatibility check
+
+Required and allowed changed files exactly these eight:
+1. `src/data_layer/analytical_research/official_sdk_public_probe.py`
+2. `tools/alpha/run_official_sdk_public_probe.py`
+3. `tests/tools/alpha/test_official_sdk_public_probe.py`
+4. `docs/official_sdk_public_probe_contract.md`
+5. `docs/deferred_items_log.md`
+6. `docs/status_entries/S10-R3-REAL-PUBLIC-GET-01.md`
+7. `docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_spec.json`
+
+This eight-file package is minimum-complete, not an invitation to harden the entire HTTP stack. Do not touch old SRC-01 source/CLI, old SDK bridge/CLI (their receipt identity is stable), EXT-CONTRACTS source/CLI, source PIT, `src/data_layer/polymarket/`, `tools/polymarket/`, dependencies/lockfiles, CI/governance, secrets, protected risk/execution/strategy, Hermes or PR268. No feature duplication. If a genuinely needed path is outside scope, stop and explain exactly why (rather than editing a ninth file). No new dependencies: `polymarket-client==0.10.0` and `httpx` already exist transitively under the installed SDK.
+
+Compatibility/impossibility preflight: inspect `official_sdk_search_bridge.sdk_identity` and SDK actual `PublicClient.search(...).first_page()`, native point-in-time verifier and search-parity normalizer. Existing native public collection GET is *not* this SDK call; do not reroute it. Upstream SDK methods/typed classes remain the source of truth, with only a narrow transport boundary to enforce limits and a compact evidence adapter. Verify source pin at `Polymarket/py-sdk` tag `polymarket-client-v0.10.0` commit `579bb2e56be9cc5d152546985870ee6ad795ec52` and SDK source Git blobs already checked by `sdk_identity()`.
+
+# 4. Exact one-request envelope (code capability only, no execution authority)
+
+The future possible one GET must obey every field: `https://gamma-api.polymarket.com/public-search?q=bitcoin&page=1&limit_per_type=2`; use actual `PublicClient.search(q="bitcoin", page_size=2).first_page()` so the upstream SDK creates parameters. Only default omitted options, never tag/profile/other filters. Require one attempted GET total (not one success), TLS validation, hostname and port/path/query method equality, `httpx` `trust_env=False`, no proxy, no cookies, no auth headers, no redirection (`follow_redirects=False` and reject 3xx), `retries=0`, no SDK continuation, no automatic second GET, max 1 MiB **before SDK JSON parsing**, total wall-clock budget 15 s, bounded connect/read timeouts, and strict JSON duplicate-key/nonfinite recheck of captured bytes. Return closed sanitized refusal codes and counts, not raw headers, transport errors, traces or input bytes. An HTTP 429/5xx is a counted failed attempt, never a retry. If any limit cannot be enforced at transport level without modifying upstream SDK, fail closed BEFORE network. No sockets in tests. An explicit `--allow-network` flag alone is never authorization for CC to execute during Phase A: actual invocation needs fresh human sign-off from Karl, exact evidence plan and applicable runtime gate. Do not claim a forged owner ticket is sufficient.
+
+# 5. Source provenance, native research crossing and receipts
+
+After an eventual owner-approved one-shot response, freeze only caller-specified ignored/external scratch (never repo-tracked): `raw_response.bin` bounded 1 MiB, deterministic machine receipt for exact request/attempt/status/bytecount/SHA256, UTC acquisition start/end, SDK version/source identity, and code identity. Record canonical `PUBLIC_TLS_TRANSPORT_OBSERVED` and `REMOTE_CONTENT_NOT_INDEPENDENTLY_ATTESTED`, distinct from caller fixture origins; a TLS GET is not settlement verification or authoritative canonical PIT evidence. Strictly no credentials/raw headers/signed URLs/secret-shaped content echoed. SDK typed result is evidence of parser operation, not truth. Optional caller-named already-existing native SRC-01 grounding scratch can be cold-verified and used to match known market/condition/event identities with abstention on unknown/conflict; no synthetic substitutes, canonical store writer, false YES/NO orientation, strategy/probability or edge evaluation. If absent, report `NATIVE_PIT_CROSSCHECK_NOT_RUN`, not zero-match failure. A single page is **not** enough to claim retrieval lift, stable source quality or a real benchmark.
+
+The new `prepare` or `check` command validates the exact envelope and source identity without network. The `verify` command cold-replays the raw response offline via real SDK with MockTransport and checks content-addressed receipt; its run must never dial out. A future `live` branch stays dormant under Phase A; no live results/receipts fabricated. Input and scratch path guards reuse existing native helpers when compatible; refuse symlink, hardlink, aliases, `..`, in-repo paths, overwrites/tamper; an identical repeat is idempotent and never repeats the GET. A retry is never implicit. Keep API/receipt contract small and closed.
+
+# 6. Exact R001–R008 executable acceptance and negative-test matrix
+
+**R001 / test_probe_real_pinned_sdk_method** — Actually import unchanged pinned polymarket-client==0.10.0 upstream PublicClient.search(q="bitcoin", page_size=2).first_page(), use its typed SearchResults parser; prove SDK identity source blobs and no copied SDK logic, no new search algorithm. Offline test uses upstream MockTransport seam; no product network.
+**R002 / test_probe_exact_one_request_transport** — Dormant guarded public transport enforces exactly HTTPS GET gamma-api.polymarket.com/public-search with canonical query q=bitcoin,page=1,limit_per_type=2, no other parameters, host or verb, max one attempted request, no follow-up pagination, redirect, retry, proxy, cookies or auth. TLS verify true, trust_env false, connect/read timeout plus 15-second wall bound, <=1 MiB body before parse. Count failed attempts too.
+**R003 / test_probe_activation_requires_independent_owner_gate** — Separate Phase A implementation authority from Phase B product GET. Under Phase A any CLI invocation without a separately approved exact owner activation record must refuse before socket/HTTP; CC must not perform any live request while implementing, testing, running CI, proving read-only behavior or preparing PR. An arbitrary self-authored manifest is not proof of owner approval.
+**R004 / test_probe_raw_source_freeze_and_receipt** — For an authorized future acquisition, capture bounded raw HTTP response bytes once, URI host/path, exact request params, UTC acquired-start/end, monotonic duration, HTTP status, content type, byte count, SHA-256 and SDK source/code identities into external write-once scratch; preserve truthful response/failure counts and stable error codes without raw secret echo. Distinguish TLS transport origin from source authenticity.
+**R005 / test_probe_native_pit_research_crosscheck** — Reuse existing official_sdk_search_bridge.sdk_identity, typed parser and current native SRC-01 cold verifier and identity normalizer where compatible; cold-check optional caller-named local PIT snapshot without canonical write. If local PIT unavailable or differs, report NOT_CROSSED/UNKNOWN; never manufacture YES token orientation, settlement equivalence, alpha value or tradability.
+**R006 / test_probe_cold_replay_idempotence_and_no_repeat_network** — Provide explicit manual finite CLI prepare/verify (and sealed live action disabled pending separate authority); only caller-supplied absolute scratch, bounded paths and no symlink/hardlink/alias. Verify replays captured bytes OFFLINE through real SDK MockTransport and deterministically recomputes receipt without another GET; identical repeat idempotent, tamper stops. Never write to source tree or persistent polling.
+**R007 / test_probe_negative_security_and_adversarial_matrix** — Adversarial tests prove refusal of wrong host/port/path/query/method, redirects, retries, 429, 5xx, malformed/bad-type/NaN/duplicate JSON, non-JSON, >1 MiB, slow response, source/time conflicts, invalid path, credential/proxy/env attempts, unexpected second request, missing approval, changed approval fingerprint, raw response tampering and SDK version drift. No external network during tests.
+**R008 / test_probe_owner_scope_and_36_adoption_boundary** — Preserve 36/36 R3 IDs and distinguish installed real SDK from optional future public source use. Phase A never marks R3-23 operational/value verified; real GET without owner activation remains prohibited, provider/Hermes/dependencies/fee PR268/scheduler/paper/strategy/credential/order/live/capital remain untouched. No automatic merge, broad real benchmark or claim of search lift.
+
+All tests use actual SDK import/source identity with `httpx.MockTransport`/fake lower socket only; no external calls. Test no second request or redirect; exercise malformed/adversarial GET responses and exact path enforcement. Tests must not depend on live data, time-of-day, private profiles or arbitrary owner approval. Leave `ACTUAL_LIVE_GET_EXECUTED=NO` truthful in PR body and status. The results prove dormant network capability only. Do not infer an owner-facing production readiness PASS from compiled code or a fake real response.
+
+# 7. Normative rule matrix, evidence plan and report-back
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|upstream|real_pinned_sdk_method|specified_behavior|REQUIRE|real_pinned_sdk_method_verified|requirements.r001|R001
+NR002|network|exact_one_request_transport|specified_behavior|REQUIRE|exact_one_request_transport_verified|requirements.r002|R002
+NR003|network|activation_requires_independent_owner_gate|specified_behavior|REQUIRE|activation_requires_independent_owner_gate_verified|requirements.r003|R003
+NR004|evidence|raw_source_freeze_and_receipt|specified_behavior|REQUIRE|raw_source_freeze_and_receipt_verified|requirements.r004|R004
+NR005|native|native_pit_research_crosscheck|specified_behavior|REQUIRE|native_pit_research_crosscheck_verified|requirements.r005|R005
+NR006|evidence|cold_replay_idempotence_and_no_repeat_network|specified_behavior|REQUIRE|cold_replay_idempotence_and_no_repeat_network_verified|requirements.r006|R006
+NR007|security|negative_security_and_adversarial_matrix|specified_behavior|REQUIRE|negative_security_and_adversarial_matrix_verified|requirements.r007|R007
+NR008|authority|owner_scope_and_36_adoption_boundary|specified_behavior|REQUIRE|owner_scope_and_36_adoption_boundary_verified|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+Evidence plan: run the exact eight pytest tests from `wp_spec.json`, adjacent SRC/EXT/SDK/public-data and guarded-boundary tests, full Linux suite, applicable Windows suite/hosted jobs, actual native final check-diff, generated-artifact guard, source pin/license checks, security/gitleaks, then hosted exact-head CI. Re-fetch posted PR body and run A-P evidence consistency guard; no false claim if optional-comment verifier reports no comment. Record the actual first Ponytail skill and all other real skill invocations in return ZIP. Only one PR; do not merge. Deliver exactly one `S10-R3-REAL-PUBLIC-GET-01_CC_RETURN.zip` with implementation or blocker, scopes, gate, test counts, negative matrix, source proof, provenance design, blocked live status, PR/CI and posted-evidence receipts. Avoid large unneeded documentation.
+
+# 8. Hard stops and successor boundary
+
+STOP if actual main is incompatible, PR275 merge not in history, active same-WP PR exists, SDK version/method changed, transport cannot be one-attempt byte/time bounded, source/SDK callback cannot be verified, network is required for tests, any protected scope/certificate fails, security scans fail, or unauthorized owner activation would be necessary to satisfy this WP. Use one blocker ZIP rather than expanding authority. **Do not execute the pilot GET, even if owner rights can be faked by a local fixture.**
+
+Successor boundary: owner separately approves one bounded actual public GET after this implementation is reviewed, with exact code/head and enforced limits. Then evaluate real observed source fields, coverage and true value with independently labeled LOCAL_REAL_PIT; only later broaden requests if explicitly approved. Preserve 29 repos/36 IDs: R3-23 becomes direct upstream integrated, but real operational/value acceptance remains pending; R3-27 CCXT, real Hermes, Oracle3, forecast/learning, all provider lanes, parity candidates and Lane B remain open. PR268 is unrelated. Karl alone merges.

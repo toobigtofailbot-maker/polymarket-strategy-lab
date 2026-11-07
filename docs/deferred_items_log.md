@@ -1,5 +1,14 @@
 # Deferred Items Log
 
+## S10-R3-REAL-PUBLIC-GET-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-REAL-PUBLIC-GET-01-D001 | Phase B is not executed: the bounded one-GET probe exists but `live` is sealed (`OWNER_ACTIVATION_SHA256 = None`), so no real Gamma response has been fetched or parsed (`ACTUAL_LIVE_GET_EXECUTED=NO`) | BLOCKED_PENDING_EXACT_OWNER_AUTHORIZATION | P1 | Karl's separate exact Phase B instruction naming head, transport, timing, one request and evidence; one activation record whose SHA-256 is pinned by a reviewed owner-merged change; one manual `live` run into an external scratch | `live` refuses `LIVE_ACTIVATION_SEALED` before reading input or building a transport; all tests use `httpx.MockTransport` with every socket entry point blocked; receipts from injected transports are `TEST_INJECTED_TRANSPORT_NOT_PUBLIC` |
+| S10-R3-REAL-PUBLIC-GET-01-D002 | The activation pin is a repository review control, not a cryptographic owner signature | RECORDED_LIMITATION | P2 | A future approved signed-approval mechanism, if the owner wants one | Only the byte-identical pinned record passes; the record binds exact URL, envelope, one attempt, one scratch directory and a UTC window; a caller file, flag or fixture never satisfies an absent pin |
+| S10-R3-REAL-PUBLIC-GET-01-D003 | A single page cannot show source quality, coverage or value: R3-23 is integrated directly upstream, but its operational and value acceptance stays pending | NOT_VALUE_VERIFIED | P1 | `S10-R3-REAL-SOURCE-BENCH-01` after Phase B: real observed fields and coverage, then a predeclared genuine LOCAL_REAL_PIT benchmark | Receipt `adoption.benchmark: NOT_RUN_SINGLE_PAGE`, `lift_claim: null`, 0 owner value acceptances; SDK-DIRECT-01 D001-D004 and all 36 R3 rows stay open as recorded; PR #268 separate |
+| S10-R3-REAL-PUBLIC-GET-01-D004 | DNS resolution is not covered by httpx timeouts | RECORDED_LIMITATION | P3 | None needed unless Phase B shows stalls | The attempt runs in a daemon worker abandoned at 15 s + 1 s; the attempt is counted as spent and never repeated |
+
 ## S10-R3-SDK-DIRECT-01 deferred items
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
