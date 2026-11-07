@@ -66,4 +66,17 @@ The SDK rows only re-express the supplied fixture pages: this is not SDK retriev
 
 ## Validation state
 
-LOCAL_VALIDATION_IN_PROGRESS. Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
+LOCAL_VALIDATION_PASSED. Validated implementation commit: `2ee0755`. Later commits on this branch change only this status fragment.
+
+- **Full suite on `2ee0755`:** `python -B -m pytest -q -p no:cacheprovider --basetemp /tmp/full -ra` gave 14712 passed, 15 skipped, 0 failed (968s).
+  - Image `s10-canary-siwc-validation:20261024`, Python 3.12.14, `polymarket-client` 0.10.0, httpx 0.28.1.
+  - `--network none --read-only`, tmpfs `/tmp` and uid-1000 0700 HOME, disposable LF clone with real `origin/main` = `84c0c67`; no pull or install.
+  - The skips are pre-existing environment gates: strict DuckDB, pinned Hermes checkout, gitleaks binary, frontend Node and native Windows cases.
+- **Focused (Windows host):** `tests/tools/alpha/test_official_sdk_search.py` 8 passed (R001–R008). R007 exercises the symlink branch on Linux only (D005).
+- **Native gate diff check** on `2ee0755` against `main`: exit 0 `IMPLEMENTATION_READY`, error_codes empty. **Exact scope:** `diff_scope_summary.py --require-exact-scope` pass, 0 warnings. **Generated-artifact guard:** passed.
+- **Real-subprocess CLI smoke** outside the repository, on the committed fixture builders:
+  - run → `RUN_COMPLETE` with 53 real SDK invocations; cold verify → `VERIFIED`; repeat → `IDEMPOTENT_VERIFIED`;
+  - frozen-pages tamper → `TAMPER_DETECTED`; receipt tamper → `TAMPER_DETECTED` (`RECEIPT_ID_MISMATCH`, `OUTPUT_MISMATCH:authority`);
+  - in-repository scratch → `SCRATCH_INSIDE_REPOSITORY`, nothing created; bad usage → exit 2; network attempts 0.
+
+Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
