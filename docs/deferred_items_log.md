@@ -1,5 +1,15 @@
 # Deferred Items Log
 
+## S10-R3-SDK-DIRECT-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-SDK-DIRECT-01-D001 | R3-23 now invokes the real installed `polymarket-client==0.10.0` `PublicClient.search(...).first_page()`, but only over `httpx.MockTransport` with caller-supplied fixture pages; no real Gamma response has been parsed and no operational value is shown | DIRECT_UPSTREAM_INTEGRATION_OFFLINE_PENDING_OWNER_VALUE | P1 | `S10-R3-REAL-PUBLIC-GET-01`: separately owner-authorized credentialless Gamma GET pilot through the same SDK method with exact host/path/request/byte/time/redirect caps and provenance, then Karl value review | Pages are `LOCAL_FIXTURE_UNAUTHENTICATED`; every socket entry point is blocked; receipts carry `real_gamma_requests: 0` and `SOURCE_ORIGIN_UNVERIFIED` |
+| S10-R3-SDK-DIRECT-01-D002 | SDK v0.10.0 upstream gaps: `Market.outcomes.yes` is `outcomes[0]` positionally whatever its label; non-binary and malformed markets are silently dropped from `Event.markets`; NaN and duplicate JSON keys are accepted; search has no exact-id, rule or date filters | RECORDED_UPSTREAM_LIMITATION | P1 | Upstream fix or a later owner-approved decision on how to consume categorical markets; orientation needs an authenticated token-to-outcome source bound into native PIT | Yes-slot label recorded, never used as orientation (`ORIENTATION_UNPROVEN`, no tradable side); dropped markets counted from the raw page; native strict JSON refuses NaN/duplicate keys after the real SDK call; exact-id-only cases are `CASE_NOT_SDK_SEARCHABLE` |
+| S10-R3-SDK-DIRECT-01-D003 | No real search value: the same 60 frozen EXT-CONTRACTS-01 cases are paired with label-blind SANITIZED_SYNTHETIC fixture pages, so SDK rows re-express the supplied pages, not SDK retrieval quality | NOT_VALUE_VERIFIED | P1 | A genuine caller real corpus and real SDK responses under D001 | `real_benchmark: NOT_RUN_REAL_DATA`, `lift_claim: null`, `real_value: NOT_VERIFIED`, coverage reported apart from ranking |
+| S10-R3-SDK-DIRECT-01-D004 | Remaining capability program unchanged: R3-27 stays `CUSTOM_ADAPTED_IMPLEMENTATION` (CCXT direct reuse is a separate decision), R3-02 semantic retrieval, R3-24, the other parity ids, six provider lanes, Lane B, real Hermes sessions, forecast real outcomes, Oracle3 selective reuse; PR #268 stays separate with its expired fee assumptions unconsumed | DEFERRED_PENDING_OWNER_AUTHORIZATION | P1 | Separate owner-gated WPs per item | Receipt `adoption` block tracks all 36 rows; only R3-23 changes stage; 0 owner value acceptances; no parity auto-acceptance |
+| S10-R3-SDK-DIRECT-01-D005 | The local Windows host refuses unprivileged symlink creation (WinError 1314), so the symlink branch of the R007 path test is skipped there | RECORDED_LOCAL_HOST_LIMITATION | P3 | Linux full suite and exact-head hosted CI execute it | Hardlink, relative, `..`, oversize and inside-repository refusals run on every host |
+
 ## S10-R3-EXT-CONTRACTS-01 deferred items
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
