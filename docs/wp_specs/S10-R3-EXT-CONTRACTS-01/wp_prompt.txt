@@ -1,0 +1,117 @@
+Package Identity:
+  WP ID: S10-R3-EXT-CONTRACTS-01
+  Title: Native PIT Public Market Search and Prediction-Market Contract Parity
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main, frozen merge head: 9ea25d87d1c8ce0bafb04abaf645546510e8eedd
+  Required predecessor: PR #273 head 726ebf37ecdb51eeb3bf3c3cdc21db77dd9de3a2 merged at 9ea25d87d1c8ce0bafb04abaf645546510e8eedd
+  Unrelated PR #268: open/unmerged, do not stack or consume its fee/pagination changes
+  Suggested branch: codex/s10-r3-ext-contracts-01
+  Package class: OFFLINE_NATIVE_PIT_MARKET_SEARCH_CONTRACT_PARITY
+  Package size class: M, exactly 8 changed paths
+  Risk level: 3
+  Governance track expected: RUNTIME
+  Evidence mode: actual repo classification after PR publication, never invented
+  Network, credentials, dependencies, Hermes, scheduler, paper, execution, live, capital: ZERO
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Objective and Karl's explicit authority / non-authority
+
+Karl authorizes *one* minimum-complete offline WP that actually consumes an existing native SRC-01 frozen point-in-time (PIT) market universe, tests event/market search and binary identity semantics inspired by `R3-23` and `R3-27`, and yields one verifiable human-review research-candidate/evaluation receipt. Implementation is authorized only if the **native exact-byte RUNTIME readiness gate** passes before branch/code. Do not spend, access remote endpoints, activate providers, create strategies, or merge. The 36-capability program remains intact: *15 partially/functionally offline, 21 still open*, with zero new owner value acceptance. The two parity IDs remain `OWNER_ACCEPTANCE_PENDING` even if all offline tests pass.
+
+Use native `source_grounding` and `alpha_discovery`, not another crawler or catalog database. The real native consumer must accept previously verified `LOCAL_REAL_PIT` inputs as well as synthetic without using synthetic fallback for real inputs. A live provider, independent source authentication, semantic embedding/LLM, historical settlement or actual market edge is NOT authorized or demonstrated here. Reuse selective source concepts; no SDK or copied framework code.
+
+# 2. Mandatory startup, first actual skill and native readiness
+
+1. Read `AGENTS.md` -> `AI_CODING_AGENT_START_HERE.md` -> `CLAUDE_START_HERE.md` -> `docs/project_status.md` -> `docs/repo_truth_index.md` -> `docs/deferred_items_log.md` -> `docs/ai/codex/README.md` -> `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`; then task-relevant `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, `PROTECTED_PATHS.md`, `NEGATIVE_TEST_MATRIX_POLICY.md`, `TOKEN_EFFICIENCY_OPERATING_MODEL.md` and evidence/validation guidance. Inspect actual main and available native interfaces rather than assuming path names or signatures.
+2. Discover actual installed CC skill inventory. After mandatory startup reads, **FIRST ACTUAL SKILL INVOCATION** must be `$ponytail` **LITE** with real pruning/reuse advice, ledger path and observed result. If unavailable STOP `PONYTAIL_UNAVAILABLE`. Invoke actually applicable `wp-predraft-inspector`, `wp-minimum-test-plan`, `hermes-alpha-reuse-check`, `canonical-evidence-audit`, `runtime-authority-boundary-review`, `wp-readiness-preflight`, `wp-one-shot-review`, `security-review`, `verification-before-completion`, `code-simplifier`, `find-bugs`, `spec-to-code-compliance`, `pr-evidence-reconcile` and other mandatory installed skills; discover exact names before invoking, never pretend listing a skill is use. Conditional debugging skill when needed. Record concise USED/NOT_APPLICABLE/UNAVAILABLE with actual contribution.
+3. Pre-branch synchronize: `git fetch origin --prune`, `git switch main`, `git pull --ff-only origin main`, `git rev-parse HEAD`, `git rev-parse origin/main`, `git status --short --branch`, `python -B tools/git/preflight_generated_artifact_guard.py`. Require clean main, PR #273 head `726ebf37ecdb51eeb3bf3c3cdc21db77dd9de3a2` merged with commit `9ea25d87d1c8ce0bafb04abaf645546510e8eedd` in ancestry. Check duplicate WP/PR and PR #268 separate open. Later main movement requires actual compatible ancestry/overlap and re-gate. Stop on material incompatible drift.
+4. Verify this ZIP SHA256SUMS, exact final prompt and spec and pinned upstream paths. **Before branch/code edits** run:
+   `python -B tools/wp/wp_readiness_gate.py --wp <EXTRACTED_PACKAGE>/docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_prompt.txt --spec <EXTRACTED_PACKAGE>/docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_spec.json --repo-root . --format json`
+   Require exit0 `IMPLEMENTATION_READY`, RUNTIME/DETERMINISTIC, eight-file exact scope, no errors. If routine prompt/spec repair strictly within identical authority and scope is needed, patch only these two WP artifacts, recompute hashes, re-run on **exact final bytes**, then proceed autonomously after pass. A material scope/authority expansion or missing mandatory independent certification: STOP with one precise blocker ZIP, do not self-issue certificates.
+5. After the gate passes, make one branch from clean main. Implement, debug, fix routine in-scope defects and run all validation without routine approvals. Forbid protected/external edits. Do not weaken historical tests to clear CI. Karl alone merges.
+
+# 3. Exact scope and forbidden surfaces
+
+**Required=allowed=max 8 changed paths**, no exceptions:
+1. `src/data_layer/analytical_research/public_market_contract_parity.py`
+2. `tools/alpha/run_public_market_contract_parity.py`
+3. `tests/tools/alpha/test_public_market_contract_parity.py`
+4. `docs/public_market_contract_parity.md`
+5. `docs/deferred_items_log.md`
+6. `docs/status_entries/S10-R3-EXT-CONTRACTS-01.md`
+7. `docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_prompt.txt`
+8. `docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_spec.json`
+
+The only new runtime behavior is *offline* and caller-triggered. The existing native `tools/alpha/run_source_grounding.py::code_identity` hashes its own file, so this WP must NEVER edit the SRC CLI, `source_grounding.py`, `alpha_discovery.py`, PIT/Alpha registries, `public_client.py`, `market_catalog.py`, any Hermes file, frontend, dependencies, CI, source fees, protected path, or PR268. Legacy receipts must stay valid. The allowed tests must create their own static fixtures and reuse old native test helpers; no historical allowlist edits or extra untracked files.
+
+# 4. Native interfaces and public-search/upstream meaning
+
+Verify live merged symbols: `tools.alpha.run_source_grounding.verify(Path)->{status: VERIFIED}`, `source_grounding.load_corpus`, `bind_rule_texts`, `build_index`, `rank_markets`, `alpha_discovery.build_alpha_universe_snapshot`, `ObservedMarketState`, and current PIT provenance clocks. Reconstruct from verified existing frozen PIT bytes, never from mock-only catalog rows or an unverified arbitrary JSON. Source-grounding `rank_markets` is the **existing merged R3-02 baseline**, whose prior synthetic result did not show lift (41/44 vs 42/44). Run both methods on the exact same corpus.
+
+- `Polymarket/py-sdk@aa94ec...` public search example returns an **event/tag/profile mixed payload**. Map only supported event/market research fields; record `TAG_OR_PROFILE_UNSUPPORTED` for unsupported fields, do not invent response parity or call real endpoints. Event identity and rule/cutoff may be retained only if native verified.
+- `ccxt/ccxt@28d9...` must inspect **`ts/src/prediction/polymarket.ts`**, not `ts/src/polymarket.ts` (the latter is Polymarket perpetual futures). Selectively emulate public prediction event→market identity and token conversion only. No CCXT trading/runtime import. Do not treat outcome_labels and sorted token_ids as a verified positional mapping. If token-to-YES mapping is unproven, output `ORIENTATION_UNPROVEN` and never infer a tradable side.
+- Keep market_id, condition_id, event_id, UTC decision/as_of, source_id/rule digest and category as separate explicit fields. `market:polymarket:<decimal>`, `token:polymarket:<decimal>` and condition ids require exact canonical validation; unknown IDs/duplicate markets/conflicting event relationships ABSTAIN. Distinguish status/source-availability from source authenticity. No post-cutoff information or retroactive source overwrite.
+- The new method is **field-aware retrieval**, not a synthetic embedding substitute. Support bounded query tokens, optional exact identifiers and category/status/time/rule-presence filters against the verified native `AlphaUniverseSnapshot`; stable ordering and explicit `NOT_IN_UNIVERSE`, `AMBIGUOUS`, `MISSING_METADATA`, `POST_CUTOFF`, `NO_ADMISSIBLE_MATCH` reason labels. All candidate receipts preserve native market/source rule lineage, advisory-only and human review required. Do not write to canonical Alpha/PIT/WP170.
+
+# 5. Operator contract and proof of real consumer
+
+Implement:
+`python -B tools/alpha/run_public_market_contract_parity.py run --grounding-scratch ABS --cases ABS.json --scratch-dir ABS`
+`python -B tools/alpha/run_public_market_contract_parity.py verify --scratch-dir ABS`
+
+`run` must cold-verify genuine frozen SRC-01 bytes through the existing verifier; copy them without symlink/sidecar/scratch overlap; freeze a bounded strict caller case file; re-verify the frozen SRC-01; compute field-aware result + actual native merged ranker baseline; write once a canonical content-addressed sanitized research receipt in an explicit empty scratch directory OUTSIDE repo. `verify` must recompute from frozen copies without writes or network. No shell/network/provider calls even for tests; guards must prove no socket/SDK access and no code-data exfiltration. Strict bounded JSON, no duplicate keys, NaNs, secret-like or authorization fields. Sanitize errors; no user raw market data/paths in CI stdout, source excerpts or PR body.
+
+Cases include explicit `schema_id`, `corpus_class`, `grounding_receipt_id`, `as_of`, benchmark `case_id`, question tokens/query, optional supported field-filters, expected ground-truth market IDs and source of label, with native-corpus membership proof. Freeze **at least 50 synthetic cases** before tuning; compare on identical corpus & label set, report: input/valid/abstain counts, source/identity coverage, eligible denominators, top-K precision/recall, false exact/semantic matches, unsupported tag/profile outcomes and snapshot time conflicts. If some cases cannot be scored, exclude them from paired denominator explicitly, never equate missing with negative or fabricated success. Real LOCAL_REAL_PIT cases must work when **caller supplies** a previously captured verified source and case labels, but if no genuine local real corpus supplied, report real benchmark `NOT_RUN`, not an invented demonstration.
+
+Use no unnecessary extra hardening, framework or database; one pure library, one CLI, one focused test file, a compact user contract, truthful status/deferred log and WP files. Choose deterministic scoped query parsing rather than complicated NLP.
+
+# 6. Required evidence plan, negative tests and hard stops
+
+Exactly R001–R008 in spec; execute all eight named pytest nodes, plus existing source-grounding, PIT Alpha, public adapter, relation and no-network/authority neighbor families relevant to touched behavior, and full repo suite. Validate Windows and Linux compatibility via hosted CI. Negative matrix: tampered SRC receipt/inputs, nonverified source, market duplicate/foreign event, reversed outcome labels or unproven token orientation, invalid condition/decimal IDs, perps classification, untrusted tag/profile, stale/post-cutoff/rule conflict, status/category mismatch, fake labels, output tamper, re-run scratch overwrite, symlink/hardlink/reparse, absolute/relative/path alias, secret-shaped content, socket attempt; all fail closed or abstain with honest denominators. Do not touch old guard tests to make a new module name pass; names in this WP intentionally avoid `hermes*`.
+
+Require local smoke CLI run/verify/tamper demonstration and >=50 same-corpus metric results with **actual** numerator/denominator and no unmeasured lift claim. Show source-pinned tests or note conceptual-only source adoption. The current py-sdk and CCXT versions are frozen examples, not independent current network contract verification; license check before copying. Do not mix Polymarket PERPS with prediction-market products.
+
+# 7. Normative rule matrix / cross-check
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|native|src01_pit_consumer|verified_frozen_input|REQUIRE|native_pit_caller_verified|requirements.r001|R001
+NR002|parity|py_sdk_search_contract|events_tags_profiles_boundary|REQUIRE|partial_event_search_parity|requirements.r002|R002
+NR003|parity|ccxt_prediction_identity|no_perps_or_false_orientation|REQUIRE|prediction_identity_only|requirements.r003|R003
+NR004|discovery|field_aware_search|actual_native_market_snapshot|REQUIRE|callable_candidate_research|requirements.r004|R004
+NR005|provenance|real_pit_admissibility|native_source_and_time|REQUIRE|real_input_without_substitution|requirements.r005|R005
+NR006|comparison|same_corpus_baseline|synthetic_min50|REQUIRE|honest_lift_denominators|requirements.r006|R006
+NR007|security|receipt_cold_replay|frozen_inputs|REQUIRE|tamper_network_fail_closed|requirements.r007|R007
+NR008|authority|scope_and_adoption|no_protected_or_provider|FORBID|no_auto_parity_acceptance|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 8. Evidence plan, Report-back and return package
+
+R001-R008 are the only normative requirements; tests must have the exact names in the spec. Run native preflight on exact final prompt/spec, and `wp_readiness_gate.py --check-diff` on final exact branch when supported by actual repo arguments; verify exact changed paths through `tools/git/diff_scope_summary.py` and run `preflight_generated_artifact_guard.py`. Re-run focused + full suite after final source change; perform gitleaks/security scan, version/license check, no-credentials/network/PII/source leaks, actual installed-skill ledger, final find-bugs and simplification passes. Create **one** PR with truthful results, full hosted CI at exact head, no hidden failed check or claimed PASS for unavailable verifier. Re-fetch posted PR body and run current repo evidence consistency guard. Use allowed `PRIVATE_REPO_MANUAL_VERIFIED` only if real GitHub mode requires it, recording errors rather than claiming verifier success. **Do not merge**.
+
+Produce exactly one `S10-R3-EXT-CONTRACTS-01_CC_RETURN.zip`, containing frozen final prompt/spec & gate outputs, original hashes, actual source and skill audit, changed-path scope, each requirement's real test, matched benchmark results, CLI receipts/tamper evidence, complete full-suite/security, exact-head hosted CI/PR URLs/results/posted body and failure codes. If a material defect blocks readiness/implementation, return the same named single blocker ZIP with truthful reason. No simulated outcomes, no fake real-source performance and no requests for technical coordination.
+
+# 9. Successor boundary and no silent 36-ID closure
+
+`R3-23` and `R3-27` advance only through **executed offline partial parity**; even a perfect benchmark does not certify full SDK behavior or operational value. Put any remaining upstream API/network/owner acceptance gap in the log. `R3-24` and all other parity IDs remain separate; six provider lanes PMXT/SYNPATH/LSE/REACH/KAIROS/BECKER remain individually gated; real Hermes specialist sessions and citation source authenticity require their own authorization; real-source forecast/retrieval/learning feedback and Lane B remain unclosed. Record one concise next-best action/evidence stage for each, not another broad study.
+
+Hard STOP if: native readiness cannot pass, first actual Ponytail skill absent, changed-file scope expands outside eight paths, provider/Hermes/credential/trading/real network permission is needed, required native verifier missing with no authorized reuse path, protected path edit unavoidable, or current main is materially incompatible. Stop with single blocker ZIP, not speculative code, missing CI as PASS or a merge request.
