@@ -1,0 +1,522 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-EXT-CONTRACTS-01",
+    "title": "Native PIT Public Market Search and Prediction-Market Contract Parity",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_NATIVE_PIT_MARKET_SEARCH_CONTRACT_PARITY",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-ext-contracts-01",
+    "required_predecessor": {
+      "pr_number": 273,
+      "head_sha": "726ebf37ecdb51eeb3bf3c3cdc21db77dd9de3a2",
+      "merge_sha": "9ea25d87d1c8ce0bafb04abaf645546510e8eedd"
+    },
+    "objective": "Add an opt-in callable local/offline operator over cold-verified SRC-01 PIT markets that compares field-aware public market/event search and strict binary identity normalization with the merged two-stage retrieval baseline using same-corpus outcomes; exercise upstream-aligned Polymarket py-sdk public search and CCXT prediction-only event/market semantics, produce sanitized cold-replayable receipts and abstain on unknown provenance, token orientation or unverified inputs. No new network, provider, SDK dependency, canonical registry write or trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/public_market_contract_parity.py",
+      "tools/alpha/run_public_market_contract_parity.py",
+      "tests/tools/alpha/test_public_market_contract_parity.py",
+      "docs/public_market_contract_parity.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-EXT-CONTRACTS-01.md",
+      "docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/public_market_contract_parity.py",
+      "tools/alpha/run_public_market_contract_parity.py",
+      "tests/tools/alpha/test_public_market_contract_parity.py",
+      "docs/public_market_contract_parity.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-EXT-CONTRACTS-01.md",
+      "docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only these eight paths. No modifications to merged SRC/FORECAST/LEARN/REL/COOP, native PIT/Alpha stores/identities or legacy receipts. All external scratch outputs remain outside repo.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Eight exact authorized paths; native SRC/PIT and Polymarket public adapters unchanged, one new reusable normalizer/index and finite offline caller.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/public_market_contract_parity.py",
+        "before": "ABSENT",
+        "after": "Pure PIT-market/event search and CCXT prediction-only normalization adapter; no network, no token outcome-orientation inference, source-labelled abstention.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_public_market_contract_parity.py",
+        "before": "ABSENT",
+        "after": "Finite CLI run/verify over cold-verified SRC-01 local scratch plus caller cases; zero network, content-addressed research receipt.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_public_market_contract_parity.py",
+        "before": "ABSENT",
+        "after": "Eight named test entrypoints R001-R008: native PIT, py-sdk, ccxt prediction, retrieval, real-local and cutoff, benchmark, tamper/security, authority.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/public_market_contract_parity.md",
+        "before": "ABSENT",
+        "after": "Exact offline input/receipt schema, provenance, partial parity, baseline, operator paths and material limitations.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "Existing log",
+        "after": "Add concise follow-up on R3-23/27 owner acceptance, R3-24 TS contract, provider/Hermes/real-value limitations. No silent closure.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-EXT-CONTRACTS-01.md",
+        "before": "ABSENT",
+        "after": "Factually report actual gate/test/native receipt/performance outcomes, as committed; no anticipatory PASS.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "This exact gate-tested normative WP prompt.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-EXT-CONTRACTS-01/wp_spec.json",
+        "before": "ABSENT",
+        "after": "This exact gate-tested canonical WP spec.",
+        "change_authorized": true,
+        "compatibility_requirement": "No changes to source_grounding native verifier identity, protected adapters, existing 36 IDs or provider permissions.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight falsifiable native operator and exact upstream-source evidence requirements; no broad SDK installation or claim of real API equivalence.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Call existing SRC-01 verifier and rebuild native source_grounding.load_corpus from a frozen PIT scratch; on tampered/foreign receipt fail closed without writing a success receipt.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Call existing SRC-01 verifier and rebuild native source_grounding.load_corpus from a frozen PIT scratch; on tampered/foreign receipt fail closed without writing a success receipt.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exercise pinned py-sdk PublicClient.search events/tags/profiles/page semantics using explicit offline upstream-aligned vectors; project native event/market matches only and report tags/profiles as UNSUPPORTED, not successful parity or online fetch.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exercise pinned py-sdk PublicClient.search events/tags/profiles/page semantics using explicit offline upstream-aligned vectors; project native event/market matches only and report tags/profiles as UNSUPPORTED, not successful parity or online fetch.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Verify pinned CCXT ts/src/prediction/polymarket.ts event→market/token and YES/NO identity semantics with adversarial cases; reject perps products, dual-outcome violations, token collisions and unproven outcome orientation without assigning a trade side.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Verify pinned CCXT ts/src/prediction/polymarket.ts event→market/token and YES/NO identity semantics with adversarial cases; reject perps products, dual-outcome violations, token collisions and unproven outcome orientation without assigning a trade side.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run a real caller on native PIT market/event identities, time-bound status/category/rule, query decomposition and stable deterministic search; produce source-bound market candidate IDs with explicit unmatched/ambiguous cases and no auto Alpha promotion.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run a real caller on native PIT market/event identities, time-bound status/category/rule, query decomposition and stable deterministic search; produce source-bound market candidate IDs with explicit unmatched/ambiguous cases and no auto Alpha promotion.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Accept existing verified LOCAL_REAL_PIT input as-is with source/clock labels, no fixture substitution; refuse invalid source cutoff, unknown category/status/timing/rule, duplicate IDs and unverifiable provenance, while preserving valid partial coverage.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Accept existing verified LOCAL_REAL_PIT input as-is with source/clock labels, no fixture substitution; refuse invalid source cutoff, unknown category/status/timing/rule, duplicate IDs and unverifiable provenance, while preserving valid partial coverage.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "On >=50 frozen SANITIZED_SYNTHETIC same-source query/label cases compare enhanced path with merged source_grounding.rank_markets, including recall@K, precision@K, valid denominators, abstention, false exact-match and coverage. Do not fabricate uplift. Real value must remain NOT_VERIFIED unless measured on genuine admitted corpus.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "On >=50 frozen SANITIZED_SYNTHETIC same-source query/label cases compare enhanced path with merged source_grounding.rank_markets, including recall@K, precision@K, valid denominators, abstention, false exact-match and coverage. Do not fabricate uplift. Real value must remain NOT_VERIFIED unless measured on genuine admitted corpus.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run and verify the finite CLI, hash-bind every frozen input and version/code identity, write once outside repository, idempotent receipt, fail on modified bytes/symlink/hardlink/path alias, secret-shaped/oversized input, socket attempted; verify performs zero writes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run and verify the finite CLI, hash-bind every frozen input and version/code identity, write once outside repository, idempotent receipt, fail on modified bytes/symlink/hardlink/path alias, secret-shaped/oversized input, socket attempted; verify performs zero writes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No changes to SRC-01/Hermes/PR268/fee policy/protected code, no network/provider/capital/strategy/paper/live authority; show R3-23/R3-27 only up for owner parity review with material gaps open, all 36 retained including R3-24, other 10 parity, six provider lanes, Lane B and real Hermes/outcome backlog.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "No changes to SRC-01/Hermes/PR268/fee policy/protected code, no network/provider/capital/strategy/paper/live authority; show R3-23/R3-27 only up for owner parity review with material gaps open, all 36 retained including R3-24, other 10 parity, six provider lanes, Lane B and real Hermes/outcome backlog.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_RESEARCH_ONLY; PARTIAL_UPSTREAM_CONTRACT_PARITY; LOCAL_PIT_SOURCE_ORIGIN_UNVERIFIED; OWNER_ACCEPTANCE_PENDING; NO_PROVIDER_OR_TRADING_AUTHORITY",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No change to native PIT/Alpha/SRC canonical identity; new external scratch receipt uses versioned deterministic content hash described in contract.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exact native authorization chain and RUNTIME deterministic readiness, gate before branch/code.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "The actual native RUNTIME exact-byte readiness gate passes on a clean synchronized main containing PR273 merge 9ea25d87, after first Ponytail LITE.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl expressly authorized bounded offline adoption and parity work, conditional on native exact-byte readiness. Network/provider/Hermes/trading or protected rights remain ungranted.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "One callable pure native PIT source search/evaluation operator; exactly eight authorized paths, R001-R008, skill/security evidence, full tests, hosted exact-head CI and one PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Executed positive/negative test vectors are canonical examples; no separate duplicate normative examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R008 exact pytest node IDs and expected results, paired same-corpus benchmark; truthful native/synthetic boundary.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_ext_native_src_cold_verify_and_actual_pit_consumer",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_native_src_cold_verify_and_actual_pit_consumer",
+        "expected_result": "Call existing SRC-01 verifier and rebuild native source_grounding.load_corpus from a frozen PIT scratch; on tampered/foreign receipt fail closed without writing a success receipt."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_ext_py_sdk_search_event_tag_profile_contract",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_py_sdk_search_event_tag_profile_contract",
+        "expected_result": "Exercise pinned py-sdk PublicClient.search events/tags/profiles/page semantics using explicit offline upstream-aligned vectors; project native event/market matches only and report tags/profiles as UNSUPPORTED, not successful parity or online fetch."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_ext_ccxt_prediction_market_identity_outcome_orientation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_ccxt_prediction_market_identity_outcome_orientation",
+        "expected_result": "Verify pinned CCXT ts/src/prediction/polymarket.ts event→market/token and YES/NO identity semantics with adversarial cases; reject perps products, dual-outcome violations, token collisions and unproven outcome orientation without assigning a trade side."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_ext_field_aware_search_market_filter_and_native_candidate_receipt",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_field_aware_search_market_filter_and_native_candidate_receipt",
+        "expected_result": "Run a real caller on native PIT market/event identities, time-bound status/category/rule, query decomposition and stable deterministic search; produce source-bound market candidate IDs with explicit unmatched/ambiguous cases and no auto Alpha promotion."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_ext_real_local_pit_admissibility_and_temporal_abstention",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_real_local_pit_admissibility_and_temporal_abstention",
+        "expected_result": "Accept existing verified LOCAL_REAL_PIT input as-is with source/clock labels, no fixture substitution; refuse invalid source cutoff, unknown category/status/timing/rule, duplicate IDs and unverifiable provenance, while preserving valid partial coverage."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_ext_same_corpus_baseline_comparison_50_cases_and_exact_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_same_corpus_baseline_comparison_50_cases_and_exact_denominators",
+        "expected_result": "On >=50 frozen SANITIZED_SYNTHETIC same-source query/label cases compare enhanced path with merged source_grounding.rank_markets, including recall@K, precision@K, valid denominators, abstention, false exact-match and coverage. Do not fabricate uplift. Real value must remain NOT_VERIFIED unless measured on genuine admitted corpus."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_ext_cli_cold_replay_write_once_tamper_security_and_no_network",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_cli_cold_replay_write_once_tamper_security_and_no_network",
+        "expected_result": "Run and verify the finite CLI, hash-bind every frozen input and version/code identity, write once outside repository, idempotent receipt, fail on modified bytes/symlink/hardlink/path alias, secret-shaped/oversized input, socket attempted; verify performs zero writes."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_ext_no_unapproved_authority_or_parity_owner_auto_acceptance",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_public_market_contract_parity.py::test_ext_no_unapproved_authority_or_parity_owner_auto_acceptance",
+        "expected_result": "No changes to SRC-01/Hermes/PR268/fee policy/protected code, no network/provider/capital/strategy/paper/live authority; show R3-23/R3-27 only up for owner parity review with material gaps open, all 36 retained including R3-24, other 10 parity, six provider lanes, Lane B and real Hermes/outcome backlog."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-REAL-SOURCE-01",
+    "next_title": "Explicitly gated admissible real-source data evaluation and controlled Alpha consumer; separately certified real Hermes campaign or remaining parity bundle",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-EXT-CONTRACTS-01",
+    "forbidden_in_this_wp": [
+      "No real provider or public HTTP access, SDK installation, authenticated source acquisition, account/wallet/secret, HERMES_HOME or delegated specialist calls.",
+      "No source/PIT/Alpha/FORECAST/LEARN/REL/COOP existing code edits or identity changes, no strategy/Paper/Order/live/trading/capital action.",
+      "No assertion that offline py-sdk public search event/tag/profile model equals native PIT market search, or that generic ccxt perps client equals prediction model.",
+      "No auto-acceptance of R3-23 or R3-27 native parity, no closing R3-24/other parity, six provider lanes, Lane B or real data/Hermes goals.",
+      "No PR268 merge/cherry-pick or fee policy assumption: its documented 2026-11-04 expiry still needs separate review."
+    ]
+  }
+}

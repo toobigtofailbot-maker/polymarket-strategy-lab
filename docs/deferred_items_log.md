@@ -1,5 +1,15 @@
 # Deferred Items Log
 
+## S10-R3-EXT-CONTRACTS-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-EXT-CONTRACTS-01-D001 | R3-23 (py-sdk public search) and R3-27 (ccxt prediction identity) reach executed offline partial parity only: offline vectors, no live endpoint, no full SDK behaviour, tags/profiles unsupported | OWNER_ACCEPTANCE_PENDING | P1 | Karl reviews the receipt and either accepts partial parity or names the missing equivalence; live contract checks need a separately authorized public GET lane | Receipt adoption `PARTIAL_OFFLINE_PARITY_OWNER_ACCEPTANCE_PENDING`; `online_fetch: false`; every tag/profile is `TAG_OR_PROFILE_UNSUPPORTED`; no SDK, ccxt or network import. |
+| S10-R3-EXT-CONTRACTS-01-D002 | Outcome orientation is never proven: native snapshots sort tokens and labels independently and upstream positional pairing is unauthenticated | RECORDED_LIMITATION | P1 | An authenticated token-to-outcome source bound into native PIT before any oriented use | Every native row and vector is `ORIENTATION_UNPROVEN` with no YES token and no tradable side; disagreeing upstream claims are flagged. |
+| S10-R3-EXT-CONTRACTS-01-D003 | No real search value: the 60-case benchmark is SANITIZED_SYNTHETIC with caller labels; field-aware recall 49/58 trails the baseline 52/58 while precision is higher (49/152 vs 52/196) | NOT_VALUE_VERIFIED | P1 | A caller-supplied genuine LOCAL_REAL_PIT grounding scratch with independently authored labels, then independent review (next: S10-R3-REAL-SOURCE-01) | `lift_claim: null`, `real_value: NOT_VERIFIED`, real benchmark `NOT_RUN_NO_GENUINE_LOCAL_REAL_PIT_SUPPLIED`; no genuine local real corpus exists on the implementation host. |
+| S10-R3-EXT-CONTRACTS-01-D004 | Remaining 36-capability program unchanged: R3-24 TS search, the other 10 parity ids, six provider lanes (PMXT, SYNPATH, LSE, REACH, KAIROS, BECKER), Lane B R3-16/17, real Hermes specialist sessions and citation origin authenticity | DEFERRED_PENDING_OWNER_AUTHORIZATION | P2 | Each in its own gated WP or owner decision; next R3-24 step is a TS-only offline contract test against the pinned ts-sdk once its search example path is verified | Receipt adoption keeps R3-24 `OPEN_SEPARATE`, other parity `OPEN_UNCHANGED_10`, providers and Lane B unchanged, 0 new value acceptances. |
+| S10-R3-EXT-CONTRACTS-01-D005 | The local Windows host refuses unprivileged symlink creation (WinError 1314), so the symlink branch of the R007 path test is skipped there | RECORDED_LOCAL_HOST_LIMITATION | P3 | Linux full suite and exact-head hosted CI execute it | Hardlink, relative, `..`, oversize, in-repo and non-empty-scratch refusals run on every host. |
+
 ## S10-R3-HERMES-COOP-01 offline Hermes cooperation and grounded citation limitations
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
