@@ -1,0 +1,166 @@
+Package Identity:
+  WP ID: S10-R3-ORACLE-UPSTREAM-01
+  Title: Direct Oracle3 upstream arbitrage + fees source reuse (offline native REL consumer)
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-r3-oracle-upstream-01
+  Package class: SELECTIVE_ORACLE3_UPSTREAM_PURE_MATH_REUSE
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: READ_ONLY_LOCAL_RESEARCH
+  Product impact: UPSTREAM_PURE_MATH_CONSUMER_NO_PROMOTION
+  Network impact: NO_PRODUCT_NETWORK
+  Credential impact: NONE
+  Dependency impact: NO_NEW_DEPENDENCY
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High reasoning for source audit/integration; switch to normal for mechanical test repair.
+  Reason: strict real upstream invocation and native fee/settlement boundary.
+  Escalate to higher reasoning or STOP if: upstream license/closure differs, protected scope is needed, or source parity impossible.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## Objective and upstream-first adoption decision
+This is actual upstream **selective code reuse**, not method inspiration. Source pin: YichengYang-Ethan/oracle3-prediction-market-agent @ 267fb7c48dae7c4ff8922c02a3a223443e51bf0b. Copy the exact five files listed in UPSTREAM_SOURCE_AND_LICENSE_PINS.md unchanged (their Git blob hashes must match), only after the Apache-2.0 + composite NOTICE/MIT review and security import-closure checks. Then import and INVOKE the real oracle3.arbitrage.check_constraint and fees modules. The full Oracle3 Poetry project pulls in auth/exchange/trading/MCP dependencies; do NOT install it. Neither port nor rewrite the two pure Python source modules.
+
+The vendored package is relocated under the already-approved `src/data_layer/analytical_research/oracle3/` prefix because the native WP authority guard rejects a new top-level `oracle3/` directory. Upstream file BYTES remain unchanged; only their repository destination changes. The bridge must use the minimal bounded importlib alias loader described below so the upstream absolute `from oracle3.fees import ...` resolves without altering the upstream source. No new authority category or governance-tool modification is needed.
+
+The native S10-R3-REL-01 is already a competent conditional research consumer. Reuse it and preserve its code identity. Add a slim optional standalone native REL-receipt -> upstream math parity CLI. Only map verified native model/quote/fee inputs; do not fabricate missing data, prices, fee schedules, formal relations or outcome orientation. The upstream source static formulas are an independent comparison, not a new profitable-edge or execution authority.
+
+## Authority / Non-Authority
+Implementation authority: YES, only exact paths below upon Karl sending the first-person bootstrap.
+Report/export authority: YES, new offline content-addressed sanitized evidence only.
+Paper authority: NO. Execution authority: NO. Live authority: NO.
+Credential authority: NO. Runtime/scheduler authority: NO. Canonical evidence authority: ONLY this new derived research receipt; no canonical PIT or WP170 writes.
+Network authority: NO product/runtime network; workflow git/CI and fetching pinned public source solely for code provenance permitted. No product Gamma request.
+Dependency-change authority: NO. External source copying: YES only the five audited verbatim pinned Apache-2.0/NOTICE files inside this package, after authorization in the accompanying Karl bootstrap and passing license/security preflight. No broader vendor expansion.
+Reference docs/ai/codex/PROTECTED_PATHS.md centralized groups. No credentials/secrets, authenticated clients, wallet/account, order placement/cancel, execution gateway, paper engine, scheduler/bot loop, dashboard/deployment, dependency/lock changes, unscoped external code, generated artifacts.
+
+## Corrected scope authority and prior blocker
+The frozen prior attempt stopped before branch/commit because its five repo-root `oracle3/` paths are categorically refused by `wp_spec_guard._authority_requirements`. CC supplied a scratch-only diagnostic with those FIVE paths moved to `src/data_layer/analytical_research/oracle3/`; native readiness was `IMPLEMENTATION_READY` with 13 changed paths, eight requirements, no certificate. That diagnostic did NOT authorize copying; this complete corrected package and Karl's accompanying NEW first-person bootstrap explicitly authorize copying these exact five files at their corrected destination. Preserve all source/blob pins, all 36 adoption commitments and the no-runtime-network boundary. CC MUST re-run the actual readiness gate on these FINAL exact bytes before branch or source edits.
+
+## Hard Merge Gate and exact predecessor
+Required predecessor PR #277: head 7492d96694f5eb4bf64e00615b8378819476744c; merged commit e9099c438ddf779a4ae4d6438c8d5923bd6eceec. PR #268 remains OPEN, separate and untouched. Before branch/changes, run:
+```
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+```
+Require exact main == e9099c438ddf779a4ae4d6438c8d5923bd6eceec, clean tree, PR277 merged, no overlapping PR/branch, no newer conflicting change. Stop on drift; do not stack PR268. Record evidence. Do not automatically relax this freeze.
+
+## Exact changed-file scope (14 paths, L)
+- `src/data_layer/analytical_research/oracle3/__init__.py`
+- `src/data_layer/analytical_research/oracle3/arbitrage.py`
+- `src/data_layer/analytical_research/oracle3/fees.py`
+- `src/data_layer/analytical_research/oracle3/LICENSE`
+- `src/data_layer/analytical_research/oracle3/NOTICE`
+- `src/data_layer/analytical_research/oracle3_upstream_bridge.py`
+- `tools/alpha/run_oracle3_upstream_parity.py`
+- `tests/tools/alpha/test_oracle3_upstream_parity.py`
+- `tests/tools/alpha/test_official_sdk_public_probe.py` (ONLY the expired timestamp regression fix; no product change)
+- `docs/oracle3_upstream_reuse_contract.md`
+- `docs/status_entries/S10-R3-ORACLE-UPSTREAM-01.md`
+- `docs/deferred_items_log.md`
+- `docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_prompt.txt`
+- `docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_spec.json`
+Only these 14 paths. The extra existing SDK-probe TEST path is narrowly authorized solely to repair a date-expired assertion already failing on unchanged merged main. No refactoring the existing native related-market / executable-edge / SRC-01 / SDK-probe modules or changing any historical code identity. One coherent PR. The new `src/.../oracle3/` directory is the ONLY authorized copied-code destination; do not re-open the root-path governance exception. If scope cannot be completed because of repo guards, resolve in-scope first; escalate only material cross-boundary conflicts.
+
+## Source preflight and feasibility
+Use UPSTREAM_SOURCE_AND_LICENSE_PINS.md. Before copying, validate each upstream Git blob, LICENSE, NOTICE, source imports and dependency closure. `src/data_layer/analytical_research/oracle3/arbitrage.py` imports only `oracle3.fees` and Python stdlib. `src/data_layer/analytical_research/oracle3/fees.py` uses stdlib. Root `src/data_layer/analytical_research/oracle3/__init__.py` has version only. The full Poetry distribution is intentionally excluded due to broad trading/auth/MCP dependencies. `oracle3` package root is not yet present on the frozen main. Verify exact license text, NOTICE and transitive ancestry; preserve both. Record a compact upstream-first choice in docs/oracle3_upstream_reuse_contract.md. Unmodified source byte identity at runtime and in tests is mandatory. The new bridge MUST verify all five vendored file blobs BEFORE executing or importing upstream code. Implement a minimal importlib-based, source-file-pinned package alias for `oracle3` rooted ONLY at `src/data_layer/analytical_research/oracle3/`. Reject any conflicting `oracle3`, `oracle3.fees` or `oracle3.arbitrage` module already loaded from another location; never overwrite a foreign `sys.modules` entry. Do not alter `sys.path`, environment, dependency files or upstream bytes. The loader may register only these three pinned top-level module names and must prove that `oracle3.arbitrage.check_constraint` actually executes on eligible native evidence. There is no general plugin finder, import hook, loader framework or arbitrary source path. If this can not be implemented without expanding scope, STOP. Do not copy upstream test suite wholesale; use upstream-aligned vectors in the single native pytest test file. No shell execution of upstream material. Keep LICENSE/NOTICE untouched in the vendored directory; do not modify the repo-wide governance validator.
+
+## Context budget
+Read first: AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md, docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md and relevant startup governance.
+Read for this WP: docs/related_market_alpha_contract.md, src/data_layer/analytical_research/related_market.py, related_market_economics.py, tools/alpha/run_related_market_alpha.py, existing tests/tools/alpha/test_related_market_alpha.py, docs/deferred_items_log.md, docs/security_tooling_status.md, pyproject.toml, upstream pins and this spec.
+Read only if blocked: source-grounding/point-in-time internals, security gate docs, native evaluator, fee policy, PR277 activation contract. Do not browse unrelated large project history.
+Do not read/touch: wallet secrets, source runtime protected trading, SDK live activation, paper and strategy owner, Hermes runtime, external providers, CI files, lockfiles, any repository path outside exact changed scope.
+Search terms: oracle3, REL-01, evaluate_fee_policy, build_related_core, verify, check_constraint, feeSchedule, source_grounding.
+
+## Compatible and incompatible interfaces
+- From the existing `tools.alpha.run_related_market_alpha.verify(scratch)` require VERIFIED; `receipt.json` core contains `results`, `fee_policy`, `inputs`, `venue`, `adoption`, `authority`, and native model evidence. New consumer reads receipt and `inputs/request.json` + already frozen venue evidence without mutating, cross-verifies their hashes and exits if REL verification fails. Native data is canonical; upstream receipt derived only.
+- `oracle3.arbitrage.Quote` uses float bid/ask and venue plus explicit schedule; `check_constraint` is a STATIC relation check, and `PolymarketSchedule`/`KalshiSchedule` can price known explicit rates. Native economics uses exact Decimal, depth and current fee provenance; upstream float math is not a replacement for native decisions. Comparison mismatches must be surfaced, not hidden. The native policy expired 2026-11-04; never extend it or reuse Oracle3 category defaults.
+- For `SANITIZED_SYNTHETIC` fixtures it is allowed to invoke exact upstream functions under caller-declared formal relation, explicit experimental (TEST_ONLY) fee schedules, and clearly tagged synthetic quotes. For LOCAL_REAL_PIT, explicit decision-time admissible market fee/side/rule confirmation is mandatory; otherwise output ABSTAIN. Two venues without independently verified rules always remain INCONCLUSIVE.
+- No new source, order, paper, trading or price authority. No internal synthetic relabeling to manufacture positive outcomes.
+
+## Negative-test matrix and failure stops
+Cover every R001-R008 test and refusal: license missing, original blob mismatch, foreign preloaded `oracle3` alias, upstream package import-resolution failure, added upstream import, unsupported dependency, forged REL receipt/input/fee, no source/fee/orientation, stale/expired policy, side/duplicate instrument mismatch, unauthenticated cross-venue settlement, insufficient quote/size, NaN/Inf, symlink/hardlink/reparse/relative/in-repo path, too-large input, repeated scratch with changed bytes, receipt tampering, socket/secret access. Negative cases must fail closed or clearly abstain; errors no raw paths/headers/secrets.
+
+## Requirements and evidence plan
+R001 — upstream_license_provenance: Fetch exactly the pinned Oracle3 upstream commit and vendor the five original files unchanged, checking the five Git blob IDs; preserve the Apache-2.0 LICENSE and NOTICE with their mixed MIT ancestry and conduct license/security/import-closure audit BEFORE copying source. The upstream package __init__ and two modules are the only admitted Python sources; no complete Oracle3 install or transitive SDK, exchange, MCP or wallet imports.
+R002 — actual_upstream_invocation: Actual production bridge imports oracle3.arbitrage.Quote/check_constraint and oracle3.fees.PolymarketSchedule/KalshiSchedule via the minimal pinned importlib alias loader from those byte-verified local upstream modules, and invokes check_constraint for eligible native S10-R3-REL-01 models. Prove runtime invocation with a test spy or equivalent, not merely an import and never a rewritten check_constraint approximation.
+R003 — native_verified_consumer: One bounded offline CLI run/verify cold-verifies a genuine S10-R3-REL-01 receipt with the unchanged native REL.verify, reads its frozen model/fee/venue evidence read-only, then emits a separate content-addressed receipt. The native candidate/model provenance and existing Payout/fee/ask-sweep authorities are preserved. No modifications to existing REL, SRC-01, PIT, Alpha or execution-feasibility modules.
+R004 — bounded_semantics: Only compare explicitly modeled and supported relation family/side/size with validated distinct contract identifiers, admissible native model, usable known quote and explicit contemporaneously admissible fee configuration. No default_schedule, category fallback, zero fee inferred, stale fee policy, guessed YES token, unknown, void or cancelled settlement, missing leg, future data, cross-venue unverified equivalence, binary/nonbinary uncertainty or synthetic label may be treated as executable evidence; any such case abstains or is flagged conditional.
+R005 — source_aligned_parity: Run meaningful upstream-aligned deterministic regression against pinned tests/test_arbitrage.py and tests/test_fees.py (not vendored into production); exercise all five relations, explicit Polymarket and Kalshi fee schedules, fee-erases-edge, size scaling, duplicate contracts, missing quotes, invalid/nonfinite values, and unknown fee; report every eligible/abstained/mismatched denominator, truthfully retain systematic float vs native Decimal differences, and never tune native data or assert live trading lift.
+R006 — receipt_and_repeat: A bounded sanitized write-once receipt binds original REL receipt id, read-only frozen source hashes, upstream commit/blob hashes, native CLI/adapter identities, actual check_constraint invocation counts, per-case conditional verdicts and abstention reasons. Cold verify reruns the real upstream logic with sockets blocked, recomputes receipt and flags tampering. Same inputs yield IDEMPOTENT_VERIFIED; changed input or partially written output stops without network or overwrite.
+R007 — negative_safety: Exercise offline socket attempts, unexpected module imports, symlink/reparse/hardlink/relative/out-of-repo/oversize input, mutated Git blobs, alias collision, loader path swap, verified import side effects, missing/expired fee policy, malformed market orientation, duplicate ID, missing price, NaN/Inf, stale source and receipt tampering. No secrets/raw paths/headers leak in output; no live SDK, protected orders, paper, capital or trading authority.
+R008 — governance_full_validation: Preserve all 36 adoption IDs and PR #268 ownership without automatic closure. Ponytail LITE is first actual skill; invoke mandatory/material skills, native RUNTIME readiness before branch, final diff/scope/readiness, full Linux and hosted Windows/Linux CI and security, including the date-independent SDK-probe regression fix and actual gitleaks 8.27.2 zero findings, exact posted PR evidence, one coherent PR and one consolidated CC completion/blocker ZIP. No merge or real network request. Keep source reuse class separate from operational value and owner acceptance.
+
+Canonical named tests (under tests/tools/alpha/test_oracle3_upstream_parity.py):
+R001: `test_oracle3_exact_upstream_source_and_licenses`
+R002: `test_oracle3_real_check_constraint_invoked`
+R003: `test_oracle3_verified_native_rel_cold_consumer`
+R004: `test_oracle3_known_fee_conditional_abstentions`
+R005: `test_oracle3_upstream_aligned_relation_and_fee_vectors`
+R006: `test_oracle3_receipt_cold_verify_and_tamper`
+R007: `test_oracle3_security_and_negative_matrix`
+R008: `test_oracle3_governance_no_authority_and_36_ids`
+
+## Normative rule matrix, evidence plan and report-back
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|adoption|upstream_license_provenance|specified_behavior|REQUIRE|upstream_license_provenance_verified|requirements.r001|R001
+NR002|adoption|actual_upstream_invocation|specified_behavior|REQUIRE|actual_upstream_invocation_verified|requirements.r002|R002
+NR003|adoption|native_verified_consumer|specified_behavior|REQUIRE|native_verified_consumer_verified|requirements.r003|R003
+NR004|adoption|bounded_semantics|specified_behavior|REQUIRE|bounded_semantics_verified|requirements.r004|R004
+NR005|adoption|source_aligned_parity|specified_behavior|REQUIRE|source_aligned_parity_verified|requirements.r005|R005
+NR006|adoption|receipt_and_repeat|specified_behavior|REQUIRE|receipt_and_repeat_verified|requirements.r006|R006
+NR007|adoption|negative_safety|specified_behavior|REQUIRE|negative_safety_verified|requirements.r007|R007
+NR008|adoption|governance_full_validation|specified_behavior|REQUIRE|governance_full_validation_verified|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+## One-shot final CI closure: targeted exception and clean-history rebuild (owner-approved only if bootstrap sent)
+
+PR #278 currently has head `69ae15a11e527e658b55f856be8fdf6336d089ab` on branch `codex/s10-r3-oracle-upstream-01`, with valid upstream math invocation and cold receipt, but **NOT_MERGE_READY**: its exact-head CI has two material, independently verified blockers. This correction does NOT weaken the gate, does NOT authorize the live SDK public GET, and does NOT turn synthetic parity into trading or real-world Alpha.
+
+(1) Source of four hosted gitleaks findings: an unfortunate slash-joined, natural-language settlement list in the original frozen prompt/spec was introduced by the first PR278 implementation commit `a045fae0778ae283e651e3af4e58ca59611649d8`. The corrected prompt/spec removes that phrase everywhere and replaces it with ordinary prose, with no change in its meaning, rules, identities, or permissions. Verify using the **actual pinned hosted gitleaks 8.27.2 binary**, not CC's regex inference. Do not use `.gitleaksignore`, alter `tests/test_gitleaks_secret_scan_gate.py`, downgrade gitleaks, silence or whitelist real findings. Because the hosted scan traverses all reachable commits, **simply committing new sanitized WP files on top is inadequate**; the vulnerable historic commit must be unreachable from the rewritten PR branch's fetched ref history. The authorization bootstrap permits ONE scoped `--force-with-lease` update to this existing PR's branch, solely to replace the blocked original PR history with a clean, semantically identical implementation plus this correction. DO NOT rewrite `main`, tag history, other branches, PR #268, other PRs or any unrelated ref. Pin the expected old remote PR head exactly; on any drift, STOP rather than force. Use clean synchronized `main` and re-apply the already tested 13 source/tests/docs files from PR278, replacing only the WP prompt/spec with these corrected bytes and adding the one authorized regression-test fix. A new PR is forbidden; preserve PR #278. Do not introduce the historical false-positive phrase into any new reachable tracked file or commit message. Report old and new head plus the actual new full-history gitleaks receipt.
+
+(2) Existing main test `tests/tools/alpha/test_official_sdk_public_probe.py::test_probe_negative_security_and_adversarial_matrix` is red as the clock advances past its constant timestamp. Its deliberately forged `acquired_start_utc` must be computed **strictly after the same frozen receipt's `acquired_end_utc`** (e.g. parsed UTC + one second), without depending on today's date. Preserve the test's expected `ACQUISITION_TIME_CONFLICT` assertion and all negative-path coverage. No changes to `official_sdk_public_probe.py`, its SDK live activation SHA/window, owner scratch, transport, receipt validator, or production source; the repair is ONE existing test-file edit only, confined to that assertion setup. Do not patch/skips/xfail tests or modify the verification behavior. Prove (before branch) that the old failure was reproducible on merged base; prove fixed case + complete neighboring test on corrected head.
+
+The resulting effective scope is exactly **14 paths**: all original 13 plus `tests/tools/alpha/test_official_sdk_public_probe.py`. The corrected machine spec lists this path as a historical compatibility edit, with `tests=true` already authorized. No new product network, dependencies, credentials, Hermes, paper, execution, trading, strategy, capital, or merge rights. All 29 external repositories / 36 adoption IDs stay tracked and unchanged in this WP except already declared conditional upstream Oracle3 status.
+
+Execution order: (a) confirm fresh GitHub main and exact PR #278 old head + no third-party edits, clean worktree and blocked CI; (b) inspect new package SHA256 manifest, mandatory repository startup and Ponytail LITE first actual skill; (c) run real native readiness gate on exact new prompt and spec **before** the clean replacement branch or source edit, STOP if not IMPLEMENTATION_READY; (d) verify unchanged five Oracle3 source/LICENSE/NOTICE blobs and existing 13-file implemented functionality and R001–R008; (e) build new clean PR branch history on current owner-confirmed merged `main`; (f) apply ONLY the 14 allowed paths and fix expired test; (g) run focused tests, full Linux suite, full hosted Windows/Linux 3.12/3.14 CI, and exact final diff/scope gates; (h) verify hosted full-history gitleaks 0 authentic findings, security and required job gates green; (i) update PR278 posted body and committed status truthfully for current head (do not retain stale `BLOCKED_NOT_READY` as current); (j) reconcile posted GitHub exact head and evidence; (k) return exactly one `S10-R3-ORACLE-UPSTREAM-01_CC_RETURN.zip` with all receipts. No merge. One-shot autonomous repairs of ordinary in-scope problems allowed. If either mandatory blocker persists, return one precise blocker ZIP, NEVER claim merge-ready.
+
+Important: original owner-approved copied code still must match exact upstream Git blob hashes. The branch rewrite is a history hygiene correction to keep the full-history secret scan strong; it is NOT permission to delete unrelated commits or erase a security finding.
+
+## Full validation and evidence (do not skip)
+Ponytail LITE first actual skill after mandatory startup; then invoke wp-predraft-inspector, hermes-alpha-reuse-check, runtime-authority-boundary-review, spec-to-code-compliance, canonical-evidence-audit, find-bugs, code-simplifier, wp-readiness-preflight and verification-before-completion, plus any materially relevant installed specialist skill; log actual invocations and reasons for omission. Run `tools/wp/wp_readiness_gate.py` on EXACT prompt+spec before any branch/source change, then final diff check; genuine gate exit 0 IMPLEMENTATION_READY, not self-asserted. License provenance and source-copy protected boundary are separately owner-authorized by the bootstrap (no external product network).
+
+Run all eight named pytest tests, upstream-aligned vector tests, nearby related-market/economics/source-grounding/native boundary regression, full suite (Linux full, hosted Windows/Linux 3.12/3.14), final CI and security (gitleaks, dependency audit, copied-source provenance), exact-scope and generated-artifact guards; re-run after repairs. Keep native historical module code SHA identity stable. PR evidence on POSTED GitHub body exact head and CI, not local draft. If posted verifier fails solely because optional PR comments absent, say so and follow canonical PRIVATE_REPO_MANUAL_VERIFIED guard. Make actual source import and check_constraint call inspectable.
+
+## Hard stops and rollout
+STOP before changing source if owner message does not explicitly authorize EXACT five-file code copying or license/security/NOTICE review cannot pass. STOP on changed main, incomplete native readiness, material path expansion, extra dependency, unsafe alias/import conflict, or unauthorized provider/network/trading capability. Repair the preflight gate incompatibility by using the corrected 13-path `src/.../oracle3/` scope only; there is no permission to edit the validator. Full CC autonomy for ordinary in-scope implementation/debugging/tests is authorized; no repeated questions for fixable defects. If genuine impossibility, one precise blocker ZIP.
+
+## Report-back and successor boundary
+One branch, one PR; never merge. Return EXACTLY one `S10-R3-ORACLE-UPSTREAM-01_CC_RETURN.zip` with original+modified prompt/spec hashes, upstream blobs and notices/license audit, skills ledger, real native receipt, upstream method-call evidence, full tests/CI/security, posted PR body consistency and honest conditional vs real outcome status; or one blocker ZIP. Do not close any 36 capabilities or infer measured real value. PR268 remains independent. Current approved SDK public GET activation hash/window remain unchanged, and a separate deliberate Karl operator instruction is required for the single actual public GET.

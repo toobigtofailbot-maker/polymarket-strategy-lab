@@ -548,7 +548,9 @@ def test_probe_negative_security_and_adversarial_matrix(tmp_path, monkeypatch, c
     inner, _ = mock()
     scratch2, _, _ = pinned_live(monkeypatch, tmp_path, inner, name="times")
     receipt = json.loads((scratch2 / "receipt.json").read_text(encoding="ascii"))
-    receipt["core"]["attempt"]["acquired_start_utc"] = "2026-11-08T00:00:00Z"
+    from datetime import datetime, timedelta  # forged start one second after this receipt's own end: date-independent
+    end = datetime.strptime(receipt["core"]["attempt"]["acquired_end_utc"], "%Y-%m-%dT%H:%M:%SZ")
+    receipt["core"]["attempt"]["acquired_start_utc"] = (end + timedelta(seconds=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     receipt = PROBE.finalize(receipt["core"])
     (scratch2 / "receipt.json").write_bytes(PROBE.receipt_bytes(receipt))
     assert CLI.verify(scratch2)["failures"] == ["ACQUISITION_TIME_CONFLICT"]
