@@ -48,4 +48,26 @@ Contract: `docs/oracle3_upstream_reuse_contract.md`.
 
 ## Validation state
 
-LOCAL_VALIDATION_IN_PROGRESS on the rebuilt implementation commit. Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
+VALIDATED on rebuilt implementation commit `48c595006a23dcd7b7b9e1cc55a7c8196cba13b1`, the only commit before this status-only record. Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
+
+- **History:**
+  - Old head `69ae15a11e527e658b55f856be8fdf6336d089ab` was replaced by one guarded `--force-with-lease` against that exact head.
+  - `git merge-base --is-ancestor a045fae HEAD` is false, and no remote branch or tag contains `a045fae`.
+  - `origin/main..HEAD` holds only the new commits.
+- **Native gates on `48c5950`:**
+  - The diff gate (`--check-diff --base origin/main --head HEAD`) gave exit 0, `IMPLEMENTATION_READY`, scope 14, with `diff_scope` checked.
+  - The exact-scope helper gave exit 0 with 0 warnings.
+  - The generated-artifact guard passed.
+- **Named tests (Windows host, Python 3.14):** all 8 R001–R008 evidence-plan nodes pass. The focused and neighbor set passed 170, with 5 skipped (gitleaks-binary tests without a local binary). That set is the Oracle3 parity, SDK probe, SDK search, contract parity, related-market, source-grounding, architecture-boundary and gitleaks-gate tests.
+- **SDK-probe repair:**
+  - The test fails on unchanged main `e9099c4` and passes after the repair.
+  - A mutation with equal start and end times fails the unchanged `ACQUISITION_TIME_CONFLICT` assertion.
+- **Full suite (Linux):** docker image `s10-canary-siwc-validation:20261024`, `--network none --read-only`, clean LF clone at `48c5950`, Python 3.12.14, `python -B -m pytest -q -p no:cacheprovider --basetemp /tmp/full -ra`. Result: 14736 passed, 15 skipped (pre-existing environment gates), 0 failed.
+- **Hosted CI on `48c5950`:** run `42531179125` passed 11/11 jobs.
+  - The four compat full suites had 0 failed: ubuntu 14722 passed / 14 skipped; windows 14715 passed / 21 skipped.
+  - The pinned gitleaks 8.27.2 full-history scan covered 636 commits: "no leaks found".
+  - The 5 binary-backed detection tests passed, with 0 skipped.
+- **Security:**
+  - Upstream blobs were verified in the committed tree.
+  - No `.gitleaksignore`, scanner, CI, dependency or lockfile change.
+  - Boundary review: BOUNDARY_INTACT.
