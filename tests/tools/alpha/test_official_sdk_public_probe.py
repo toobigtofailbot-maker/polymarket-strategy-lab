@@ -1,10 +1,13 @@
-"""S10-R3-REAL-PUBLIC-GET-01 offline tests (Phase A): the REAL installed polymarket-client 0.10.0
-PublicClient.search(q="bitcoin", page_size=2).first_page() over the one-shot guarded transport.
+"""S10-R3-REAL-PUBLIC-GET-01 (Phase A) and S10-R3-REAL-PUBLIC-GET-01B (Phase B pin) offline tests: the
+REAL installed polymarket-client 0.10.0 PublicClient.search(q="bitcoin", page_size=2).first_page() over
+the one-shot guarded transport.
 
 Every response comes from ``httpx.MockTransport`` standing in for the inner socket transport; every
-socket entry point is blocked for every test. Owner activation is sealed in the repository; tests
-that exercise the dormant acquisition path pin a test record with ``monkeypatch`` only, and every
-such receipt is labelled TEST_INJECTED_TRANSPORT_NOT_PUBLIC. No test dials a real host.
+socket entry point is blocked for every test, and for the whole module the real egress factory is
+replaced by one that fails the module if it is ever built. The source pins Karl's approved record;
+tests that exercise the acquisition path pin a test record with ``monkeypatch`` only, every such
+receipt is labelled TEST_INJECTED_TRANSPORT_NOT_PUBLIC, and no test passes the owner scratch to
+``live``. No test dials a real host or consumes the owner's one attempt.
 """
 from __future__ import annotations
 
@@ -13,6 +16,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
 import ssl
 import threading
 import time
@@ -39,6 +43,48 @@ NOW = "2026-11-07T12:00:00Z"
 HITS = ["oh-sen-dem", "oh-sen-rep"]
 BODY = gamma_body(HITS, pagination={"hasMore": True, "totalResults": 9})
 SDK = None
+
+# Phase B: Karl's approved record, rebuilt from its fields (the record file itself is not committed)
+APPROVED = "a642058790796d4ec4de25c6b03003d0b0c0242c942a9b5c58843ddc4520634a"
+OWNER_SCRATCH = "C:\\Users\\Public\\Documents\\polymarket-r3-sdk-one-get-20261107"
+OWNER = {"approved_by": "Karl \u2014 Project Owner", "attempt_id": "R3-SDK-PUBLICGET-20261107-01",
+         "envelope_sha256": "110be3589860cc1e03f69eb41437941ea5685afb25109cd87cc53b722e82a3e9", "max_attempts": 1,
+         "not_after_utc": "2026-11-21T23:59:59Z", "not_before_utc": "2026-11-07T00:00:00Z",
+         "request_url": "https://gamma-api.polymarket.com/public-search?q=bitcoin&page=1&limit_per_type=2",
+         "schema_id": "s10-r3-real-public-get01-owner-activation-v1", "scratch_dir": OWNER_SCRATCH,
+         "wp_id": "S10-R3-REAL-PUBLIC-GET-01"}
+IN_WINDOW = "2026-11-14T12:00:00Z"
+REAL_EGRESS = PROBE.public_inner_transport
+EGRESS_BUILT = []
+
+
+def owner_raw(value=None, **dump):
+    return (json.dumps(OWNER if value is None else value, **({"indent": 2, "sort_keys": True, "ensure_ascii": False}
+                                                              | dump)) + "\n").encode("utf-8")
+
+
+def lf(rel):
+    return (REPO_ROOT / rel).read_bytes().replace(b"\r\n", b"\n")
+
+
+def _forbidden_egress():
+    EGRESS_BUILT.append(1)
+    raise AssertionError("the real public egress was built inside a test")
+
+
+def _owner_scratch_state():
+    owner = Path(OWNER_SCRATCH)
+    return owner.is_absolute() and owner.exists(), sorted(p.name for p in owner.iterdir()) if owner.is_dir() else None
+
+
+@pytest.fixture(scope="module", autouse=True)
+def no_real_egress():
+    """Module-wide: the real egress is never built and the owner's scratch is never created or changed."""
+    before = _owner_scratch_state()
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(PROBE, "public_inner_transport", _forbidden_egress)
+        yield
+    assert EGRESS_BUILT == [] and _owner_scratch_state() == before
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -182,7 +228,7 @@ def test_probe_exact_one_request_transport(monkeypatch):
     # the real egress: TLS verified with hostname check, HTTP/1.1 only, zero retries, one connection, no proxy
     for key, value in {"HTTPS_PROXY": "http://127.0.0.1:9", "ALL_PROXY": "http://127.0.0.1:9", "SSL_CERT_FILE": "missing"}.items():
         monkeypatch.setenv(key, value)
-    real = PROBE.public_inner_transport()
+    real = REAL_EGRESS()  # constructed for inspection only; never sends
     pool = real._pool
     assert type(pool).__name__ == "ConnectionPool" and pool._retries == 0 and pool._http2 is False
     assert pool._ssl_context.verify_mode == ssl.CERT_REQUIRED and pool._ssl_context.check_hostname is True
@@ -208,15 +254,20 @@ def test_probe_exact_one_request_transport(monkeypatch):
 
 
 def test_probe_activation_requires_independent_owner_gate(tmp_path, monkeypatch, capsys):
-    assert PROBE.OWNER_ACTIVATION_SHA256 is None  # Phase A: sealed in the committed source
+    assert PROBE.OWNER_ACTIVATION_SHA256 == APPROVED  # Phase B: pinned to Karl's approved record
     pin = [n for n in ast.walk(ast.parse(PROBE_SRC)) if isinstance(n, ast.AnnAssign)
            and getattr(n.target, "id", None) == "OWNER_ACTIVATION_SHA256"]
-    assert len(pin) == 1 and isinstance(pin[0].value, ast.Constant) and pin[0].value.value is None
+    assert len(pin) == 1 and isinstance(pin[0].value, ast.Constant) and pin[0].value.value == APPROVED
     built = []
     monkeypatch.setattr(PROBE, "public_inner_transport", lambda: built.append(1))
     monkeypatch.setattr(PROBE, "acquire", lambda *a, **k: built.append(2))
     scratch = (tmp_path / "s").resolve()
     good = write_record(tmp_path, scratch)  # a perfectly shaped, self-authored record is still not owner approval
+    # the real pin refuses a self-authored record by fingerprint, before any scratch or transport
+    assert CLI.main(["live", "--scratch-dir", str(scratch), "--activation-record", str(good)]) == 1
+    assert json.loads(capsys.readouterr().out)["reason_code"] == "ACTIVATION_FINGERPRINT_MISMATCH"
+    assert CLI.check()["live_activation"] == "PINNED" and not scratch.exists()
+    monkeypatch.setattr(PROBE, "OWNER_ACTIVATION_SHA256", None)  # the Phase A seal still refuses first
     for argv in (["live", "--scratch-dir", str(scratch), "--activation-record", str(good)],
                  ["live", "--scratch-dir", str(scratch), "--activation-record", str(tmp_path / "absent.json")],
                  ["live", "--scratch-dir", "relative", "--activation-record", "x"]):
@@ -537,10 +588,284 @@ def test_probe_owner_scope_and_36_adoption_boundary(acquired):
         for word in ("mnemonic", "private_key", "clob.polymarket", "data-api", "execution_gateway", "paper_trading",
                      "live_pilot", "hermes_", "openai", "anthropic", "subprocess", "apscheduler", "crontab"):
             assert word not in lowered, word
-    assert PROBE.OWNER_ACTIVATION_SHA256 is None and CLI.check()["actual_live_get_executed"] is False
+    assert PROBE.OWNER_ACTIVATION_SHA256 == APPROVED and CLI.check()["actual_live_get_executed"] is False
     status = (REPO_ROOT / "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01.md").read_text(encoding="utf-8")
     assert "ACTUAL_LIVE_GET_EXECUTED=NO" in status and "Merge NOT authorized" in status
     deferred = (REPO_ROOT / "docs/deferred_items_log.md").read_text(encoding="utf-8")
     assert "S10-R3-REAL-PUBLIC-GET-01-D001" in deferred
     contract = (REPO_ROOT / "docs/official_sdk_public_probe_contract.md").read_text(encoding="utf-8")
     assert "LIVE_ACTIVATION_SEALED" in contract and "REMOTE_CONTENT_NOT_INDEPENDENTLY_ATTESTED" in contract
+
+
+# ------------------------------------------------------------------ Phase B pin (S10-R3-REAL-PUBLIC-GET-01B): R001
+
+
+def test_phaseb_owner_record_pinned_exact_source():
+    raw = owner_raw()
+    assert len(raw) == 580 and SG.sha256_hex(raw) == APPROVED == PROBE.OWNER_ACTIVATION_SHA256
+    pins = [n for n in ast.walk(ast.parse(PROBE_SRC)) if isinstance(n, (ast.Assign, ast.AnnAssign))
+            and "OWNER_ACTIVATION_SHA256" in {getattr(x, "id", None) for x in getattr(n, "targets", [getattr(n, "target", None)])}]
+    assert len(pins) == 1 and pins[0].value.value == APPROVED and PROBE_SRC.count(APPROVED) == 1
+    # the exact owner bytes pass the merged gate unchanged and bind the existing request, envelope and SDK call
+    assert PROBE.authorize_live(raw, OWNER_SCRATCH, IN_WINDOW, SGCLI._strict_json) == OWNER
+    assert OWNER["envelope_sha256"] == PROBE.envelope_sha256() and OWNER["request_url"] == PROBE.REQUEST_URL
+    assert OWNER["wp_id"] == PROBE.WP_ID and OWNER["schema_id"] == PROBE.ACTIVATION_SCHEMA and set(OWNER) == PROBE.ACTIVATION_KEYS
+    identity = OSB.sdk_identity()
+    assert identity["version"] == "0.10.0" and identity["installed_blobs_match_tag"] is True
+    assert PROBE.SDK_CALL == {"q": "bitcoin", "page_size": 2}
+    checked = CLI.check()
+    assert checked["live_activation"] == "PINNED" and checked["actual_live_get_executed"] is False
+    assert checked["network_attempts"] == 0
+    # the record file stays in the owner handoff package; it is not committed
+    for top in ("docs", "src", "tools", "tests"):
+        assert not list((REPO_ROOT / top).rglob("PROPOSED_KARL_ACTIVATION_RECORD*")), top
+
+
+# ------------------------------------------------------------------ R002
+
+
+def test_phaseb_no_product_network_before_owner_merge():
+    # every socket entry point is blocked: a real DNS lookup or dial is refused and counted
+    with SGCLI.no_network() as attempts:
+        for call in (lambda: socket.getaddrinfo(PROBE.HOST, 443), lambda: socket.create_connection((PROBE.HOST, 443))):
+            with pytest.raises(SG.GroundingStop, match="NETWORK_ATTEMPT_BLOCKED"):
+                call()
+    assert attempts == [1, 1]
+    # the real egress factory is replaced for this module, so even the pinned default path cannot dial
+    assert PROBE.public_inner_transport is _forbidden_egress and EGRESS_BUILT == []
+    with pytest.raises(AssertionError, match="real public egress"):
+        PROBE.acquire(None, client=SDK)
+    EGRESS_BUILT.clear()
+    # every CLI.live call in this module injects a transport; no CLI call is given the owner scratch
+    for node in ast.walk(ast.parse(Path(__file__).read_text(encoding="utf-8"))):
+        if isinstance(node, ast.Call) and getattr(node.func, "attr", None) in ("live", "main") \
+                and getattr(node.func.value, "id", None) == "CLI":
+            assert not any(getattr(n, "id", None) == "OWNER_SCRATCH" for n in ast.walk(node))
+            assert node.func.attr == "main" or any(k.arg == "inner" for k in node.keywords)
+    # hosted CI never invokes the operator, and a pinned branch is documented as no execution grant
+    workflows = sorted((REPO_ROOT / ".github" / "workflows").glob("*.y*ml"))
+    assert workflows and not any("run_official_sdk_public_probe" in w.read_text(encoding="utf-8") for w in workflows)
+    contract = (REPO_ROOT / "docs/official_sdk_public_probe_contract.md").read_text(encoding="utf-8")
+    assert "not an execution grant" in contract and "Only after a deliberate post-merge instruction" in contract
+
+
+# ------------------------------------------------------------------ R003
+
+
+def test_phaseb_owner_activation_strict_binding_and_refusals(tmp_path, capsys):
+    raw = owner_raw()
+
+    def refused(data, code, scratch=OWNER_SCRATCH, now=IN_WINDOW):
+        with pytest.raises(SG.GroundingStop, match=code):
+            PROBE.authorize_live(data, scratch, now, SGCLI._strict_json)
+    # any changed, dropped or added field, and any re-serialization, no longer matches the owner's digest
+    variants = [owner_raw(OWNER | {k: v}) for k, v in (
+        ("approved_by", "Karl"), ("attempt_id", "R3-SDK-PUBLICGET-20261107-02"), ("request_url", PROBE.REQUEST_URL + "&x=1"),
+        ("max_attempts", 2), ("scratch_dir", OWNER_SCRATCH + "-2"), ("not_after_utc", "2026-12-21T23:59:59Z"),
+        ("not_before_utc", "2026-11-01T00:00:00Z"), ("envelope_sha256", "0" * 64),
+        ("wp_id", "S10-R3-REAL-PUBLIC-GET-01B"), ("schema_id", "s10-r3-real-public-get01-owner-activation-v2"))]
+    variants += [owner_raw({k: v for k, v in OWNER.items() if k != "attempt_id"}), owner_raw(OWNER | {"note": "x"}),
+                 owner_raw(ensure_ascii=True), raw.rstrip(b"\n"), raw.replace(b"\n", b"\r\n"), SG.canonical_bytes(OWNER),
+                 b" " + raw, raw + b"\n", b""]
+    for data in variants:
+        assert data != raw
+        refused(data, "ACTIVATION_FINGERPRINT_MISMATCH")
+    # the exact record binds one exact scratch string and one inclusive UTC window
+    for scratch in (OWNER_SCRATCH.lower(), OWNER_SCRATCH + "\\", OWNER_SCRATCH.replace("\\", "/"), str(tmp_path)):
+        refused(raw, "ACTIVATION_SCRATCH_MISMATCH", scratch=scratch)
+    for now in ("2026-11-06T23:59:59Z", "2026-11-22T00:00:00Z", "2027-11-14T12:00:00Z"):
+        refused(raw, "ACTIVATION_WINDOW_INVALID", now=now)
+    for now in ("2026-11-07T00:00:00Z", "2026-11-21T23:59:59Z"):
+        assert PROBE.authorize_live(raw, OWNER_SCRATCH, now, SGCLI._strict_json)["max_attempts"] == 1
+    # through the operator: the exact record with any other scratch, or an edited copy, stops before the claim
+    path = tmp_path / "owner.json"
+    path.write_bytes(raw)
+    scratch = (tmp_path / "scratch").resolve()
+    for data, code in ((raw, "ACTIVATION_SCRATCH_MISMATCH"), (owner_raw(OWNER | {"max_attempts": 2}), "ACTIVATION_FINGERPRINT_MISMATCH")):
+        path.write_bytes(data)
+        assert CLI.main(["live", "--scratch-dir", str(scratch), "--activation-record", str(path.resolve())]) == 1
+        out = capsys.readouterr().out
+        assert json.loads(out)["reason_code"] == code and "Karl" not in out and str(tmp_path) not in out
+    assert not scratch.exists() and EGRESS_BUILT == []
+
+
+# ------------------------------------------------------------------ R004
+
+
+def test_phaseb_one_shot_attempt_claim_and_idempotence(tmp_path, monkeypatch):
+    scratch = (tmp_path / "claim").resolve()
+    seen = []
+
+    def handler(request):
+        seen.append(sorted(p.name for p in scratch.iterdir()))  # what is on disk when the dial happens
+        return httpx.Response(200, content=BODY, headers={"content-type": "application/json"})
+    path = write_record(tmp_path, scratch, "claim.json")
+    monkeypatch.setattr(PROBE, "OWNER_ACTIVATION_SHA256", SG.sha256_hex(path.read_bytes()))
+    first = CLI.live(scratch, path, inner=httpx.MockTransport(handler), now_utc=NOW)
+    assert first["status"] == "ACQUIRED" and first["network_attempts"] == 1 and seen == [["attempt_claimed.json"]]
+    assert json.loads((scratch / CLI.ATTEMPT_MARKER).read_bytes()) == {
+        "activation_record_sha256": SG.sha256_hex(path.read_bytes()), "envelope_sha256": PROBE.envelope_sha256()}
+    for _ in range(2):
+        again = CLI.live(scratch, path, inner=httpx.MockTransport(handler), now_utc=NOW)
+        assert again["status"] == "IDEMPOTENT_VERIFIED" and again["network_attempts"] == 0
+    assert len(seen) == 1
+    with pytest.raises(FileExistsError):
+        CLI._write_once(scratch / CLI.ATTEMPT_MARKER, b"{}")
+    # a failed attempt is still the one attempt: one dial, never retried, redirected or paged
+    for name, kwargs, outcome in (
+            ("conn", {"raise_error": httpx.ConnectError("refused")}, "SDK_TRANSPORT_ERROR"),
+            ("redir", {"status": 302, "headers": {"location": PROBE.REQUEST_URL}}, "REDIRECT_REFUSED"),
+            ("big", {"body": b'{"events":[' + b" " * PROBE.MAX_BODY_BYTES + b"]}"}, "RESPONSE_OVERSIZE"),
+            ("busy", {"status": 429, "headers": {"retry-after": "0"}}, "SDK_RATE_LIMITED")):
+        inner, log = mock(**kwargs)
+        spent, record_path, out = pinned_live(monkeypatch, tmp_path, inner, name=name)
+        assert out["status"] == "ACQUIRED" and out["outcome"] == outcome and out["network_attempts"] == 1, name
+        again = CLI.live(spent, record_path, inner=inner, now_utc=NOW)
+        assert again["status"] == "IDEMPOTENT_VERIFIED" and again["network_attempts"] == 0 and len(log) == 1, name
+    # the marker is local to one scratch; the contract says so instead of claiming a global lock
+    contract = (REPO_ROOT / "docs/official_sdk_public_probe_contract.md").read_text(encoding="utf-8")
+    assert "not a global lock" in contract and "cannot stop a modified copy, another host or another scratch" in contract
+
+
+# ------------------------------------------------------------------ R005
+
+
+def test_phaseb_sdk_replay_and_native_readonly_crosscheck(acquired, world, tmp_path, monkeypatch):
+    scratch = acquired["scratch"]
+    calls, real = [], OSB.invoke_search
+
+    def spy(call, *args, **kwargs):
+        calls.append(dict(call))
+        return real(call, *args, **kwargs)
+    # spying on PublicClient.search itself would (correctly) fail SDK identity, so spy on the replay seam
+    monkeypatch.setattr(OSB, "invoke_search", spy)
+    before = tree(world["base"])
+    crossed = CLI.verify(scratch, world["grounding"])
+    assert crossed["status"] == "VERIFIED" and crossed["network_attempts"] == 0
+    assert calls and all(c == PROBE.SDK_CALL for c in calls)  # the cold replay re-runs the upstream SDK search
+    assert OSB.sdk_identity()["installed_blobs_match_tag"] is True
+    check = crossed["native_pit_crosscheck"]
+    assert check["status"] == "CROSSED" and check["orientation"] == "ORIENTATION_UNPROVEN" and check["tradable_side"] is None
+    assert check["settlement_equivalence"] == "NOT_CLAIMED" and check["real_value"] == "NOT_VERIFIED"
+    assert check["canonical_writes"] == 0 and tree(world["base"]) == before
+    core = json.loads((scratch / "receipt.json").read_text(encoding="ascii"))["core"]
+    assert core["transport_origin"] == PROBE.TRANSPORT_INJECTED and core["source_authenticity"] == PROBE.SOURCE_AUTHENTICITY
+    assert core["activation_record_sha256"] != APPROVED  # a test pin only; the owner's record is never consumed here
+    assert core["adoption"]["benchmark"] == "NOT_RUN_SINGLE_PAGE" and core["adoption"]["lift_claim"] is None
+    copy = tmp_path / "tampered"
+    shutil.copytree(scratch, copy)
+    (copy / "raw_response.bin").write_bytes(BODY.replace(b"Ohio", b"Utah", 1))
+    tampered = CLI.verify(copy.resolve())
+    assert tampered["status"] == "TAMPER_DETECTED" and tampered["failures"] == ["OUTPUT_MISMATCH:attempt"]
+
+
+# ------------------------------------------------------------------ R006
+
+
+PHASE_A_PIN = ("# Phase A: sealed. Phase B needs a separately reviewed, owner-merged pin of one exact activation record.\n"
+               "OWNER_ACTIVATION_SHA256: str | None = None\n")
+PHASE_B_PIN = ("# Phase B (S10-R3-REAL-PUBLIC-GET-01B): SHA-256 of Karl's exact approved record; usable only once owner-merged.\n"
+               f'OWNER_ACTIVATION_SHA256: str | None = "{APPROVED}"\n')
+
+
+def test_phaseb_historical_phasea_and_sibling_regression():
+    # the probe source differs from the merged Phase A blob only in the pin line and its comment
+    source = lf("src/data_layer/analytical_research/official_sdk_public_probe.py").decode("utf-8")
+    assert source.count(PHASE_B_PIN) == 1
+    phase_a = source.replace(PHASE_B_PIN, PHASE_A_PIN).encode("utf-8")
+    assert SG.sha256_hex(phase_a) == "ff65181599cf65f5257326a2e211cf538cf7fed6bd1d01aff6d06b1b1ea56862"
+    # the original Phase A package and operator stay as merged; request, envelope and SDK pin unchanged
+    assert SG.sha256_hex(lf("docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_prompt.txt")) == \
+        "a079461fef30b9c64ee115a15929404135537ba9f91a99c6558871d7e91ec03c"
+    assert SG.sha256_hex(lf("docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01/wp_spec.json")) == \
+        "f9aa2f969675a97fa7dc8296cdfe48434092b95060b208c0b4d0e9c0853c1b35"
+    assert PROBE.envelope_sha256() == "110be3589860cc1e03f69eb41437941ea5685afb25109cd87cc53b722e82a3e9"
+    assert PROBE.REQUEST_URL == OWNER["request_url"] and PROBE.WP_ID == "S10-R3-REAL-PUBLIC-GET-01"
+    assert (OSB.SDK_VERSION, OSB.SDK_COMMIT) == ("0.10.0", "579bb2e56be9cc5d152546985870ee6ad795ec52")
+    assert (PROBE.MAX_ATTEMPTS, PROBE.MAX_BODY_BYTES, PROBE.WALL_SECONDS) == (1, 1 << 20, 15.0)
+    assert "Phase A: live sealed" in CLI_SRC  # the merged operator is not edited by this pin
+    status = (REPO_ROOT / "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01.md").read_text(encoding="utf-8")
+    assert "ACTUAL_LIVE_GET_EXECUTED=NO" in status
+
+
+# ------------------------------------------------------------------ R007
+
+
+def test_phaseb_negative_security_and_no_credentials(tmp_path, monkeypatch, capsys):
+    assert PROBE.OWNER_ACTIVATION_SHA256 == APPROVED
+    # with the pin in place the guard still refuses every unsafe request before the inner transport
+    for over, code in (({"headers": {"cookie": "a=b"}}, "HEADER_REFUSED"),
+                       ({"headers": {"authorization": "Basic dTpw"}}, "HEADER_REFUSED"),
+                       ({"headers": {"proxy-authorization": "Basic eDp5"}}, "HEADER_REFUSED"),
+                       ({"headers": {"accept-encoding": "gzip"}}, "HEADER_REFUSED"),
+                       ({"url": "http://gamma-api.polymarket.com/public-search"}, "HOST_REFUSED"),
+                       ({"url": "https://gamma-api.polymarket.com/events"}, "PATH_REFUSED"),
+                       ({"params": {"q": "bitcoin", "page": "2", "limit_per_type": "2"}}, "QUERY_REFUSED"),
+                       ({"method": "POST"}, "METHOD_REFUSED")):
+        inner, log = mock()
+        guard = PROBE.OneShotTransport(inner, time.monotonic())
+        with pytest.raises(PROBE.ProbeRefusal, match=code):
+            guard.handle_request(guard_request(**over))
+        assert log == [] and guard.dials == 0
+    for kwargs, outcome in (({"headers": {"content-encoding": "gzip"}, "stream": RawChunks(b"gz")}, "CONTENT_ENCODING_REFUSED"),
+                            ({"headers": {"content-length": "99999999"}}, "RESPONSE_OVERSIZE")):
+        assert one(mock(**kwargs)[0])["outcome"] == outcome
+    # proxy, netrc and certificate environment cannot add a proxy, credential or cookie
+    netrc = tmp_path / "netrc"
+    netrc.write_text("machine gamma-api.polymarket.com login u password p\n", encoding="utf-8")
+    for key, value in {"NETRC": str(netrc), "HTTPS_PROXY": "http://127.0.0.1:9", "ALL_PROXY": "socks5://127.0.0.1:9",
+                       "SSL_CERT_FILE": str(netrc)}.items():
+        monkeypatch.setenv(key, value)
+    inner, log = mock()
+    assert one(inner)["outcome"] == "SDK_TYPED_PAGE"
+    assert not {k.lower() for k in log[0].headers} & {"authorization", "proxy-authorization", "cookie"}
+    # an oversized or hardlinked copy of the exact owner record is unusable; refusals never echo it
+    exact = tmp_path / "owner.json"
+    exact.write_bytes(owner_raw())
+    big = tmp_path / "big.json"
+    big.write_bytes(owner_raw() + b" " * CLI.MAX_RECORD_BYTES)
+    link = tmp_path / "link.json"
+    os.link(exact, link)
+    scratch = (tmp_path / "neg").resolve()
+    for rec in (big, link):
+        assert CLI.main(["live", "--scratch-dir", str(scratch), "--activation-record", str(rec.resolve())]) == 1
+        out = capsys.readouterr().out
+        assert json.loads(out)["reason_code"] == "ACTIVATION_FINGERPRINT_MISMATCH" and "Karl" not in out
+        assert str(tmp_path) not in out
+    assert not scratch.exists() and EGRESS_BUILT == []
+    # the pinned digest is not secret-shaped and the source carries no credential material
+    assert SG.SECRET_RE.search(PROBE_SRC) is None
+    for word in ("api_key", "private_key", "passphrase", "mnemonic", "password"):
+        assert word not in PROBE_SRC.lower(), word
+
+
+# ------------------------------------------------------------------ R008
+
+
+PHASEB_PATHS = ["docs/deferred_items_log.md", "docs/official_sdk_public_probe_contract.md",
+                "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01B.md", "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_prompt.txt",
+                "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/wp_spec.json",
+                "src/data_layer/analytical_research/official_sdk_public_probe.py",
+                "tests/tools/alpha/test_official_sdk_public_probe.py"]
+
+
+def test_phaseb_scope_governance_and_capability_accounting():
+    base = "docs/wp_specs/S10-R3-REAL-PUBLIC-GET-01B/"
+    assert SG.sha256_hex(lf(base + "wp_prompt.txt")) == "61c9f34425450f0ecc1081593649ae7d10089cedc43defc420e964f2064f3d52"
+    assert SG.sha256_hex(lf(base + "wp_spec.json")) == "c235146e7c290ec52298fda5e88bf9d1df63655f3e0b7325fd9041854d50a100"
+    spec = json.loads(lf(base + "wp_spec.json"))
+    scope = spec["scope"]
+    assert scope["required_changed_files"] == scope["allowed_changed_files"] == PHASEB_PATHS and scope["max_changed_files"] == 7
+    assert "tools/alpha/run_official_sdk_public_probe.py" not in PHASEB_PATHS
+    authority = spec["authority"]
+    assert authority["network"] is True and not any(authority[k] for k in (
+        "credentials", "execution", "live", "paper", "strategy", "scheduler", "hermes_runtime", "dependencies", "workflow_files"))
+    assert len(OSB.CAPABILITY_IDS) == len(set(OSB.CAPABILITY_IDS)) == 36
+    status = (REPO_ROOT / "docs/status_entries/S10-R3-REAL-PUBLIC-GET-01B.md").read_text(encoding="utf-8")
+    for marker in ("ACTUAL_LIVE_GET_EXECUTED=NO", APPROVED, "Merge NOT authorized", "IMPLEMENTATION_READY",
+                   "ponytail", "36", "0 owner value acceptances"):
+        assert marker in status, marker
+    deferred = (REPO_ROOT / "docs/deferred_items_log.md").read_text(encoding="utf-8")
+    assert "S10-R3-REAL-PUBLIC-GET-01B-D001" in deferred and "S10-R3-REAL-PUBLIC-GET-01-D001" in deferred
+    contract = (REPO_ROOT / "docs/official_sdk_public_probe_contract.md").read_text(encoding="utf-8")
+    assert APPROVED in contract and "Two-stage owner procedure" in contract
