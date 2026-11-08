@@ -1,0 +1,585 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-ORACLE-UPSTREAM-01",
+    "title": "Actual selective upstream Oracle3 arbitrage and fee component reuse in native REL research",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SELECTIVE_ORACLE3_UPSTREAM_PURE_MATH_REUSE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-oracle-upstream-01",
+    "required_predecessor": {
+      "pr_number": 277,
+      "head_sha": "7492d96694f5eb4bf64e00615b8378819476744c",
+      "merge_sha": "e9099c438ddf779a4ae4d6438c8d5923bd6eceec"
+    },
+    "objective": "Genuinely reuse the pinned upstream Oracle3 pure-math and fee modules in an isolated native related-market evidence consumer, while preserving S10-R3-REL-01 exact-fee/depth governance and all 36 capability statuses. Do not install the trading framework or create a second economics/fee engine. Benchmark upsteam decisions as conditional corroboration; do not claim real settlement, fees, executable edge or operational Alpha. This owner-authorized one-shot CI closure also restores one pre-existing date-expired SDK-probe pytest assertion and sanitizes wording in the WP spec without weakening the full-history security scanner.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/oracle3/__init__.py",
+      "src/data_layer/analytical_research/oracle3/arbitrage.py",
+      "src/data_layer/analytical_research/oracle3/fees.py",
+      "src/data_layer/analytical_research/oracle3/LICENSE",
+      "src/data_layer/analytical_research/oracle3/NOTICE",
+      "src/data_layer/analytical_research/oracle3_upstream_bridge.py",
+      "tools/alpha/run_oracle3_upstream_parity.py",
+      "tests/tools/alpha/test_oracle3_upstream_parity.py",
+      "tests/tools/alpha/test_official_sdk_public_probe.py",
+      "docs/oracle3_upstream_reuse_contract.md",
+      "docs/status_entries/S10-R3-ORACLE-UPSTREAM-01.md",
+      "docs/deferred_items_log.md",
+      "docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/oracle3/__init__.py",
+      "src/data_layer/analytical_research/oracle3/arbitrage.py",
+      "src/data_layer/analytical_research/oracle3/fees.py",
+      "src/data_layer/analytical_research/oracle3/LICENSE",
+      "src/data_layer/analytical_research/oracle3/NOTICE",
+      "src/data_layer/analytical_research/oracle3_upstream_bridge.py",
+      "tools/alpha/run_oracle3_upstream_parity.py",
+      "tests/tools/alpha/test_oracle3_upstream_parity.py",
+      "tests/tools/alpha/test_official_sdk_public_probe.py",
+      "docs/oracle3_upstream_reuse_contract.md",
+      "docs/status_entries/S10-R3-ORACLE-UPSTREAM-01.md",
+      "docs/deferred_items_log.md",
+      "docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 14,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [
+      "tests/tools/alpha/test_official_sdk_public_probe.py"
+    ],
+    "rollback_surface": "Revert only these 14 paths; the prior verified S10-R3-REL-01, SRC-01, official SDK probe, source hashes and receipts remain byte-identical. The five exact upstream files and license files are passive and called only by the opt-in independent offline research CLI. The extra existing SDK-probe pytest compatibility edit restores a stable acquisition-time conflict assertion only; production SDK probe code, owner activation and history remain unchanged.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Fourteen-file bounded selective upstream source reuse, with one real native receipt consumer; no dependencies or product network. The one added existing test file repairs only a time-dependent negative test.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/oracle3/__init__.py",
+        "before": "ABSENT",
+        "after": "Exact upstream unmodified source, origin and license copy at frozen commit",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/oracle3/arbitrage.py",
+        "before": "ABSENT",
+        "after": "Exact upstream unmodified source, origin and license copy at frozen commit",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/oracle3/fees.py",
+        "before": "ABSENT",
+        "after": "Exact upstream unmodified source, origin and license copy at frozen commit",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/oracle3/LICENSE",
+        "before": "ABSENT",
+        "after": "Exact upstream unmodified source, origin and license copy at frozen commit",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/oracle3/NOTICE",
+        "before": "ABSENT",
+        "after": "Exact upstream unmodified source, origin and license copy at frozen commit",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/oracle3_upstream_bridge.py",
+        "before": "ABSENT",
+        "after": "Minimal source-verified importlib alias for relocated, VERBATIM Oracle3 package, real upstream check_constraint call, bounded offline REL receipt consumer.",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained. Refuse foreign oracle3 sys.modules collisions and never edit sys.path or upstream bytes.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_oracle3_upstream_parity.py",
+        "before": "ABSENT",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_oracle3_upstream_parity.py",
+        "before": "ABSENT",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_official_sdk_public_probe.py",
+        "before": "EXISTING DATE-EXPIRED NEGATIVE TEST",
+        "after": "Repair one acquisition-time contradiction test setup with start strictly after receipt acquired_end_utc; keep expected ACQUISITION_TIME_CONFLICT and do not touch product.",
+        "change_authorized": true,
+        "compatibility_requirement": "Narrow historical-test compatibility correction already failing on main. Never change SDK probe production code, live activation or network boundary.",
+        "authority": "KARL_EXPLICIT_ONE_TEST_COMPATIBILITY_REPAIR_ONLY"
+      },
+      {
+        "surface": "docs/oracle3_upstream_reuse_contract.md",
+        "before": "ABSENT",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-ORACLE-UPSTREAM-01.md",
+        "before": "ABSENT",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "EXISTING",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-ORACLE-UPSTREAM-01/wp_spec.json",
+        "before": "ABSENT",
+        "after": "Dedicated offline upstream Oracle3 consumer, tests or truthful required documentation, preserving all prior native byte identities",
+        "change_authorized": true,
+        "compatibility_requirement": "Real pinned upstream source and actual invocation; REL-01/SRC-01 unchanged. No default fees, automated trade/strategy/PAper or live authority, no real GET, no provider or deployment. All 36 IDs retained.",
+        "authority": "KARL_EXPLICIT_SOURCE_COPY_AUTH_IF_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight exact upstream code reuse, native consumer, parity, safety and review obligations.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Fetch exactly the pinned Oracle3 upstream commit and vendor the five original files unchanged, checking the five Git blob IDs; preserve the Apache-2.0 LICENSE and NOTICE with their mixed MIT ancestry and conduct license/security/import-closure audit BEFORE copying source. The upstream package __init__ and two modules are the only admitted Python sources; no complete Oracle3 install or transitive SDK, exchange, MCP or wallet imports.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fetch exactly the pinned Oracle3 upstream commit and vendor the five original files unchanged, checking the five Git blob IDs; preserve the Apache-2.0 LICENSE and NOTICE with their mixed MIT ancestry and conduct license/security/import-closure audit BEFORE copying source. The upstream package __init__ and two modules are the only admitted Python sources; no complete Oracle3 install or transitive SDK, exchange, MCP or wallet imports.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Actual production bridge imports oracle3.arbitrage.Quote/check_constraint and oracle3.fees.PolymarketSchedule/KalshiSchedule from those byte-verified local upstream modules, and invokes check_constraint for eligible native S10-R3-REL-01 models. Prove runtime invocation with a test spy or equivalent, not merely an import and never a rewritten check_constraint approximation. The relocated, verbatim source is invoked using a minimal pinned importlib package alias for oracle3, without sys.path mutation or conflicting sys.modules overwrites; loader rejects foreign oracle3 module collisions and tests prove actual upstream check_constraint invocation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Actual production bridge imports oracle3.arbitrage.Quote/check_constraint and oracle3.fees.PolymarketSchedule/KalshiSchedule from those byte-verified local upstream modules, and invokes check_constraint for eligible native S10-R3-REL-01 models. Prove runtime invocation with a test spy or equivalent, not merely an import and never a rewritten check_constraint approximation. The relocated, verbatim source is invoked using a minimal pinned importlib package alias for oracle3, without sys.path mutation or conflicting sys.modules overwrites; loader rejects foreign oracle3 module collisions and tests prove actual upstream check_constraint invocation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One bounded offline CLI run/verify cold-verifies a genuine S10-R3-REL-01 receipt with the unchanged native REL.verify, reads its frozen model/fee/venue evidence read-only, then emits a separate content-addressed receipt. The native candidate/model provenance and existing Payout/fee/ask-sweep authorities are preserved. No modifications to existing REL, SRC-01, PIT, Alpha or execution-feasibility modules.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One bounded offline CLI run/verify cold-verifies a genuine S10-R3-REL-01 receipt with the unchanged native REL.verify, reads its frozen model/fee/venue evidence read-only, then emits a separate content-addressed receipt. The native candidate/model provenance and existing Payout/fee/ask-sweep authorities are preserved. No modifications to existing REL, SRC-01, PIT, Alpha or execution-feasibility modules.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only compare explicitly modeled and supported relation family/side/size with validated distinct contract identifiers, admissible native model, usable known quote and explicit contemporaneously admissible fee configuration. No default_schedule, category fallback, zero fee inferred, stale fee policy, guessed YES token, unknown, void or cancelled settlement, missing leg, future data, cross-venue unverified equivalence, binary/nonbinary uncertainty or synthetic label may be treated as executable evidence; any such case abstains or is flagged conditional.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only compare explicitly modeled and supported relation family/side/size with validated distinct contract identifiers, admissible native model, usable known quote and explicit contemporaneously admissible fee configuration. No default_schedule, category fallback, zero fee inferred, stale fee policy, guessed YES token, unknown, void or cancelled settlement, missing leg, future data, cross-venue unverified equivalence, binary/nonbinary uncertainty or synthetic label may be treated as executable evidence; any such case abstains or is flagged conditional.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Run meaningful upstream-aligned deterministic regression against pinned tests/test_arbitrage.py and tests/test_fees.py (not vendored into production); exercise all five relations, explicit Polymarket and Kalshi fee schedules, fee-erases-edge, size scaling, duplicate contracts, missing quotes, invalid/nonfinite values, and unknown fee; report every eligible/abstained/mismatched denominator, truthfully retain systematic float vs native Decimal differences, and never tune native data or assert live trading lift.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Run meaningful upstream-aligned deterministic regression against pinned tests/test_arbitrage.py and tests/test_fees.py (not vendored into production); exercise all five relations, explicit Polymarket and Kalshi fee schedules, fee-erases-edge, size scaling, duplicate contracts, missing quotes, invalid/nonfinite values, and unknown fee; report every eligible/abstained/mismatched denominator, truthfully retain systematic float vs native Decimal differences, and never tune native data or assert live trading lift.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A bounded sanitized write-once receipt binds original REL receipt id, read-only frozen source hashes, upstream commit/blob hashes, native CLI/adapter identities, actual check_constraint invocation counts, per-case conditional verdicts and abstention reasons. Cold verify reruns the real upstream logic with sockets blocked, recomputes receipt and flags tampering. Same inputs yield IDEMPOTENT_VERIFIED; changed input or partially written output stops without network or overwrite.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A bounded sanitized write-once receipt binds original REL receipt id, read-only frozen source hashes, upstream commit/blob hashes, native CLI/adapter identities, actual check_constraint invocation counts, per-case conditional verdicts and abstention reasons. Cold verify reruns the real upstream logic with sockets blocked, recomputes receipt and flags tampering. Same inputs yield IDEMPOTENT_VERIFIED; changed input or partially written output stops without network or overwrite.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exercise offline socket attempts, unexpected module imports, symlink/reparse/hardlink/relative/out-of-repo/oversize input, mutated Git blobs, missing/expired fee policy, malformed market orientation, duplicate ID, missing price, NaN/Inf, stale source and receipt tampering. No secrets/raw paths/headers leak in output; no live SDK, protected orders, paper, capital or trading authority. Reject foreign oracle3 sys.modules alias conflicts and attempts to load from an unpinned path; hash-check upstream source and license bytes before import.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exercise offline socket attempts, unexpected module imports, symlink/reparse/hardlink/relative/out-of-repo/oversize input, mutated Git blobs, missing/expired fee policy, malformed market orientation, duplicate ID, missing price, NaN/Inf, stale source and receipt tampering. No secrets/raw paths/headers leak in output; no live SDK, protected orders, paper, capital or trading authority. Reject foreign oracle3 sys.modules alias conflicts and attempts to load from an unpinned path; hash-check upstream source and license bytes before import.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Preserve all 36 adoption IDs and PR #268 ownership without automatic closure. Ponytail LITE is first actual skill; invoke mandatory/material skills, native RUNTIME readiness before branch, final diff/scope/readiness, full Linux and hosted Windows/Linux CI and security, exact posted PR evidence, one coherent PR and one consolidated CC completion/blocker ZIP. No merge or real network request. Keep source reuse class separate from operational value and owner acceptance. Include the single pre-existing SDK-probe time-assertion compatibility repair and prove it on the final head; require an actually successful full-history gitleaks scan, and a clean reachable branch history without scanner allowlist changes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Preserve all 36 adoption IDs and PR #268 ownership without automatic closure. Ponytail LITE is first actual skill; invoke mandatory/material skills, native RUNTIME readiness before branch, final diff/scope/readiness, full Linux and hosted Windows/Linux CI and security, exact posted PR evidence, one coherent PR and one consolidated CC completion/blocker ZIP. No merge or real network request. Keep source reuse class separate from operational value and owner acceptance. Include the single pre-existing SDK-probe time-assertion compatibility repair and prove it on the final head; require an actually successful full-history gitleaks scan, and a clean reachable branch history without scanner allowlist changes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; CONDITIONAL_NOT_TRADABLE; FEE_UNKNOWN_ABSTAINS; NO_PUBLIC_NETWORK_OR_TRADING; OWNER_ACCEPTANCE_PENDING",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No prior canonical PIT, SRC or REL identities are changed; isolated new content-addressed derived receipt is versioned and checked separately.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Native RUNTIME deterministic readiness and first-person owner source-copy authorization; no product network or execution authority.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Clean synchronized main exactly e9099c438ddf779a4ae4d6438c8d5923bd6eceec, PR277 merged at 7492d96694f5eb4bf64e00615b8378819476744c, PR268 untouched; source/license pin audit and final exact prompt/spec native RUNTIME readiness exit 0 before branching.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly sends the first-person CC bootstrap for exact five-file audited Oracle3 source copying and offline invocation only. No real SDK GET, live/provider/Hermes, execution, or merge authority. Karl additionally authorizes the single existing SDK-probe pytest repair and precisely targeted --force-with-lease update of ONLY PR278 branch if old head matches, to remove the original false-positive wording from reachable commit history; NO scanner allowlist change.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Only fourteen changed paths, exact upstream bytes/provenance, real upstream callable over cold-verified native REL, R001-R008 tests, all required full/hosted checks, posted PR evidence, one CC ZIP; no public GET or protected activation.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Upstream-aligned pytest positive/negative vectors and genuine native REL receipt consumer are canonical executable examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight named executable tests cover all concrete requirements; native gate and exact-head hosted CI prove full compatibility.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_oracle3_exact_upstream_source_and_licenses",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_exact_upstream_source_and_licenses",
+        "expected_result": "Fetch exactly the pinned Oracle3 upstream commit and vendor the five original files unchanged, checking the five Git blob IDs; preserve the Apache-2.0 LICENSE and NOTICE with their mixed MIT ancestry and conduct license/security/import-closure audit BEFORE copying source. The upstream package __init__ and two modules are the only admitted Python sources; no complete Oracle3 install or transitive SDK, exchange, MCP or wallet imports."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_oracle3_real_check_constraint_invoked",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_real_check_constraint_invoked",
+        "expected_result": "Actual production bridge imports oracle3.arbitrage.Quote/check_constraint and oracle3.fees.PolymarketSchedule/KalshiSchedule from those byte-verified local upstream modules, and invokes check_constraint for eligible native S10-R3-REL-01 models. Prove runtime invocation with a test spy or equivalent, not merely an import and never a rewritten check_constraint approximation."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_oracle3_verified_native_rel_cold_consumer",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_verified_native_rel_cold_consumer",
+        "expected_result": "One bounded offline CLI run/verify cold-verifies a genuine S10-R3-REL-01 receipt with the unchanged native REL.verify, reads its frozen model/fee/venue evidence read-only, then emits a separate content-addressed receipt. The native candidate/model provenance and existing Payout/fee/ask-sweep authorities are preserved. No modifications to existing REL, SRC-01, PIT, Alpha or execution-feasibility modules."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_oracle3_known_fee_conditional_abstentions",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_known_fee_conditional_abstentions",
+        "expected_result": "Only compare explicitly modeled and supported relation family/side/size with validated distinct contract identifiers, admissible native model, usable known quote and explicit contemporaneously admissible fee configuration. No default_schedule, category fallback, zero fee inferred, stale fee policy, guessed YES token, unknown, void or cancelled settlement, missing leg, future data, cross-venue unverified equivalence, binary/nonbinary uncertainty or synthetic label may be treated as executable evidence; any such case abstains or is flagged conditional."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_oracle3_upstream_aligned_relation_and_fee_vectors",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_upstream_aligned_relation_and_fee_vectors",
+        "expected_result": "Run meaningful upstream-aligned deterministic regression against pinned tests/test_arbitrage.py and tests/test_fees.py (not vendored into production); exercise all five relations, explicit Polymarket and Kalshi fee schedules, fee-erases-edge, size scaling, duplicate contracts, missing quotes, invalid/nonfinite values, and unknown fee; report every eligible/abstained/mismatched denominator, truthfully retain systematic float vs native Decimal differences, and never tune native data or assert live trading lift."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_oracle3_receipt_cold_verify_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_receipt_cold_verify_and_tamper",
+        "expected_result": "A bounded sanitized write-once receipt binds original REL receipt id, read-only frozen source hashes, upstream commit/blob hashes, native CLI/adapter identities, actual check_constraint invocation counts, per-case conditional verdicts and abstention reasons. Cold verify reruns the real upstream logic with sockets blocked, recomputes receipt and flags tampering. Same inputs yield IDEMPOTENT_VERIFIED; changed input or partially written output stops without network or overwrite."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_oracle3_security_and_negative_matrix",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_security_and_negative_matrix",
+        "expected_result": "Exercise offline socket attempts, unexpected module imports, symlink/reparse/hardlink/relative/out-of-repo/oversize input, mutated Git blobs, missing/expired fee policy, malformed market orientation, duplicate ID, missing price, NaN/Inf, stale source and receipt tampering. No secrets/raw paths/headers leak in output; no live SDK, protected orders, paper, capital or trading authority."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_oracle3_governance_no_authority_and_36_ids",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_oracle3_upstream_parity.py::test_oracle3_governance_no_authority_and_36_ids",
+        "expected_result": "Preserve all 36 adoption IDs and PR #268 ownership without automatic closure. Ponytail LITE is first actual skill; invoke mandatory/material skills, native RUNTIME readiness before branch, final diff/scope/readiness, full Linux and hosted Windows/Linux CI and security, exact posted PR evidence, one coherent PR and one consolidated CC completion/blocker ZIP. No merge or real network request. Keep source reuse class separate from operational value and owner acceptance. Plus the SDK-probe old-failure/new-pass regression and hosted full-history secret scan success."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-REAL-SOURCE-BENCH-01",
+    "next_title": "After a separately owner-triggered genuine SDK GET, replay actual public bytes and measure data usefulness; real two-session Hermes cooperation remains a separate permission-gated high priority.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-ORACLE-UPSTREAM-01",
+    "forbidden_in_this_wp": [
+      "No public data calls, no real Hermes/provider use, no SDK probe execution, no credentials, network, scheduler, paper, trading, capital, deployment or owner merge authority.",
+      "Do not modify, consume, trigger or silently reauthorize the already pinned S10-R3-REAL-PUBLIC-GET-01B live activation; the one actual GET needs a distinct owner instruction.",
+      "Do not import/install the whole Oracle3 Poetry distribution, network-capable Kalshi/CLOB clients, openai-agents, MCP, auth, exchange, wallet or signing modules; use only exact pinned pure math plus fee sources and their license obligations.",
+      "Do not infer feeSchedule or outcome token orientation, use upstream default_schedule or category defaults, assume two-venue resolution rule equivalence, or represent a positive static formula as an executable or profitable trade.",
+      "Preserve all 36 R3 tracked IDs and PR268 separate, existing native REL and SRC code hashes, prior receipts, native fee-depth policy, the current single-request SDK activation and Karl-only merge.",
+      "The targeted CI closure may edit only one old SDK-probe TEST assertion, never its product runtime or owner-approved activation. No gitleaks ignore, relax, new dependency, CI config change, unrelated ref rewrite, or actual GET."
+    ]
+  }
+}
