@@ -578,13 +578,21 @@ def test_metaculus_negative_safety_and_import_collision(src, quality, tmp_path, 
     # Duplicate JSON keys / nonfinite values / invalid UTF-8 / depth in the derived receipt.
     for name, payload, code in (("dup", b'{"core": {}, "core": {}, "receipt_id": "x"}', "RECEIPT_UNREADABLE"),
                                 ("nan", b'{"core": {"x": NaN}, "receipt_id": "x"}', "RECEIPT_UNREADABLE"),
-                                ("utf8", b'{"core": "\xff"}', "RECEIPT_UNREADABLE"),
-                                ("deep", b"[" * 100000 + b"]" * 100000, "RECEIPT_UNREADABLE")):
+                                ("utf8", b'{"core": "\xff"}', "RECEIPT_UNREADABLE")):
         target = tmp_path / f"j-{name}"
         shutil.copytree(scratch, target)
         (target / "receipt.json").write_bytes(payload)
         assert MQ.main(["verify", "--scratch-dir", str(target)]) == 1
         assert json.loads(capsys.readouterr().out) == {"status": "STOPPED", "reason_code": code}, name
+    # Pathologically deep JSON fails closed either way: some CPython builds raise RecursionError while parsing
+    # (RECEIPT_UNREADABLE), others parse it and the shape check refuses it.
+    target = tmp_path / "j-deep"
+    shutil.copytree(scratch, target)
+    (target / "receipt.json").write_bytes(b"[" * 100000 + b"]" * 100000)
+    assert MQ.main(["verify", "--scratch-dir", str(target)]) == 1
+    assert json.loads(capsys.readouterr().out) in (
+        {"status": "STOPPED", "reason_code": "RECEIPT_UNREADABLE"},
+        {"status": "TAMPER_DETECTED", "failures": ["RECEIPT_SHAPE_INVALID"], "receipt_id": None, "network_attempts": 0})
     # Hash-mismatched frozen source behind a matching native receipt hash, and misaligned source rows.
     case = json.loads((src / "frozen_case.json").read_text(encoding="utf-8"))
     src_core = json.loads((src / "receipt.json").read_text(encoding="utf-8"))["core"]
