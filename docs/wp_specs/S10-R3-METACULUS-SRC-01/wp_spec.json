@@ -1,0 +1,563 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-METACULUS-SRC-01",
+    "title": "Direct upstream Metaculus source-archive quality and URL dedup on native SRC-01",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "SELECTIVE_METACULUS_SOURCE_ARCHIVE_REUSE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-metaculus-src-01",
+    "required_predecessor": {
+      "pr_number": 278,
+      "head_sha": "4ea498407b8faa78da3373cab485e521b96c0886",
+      "merge_sha": "439dcfb49884e477b3bb9a48e588ca9dc833e137"
+    },
+    "objective": "Reuse the exact pinned Metaculus forecasting-tools capture-quality and URL canonicalization source modules inside a minimal offline SRC-01 verified-source consumer; measure native/upstream quality disagreement and URL dedup without introducing a fetcher, provider, heavy forecasting dependency, new canonical policy or fake source authenticity. Keep all 36 capability commitments and zero research promotion or trading authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/metaculus_source_archive/LICENSE",
+      "src/data_layer/analytical_research/metaculus_source_archive/canonicalize.py",
+      "src/data_layer/analytical_research/metaculus_source_archive/models.py",
+      "src/data_layer/analytical_research/metaculus_source_archive/quality.py",
+      "src/data_layer/analytical_research/metaculus_source_archive_bridge.py",
+      "tools/alpha/run_metaculus_source_archive_quality.py",
+      "tests/tools/alpha/test_metaculus_source_archive_quality.py",
+      "docs/metaculus_source_archive_quality_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-METACULUS-SRC-01.md",
+      "docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/metaculus_source_archive/LICENSE",
+      "src/data_layer/analytical_research/metaculus_source_archive/canonicalize.py",
+      "src/data_layer/analytical_research/metaculus_source_archive/models.py",
+      "src/data_layer/analytical_research/metaculus_source_archive/quality.py",
+      "src/data_layer/analytical_research/metaculus_source_archive_bridge.py",
+      "tools/alpha/run_metaculus_source_archive_quality.py",
+      "tests/tools/alpha/test_metaculus_source_archive_quality.py",
+      "docs/metaculus_source_archive_quality_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-METACULUS-SRC-01.md",
+      "docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "src/data_layer/polymarket/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 12,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly 12 changed paths; leave the existing S10-R3-SRC-01 quality and canonical source admission, native PIT/Alpha and historical receipts unchanged. The four vendored upstream files are passive and invoked only by the new opt-in offline research CLI.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Exactly 12 bounded paths: four verbatim MIT upstream bytes, one thin bridge, one finite offline native SRC consumer, tests and evidence; no runtime dependency edit.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/metaculus_source_archive/LICENSE",
+        "before": "ABSENT",
+        "after": "Verbatim frozen MIT upstream source or license file; 4 exact blob pins, imported only after byte verification",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "KARL_EXPLICIT_MIT_COPY_AUTHORIZED_WHEN_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/metaculus_source_archive/canonicalize.py",
+        "before": "ABSENT",
+        "after": "Verbatim frozen MIT upstream source or license file; 4 exact blob pins, imported only after byte verification",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "KARL_EXPLICIT_MIT_COPY_AUTHORIZED_WHEN_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/metaculus_source_archive/models.py",
+        "before": "ABSENT",
+        "after": "Verbatim frozen MIT upstream source or license file; 4 exact blob pins, imported only after byte verification",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "KARL_EXPLICIT_MIT_COPY_AUTHORIZED_WHEN_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/metaculus_source_archive/quality.py",
+        "before": "ABSENT",
+        "after": "Verbatim frozen MIT upstream source or license file; 4 exact blob pins, imported only after byte verification",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "KARL_EXPLICIT_MIT_COPY_AUTHORIZED_WHEN_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/metaculus_source_archive_bridge.py",
+        "before": "ABSENT",
+        "after": "Verbatim frozen MIT upstream source or license file; 4 exact blob pins, imported only after byte verification",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "KARL_EXPLICIT_MIT_COPY_AUTHORIZED_WHEN_BOOTSTRAP_SENT_OFFLINE_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_metaculus_source_archive_quality.py",
+        "before": "ABSENT",
+        "after": "Finite offline run/verify over SRC-01 receipt with read-only derived quality comparison and content-addressed receipt",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "LOCAL_OFFLINE_RESEARCH"
+      },
+      {
+        "surface": "tests/tools/alpha/test_metaculus_source_archive_quality.py",
+        "before": "ABSENT",
+        "after": "Eight executable R001-R008 test families covering real upstream invocation, parity, temporal and security refusals",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "LOCAL_OFFLINE_RESEARCH"
+      },
+      {
+        "surface": "docs/metaculus_source_archive_quality_contract.md",
+        "before": "ABSENT",
+        "after": "Normative package/evidence/status of bounded selective upstream reuse; no implied source-origin or value acceptance",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "DOCS_ONLY"
+      },
+      {
+        "surface": "docs/deferred_items_log.md",
+        "before": "EXISTING",
+        "after": "Truthfully record partial offline upstream reuse, real source/value gaps and the still-unconsumed GET",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "DOCS_ONLY"
+      },
+      {
+        "surface": "docs/status_entries/S10-R3-METACULUS-SRC-01.md",
+        "before": "ABSENT",
+        "after": "Normative package/evidence/status of bounded selective upstream reuse; no implied source-origin or value acceptance",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "DOCS_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_prompt.txt",
+        "before": "ABSENT",
+        "after": "Normative package/evidence/status of bounded selective upstream reuse; no implied source-origin or value acceptance",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "DOCS_ONLY"
+      },
+      {
+        "surface": "docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_spec.json",
+        "before": "ABSENT",
+        "after": "Normative package/evidence/status of bounded selective upstream reuse; no implied source-origin or value acceptance",
+        "change_authorized": true,
+        "compatibility_requirement": "Source/pit/admission hashes and current SDK activation unchanged; no new fetchers, provider, credentials, network or trading; preserve all 36 IDs.",
+        "authority": "DOCS_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight bounded and testable upstream-first source-quality requirements; native source admission remains canonical.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Copy exactly four byte-identical files from the frozen Metaculus MIT source; verify their four Git blob SHA-1 identities, LICENSE and imports before copying or executing, and preserve unmodified files in the approved src tree. Do not install the complete forecasting-tools package.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Copy exactly four byte-identical files from the frozen Metaculus MIT source; verify their four Git blob SHA-1 identities, LICENSE and imports before copying or executing, and preserve unmodified files in the approved src tree. Do not install the complete forecasting-tools package.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "The native bridge must execute the exact vendored canonicalize_url, models.CaptureResult, models.url_hash/content_hash, and quality.evaluate on frozen native source bytes. Prove real pinned upstream callable invocation, not a hand-coded equivalent, fake, or a test-only import.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The native bridge must execute the exact vendored canonicalize_url, models.CaptureResult, models.url_hash/content_hash, and quality.evaluate on frozen native source bytes. Prove real pinned upstream callable invocation, not a hand-coded equivalent, fake, or a test-only import.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A finite offline run/verify CLI must cold-verify an existing S10-R3-SRC-01 scratch, consume its frozen source entries and bytes read-only, and produce one derived source-quality comparison receipt without modifying any historical native source admission, PIT or Alpha records.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A finite offline run/verify CLI must cold-verify an existing S10-R3-SRC-01 scratch, consume its frozen source entries and bytes read-only, and produce one derived source-quality comparison receipt without modifying any historical native source admission, PIT or Alpha records.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Per source, pass the same SRC-01 visible-text view to the upstream evaluator via the upstream CaptureResult, keep exact native HTTP admissibility and temporal decisions as controlling, and compare the two quality gates. Preserve upstream URL normalization/hash separately from native URL safety, dedup and source provenance; never promote caller-local bytes to authenticated web evidence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Per source, pass the same SRC-01 visible-text view to the upstream evaluator via the upstream CaptureResult, keep exact native HTTP admissibility and temporal decisions as controlling, and compare the two quality gates. Preserve upstream URL normalization/hash separately from native URL safety, dedup and source provenance; never promote caller-local bytes to authenticated web evidence.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Benchmark pinned upstream vectors: HTTP 2xx vs 4xx, redirects and no-status, thin content, block-page signatures, login/interstitial variants, Unicode and HTML, canonicalization of tracking parameters/fragments/query order/trailing slash, same/different content and URL hashes, plus native disagreements. Report exact eligible, abstained and divergent denominators, without claiming real quality lift.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Benchmark pinned upstream vectors: HTTP 2xx vs 4xx, redirects and no-status, thin content, block-page signatures, login/interstitial variants, Unicode and HTML, canonicalization of tracking parameters/fragments/query order/trailing slash, same/different content and URL hashes, plus native disagreements. Report exact eligible, abstained and divergent denominators, without claiming real quality lift.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Write one bounded, content-addressed, read-only derived receipt with native SRC-01 receipt ID, hashes of every copied source and capture, upstream commit/blobs, exact callable invocations and per-source outcomes. Cold verify must re-invoke real upstream code with sockets blocked, recompute bytes, detect tampering, allow identical replay, and refuse changed input/partially written scratch.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Write one bounded, content-addressed, read-only derived receipt with native SRC-01 receipt ID, hashes of every copied source and capture, upstream commit/blobs, exact callable invocations and per-source outcomes. Cold verify must re-invoke real upstream code with sockets blocked, recompute bytes, detect tampering, allow identical replay, and refuse changed input/partially written scratch.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Fail closed on wrong source blobs, missing license, foreign preloaded aliases, unapproved imported modules, unsafe paths, symlink/reparse/hardlink, size/depth/count limits, duplicate JSON keys, nonfinite values, invalid UTF-8, secret-shaped fields, future capture/source clocks, false provenance and socket attempts. Never print source URLs, body text, local paths or credential material.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Fail closed on wrong source blobs, missing license, foreign preloaded aliases, unapproved imported modules, unsafe paths, symlink/reparse/hardlink, size/depth/count limits, duplicate JSON keys, nonfinite values, invalid UTF-8, secret-shaped fields, future capture/source clocks, false provenance and socket attempts. Never print source URLs, body text, local paths or credential material.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Keep all 29 repositories and 36 distinct capability IDs including R3-01 and R3-01-SOURCE_ARCHIVE. Declare this only SELECTIVE_UPSTREAM_CODE_REUSE_OFFLINE with owner value acceptance pending. Preserve PR268 separate, SDK public GET unconsumed, and all protected authority. Ponytail LITE must be first actual skill after startup; native gate, mandatory skills, 8 focused tests, full suite, security, exact-head hosted CI and posted PR evidence precede one CC return ZIP, not a merge.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Keep all 29 repositories and 36 distinct capability IDs including R3-01 and R3-01-SOURCE_ARCHIVE. Declare this only SELECTIVE_UPSTREAM_CODE_REUSE_OFFLINE with owner value acceptance pending. Preserve PR268 separate, SDK public GET unconsumed, and all protected authority. Ponytail LITE must be first actual skill after startup; native gate, mandatory skills, 8 focused tests, full suite, security, exact-head hosted CI and posted PR evidence precede one CC return ZIP, not a merge.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "SOURCE_ARCHIVE_UPSTREAM_SOURCE_REUSED; OFFLINE_RESEARCH_ONLY; NATIVE_ADMISSION_UNCHANGED; SOURCE_ORIGIN_UNVERIFIED; OWNER_VALUE_PENDING; NO_TRADING",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Existing native SRC, PIT and Alpha identities remain unchanged; derived quality receipt is independent and append-only.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "RUNTIME deterministic native readiness and first-person owner authorization for only four pinned MIT source files; zero product network.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Clean synchronized origin/main exactly 439dcfb49884e477b3bb9a48e588ca9dc833e137; PR278 head 4ea498407b8faa78da3373cab485e521b96c0886 merged; PR268 separate; verify four upstream Git blob pins and MIT license; final exact prompt/spec native RUNTIME readiness exit 0 before new branch/source changes.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sends first-person CC bootstrap explicitly authorizing copying only four source/license files from Metaculus/forecasting-tools@a54dd6443d19745b267e99a3b0b7627e74b9a57a, and the remaining eight native documentation/tool/test files; no network product calls, Hermes, provider, protected modes, strategy or merge authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Only 12 exact paths; real upstream quality.evaluate, canonicalize_url and models URL/content hash invoked on cold-verified SRC-01 frozen sources; R001-R008, receipts and replay, full suite, secret scan, exact-head hosted CI, one PR and one CC return ZIP.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Preserve native fixed WP159 failure priority; application refusal ordering is defined separately in the contract, never a second WP gate precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Named upstream vector and native-source tests R001-R008 are the executable examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Eight named pytest acceptance tests plus full suite and exact-head CI; native gate before implementation.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_metaculus_exact_source_license_and_dependency_closure",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_exact_source_license_and_dependency_closure",
+        "expected_result": "Copy exactly four byte-identical files from the frozen Metaculus MIT source; verify their four Git blob SHA-1 identities, LICENSE and imports before copying or executing, and preserve unmodified files in the approved src tree. Do not install the complete forecasting-tools package."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_metaculus_actual_vendor_functions_invoked",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_actual_vendor_functions_invoked",
+        "expected_result": "The native bridge must execute the exact vendored canonicalize_url, models.CaptureResult, models.url_hash/content_hash, and quality.evaluate on frozen native source bytes. Prove real pinned upstream callable invocation, not a hand-coded equivalent, fake, or a test-only import."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_metaculus_verified_src01_native_source_consumer",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_verified_src01_native_source_consumer",
+        "expected_result": "A finite offline run/verify CLI must cold-verify an existing S10-R3-SRC-01 scratch, consume its frozen source entries and bytes read-only, and produce one derived source-quality comparison receipt without modifying any historical native source admission, PIT or Alpha records."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_metaculus_quality_url_dedup_and_native_admission_boundaries",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_quality_url_dedup_and_native_admission_boundaries",
+        "expected_result": "Per source, pass the same SRC-01 visible-text view to the upstream evaluator via the upstream CaptureResult, keep exact native HTTP admissibility and temporal decisions as controlling, and compare the two quality gates. Preserve upstream URL normalization/hash separately from native URL safety, dedup and source provenance; never promote caller-local bytes to authenticated web evidence."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_metaculus_upstream_aligned_quality_and_canonicalization_vectors",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_upstream_aligned_quality_and_canonicalization_vectors",
+        "expected_result": "Benchmark pinned upstream vectors: HTTP 2xx vs 4xx, redirects and no-status, thin content, block-page signatures, login/interstitial variants, Unicode and HTML, canonicalization of tracking parameters/fragments/query order/trailing slash, same/different content and URL hashes, plus native disagreements. Report exact eligible, abstained and divergent denominators, without claiming real quality lift."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_metaculus_receipt_cold_verify_idempotency_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_receipt_cold_verify_idempotency_and_tamper",
+        "expected_result": "Write one bounded, content-addressed, read-only derived receipt with native SRC-01 receipt ID, hashes of every copied source and capture, upstream commit/blobs, exact callable invocations and per-source outcomes. Cold verify must re-invoke real upstream code with sockets blocked, recompute bytes, detect tampering, allow identical replay, and refuse changed input/partially written scratch."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_metaculus_negative_safety_and_import_collision",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_negative_safety_and_import_collision",
+        "expected_result": "Fail closed on wrong source blobs, missing license, foreign preloaded aliases, unapproved imported modules, unsafe paths, symlink/reparse/hardlink, size/depth/count limits, duplicate JSON keys, nonfinite values, invalid UTF-8, secret-shaped fields, future capture/source clocks, false provenance and socket attempts. Never print source URLs, body text, local paths or credential material."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_metaculus_authority_and_preserved_36_capability_ids",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_metaculus_source_archive_quality.py::test_metaculus_authority_and_preserved_36_capability_ids",
+        "expected_result": "Keep all 29 repositories and 36 distinct capability IDs including R3-01 and R3-01-SOURCE_ARCHIVE. Declare this only SELECTIVE_UPSTREAM_CODE_REUSE_OFFLINE with owner value acceptance pending. Preserve PR268 separate, SDK public GET unconsumed, and all protected authority. Ponytail LITE must be first actual skill after startup; native gate, mandatory skills, 8 focused tests, full suite, security, exact-head hosted CI and posted PR evidence precede one CC return ZIP, not a merge."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-REAL-SOURCE-BENCH-01",
+    "next_title": "When separately owner-triggered public SDK receipt exists, run real-source quality evaluation and honest source/forecast benefit benchmark; actual controlled Hermes specialists remain owner-gated.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-METACULUS-SRC-01",
+    "forbidden_in_this_wp": [
+      "No fetcher, browser, public GET, paid provider, LLM, Hermes or authenticated request; no network from product code.",
+      "No edit to native SRC-01 acceptance, PIT canonical records, SDK activation, Oracle3, Alpha strategy, paper, execution or live.",
+      "No whole forecasting-tools package install, dependency/lock change, Chroma/OpenAI embeddings, tracking or hidden network.",
+      "No auto-promotion of captured sources or provider content, no claim the source is true or public by caller-supplied bytes.",
+      "Keep the previously owner-approved public GET activation separately pinned and unconsumed; a deliberate later operator instruction is required.",
+      "All 36 adoption IDs retained; PR268 unconsumed, Karl alone merges and grants new material permissions."
+    ]
+  }
+}

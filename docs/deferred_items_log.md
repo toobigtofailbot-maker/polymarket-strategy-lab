@@ -1,5 +1,13 @@
 # Deferred Items Log
 
+## S10-R3-METACULUS-SRC-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-R3-METACULUS-SRC-01-D001 | Upstream Metaculus `quality.evaluate` and URL/content hashes run only on caller-local SRC-01 bytes (SANITIZED_SYNTHETIC fixtures in tests; LOCAL_REAL_PIT is accepted but stays `CALLER_LOCAL_UNAUTHENTICATED`). No real capture, source authenticity or downstream quality lift is shown | NOT_VALUE_VERIFIED | P1 | A separately owner-triggered real source capture (the pinned PR #277 public GET, still unconsumed) and an independent usefulness benchmark, then Karl acceptance | Adoption state `SELECTIVE_UPSTREAM_CODE_REUSE_OFFLINE` / `OPERATIONAL_USEFULNESS_NOT_VERIFIED` for R3-01 and R3-01-SOURCE_ARCHIVE; `promoted_by_upstream` 0, `authenticated_web_evidence` 0; native SRC-01 admission unchanged and controlling |
+| S10-R3-METACULUS-SRC-01-D002 | Upstream and native quality gates differ by design: upstream passes 1xx/3xx/absent statuses (it only fails `>= 400`) and has no login-wall rule; native passes 2xx only and fails login walls. Native also rejects URLs with a `#fragment`, which upstream would canonicalize | RECORDED_LIMITATION | P2 | None required: native stays controlling; any future use of the upstream verdict needs its own reviewed WP | Every divergence is a per-source `agreement` value and counted (`divergent_total`, `divergent_non_2xx_upstream_pass`); upstream never promotes a source |
+| S10-R3-METACULUS-SRC-01-D003 | Vendored bytes are checked against LF Git blobs, so a CRLF checkout fails closed (`UPSTREAM_BLOB_MISMATCH`), as with the Oracle3 vendor | RECORDED_LIMITATION | P3 | Use an LF checkout (CI pins `core.autocrlf false`) | Fail-closed; no upstream code runs from unverified bytes |
+
 ## S10-R3-ORACLE-UPSTREAM-01 deferred items
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
