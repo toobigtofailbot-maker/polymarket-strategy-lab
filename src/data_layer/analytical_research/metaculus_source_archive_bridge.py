@@ -26,7 +26,7 @@ import stat
 import sys
 
 from src.data_layer.analytical_research import source_grounding as SG
-from src.data_layer.analytical_research.oracle3_upstream_bridge import PROGRAM_CAPABILITY_IDS
+from src.data_layer.analytical_research.oracle3_upstream_bridge import PROGRAM_CAPABILITY_IDS  # noqa: F401 - re-exported (36 ids)
 
 UPSTREAM_REPOSITORY = "Metaculus/forecasting-tools"
 UPSTREAM_COMMIT = "a54dd6443d19745b267e99a3b0b7627e74b9a57a"
@@ -54,6 +54,9 @@ FETCHER_LABEL = "native-src01-frozen-local-bytes"
 # Only sources that passed every native pre-quality gate reach upstream; everything else abstains.
 NATIVE_EVALUABLE = ("ACCEPTED", "QUALITY_FAILED", "DEDUPED")
 NATIVE_QUALITY_PASS = ("ACCEPTED", "DEDUPED")
+# (upstream passed, native quality passed) -> agreement label
+AGREEMENT = {(True, True): "AGREE_PASS", (False, False): "AGREE_FAIL",
+             (True, False): "UPSTREAM_PASS_NATIVE_FAIL", (False, True): "UPSTREAM_FAIL_NATIVE_PASS"}
 INVOKED = ("canonicalize.canonicalize_url", "models.CaptureResult", "models.CaptureResult.content_hash",
            "models.url_hash", "models.content_hash", "quality.evaluate")
 REUSED_CAPABILITIES = ("R3-01", "R3-01-SOURCE_ARCHIVE")
@@ -236,11 +239,9 @@ def assess_source(entry: dict, native: dict, raw: bytes, upstream: tuple, calls:
     calls["models.CaptureResult.content_hash"] += 1
     capture_hash = capture.content_hash
     passed = bool(verdict.passed)
-    native_pass = out["native_quality_pass"]
-    agreement = ("AGREE_PASS" if passed and native_pass else "AGREE_FAIL" if not passed and not native_pass
-                 else "UPSTREAM_PASS_NATIVE_FAIL" if passed else "UPSTREAM_FAIL_NATIVE_PASS")
     return dict(out, verdict="UPSTREAM_EVALUATED", http_status=status, http_status_class=f"{status // 100}xx",
-                upstream_passed=passed, upstream_reason=verdict.reason or None, agreement=agreement, url_hash=url_key,
+                upstream_passed=passed, upstream_reason=verdict.reason or None,
+                agreement=AGREEMENT[(passed, out["native_quality_pass"])], url_hash=url_key,
                 url_canonical_changed=changed, upstream_content_hash_matches_native=raw_hash == native["content_sha256"],
                 capture_content_hash=capture_hash, visible_text_length=len(text))
 
