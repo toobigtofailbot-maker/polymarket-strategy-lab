@@ -48,4 +48,16 @@ Contract: `docs/metaculus_source_archive_quality_contract.md`.
 
 ## Validation state
 
-Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body, not here.
+VALIDATED on implementation commit `99f8e81824c50b423f66b97f8a6fac7b1f136ca2` (after `6b2643b`); the next commit
+changes only this status record. Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body.
+
+- **Native gates on `99f8e81`:** diff gate (`--check-diff --base origin/main --head HEAD`) exit 0, `IMPLEMENTATION_READY`,
+  scope 12; exact-scope helper exit 0, 0 warnings; generated-artifact guard passed; ruff clean on the new code.
+- **Named tests (Windows host, Python 3.14):** all 8 R001-R008 evidence-plan nodes pass. Native neighbours
+  (source grounding, Oracle3 parity, related-market, architecture boundaries) 97 passed.
+- **Full suite (Linux):** docker image `s10-canary-siwc-validation:20261024` (`/usr/local/bin/python`, Python 3.12.14,
+  pydantic 2.13.5), `--network none --read-only`, tmpfs `/tmp` and HOME, disposable LF clone at `99f8e81` with
+  `origin/main` = `439dcfb`: 14744 passed, 15 skipped, 0 failed. A first attempt reported 38 environment-only failures
+  (git `safe.directory` ownership, missing `origin/main` ref, read-only repo mount); fixed in the harness, no code change.
+- **Security:** independent security sub-review found nothing at confidence >= 8; boundary review BOUNDARY_INTACT;
+  upstream blobs verified in the committed tree; no `.gitleaksignore`, scanner, CI, dependency or lockfile change.
