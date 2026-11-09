@@ -48,8 +48,15 @@ Contract: `docs/metaculus_source_archive_quality_contract.md`.
 
 ## Validation state
 
-VALIDATED on implementation commit `99f8e81824c50b423f66b97f8a6fac7b1f136ca2` (after `6b2643b`); the next commit
-changes only this status record. Exact-head hosted checks, evidence mode and the Ready decision belong in the PR body.
+VALIDATED on implementation commit `99f8e81824c50b423f66b97f8a6fac7b1f136ca2` (after `6b2643b`), plus test-only
+commit `c132b532f07fbc8fdb0b6628b758dc38236266b5`; the commit after it changes only this status record. Exact-head
+hosted checks, evidence mode and the Ready decision belong in the PR body.
+
+- **Hosted CI repair (`c132b53`):** hosted run `42545679012` on the earlier head `030cf0b` failed one node on
+  ubuntu py3.14 only. That CPython build parses a 100000-deep JSON array without `RecursionError`, so the receipt
+  fails the shape check (`TAMPER_DETECTED` / `RECEIPT_SHAPE_INVALID`) instead of the parse (`RECEIPT_UNREADABLE`). Both
+  are fail-closed; the test now accepts either. No production code changed. The test file passes on Windows py3.14
+  and Linux py3.12 (docker).
 
 - **Native gates on `99f8e81`:** diff gate (`--check-diff --base origin/main --head HEAD`) exit 0, `IMPLEMENTATION_READY`,
   scope 12; exact-scope helper exit 0, 0 warnings; generated-artifact guard passed; ruff clean on the new code.
