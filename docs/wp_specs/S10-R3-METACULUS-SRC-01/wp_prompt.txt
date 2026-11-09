@@ -1,0 +1,160 @@
+Package Identity:
+  WP ID: S10-R3-METACULUS-SRC-01
+  Title: Pinned Metaculus source-archive quality and URL canonicalization reuse in native SRC-01
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-r3-metaculus-src-01
+  Package class: SELECTIVE_METACULUS_SOURCE_ARCHIVE_REUSE
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED
+  Runtime impact: LOCAL_OFFLINE_RESEARCH_ONLY
+  Product impact: DERIVED_SOURCE_QUALITY_COMPARISON_NO_CANONICAL_CHANGE
+  Network impact: NO_PRODUCT_NETWORK
+  Credential impact: NONE
+  Dependency impact: NONE_NO_INSTALL
+  Trading impact: NONE
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High for source, import and strict-native consumer integration; normal for routine repairs.
+  Reason: upstream bytes and real functions must be invoked without weakening SRC-01.
+  Escalate to higher reasoning or STOP if: source license/closure fails, pydantic is unavailable, a protected edit is necessary or native readiness cannot pass.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+## Objective / direct upstream decision
+This is NOT a new source fetcher, ranking engine, prediction framework or another paraphrased quality heuristic. The repo already has an offline SRC-01 native source-quality gate inspired by Metaculus but never used Metaculus software. Import and actually invoke pinned Metaculus source-archive `quality.evaluate`, `models.CaptureResult`, `models.url_hash` and `models.content_hash`, and `canonicalize.canonicalize_url` on byte-frozen source records from an existing cold-verified native S10-R3-SRC-01 receipt. Compare decisions and URL/content dedup keys with the existing SRC results; do not replace native source admission, market selection or evidence policy. Upstream method class on completion: SELECTIVE_UPSTREAM_CODE_REUSE_OFFLINE, operational usefulness NOT_VERIFIED unless independently demonstrated.
+
+Source pin `Metaculus/forecasting-tools@a54dd6443d19745b267e99a3b0b7627e74b9a57a` (MIT). Exact upstream SHA-1 Git blobs and read-only imports are in UPSTREAM_SOURCE_PINS_AND_FEASIBILITY.md. Install no new package. `polymarket-client==0.10.0`, already pinned, declares pydantic>=2,<3 transitively; confirm this is available in the actual CC/test environment and do not silently add a dependency. The complete forecasting-tools package has many unrelated paid/browser/model dependencies and is out of scope. Only three exact original Python modules and their MIT LICENSE are copied; preserve their source bytes and license without edits.
+
+## Authority / Non-Authority posture
+Implementation authority: YES only for the exact 12 paths below after Karl's first-person bootstrap.
+Report/export authority: YES for a single sanitized derived offline quality receipt; never canonical promotion.
+Paper authority: NO; execution authority: NO; live authority: NO; credential authority: NO.
+Runtime/scheduler authority: NO. Canonical evidence authority: only a new derived audit receipt; native PIT/Alpha/SRC authority unchanged.
+Network authority: NO product/provider/network request. Workflow git/CI and public pinned-source provenance retrieval permitted, never a data collection or model call.
+Dependency-change authority: NO. External code copying: explicitly authorized only three pinned MIT source modules and one LICENSE inside approved source tree, only after security/license/source audit.
+Reference the entire centralized `docs/ai/codex/PROTECTED_PATHS.md` boundary table. No new Hermes run, API or SDK live GET, auth, source-provider, scheduler, paper or trading capability. Do not alter the already merged one-attempt public SDK authorization or perform its call. All 36 program IDs stay owned and PR #268 remains separate.
+
+## Hard Merge Gate — required predecessor
+Predecessor PR #278 reviewed head `4ea498407b8faa78da3373cab485e521b96c0886` merged as `439dcfb49884e477b3bb9a48e588ca9dc833e137`. Do not overlap with old PR #268 or start before verifying current remote truth. Execute:
+```
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+```
+Require clean local main == origin/main == `439dcfb49884e477b3bb9a48e588ca9dc833e137`, PR #278 merged at exactly the SHA above, no conflicting/new overlapping WP branch or PR. No branch/source modifications before the real native readiness gate. If main has advanced, STOP STATE_DRIFT instead of stacking work or silently rewriting the base; report the precise blocker in one ZIP.
+
+## Exact changed-file scope — L, 12 paths
+- `src/data_layer/analytical_research/metaculus_source_archive/LICENSE`
+- `src/data_layer/analytical_research/metaculus_source_archive/canonicalize.py`
+- `src/data_layer/analytical_research/metaculus_source_archive/models.py`
+- `src/data_layer/analytical_research/metaculus_source_archive/quality.py`
+- `src/data_layer/analytical_research/metaculus_source_archive_bridge.py`
+- `tools/alpha/run_metaculus_source_archive_quality.py`
+- `tests/tools/alpha/test_metaculus_source_archive_quality.py`
+- `docs/metaculus_source_archive_quality_contract.md`
+- `docs/deferred_items_log.md`
+- `docs/status_entries/S10-R3-METACULUS-SRC-01.md`
+- `docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_prompt.txt`
+- `docs/wp_specs/S10-R3-METACULUS-SRC-01/wp_spec.json`
+Required = allowed = max 12. Do not touch the native SRC-01 source module, CLI, tests, original source receipts, Oracle3/SDK code, dependency files or old fee policies. Any required existing-test compatibility changes outside these 12 are a STOP rather than an implicit expansion. Native git/readiness source path checker must be satisfied without root package files or governance exceptions.
+
+## Source preflight and minimal loader
+Source copies:
+- `LICENSE` blob `95ca3360578732e0f3287fad707e029303427eec`.
+- `canonicalize.py` blob `7d722c69940f736b2921629de2eb8da191d3f920`.
+- `models.py` blob `08c63cd62764ae9f1b4dad7f1d40a8cd295ab2c1`.
+- `quality.py` blob `0bed34975731ae24c1a2e7222e29859ad08b5fb4`.
+Before copying, independently fetch exact commit/blob and audit LICENSE, pydantic import, zero code side effects, and the precise transitive import closure. No source patching. Use only `src/data_layer/analytical_research/metaculus_source_archive/` as destination.
+
+The upstream module absolute imports require `forecasting_tools.agents_and_tools.source_archive.canonicalize`, `.models`, and `.quality`. Implement a tiny importlib package alias in the new bridge, analogous in principle to the already merged Oracle3 verified-source loader, but with only these six fixed package/module names: `forecasting_tools`, `forecasting_tools.agents_and_tools`, `forecasting_tools.agents_and_tools.source_archive` and their three leaf modules. Package stubs must not import original heavy `source_archive/__init__.py`; it brings unrelated browser/cloud dependencies. Verify all four blob identities BEFORE executing upstream bytes. Resolve only these fixed filenames, no dynamic module discovery, sys.path changes, global import hook, foreign-module overwrite, env or network. Reject foreign module-name collisions. Do not invent a generic loader framework; one small dedicated bridge is enough. Upstream calls must be production-reachable via the new optional CLI and genuinely exercised by tests.
+
+## Native compatibility and decision table
+- Native authoritative source: `tools/alpha/run_source_grounding.py.verify(scratch)` must return `VERIFIED`; then read `frozen_case.json`, `inputs/sources/NNN.bin` and the original `receipt.json` without writes. The existing SRC-01 run freezes canonical input evidence and has source rows in its core. Determine the actual live receipt schema from repo/tests; do not guess mapping names. Use its verified source hashes to cross-check every byte; no access to arbitrary paths declared by a caller in the receipt.
+- For valid source entries, derive native visible text using the existing `source_grounding._visible_text`. Instantiate the original upstream `CaptureResult` on matching `url`, `final_url`, `status_code` and `markdown` visible text and call the original `quality.evaluate`. The originals decide upstream heuristic quality only. Native source status, temporal admissibility, URL safety, dedup and market binding remain independently reported and never silently replaced.
+- Invoke original `models.url_hash` (which invokes original `canonicalize_url`) and original `models.content_hash` for a bounded sanitized dedup counter; suppress complete URLs, content and all sensitive inputs in output. Compare canonicalized upstream URL identity with native source/market/content bindings, recording disagreements and denominators. The difference between a status 302 or 100 and upstream status>=400 logic MUST be visible; a pass is not a native ACCEPTED source.
+- Source files can be HTML, text or malformed. For malformed UTF-8, empty bytes, unsafe URL, secret-shaped input, time-after-cutoff, unknown provenance or other native refusal: do not forge quality pass, do not deserialize arbitrary caller code, and either stable abstain or record native discrepancy without promoting it. Upstream may accept text that native rejects; that must not gain authority. Upstream `quality.evaluate` uses `markdown or html`; feed the bounded native visible text, not a fake HTML extraction that changes result semantics.
+- Read-only derived receipt supports `SANITIZED_SYNTHETIC` and existing `LOCAL_REAL_PIT` input only as caller-local unauthenticated source evidence. The corpus class never upgrades origin authenticity. Real downstream quality lift, truth and admissible settlement remain NOT_VERIFIED; do not construct a new real corpus, new source URL, external fetch or synthetic market label.
+- The shared pinned SDK public GET remains unconsumed and requires another deliberate operator instruction. Do not call it as a convenience to populate this benchmark.
+
+## Context budget
+Read first: `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md`, native WP state machine, token-efficiency, security and negative-test governance files.
+Read for this WP: `docs/source_grounding_contract.md`, `source_grounding.py`, `run_source_grounding.py`, source-grounding tests (source data fixtures only), `docs/deferred_items_log.md`, `docs/security_tooling_status.md`, upstream pinned four files, `pyproject.toml`, existing Oracle3 pinned loader as a minimal reference.
+Read only if blocked: SRC-01 native PIT schema, research provenance, import loader contracts, license provenance and relevant security guard.
+Do not read/touch: out-of-scope Hermes, auth, execution, paper, wallet, deployment, runtime dependencies, provider or CCXT work.
+Fallback terms: `quality_verdict`, `source rows`, `source archive`, `url_hash`, `CaptureResult`, `SOURCE_CLOCK`, `source_grounding.verify`.
+
+## Compatibility and impossibility check
+- Direct PyPI/full-source archive import: REJECT because full package initializer imports heavy cloud, browser and agent dependencies, and would require a new dependency/authority decision.
+- Pin-and-copy three self-contained MIT upstream modules: SELECT because pydantic 2.x is already a transitive dependency of the official pinned SDK. Re-check at implementation start and STOP if not present or if security/closure differs.
+- Copying modified quality logic to avoid loader: REJECT because it repeats the prior upstream-adoption drift. The original upstream functions must be invoked.
+- Canonical SRC-01 gate replacement: REJECT because existing native source quality/temporal/provenance policy is owner-gated and has more conservative status behavior.
+- Optional derived comparison on verified SRC receipt: SELECT for real native connectivity and compatibility, no duplicate system or rewrite.
+
+## Normative rule matrix and evidence plan; report-back
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|adoption|upstream_license_and_source|specified_behavior|REQUIRE|upstream_license_and_source_verified|requirements.r001|R001
+NR002|adoption|actual_upstream_calls|specified_behavior|REQUIRE|actual_upstream_calls_verified|requirements.r002|R002
+NR003|adoption|native_source_consumer|specified_behavior|REQUIRE|native_source_consumer_verified|requirements.r003|R003
+NR004|adoption|source_quality_and_identity|specified_behavior|REQUIRE|source_quality_and_identity_verified|requirements.r004|R004
+NR005|adoption|honest_upstream_parity|specified_behavior|REQUIRE|honest_upstream_parity_verified|requirements.r005|R005
+NR006|adoption|receipts_cold_verify|specified_behavior|REQUIRE|receipts_cold_verify_verified|requirements.r006|R006
+NR007|adoption|security_negative_matrix|specified_behavior|REQUIRE|security_negative_matrix_verified|requirements.r007|R007
+NR008|adoption|one_shot_governance_and_36|specified_behavior|REQUIRE|one_shot_governance_and_36_verified|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1
+
+## Requirements R001-R008 — minimum complete acceptance
+R001 — upstream_license_and_source: Copy exactly four byte-identical files from the frozen Metaculus MIT source; verify their four Git blob SHA-1 identities, LICENSE and imports before copying or executing, and preserve unmodified files in the approved src tree. Do not install the complete forecasting-tools package.
+Named test: `test_metaculus_exact_source_license_and_dependency_closure`.
+R002 — actual_upstream_calls: The native bridge must execute the exact vendored canonicalize_url, models.CaptureResult, models.url_hash/content_hash, and quality.evaluate on frozen native source bytes. Prove real pinned upstream callable invocation, not a hand-coded equivalent, fake, or a test-only import.
+Named test: `test_metaculus_actual_vendor_functions_invoked`.
+R003 — native_source_consumer: A finite offline run/verify CLI must cold-verify an existing S10-R3-SRC-01 scratch, consume its frozen source entries and bytes read-only, and produce one derived source-quality comparison receipt without modifying any historical native source admission, PIT or Alpha records.
+Named test: `test_metaculus_verified_src01_native_source_consumer`.
+R004 — source_quality_and_identity: Per source, pass the same SRC-01 visible-text view to the upstream evaluator via the upstream CaptureResult, keep exact native HTTP admissibility and temporal decisions as controlling, and compare the two quality gates. Preserve upstream URL normalization/hash separately from native URL safety, dedup and source provenance; never promote caller-local bytes to authenticated web evidence.
+Named test: `test_metaculus_quality_url_dedup_and_native_admission_boundaries`.
+R005 — honest_upstream_parity: Benchmark pinned upstream vectors: HTTP 2xx vs 4xx, redirects and no-status, thin content, block-page signatures, login/interstitial variants, Unicode and HTML, canonicalization of tracking parameters/fragments/query order/trailing slash, same/different content and URL hashes, plus native disagreements. Report exact eligible, abstained and divergent denominators, without claiming real quality lift.
+Named test: `test_metaculus_upstream_aligned_quality_and_canonicalization_vectors`.
+R006 — receipts_cold_verify: Write one bounded, content-addressed, read-only derived receipt with native SRC-01 receipt ID, hashes of every copied source and capture, upstream commit/blobs, exact callable invocations and per-source outcomes. Cold verify must re-invoke real upstream code with sockets blocked, recompute bytes, detect tampering, allow identical replay, and refuse changed input/partially written scratch.
+Named test: `test_metaculus_receipt_cold_verify_idempotency_and_tamper`.
+R007 — security_negative_matrix: Fail closed on wrong source blobs, missing license, foreign preloaded aliases, unapproved imported modules, unsafe paths, symlink/reparse/hardlink, size/depth/count limits, duplicate JSON keys, nonfinite values, invalid UTF-8, secret-shaped fields, future capture/source clocks, false provenance and socket attempts. Never print source URLs, body text, local paths or credential material.
+Named test: `test_metaculus_negative_safety_and_import_collision`.
+R008 — one_shot_governance_and_36: Keep all 29 repositories and 36 distinct capability IDs including R3-01 and R3-01-SOURCE_ARCHIVE. Declare this only SELECTIVE_UPSTREAM_CODE_REUSE_OFFLINE with owner value acceptance pending. Preserve PR268 separate, SDK public GET unconsumed, and all protected authority. Ponytail LITE must be first actual skill after startup; native gate, mandatory skills, 8 focused tests, full suite, security, exact-head hosted CI and posted PR evidence precede one CC return ZIP, not a merge.
+Named test: `test_metaculus_authority_and_preserved_36_capability_ids`.
+
+## Negative-test matrix and hard stops
+Include: absent/tampered source or MIT license; wrong blobs; import closure drift; foreign package alias; Pydantic missing/incompatible; non-UTF8 bytes; 1xx/3xx/4xx/5xx and absent HTTP statuses; block and login interstitials; tracking-only URL aliases vs distinct nontracking query parameters; missing or future timestamps; raw malicious URL; duplicate source labels/content; hash mismatch; stale SRC receipt; case secret key; changed file hardlink, symlink, junction/reparse, wrong absolute paths and in-repo scratch; repeated scratch changed bytes; write-once conflict; receipt tamper; socket attempt; source output exfiltration. No live fetch. Refuse when mandatory input validation cannot run. Native status and upstream disagreement must be both visible, not silently converted into a PASS.
+
+## Full validation and autonomous CC work
+Mandatory repo startup first; Ponytail LITE must be FIRST actually invoked skill afterward (not merely mentioned). Then invoke mandatory and materially relevant `wp-predraft-inspector`, `hermes-alpha-reuse-check`, `runtime-authority-boundary-review`, `security-review`, `spec-to-code-compliance`, `canonical-evidence-audit`, `find-bugs`, `code-simplifier`, `wp-readiness-preflight`, `verification-before-completion`, `pr-evidence-reconcile`; log actual calls, and skip an unavailable/not-applicable skill with a short reason. Do not invent successful invocations. Use installed skill names as repo availability dictates.
+
+Run the REAL native `tools/wp/wp_readiness_gate.py` against these exact prompt/spec bytes before any branch/source edits. RUNTIME readiness must return IMPLEMENTATION_READY, no independent certificate when minimum RUNTIME. Prompt/spec wording-only corrections that do not alter owner authority/scope may be done before branch with a fresh exact-byte native gate; record original vs final hashes. One coherent branch and one PR; unlimited ordinary in-scope debugging/repairs if they preserve all gates. Run R001-R008 named tests, source-native adjacency, full Linux suite, hosted Windows/Linux matrix (3.12/3.14), all security scans including full-history gitleaks and dependency audit, exact changed-file scope, generated-artifact guard and actual final posted PR body evidence. Keep validation output in CC ZIP, not owner's chat.
+
+Hard STOP: missing four-pinned-source owner grant; source hash/license mismatch; unapproved dependency, runtime or provider permission; native readiness still failing; original SRC admission needing edits outside scope; inability to import pinned upstream bytes safely; diff path expansion; full suite or CI failing after in-scope fixes; raw source/personal data leak; invalid evidence. Fix ordinary defects proactively, do not ask Karl repeated questions. Never merge.
+
+## Report-back and successor boundary
+Return EXACTLY ONE `S10-R3-METACULUS-SRC-01_CC_RETURN.zip` after complete posted PR evidence, containing prompt/spec exact hashes, source/license Git blobs and invocation proof, native SRC receipts, per-source comparison, test and CI output, skills ledger, branch diff, security findings and 36/36 adoption state; or one blocker ZIP with precise cause. Preserve existing ability to rerun independent offline SOURCE verifier and SDK probe with no changes. No PR268 merge or overlap.
+
+Successor (not part of this WP): separately owner-triggered real SDK capture -> genuine source/forecast usefulness benchmark, and independently authorized real controlled Hermes specialist sessions. Both remain distinct from this offline source-quality reuse. 36 capabilities cannot auto-close without Karl acceptance.
