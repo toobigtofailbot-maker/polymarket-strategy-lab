@@ -6,6 +6,7 @@ SANITIZED_SYNTHETIC S10-R3-FORECAST-01 grounding. Legacy v1 receipts are produce
 pinned merged-main code (c249409, extracted with ``git archive``), not re-created by the new code.
 Nothing here is real-world evidence: no OOS release, value, lift or qualification claim.
 """
+# ruff: noqa: F811 - pytest fixtures imported from test_forecast_evaluation are re-used as parameters
 from __future__ import annotations
 
 import ast
