@@ -1,0 +1,472 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-R3-FORECAST-WP170-BIND-01",
+    "title": "Offline Forecast Target to Native WP170 ResearchSample and OOS Membership Binding",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "OFFLINE_FORECAST_WP170_BINDING",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-r3-forecast-wp170-bind-01",
+    "required_predecessor": {
+      "pr_number": 279,
+      "head_sha": "985bdb499458c988d7c47b73c5b8ef153a74132d",
+      "merge_sha": "c249409de3be81de753ef1721842d3c2a5f6fdeb"
+    },
+    "objective": "Bind native diagnostic forecast targets to cold-verified WP170 ResearchSample/TemporalSplitManifest and immutable membership hashes, maintaining fully read-only registry, real-value refusal and no OOS run-evidence release.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/forecast_evaluation.py",
+      "tools/alpha/run_forecast_evaluation.py",
+      "tests/tools/alpha/test_forecast_wp170_binding.py",
+      "docs/forecast_evaluation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-FORECAST-WP170-BIND-01.md",
+      "docs/wp_specs/S10-R3-FORECAST-WP170-BIND-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-FORECAST-WP170-BIND-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/forecast_evaluation.py",
+      "tools/alpha/run_forecast_evaluation.py",
+      "tests/tools/alpha/test_forecast_wp170_binding.py",
+      "docs/forecast_evaluation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-R3-FORECAST-WP170-BIND-01.md",
+      "docs/wp_specs/S10-R3-FORECAST-WP170-BIND-01/wp_prompt.txt",
+      "docs/wp_specs/S10-R3-FORECAST-WP170-BIND-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/paper_trading/",
+      "src/research_runtime/",
+      "src/live_pilot/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "config/"
+    ],
+    "max_changed_files": 8,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert precisely the eight scoped paths. Preserve legacy fcsteval receipt cold verification and avoid any native WP170/PIT/source schema or registry changes; no changes to PR268, Lane B, Hermes, Gate C, providers or live trading.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Native WP170 target-to-sample mapping and historical receipt verification only; no duplicate experiment framework or changes to protected/store paths.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/forecast_evaluation.py",
+        "before": "WP170 identifier/hash verified but target-to-ResearchSample mapping absent.",
+        "after": "Explicit frozen, deterministic native sample/role membership with closed mismatches in existing diagnostic receipt.",
+        "change_authorized": true,
+        "compatibility_requirement": "Add diagnostic membership fields without changing forecast/scoring method, paired denominator, native source/PIT or WP170 store identities; old immutable fcsteval receipts must still cold-verify with original identity.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_forecast_evaluation.py",
+        "before": "Existing run and cold verify freeze WP170 SQLite registry and receipt.",
+        "after": "Minimal compatible run/verify and version-aware legacy receipt handling, only as necessary for new frozen WP170 membership fields and historical receipt cold verification.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve existing run/verify CLI entry points, frozen legacy receipt identity and historical cold verification; no new CLI command, product egress, registry write, or older receipt reinterpretation.",
+        "authority": "LOCAL_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/experiment_os.py",
+        "before": "Native ResearchSample, split roles, membership_hash and controlled RunEvidenceReceipt already own experiment authority.",
+        "after": "UNCHANGED; read/validate/call existing native mechanisms.",
+        "change_authorized": false,
+        "compatibility_requirement": "Never create OOS RunEvidenceReceipt without atomic registry release; never alter WP170 identities.",
+        "authority": "READ_ONLY_REFERENCE"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/experiment_registry.py",
+        "before": "Native verified registry and full record set with immutable headers.",
+        "after": "UNCHANGED; read only.",
+        "change_authorized": false,
+        "compatibility_requirement": "No append, update, registry create, schema migration or canonical mutation.",
+        "authority": "READ_ONLY_REFERENCE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Seven normative test-linked requirements for existing diagnostic receipt, not a new canonical schema family.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Cold-verify the existing WP170 registry with experiment_registry.load_and_verify_experiment_registry, locate the registered PreregisteredExperiment, TemporalSplitManifest and matching ResearchDatasetManifest with embedded ResearchSample entries. Verify dataset, split, feature and label identities. Never manufacture samples, change stores, or append canonical entries.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Cold-verify the existing WP170 registry with experiment_registry.load_and_verify_experiment_registry, locate the registered PreregisteredExperiment, TemporalSplitManifest and matching ResearchDatasetManifest with embedded ResearchSample entries. Verify dataset, split, feature and label identities. Never manufacture samples, change stores, or append canonical entries.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "For each eligible native forecast target, map to exactly one embedded ResearchSample only when canonical market_id and decision_time match and the available dataset/source/rule/event-leakage bindings are provably consistent. Zero, multiple, conflicting or unprovable matches become per-case UNMAPPED/AMBIGUOUS/REFUSED evidence with counts; do not guess, discard silently, or stop the whole evaluation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "For each eligible native forecast target, map to exactly one embedded ResearchSample only when canonical market_id and decision_time match and the available dataset/source/rule/event-leakage bindings are provably consistent. Zero, multiple, conflicting or unprovable matches become per-case UNMAPPED/AMBIGUOUS/REFUSED evidence with counts; do not guess, discard silently, or stop the whole evaluation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "For a proven sample match, determine formation/selection/OOS from the existing verified TemporalSplitManifest sample-ID sets, exclude purged/embargoed IDs, and call experiment_os.membership_hash on the real split. Record role and hashes as diagnostic evidence only; never construct/release an OOS RunEvidenceReceipt or claim qualification.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "For a proven sample match, determine formation/selection/OOS from the existing verified TemporalSplitManifest sample-ID sets, exclude purged/embargoed IDs, and call experiment_os.membership_hash on the real split. Record role and hashes as diagnostic evidence only; never construct/release an OOS RunEvidenceReceipt or claim qualification.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Compare decision, feature availability, target, label availability and source clocks and native event/leakage grouping without reading future labels for mapping; temporal, cutoff and cross-role violations become counted per-case refusals when the registry is structurally valid. Reject a corrupt registry or source receipt globally; do not change the frozen sample/label methodology.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Compare decision, feature availability, target, label availability and source clocks and native event/leakage grouping without reading future labels for mapping; temporal, cutoff and cross-role violations become counted per-case refusals when the registry is structurally valid. Reject a corrupt registry or source receipt globally; do not change the frozen sample/label methodology.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Commit mapped/unmapped/ambiguous/refused and role-specific counts, native sample/split identities and membership hashes to new version-aware immutable fcsteval receipt evidence and cold verify it. **Historical S10-R3-FORECAST-01 receipts must still cold-verify with unchanged original receipt IDs and score/paired-cohort denominators**, even after source changes. Prove both new and legacy paths by real run/verify tests; never stamp a new-code digest on an old receipt or silently accept altered inputs.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Commit mapped/unmapped/ambiguous/refused and role-specific counts, native sample/split identities and membership hashes to new version-aware immutable fcsteval receipt evidence and cold verify it. **Historical S10-R3-FORECAST-01 receipts must still cold-verify with unchanged original receipt IDs and score/paired-cohort denominators**, even after source changes. Prove both new and legacy paths by real run/verify tests; never stamp a new-code digest on an old receipt or silently accept altered inputs.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exercise the existing forecast run/verify CLI with an actual locally built verified WP170 registry and genuine source-grounding receipt; prove deterministic membership, tamper rejection and legacy receipt replay in an offline end-to-end test. No new runtime network, provider, model, dependency, registry write, scheduler, trading, paper, orders, live or capital authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exercise the existing forecast run/verify CLI with an actual locally built verified WP170 registry and genuine source-grounding receipt; prove deterministic membership, tamper rejection and legacy receipt replay in an offline end-to-end test. No new runtime network, provider, model, dependency, registry write, scheduler, trading, paper, orders, live or capital authority.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Exercise the complete negative-test matrix: absent WP170 binding remains DIAGNOSTIC_ONLY; missing/ambiguous/cross-market/misaligned/time-invalid samples have truthful case-level unmapped/refused outcomes; corrupt registry/split/receipt/secret or unauthorized operation fails closed. Synthetic fixtures cannot become real PIT provenance, OOS release, real-value verification or upstream adoption acceptance; all 36 capability commitments and six provider gates remain untouched.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Exercise the complete negative-test matrix: absent WP170 binding remains DIAGNOSTIC_ONLY; missing/ambiguous/cross-market/misaligned/time-invalid samples have truthful case-level unmapped/refused outcomes; corrupt registry/split/receipt/secret or unauthorized operation fails closed. Synthetic fixtures cannot become real PIT provenance, OOS release, real-value verification or upstream adoption acceptance; all 36 capability commitments and six provider gates remain untouched.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline advisory diagnostic evidence and fixed reason codes only; never secrets, unsafe data, OOS release, provider/network or trading instructions.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Existing research score receipt id and native WP170 membership_hash are recomputed through unchanged native mechanisms; no new canonical identity rules introduced.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "One governed RUNTIME WP with a mandatory deterministic readiness gate, followed by human authorization and one scoped implementation.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Run actual native readiness gate on final exact prompt/spec bytes and current repo head.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl explicitly transmits the separate implementation authorization/bootstrap for this bounded offline research-only scope.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "One independent executor completes actual native binding, exact tests, negatives, guards, hosted CI and one PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Native WP159 fixed spec guard precedence; runtime errors belong to native forecast contract.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Real builder/registry fixtures and negative validation are implemented in one required focused pytest module; no duplicated source-of-truth example family.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Each exact normative requirement has one required pytest node; guarded full/adjacent validation additional.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_wp170_registry_manifest_and_sample_load",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_registry_manifest_and_sample_load",
+        "expected_result": "Cold-verify the existing WP170 registry with experiment_registry.load_and_verify_experiment_registry, locate the registered PreregisteredExperiment, TemporalSplitManifest and matching ResearchDatasetManifest with embedded ResearchSample entries. Verify dataset, split, feature and label identities. Never manufacture samples, change stores, or append canonical entries."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_wp170_target_to_sample_exact_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_target_to_sample_exact_binding",
+        "expected_result": "For each eligible native forecast target, map to exactly one embedded ResearchSample only when canonical market_id and decision_time match and the available dataset/source/rule/event-leakage bindings are provably consistent. Zero, multiple, conflicting or unprovable matches become per-case UNMAPPED/AMBIGUOUS/REFUSED evidence with counts; do not guess, discard silently, or stop the whole evaluation."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_wp170_oos_seal_and_split_roles",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_oos_seal_and_split_roles",
+        "expected_result": "For a proven sample match, determine formation/selection/OOS from the existing verified TemporalSplitManifest sample-ID sets, exclude purged/embargoed IDs, and call experiment_os.membership_hash on the real split. Record role and hashes as diagnostic evidence only; never construct/release an OOS RunEvidenceReceipt or claim qualification."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_wp170_temporal_and_leakage_safety",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_temporal_and_leakage_safety",
+        "expected_result": "Compare decision, feature availability, target, label availability and source clocks and native event/leakage grouping without reading future labels for mapping; temporal, cutoff and cross-role violations become counted per-case refusals when the registry is structurally valid. Reject a corrupt registry or source receipt globally; do not change the frozen sample/label methodology."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_wp170_receipt_identity_denominators_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_receipt_identity_denominators_and_tamper",
+        "expected_result": "Commit mapped/unmapped/ambiguous/refused and role-specific counts, native sample/split identities and membership hashes to new version-aware immutable fcsteval receipt evidence and cold verify it. **Historical S10-R3-FORECAST-01 receipts must still cold-verify with unchanged original receipt IDs and score/paired-cohort denominators**, even after source changes. Prove both new and legacy paths by real run/verify tests; never stamp a new-code digest on an old receipt or silently accept altered inputs."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_wp170_real_cli_offline_no_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_real_cli_offline_no_authority",
+        "expected_result": "Exercise the existing forecast run/verify CLI with an actual locally built verified WP170 registry and genuine source-grounding receipt; prove deterministic membership, tamper rejection and legacy receipt replay in an offline end-to-end test. No new runtime network, provider, model, dependency, registry write, scheduler, trading, paper, orders, live or capital authority."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_wp170_negative_cases_unbound_and_value_truth",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_forecast_wp170_binding.py::test_wp170_negative_cases_unbound_and_value_truth",
+        "expected_result": "Exercise the complete negative-test matrix: absent WP170 binding remains DIAGNOSTIC_ONLY; missing/ambiguous/cross-market/misaligned/time-invalid samples have truthful case-level unmapped/refused outcomes; corrupt registry/split/receipt/secret or unauthorized operation fails closed. Synthetic fixtures cannot become real PIT provenance, OOS release, real-value verification or upstream adoption acceptance; all 36 capability commitments and six provider gates remain untouched."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-R3-LEARN-01",
+    "next_title": "Genuine resolved-outcome and OOS learning over independent LOCAL_REAL_PIT evidence, separately governed; no historical or canonical rewrite.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-R3-FORECAST-WP170-BIND-01",
+    "forbidden_in_this_wp": [
+      "No real source acquisition, GET, provider/paid inference, secrets or external network runtime.",
+      "No OOS RunEvidenceReceipt construction or release through a bypass of WP170 atomic registry authority.",
+      "No change to experiment_os, experiment_registry, point-in-time or source grounding stores, schemas, or hashes.",
+      "No strategy or qualification promotion, paper, wallet, orders, risk, execution, live or capital.",
+      "No copying/installing external code, new dependency or second source/forecast framework.",
+      "No touching open PR268, Lane B, Oracle3, Hermes, CCXT or six separately gated providers.",
+      "No false real-forecast lift, OOS acceptance, upstream adoption closeout or VALUE_VERIFIED on synthetic evidence.",
+      "No regression or invalidation of historical fcsteval receipt IDs, legacy cold verification or historical score/cohort denominators."
+    ]
+  }
+}
