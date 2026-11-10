@@ -276,6 +276,28 @@ SPLIT_SETS = (("FORMATION", "formation_sample_ids"), ("SELECTION", "selection_sa
               ("OUT_OF_SAMPLE", "oos_sample_ids"), ("PURGED", "purged_sample_ids"), ("EMBARGOED", "embargoed_sample_ids"))
 
 
+def _refusal_reason(r: dict, s, native_market, role: str | None, cross_market: bool, rule_conflict: bool,
+                    scoring_cutoff: str) -> str | None:
+    """First provenance, clock or split-role violation of a proven sample match, in fixed precedence; else None."""
+    if cross_market:
+        return "CROSS_MARKET_SOURCE"
+    if rule_conflict:
+        return "RULE_VERSION_CONFLICT"
+    if _key(s.feature_availability_time) > _key(r["decision_time"]):
+        return "FEATURE_AFTER_DECISION"
+    if _key(s.feature_availability_time) < _key(native_market.metadata_observed_time):
+        return "FEATURE_BEFORE_SOURCE_OBSERVED"
+    if r["resolution_date"] is not None and _key(s.target_time) < _key(r["resolution_date"]):
+        return "TARGET_BEFORE_NATIVE_RESOLUTION"
+    if _key(s.label_availability_time) > _key(scoring_cutoff):
+        return "LABEL_AVAILABLE_AFTER_SCORING_CUTOFF"
+    if role is None:
+        return "SAMPLE_OUTSIDE_SPLIT_WINDOW"
+    if role in ("PURGED", "EMBARGOED"):
+        return "SAMPLE_" + role
+    return None
+
+
 def map_wp170_membership(rows: list[dict], native: dict, grounding: dict, scoring_cutoff: str) -> dict:
     """Bind each eligible target to at most one native ResearchSample and its split role (diagnostic only).
 
@@ -312,16 +334,9 @@ def map_wp170_membership(rows: list[dict], native: dict, grounding: dict, scorin
             e["reason"] = "SOURCE_PROVENANCE_UNPROVEN"  # no transitive proof that the sample is this PIT market
             continue
         e["sample_id"] = s.sample_id
-        reason = ("CROSS_MARKET_SOURCE" if cited_markets - {r["market_id"]}
-                  else "RULE_VERSION_CONFLICT" if any(rule_owner[c][1] != r["rule_content_sha256"] for c in cited if c in rule_owner)
-                  else "FEATURE_AFTER_DECISION" if _key(s.feature_availability_time) > _key(r["decision_time"])
-                  else "FEATURE_BEFORE_SOURCE_OBSERVED" if _key(s.feature_availability_time) < _key(native_market.metadata_observed_time)
-                  else "TARGET_BEFORE_NATIVE_RESOLUTION" if r["resolution_date"] is not None
-                  and _key(s.target_time) < _key(r["resolution_date"])
-                  else "LABEL_AVAILABLE_AFTER_SCORING_CUTOFF" if _key(s.label_availability_time) > _key(scoring_cutoff)
-                  else "SAMPLE_OUTSIDE_SPLIT_WINDOW" if role is None
-                  else "SAMPLE_PURGED" if role == "PURGED"
-                  else "SAMPLE_EMBARGOED" if role == "EMBARGOED" else None)
+        rule_conflict = any(rule_owner[c][1] != r["rule_content_sha256"] for c in cited if c in rule_owner)
+        reason = _refusal_reason(r, s, native_market, role, bool(cited_markets - {r["market_id"]}), rule_conflict,
+                                 scoring_cutoff)
         if reason:
             e.update(status="REFUSED", reason=reason)
             continue
