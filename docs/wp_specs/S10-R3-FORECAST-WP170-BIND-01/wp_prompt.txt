@@ -1,0 +1,111 @@
+Package Identity:
+WP ID: S10-R3-FORECAST-WP170-BIND-01
+Title: Offline Forecast Target to Native WP170 ResearchSample and OOS Membership Binding
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Base branch: main
+Inspected merged main SHA: c249409de3be81de753ef1721842d3c2a5f6fdeb (refresh before preflight)
+Required predecessor: merged PR #279, head 985bdb499458c988d7c47b73c5b8ef153a74132d, merge c249409de3be81de753ef1721842d3c2a5f6fdeb
+Independent PR #268: open at drafting; do not stack, alter or silently consume it
+Suggested branch: codex/s10-r3-forecast-wp170-bind-01
+Package class: OFFLINE_FORECAST_WP170_BINDING
+Package size class: M; exact eight changed paths
+Risk level: 3
+Governance track expected: RUNTIME
+Evidence mode expected: use actual merged WP state-machine mode at final PR review
+Runtime impact: existing finite offline forecast run/verify only; no scheduler or daemon
+Product impact: diagnostic WP170 research-sample/role linkage, never qualification or trade signal
+Network impact: ZERO product/provider/public-GET calls; normal approved Git/GitHub publication only
+Credential impact: NONE
+Dependency impact: NONE
+Trading impact: NONE; capital/orders USD0/0; LIVE DISABLED
+Recommended Claude/Codex Mode: high reasoning on API/receipt compatibility; normal autonomous engineering and testing once readiness passes.
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. Objective, ownership and Authority / Non-Authority Posture
+Close precisely the existing S10-R3-FORECAST-01 gap `WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_NOT_MAPPED`: use verified native `ResearchDatasetManifest.samples` (embedded `ResearchSample`), `TemporalSplitManifest`, `PreregisteredExperiment`, `experiment_registry`, and `experiment_os.membership_hash` to bind each eligible forecast target to a valid native sample and role **when provable**. Do not duplicate the research OS, add external framework imports, reimplement upstream, or claim forecast lift from synthetic receipts. This WP is a native integration of existing capabilities, not a new external-adoption closure. All 36 capability IDs remain tracked, including R3-02 Chroma, ForecastBench, Oracle3, CCXT, Hermes, external pilots and independent Lane B.
+
+Owner Karl transmits this package and conditional implementation authorization in a separate bootstrap. Implementer Claude Code or Codex, one executor only; independent reviewer Side25; merger Karl only. This RUNTIME risk-3 package permits only the exact eight scoped files, local diagnostic source-runtime, offline tooling, docs/tests and related canonical-evidence policy. **Not authorized:** new product/public GET, providers, model or Hermes calls, credentials, internet retrieval, payments, install/change dependencies, scheduler, strategy, qualification promotion, registry/PIT/Alpha store writes, risk, paper, orders, execution, live, capital, deployment, Gate C, merge or editing PR268. Normal authenticated Git/GitHub PR publication is distinct from product-network authorization. A readiness PASS does not itself authorize implementation.
+
+# 2. Startup, mandatory skills, native readiness, hard merge gate
+1. Read in order `AGENTS.md`, `AI_CODING_AGENT_START_HERE.md`, `CLAUDE_START_HERE.md` (or corresponding Codex startup), `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, `WP_SPEC_STANDARD.md`, `WP_DRAFTING_STANDARD.md`, and task-relevant negative-test, protected-path and validation standards. Refresh live `main`, merged predecessor #279, open PRs and working-tree cleanliness. Never discard local work; stop on relevant concurrent edits.
+2. Discover installed skill locations and instructions. **Ponytail LITE must be the FIRST ACTUALLY INVOKED skill** after mandatory startup, before specialist reviews and broad source analysis. Then invoke the five core lifecycle skills if installed: `ponytail` (LITE), `wp-predraft-inspector`, `wp-minimum-test-plan`, `wp-one-shot-review`, `verification-before-completion`. Invoke materially applicable installed `wp-readiness-preflight`, `hermes-alpha-reuse-check`, `canonical-evidence-audit`, `runtime-authority-boundary-review`, `spec-to-code-compliance`, `security-review`/`find-bugs`, `pr-evidence-reconcile`, `ponytail-review`, `code-simplifier` and financial-invariant/temporal validators where relevant. Follow real skill instructions. For every skill record **actual invocation**, findings, or explicit unavailable/not applicable; never invent usage. No skill installation.
+3. Verify the ZIP checksums and extract outside the repo. Inspect current native `forecast_evaluation.py`/CLI, `experiment_os.py`, `experiment_registry.py`, the existing source-grounding contract and tests, and exact WP170 record fields. `ResearchSample` is embedded in `ResearchDatasetManifest`, not a standalone registry record. Provenance equivalence must use fields actually present; a rule hash is NOT in `ResearchSample`, and missing transitive proof gives counted UNMAPPED rather than invented identity.
+4. **Before branching or source implementation**, run the actual native readiness gate on final staged bytes (use only the supported arguments):
+   `python -B tools/wp/wp_readiness_gate.py --wp "$WP_DIR/wp_prompt.txt" --spec "$WP_DIR/wp_spec.json" --repo-root . --format json`
+   Here `$WP_DIR` is an **absolute** path to the extracted `S10-R3-FORECAST-WP170-BIND-01` folder; invoke from the clean current repo checkout. Require exit 0, `IMPLEMENTATION_READY`, `is_ready=true`, governance `RUNTIME`, required scope 8, evidence items 7, normative rules 7, zero error codes. Do not pass an unnecessary certificate. A supported minor prompt/spec correction in this exact scope is allowed followed by a new full gate and refreshed checksums; material scope/authority conflict is a hard stop, not an excuse to bypass the validator. The package creator records `GATE_NOT_RUN` when no checkout is available; that does not constitute gate success.
+5. On gate PASS and Karl's actual transmitted implementation authorization, implement on one clean branch, one PR. **Hard merge gate:** PR stays unmerged until Side25 verifies exact PR head, changed-path equality, source behavior, mandatory negative and integration tests, skills/evidence, security, cold receipt compatibility and exact-head hosted checks, then Karl alone decides merge.
+
+# 3. Scope, context budget and API compatibility
+Exactly these eight paths are **required = allowed = max**, as required by the native preflight and `--check-diff` equality. No extra ninth file; do not modify protected WP170/PIT/native store sources:
+- `src/data_layer/analytical_research/forecast_evaluation.py`
+- `tools/alpha/run_forecast_evaluation.py`
+- `tests/tools/alpha/test_forecast_wp170_binding.py`
+- `docs/forecast_evaluation_contract.md`
+- `docs/deferred_items_log.md`
+- `docs/status_entries/S10-R3-FORECAST-WP170-BIND-01.md`
+- `docs/wp_specs/S10-R3-FORECAST-WP170-BIND-01/wp_prompt.txt`
+- `docs/wp_specs/S10-R3-FORECAST-WP170-BIND-01/wp_spec.json`
+
+Context budget: read only controlling files and pertinent API definitions/test families first; inspect upstream only if a concrete native integration question needs it. Avoid whole-repo reading, mass status narration, parallel duplicate agents or gratuitous hardening. A coherent eight-path change is not a target for artificial complexity. Keep tests and a single stable contract additive; no new commands or data stores. If the existing CLI requires only compatibility/invocation adjustment, keep it minimal but ensure the eight-file diff readiness predicate is honored.
+
+Compatibility / impossibility checklist for PR body: old vs new `fcsteval` identity/replay, historical vs new receipt-version discrimination, frozen original `code_identity()` bytes, native `load_and_verify_experiment_registry`, actual `ResearchDatasetManifest.samples` ownership, sample `market_id`/`decision_time`/`leakage_group_id`, real `TemporalSplitManifest` sample sets and `membership_hash`, source-rule constraints, write-free registry access and the exact scoped-file test targets. **Never** bypass or weaken historical receipt verification to get a synthetic green test. If original frozen receipt cannot be cold-verified in updated code without altering original meaning, stop and report a proven architectural blocker rather than silently invalidate evidence.
+
+# 4. Seven normative requirements and evidence plan
+All seven requirements are normative in `wp_spec.json` (semantic_fields + evidence_plan). Their named pytest nodes are mandatory; the matrix below maps each one exactly:
+- **R001:** Verified WP170 registry, PreregisteredExperiment, TemporalSplitManifest and embedded manifest ResearchSample records; no registry mutation.
+- **R002:** Proven one-to-one target/sample identity; zero, multiple or unprovable matches receive counted per-case UNMAPPED/AMBIGUOUS/REFUSED outcomes.
+- **R003:** Native formation/selection/OOS role membership and `experiment_os.membership_hash`; no OOS receipt or release.
+- **R004:** Availability, group and chronology checks without future-label leakage; count case-level refusals.
+- **R005:** Version-aware immutable receipt, native sample/split hashes and denominators; actual historical frozen receipt IDs and score results remain cold-verifiable.
+- **R006:** Existing real offline run/verify CLI uses native registry/source-grounding and proves new + legacy replay and no extra authority.
+- **R007:** Genuine negatives, provenance/diagnostic classification and refusal safety; no synthetic lift or value acceptance.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|registry|wp170_records|verified_registry|REQUIRE|native_manifest_and_embedded_samples|requirements.r001|R001
+NR002|mapping|target_sample|zero_or_multiple_matches|REQUIRE|counted_per_case_refusal|requirements.r002|R002
+NR003|split|native_membership|proven_sample_role|REQUIRE|role_and_oos_hash_no_release|requirements.r003|R003
+NR004|temporal|availability_and_leakage|inconsistent_sample_clocks|REJECT|counted_per_case_refusal|requirements.r004|R004
+NR005|receipt|versioned_identity|new_and_historical_receipts|PRESERVE_EXACT|legacy_and_new_cold_verify|requirements.r005|R005
+NR006|operator|real_offline_cli|verified_fixture_and_replay|REQUIRE|actual_run_verify_no_authority|requirements.r006|R006
+NR007|safety|negative_cases|malformed_or_untrusted_input|REJECT|fail_closed_and_no_value_claim|requirements.r007|R007
+END_NORMATIVE_RULE_MATRIX_V1
+
+# 5. Negative-test matrix and evidence-plan execution
+The exact `R001`–`R007` evidence nodes are in `wp_spec.json` and must be genuinely implemented (not stub assertions). Execute the **seven exact pytest commands and expected assertions in `wp_spec.json`**; each named node must exist and contain a meaningful reachable assertion before post-implementation readiness.
+
+Negative-test matrix (each executed and accounted, including not-applicable reasons):
+- **Native reference/identity:** missing registry, absent experiment/manifest, mismatched dataset/feature/label/split IDs, forged or tampered registry, duplicate identities, bad samples, wrong market or decision, missing transitive proof.
+- **Per-case exceptions:** no match, multiple matches, purged/embargoed sample, cross-role membership, future feature/label availability, event/leakage disagreement, incomplete source clock. Record reason and denominator; do **not** stop unrelated sound cases or discard them.
+- **Hard invalidity:** corrupt or unverifiable whole registry, foreign source receipt, malformed frozen input, arbitrary new fields, unexpected types, secret/trade-shaped input, tampered receipt, attempted forbidden network or store write. Whole-run STOP where trust or authority is unavailable, without raw-input echo.
+- **Legacy regression:** collect a pre-WP immutable S10-R3-FORECAST-01 scratch/receipt on the unchanged pinned code and prove the updated CLI verifies that exact original receipt ID and historic result values. Show normal new-form run/verify and deliberate old/new tampering failures. Historical origin and compatibility method must be documented, not asserted from re-created new receipts.
+- **Evidence classification:** SANITIZED_SYNTHETIC vs genuinely observed LOCAL_REAL_PIT; no synthetic OOS, profit, resolution or forecast-lift upgrade. No `RunEvidenceReceipt`, model/provider invocation or owner value acceptance.
+
+Regression: original forecast tests, SRC-01/PIT/Alpha, WP170 experiment OS/registry, negative/boundary suites. At stable head run applicable authoritative full pytest per WP state machine (local or truthful exact-head hosted equivalence), security/source/license checks as applicable, `git diff --check`, native generated-artifact guard, and pre/post `wp_readiness_gate.py` with `--check-diff --base <actual-base-ref> --head <actual-PR-head-ref>` (supply actual Git refs). Ensure exact eight changed paths and seven real assertion-bearing tests. Do not claim unavailable checks passed. Confirm hosted CI against **exact final PR head**, not earlier commit or a green but unrelated run.
+
+# 6. Hard stops, refusal behavior, and successor boundary
+**Hard stops** apply to impossible trustworthy processing or prohibited authority: unreadable/invalid canonical registry or signature, source receipt verification impossible, actual full experiment/split provenance invalid, unavoidable existing-receipt incompatibility, dependency/protected-file requirement, unavailable Ponytail/mandatory validation, readiness failure after bounded legitimate correction, or inability to build real tests. State `STOP if ... — because ...` for each material technical blocker in the PR evidence. Do not stop the entire WP merely because individual targets fail to match or have ambiguous identity: record per-case UNMAPPED/REFUSED/AMBIGUOUS, denominators and reasons, then continue sound targets. Never read OOS labels to choose mappings, infer unavailable clocks, or construct a WP170 OOS release/RunEvidenceReceipt.
+
+**Successor boundary:** `S10-R3-LEARN-01` remains mandatory for resolution-to-future-Alpha research learning. `S10-R3-REAL-SOURCE-BENCH-01`, genuine public-GET activation, controlled OOS run-evidence release, any external provider/paid source, and future adoption/value acceptance are all **separately gated**. ForecastBench sampling method difference is tracked, not rebranded as closed. All 36 R3 obligations, six provider decisions, Hermes, Oracle3, CCXT and Lane B remain tracked. No silent scope reduction.
+
+# 7. Report-back / owner review
+Executor autonomously fixes ordinary in-scope implementation and test issues, carries out independent in-scope implementation review (actual `wp-one-shot-review` etc.), then opens **one** PR, never merges. PR body: exact base/head, 8-path diff, 7 evidence nodes, skill ledger, normal+legacy cold receipt proof and hash IDs, source/evidence truth, blocked/abstained denominators, local tests and actual exact-head hosted checks, RUNTIME readiness before/diff, negative matrix, privacy, no-authority boundaries, remaining D002 learning/OOS gaps. Status fragment stable/non-self-referential; optional final PR comment not mandatory. Return exactly `S10_R3_FORECAST_WP170_BIND_01_CC_RETURN.zip` with a concise implementation report, verified PR URL/head, readiness JSON, tests/CI logs, exact prompt/spec SHA256, eight-file diff manifest, skills ledger and preserved-deferred register. If blocked, return one similarly structured BLOCKED ZIP with exact refusal codes and no invented PR or PASS. Side25 will independently review and send Karl `MERGE_READY` or one focused corrective handoff. Only Karl may merge.

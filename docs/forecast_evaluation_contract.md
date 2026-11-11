@@ -27,9 +27,28 @@ Posture: RESEARCH_ONLY, `score_status` always `DIAGNOSTIC_ONLY`. No network, pro
   The event/leakage group is always the native `event_id`. A missing native category is refused (`CATEGORY_MISSING`). Each eligible row records its SRC-01 admitted source reference ids and `source_status` (`SRC01_ADMITTED_SOURCES` or `NO_ADMITTED_SOURCE`); history clocks are caller-asserted (`CALLER_ASSERTED_CLOCKS_NOT_SRC01_GROUNDED`, deferred D004).
 - **WP170.** The `wp170` field takes one of two values:
   - `null` gives `DIAGNOSTIC_ONLY_EXPERIMENT_UNBOUND`.
-  - `{registry_file, experiment_id}` is checked with `experiment_registry.load_and_verify_experiment_registry` (read-only). The `PreregisteredExperiment` and its `TemporalSplitManifest` must exist. The result records `experiment_os.membership_hash(split, "OUT_OF_SAMPLE")` and the status `WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_NOT_MAPPED`.
+  - `{registry_file, experiment_id}` is checked with `experiment_registry.load_and_verify_experiment_registry` (read-only). The `PreregisteredExperiment`, its `TemporalSplitManifest` and its `ResearchDatasetManifest` (with the embedded `ResearchSample` entries) must exist. Their dataset binding, feature, label, manifest and split identities must agree (`WP170_IDENTITY_MISMATCH` otherwise). Every split sample must be a manifest sample in exactly one role, purge or embargo set (`WP170_SPLIT_INVALID` otherwise). The block records `experiment_os.membership_hash(split, "OUT_OF_SAMPLE")`.
 
-  Target-to-sample membership is not mapped, so scores stay `DIAGNOSTIC_ONLY`. This WP never creates a preregistration or a `RunEvidenceReceipt` and never appends to a registry.
+  These checks never create a preregistration or a `RunEvidenceReceipt`, and never append to a registry.
+
+### Per-case WP170 membership (S10-R3-FORECAST-WP170-BIND-01, v2 receipts)
+
+`wp170.membership` is `null` when unbound. Otherwise it binds each eligible target row to at most one embedded `ResearchSample`. The cohort is unchanged and outcomes are never read. Each case is checked in this order:
+
+1. Exactly one sample with the same `market_id` and the same `decision_time`. If there is none, the case is `UNMAPPED` with `SAMPLE_NOT_FOUND` or `DECISION_TIME_MISMATCH`. If there are several, it is `AMBIGUOUS` with `MULTIPLE_SAMPLES_MATCH`.
+2. Transitive PIT provenance. The sample must cite the target market's native PIT `metadata_record_version_id` from the verified grounding universe; otherwise the case is `UNMAPPED` with `SOURCE_PROVENANCE_UNPROVEN`. `ResearchSample` carries no rule hash. Rules are checked only through cited native rule record versions, so a cited version whose `rule_content_sha256` differs from the target's bound rule is `RULE_VERSION_CONFLICT`. Citing another grounded market is `CROSS_MARKET_SOURCE`.
+3. Clocks. The case is refused as `FEATURE_AFTER_DECISION`, `FEATURE_BEFORE_SOURCE_OBSERVED` (feature availability before the PIT metadata observation), `TARGET_BEFORE_NATIVE_RESOLUTION` or `LABEL_AVAILABLE_AFTER_SCORING_CUTOFF`.
+4. Split role. The role comes from the verified split's sample-id sets. A sample in no set is refused as `SAMPLE_OUTSIDE_SPLIT_WINDOW`; a purged or embargoed sample as `SAMPLE_PURGED` or `SAMPLE_EMBARGOED`.
+5. Event/leakage grouping. One native event must map to one leakage group, and one leakage group to one event. If not, every involved case is refused as `EVENT_LEAKAGE_GROUP_CONFLICT`.
+
+A case that does not bind is counted and never stops the run. A corrupt registry, split or grounding still stops the whole run. The block records:
+
+- each entry's case id, market, status, reason, sample id and role;
+- denominators: offered, not eligible, binding frame, mapped, unmapped, ambiguous, refused, counts by reason, mapped by role, and selected-and-mapped by role;
+- the manifest, binding, feature-set, label and split assignment hashes;
+- `experiment_os.membership_hash` for all three roles, and the mapped sample-id hash.
+
+`wp170.status` becomes `WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_MAPPED` only when at least one case maps; otherwise it stays `..._MEMBERSHIP_NOT_MAPPED`. The membership block is diagnostic only. It sets `oos_release: NOT_RELEASED`, `run_evidence_receipt: null`, `qualification_claim: false` and `labels_read_for_mapping: false`. Scores stay `DIAGNOSTIC_ONLY`.
 
 ## Case file `s10-r3-forecast01-cases-v1`
 
@@ -95,6 +114,8 @@ Every stratum's available / selected count and `inclusion_probability_within_str
 - The core binds the code identity, which is a hash over this module, the CLI and the SRC-01 module and CLI.
 - It also binds the SHA-256 of every frozen input file, the cases hash, method parameters, per-target binding rows, the cohort, history accounting, every forecast with its training counts, scoring, source pins, adoption, authority and the mandatory successor `S10-R3-LEARN-01`.
 - Cold verify reports the mismatched top-level sections as `OUTPUT_MISMATCH:<key>`, and also `RECEIPT_ID_MISMATCH`, `FROZEN_CASES_MISMATCH` and `NON_IDENTITY_INVALID`.
+- **Versions.** New runs write `s10-r3-forecast01-score-receipt-v2`, which adds `wp170.membership`. Historical `s10-r3-forecast01-score-receipt-v1` receipts still cold-verify. `verify` reads the schema the receipt claims and rebuilds a v1 core in the original v1 shape. It binds that core to the pinned original code identity `LEGACY_V1_CODE_IDENTITY` (`code:sha256:1309f030…419ed`), which is the hash of the four identity files at merged main `c249409`. It never stamps the current code digest on a v1 receipt. An unknown or forged schema is rebuilt as v2, so it fails as a mismatch. Altering the scores or the code identity of a v1 receipt, or relabelling it as v2, is `TAMPER_DETECTED`, even when the forger recomputes a self-consistent `receipt_id`.
+- **Limit.** v1 receipts written before `43e3d94` (REL-01 changed `run_source_grounding.py`) carry an older code identity. They already failed cold verify on `c249409` and are not covered (deferred D002 of S10-R3-FORECAST-WP170-BIND-01).
 
 ## Run refusal precedence (stable codes)
 
@@ -147,4 +168,5 @@ The independent prior is worse than the market on this market-aligned synthetic 
 - `R3-18`, `R3-20` and `R3-22` are `PARITY_OPEN_PENDING_KARL_ACCEPTANCE`.
 - `value_status` is `NO_REAL_VALUE_VERIFIED`.
 - The other 27 of the 36 program IDs, the six provider lanes, Lane B and open PR #268 are unchanged.
+- S10-R3-FORECAST-WP170-BIND-01 is a native integration, not an external adoption. It leaves every adoption row unchanged, including the recorded ForecastBench sampler-objective difference (native proportional vs upstream target-weight apportionment).
 - `S10-R3-LEARN-01` stays mandatory. It must consume immutable score receipts after resolution and propose only future research priorities, never rewriting a past forecast.

@@ -4,7 +4,9 @@
          cold-verify the SRC-01 scratch, freeze it with the cases (and an optional WP170 registry),
          forecast or abstain, freeze the cohort, score, write one receipt
   verify --scratch-dir DIR
-         re-verify the frozen SRC-01 copy and recompute everything from frozen copies; never writes
+         re-verify the frozen SRC-01 copy and recompute everything from frozen copies; never writes.
+         Version-aware: v2 receipts (current, with WP170 per-case membership) and historical v1
+         receipts (rebuilt in the v1 shape against the pinned original code identity) both cold-verify.
 
 Inputs are only caller-named local files. No network (a guard fails the run on any socket use),
 no provider, LLM or Hermes, no canonical store write. Output goes only into an empty absolute
@@ -70,8 +72,10 @@ def _safe_id(receipt: object) -> str | None:
     return value if type(value) is str and FE.re.fullmatch(FE.re.escape(FE.RECEIPT_PREFIX) + "[0-9a-f]{64}", value) else None
 
 
-def _evaluate(scratch: Path, frozen: dict) -> dict:
-    """Shared by run and verify: cold-verify the frozen SRC-01 copy, bind it, compute the core."""
+def _evaluate(scratch: Path, frozen: dict, schema: str = FE.RECEIPT_SCHEMA) -> dict:
+    """Shared by run and verify: cold-verify the frozen SRC-01 copy, bind it, compute the core.
+
+    A v1 receipt is rebuilt with the v1 shape and the pinned original code identity, never the current one."""
     inputs = scratch / "inputs"
     grounding_dir = inputs / "grounding"
     checked = SRC.verify(grounding_dir)
@@ -80,9 +84,10 @@ def _evaluate(scratch: Path, frozen: dict) -> dict:
     frozen_case = SRC._strict_json((grounding_dir / "frozen_case.json").read_bytes(), "GROUNDING_RECEIPT_UNREADABLE")
     FE.validate_cases(frozen, frozen=True)
     grounding = FE.bind_grounding(receipt, frozen_case, grounding_dir / "inputs", frozen)
-    wp170 = FE.bind_wp170(inputs / "wp170.sqlite3" if frozen["wp170"] else None,
-                          frozen["wp170"]["experiment_id"] if frozen["wp170"] else None)
-    return FE.build_evaluation_core(frozen, grounding, wp170, code_identity(), _input_hashes(inputs))
+    wp170, native = FE.load_wp170(inputs / "wp170.sqlite3" if frozen["wp170"] else None,
+                                  frozen["wp170"]["experiment_id"] if frozen["wp170"] else None)
+    identity = FE.LEGACY_V1_CODE_IDENTITY if schema == FE.LEGACY_RECEIPT_SCHEMA else code_identity()
+    return FE.build_evaluation_core(frozen, grounding, wp170, identity, _input_hashes(inputs), native, schema)
 
 
 def run(grounding_scratch: Path, cases_path: Path, scratch_dir: Path) -> dict:
@@ -145,7 +150,9 @@ def verify(scratch_dir: Path) -> dict:
         if expected != frozen:
             return {"status": "TAMPER_DETECTED", "failures": ["FROZEN_CASES_MISMATCH"], "network_attempts": 0,
                     "receipt_id": _safe_id(receipt)}
-        core = _evaluate(scratch, frozen)
+        claimed = receipt["core"].get("schema_id") if isinstance(receipt, dict) and isinstance(receipt.get("core"), dict) else None
+        # an unknown or forged schema is recomputed as current v2 and so fails as a mismatch, never trusted
+        core = _evaluate(scratch, frozen, claimed if claimed in FE.RECEIPT_SCHEMAS else FE.RECEIPT_SCHEMA)
         failures = FE.verify_receipt(receipt, core)
     FE._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
     return {"status": "VERIFIED" if not failures else "TAMPER_DETECTED", "failures": failures,

@@ -21,6 +21,11 @@ method families are ADAPTED (algorithm/concept only, no code copied, no dependen
 * R3-18 metac-bot-template@bcbd016 and R3-22 forecastbench-sim@27776fc: protocol / adversarial
   contract tests only (the tests are independently authored; no GPL or unlicensed code copied).
 
+S10-R3-FORECAST-WP170-BIND-01 binds each eligible target to at most one native WP170 ``ResearchSample``
+(embedded in the verified ``ResearchDatasetManifest``) and its ``TemporalSplitManifest`` role, with native
+``experiment_os.membership_hash`` values, in v2 receipts. Unbound cases are counted per reason. v1 receipts
+still replay in their original shape.
+
 Posture: research only, stdlib only, read-only over native stores, no network, no LLM/Hermes,
 no price/edge/strategy/paper/order/live authority. Scores are DIAGNOSTIC_ONLY research evidence.
 """
@@ -43,7 +48,13 @@ from src.data_layer.point_in_time_market_research import research_provenance as 
 
 WP_ID = "S10-R3-FORECAST-01"
 CASES_SCHEMA = "s10-r3-forecast01-cases-v1"
-RECEIPT_SCHEMA = "s10-r3-forecast01-score-receipt-v1"
+# v1 receipts (S10-R3-FORECAST-01) replay unchanged; v2 adds the WP170 per-case membership block.
+LEGACY_RECEIPT_SCHEMA = "s10-r3-forecast01-score-receipt-v1"
+RECEIPT_SCHEMA = "s10-r3-forecast01-score-receipt-v2"
+RECEIPT_SCHEMAS = (LEGACY_RECEIPT_SCHEMA, RECEIPT_SCHEMA)
+# code_identity() of the four identity files at merged main c249409 (the last v1-producing code), LF bytes.
+LEGACY_V1_CODE_IDENTITY = "code:sha256:1309f030573183d99c6b9ee5a7b281bcf07fcbf19667946b09eb53568ea419ed"
+BINDING_WP_ID = "S10-R3-FORECAST-WP170-BIND-01"
 RECEIPT_PREFIX = "fcsteval:sha256:"
 CALLER = ("tools/alpha/run_forecast_evaluation.py:run -> run_source_grounding.verify -> "
           "forecast_evaluation.build_evaluation_core")
@@ -214,11 +225,13 @@ def bind_grounding(receipt: dict, frozen_case: dict, grounding_inputs: Path, cas
             "alpha_universe_snapshot_id": universe.alpha_universe_snapshot_id}
 
 
-def bind_wp170(registry_path: Path | None, experiment_id: str | None) -> dict:
-    """Read-only native WP170 reference check; never a preregistration or RunEvidenceReceipt."""
+def load_wp170(registry_path: Path | None, experiment_id: str | None) -> tuple[dict, dict | None]:
+    """Read-only native WP170 load: (public reference block, native experiment/split/manifest or None).
+
+    Never a preregistration, registry write or RunEvidenceReceipt."""
     if registry_path is None:
         return {"status": "DIAGNOSTIC_ONLY_EXPERIMENT_UNBOUND", "experiment_id": None, "split_assignment_id": None,
-                "oos_membership_hash": None, "registry_head_entry_hash": None}
+                "oos_membership_hash": None, "registry_head_entry_hash": None}, None
     loaded = ER.load_and_verify_experiment_registry(registry_path)
     _require(loaded.is_valid and loaded.snapshot is not None, "WP170_REGISTRY_INVALID")
     records = [e.record for e in loaded.snapshot.entries]
@@ -227,9 +240,143 @@ def bind_wp170(registry_path: Path | None, experiment_id: str | None) -> dict:
     split = next((r for r in records if isinstance(r, EOS.TemporalSplitManifest)
                   and r.split_assignment_id == experiment.split_assignment_id), None)
     _require(split is not None, "WP170_SPLIT_NOT_FOUND")
-    return {"status": "WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_NOT_MAPPED", "experiment_id": experiment.experiment_id,
-            "split_assignment_id": split.split_assignment_id, "oos_membership_hash": EOS.membership_hash(split, "OUT_OF_SAMPLE"),
-            "registry_head_entry_hash": loaded.snapshot.head_entry_hash}
+    manifest = next((r for r in records if isinstance(r, EOS.ResearchDatasetManifest)
+                     and r.research_dataset_manifest_id == experiment.research_dataset_manifest_id), None)
+    _require(manifest is not None, "WP170_MANIFEST_NOT_FOUND")
+    check_wp170_identities(experiment, split, manifest)
+    public = {"status": "WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_NOT_MAPPED", "experiment_id": experiment.experiment_id,
+              "split_assignment_id": split.split_assignment_id, "oos_membership_hash": EOS.membership_hash(split, "OUT_OF_SAMPLE"),
+              "registry_head_entry_hash": loaded.snapshot.head_entry_hash}
+    return public, {"experiment": experiment, "split": split, "manifest": manifest}
+
+
+def bind_wp170(registry_path: Path | None, experiment_id: str | None) -> dict:
+    """Public WP170 reference block only (the v1 receipt shape)."""
+    return load_wp170(registry_path, experiment_id)[0]
+
+
+def check_wp170_identities(experiment, split, manifest) -> None:
+    """Dataset, feature, label, manifest and split identities must agree; any disagreement stops the run."""
+    sample_ids = [s.sample_id for s in manifest.samples]
+    _require(split.dataset_manifest_id == manifest.research_dataset_manifest_id == experiment.research_dataset_manifest_id
+             and manifest.dataset_binding_id == split.dataset_binding_id == experiment.dataset_binding_id
+             and manifest.feature_definition_ids == split.feature_definition_ids == experiment.feature_definition_ids
+             and manifest.feature_set_id == split.feature_set_id == experiment.feature_set_id
+             and manifest.label_definition_id == split.label_definition_id == experiment.label_definition_id
+             and len(sample_ids) == len(set(sample_ids)) == manifest.total_sample_count
+             and all(s.dataset_binding_id == manifest.dataset_binding_id and s.feature_set_id == manifest.feature_set_id
+                     and s.label_definition_id == manifest.label_definition_id for s in manifest.samples),
+             "WP170_IDENTITY_MISMATCH")
+    split_ids = [i for _, f in SPLIT_SETS for i in getattr(split, f)]
+    # every split sample is a manifest sample in exactly one role/purge/embargo set
+    _require(set(split_ids) <= set(sample_ids) and len(split_ids) == len(set(split_ids)), "WP170_SPLIT_INVALID")
+
+
+SPLIT_SETS = (("FORMATION", "formation_sample_ids"), ("SELECTION", "selection_sample_ids"),
+              ("OUT_OF_SAMPLE", "oos_sample_ids"), ("PURGED", "purged_sample_ids"), ("EMBARGOED", "embargoed_sample_ids"))
+
+
+def _refusal_reason(r: dict, s, native_market, role: str | None, cross_market: bool, rule_conflict: bool,
+                    scoring_cutoff: str) -> str | None:
+    """First provenance, clock or split-role violation of a proven sample match, in fixed precedence; else None."""
+    if cross_market:
+        return "CROSS_MARKET_SOURCE"
+    if rule_conflict:
+        return "RULE_VERSION_CONFLICT"
+    if _key(s.feature_availability_time) > _key(r["decision_time"]):
+        return "FEATURE_AFTER_DECISION"
+    if _key(s.feature_availability_time) < _key(native_market.metadata_observed_time):
+        return "FEATURE_BEFORE_SOURCE_OBSERVED"
+    if r["resolution_date"] is not None and _key(s.target_time) < _key(r["resolution_date"]):
+        return "TARGET_BEFORE_NATIVE_RESOLUTION"
+    if _key(s.label_availability_time) > _key(scoring_cutoff):
+        return "LABEL_AVAILABLE_AFTER_SCORING_CUTOFF"
+    if role is None:
+        return "SAMPLE_OUTSIDE_SPLIT_WINDOW"
+    if role in ("PURGED", "EMBARGOED"):
+        return "SAMPLE_" + role
+    return None
+
+
+def map_wp170_membership(rows: list[dict], native: dict, grounding: dict, scoring_cutoff: str) -> dict:
+    """Bind each eligible target to at most one native ResearchSample and its split role (diagnostic only).
+
+    Uses only label-free target rows, native PIT market records and the verified WP170 manifest/split; outcomes
+    are never read. A case that does not bind is counted with a reason; it never stops the run or the cohort."""
+    split, manifest = native["split"], native["manifest"]
+    roles = {sample_id: role for role, name in SPLIT_SETS for sample_id in getattr(split, name)}  # disjoint (checked)
+    markets = {m.market_id: m for m in grounding["universe"].markets}
+    metadata_owner = {m.metadata_record_version_id: m.market_id for m in markets.values()}
+    rule_owner = {r.rule_record_version_id: (m.market_id, r.rule_content_sha256) for m in markets.values() for r in m.rules}
+    by_market: dict[str, list] = {}
+    for s in manifest.samples:
+        by_market.setdefault(s.market_id, []).append(s)
+    entries, groups = [], {}
+    for r in rows:
+        if "event_group" not in r:  # never eligible, so there is no grounded target to bind
+            continue
+        e = {"case_id": r["case_id"], "market_id": r["market_id"], "status": "UNMAPPED", "reason": None,
+             "sample_id": None, "role": None}
+        entries.append(e)
+        candidates = by_market.get(r["market_id"], [])
+        matches = [s for s in candidates if _key(s.decision_time) == _key(r["decision_time"])]
+        if not candidates or not matches:
+            e["reason"] = "SAMPLE_NOT_FOUND" if not candidates else "DECISION_TIME_MISMATCH"
+            continue
+        if len(matches) > 1:
+            e.update(status="AMBIGUOUS", reason="MULTIPLE_SAMPLES_MATCH")
+            continue
+        s, native_market = matches[0], markets[r["market_id"]]
+        cited = set(s.source_record_version_ids)
+        cited_markets = {metadata_owner[c] for c in cited if c in metadata_owner} | {rule_owner[c][0] for c in cited if c in rule_owner}
+        role = roles.get(s.sample_id)
+        if native_market.metadata_record_version_id not in cited:
+            e["reason"] = "SOURCE_PROVENANCE_UNPROVEN"  # no transitive proof that the sample is this PIT market
+            continue
+        e["sample_id"] = s.sample_id
+        rule_conflict = any(rule_owner[c][1] != r["rule_content_sha256"] for c in cited if c in rule_owner)
+        reason = _refusal_reason(r, s, native_market, role, bool(cited_markets - {r["market_id"]}), rule_conflict,
+                                 scoring_cutoff)
+        if reason:
+            e.update(status="REFUSED", reason=reason)
+            continue
+        e.update(status="MAPPED", role=role)
+        if s.leakage_group_id is not None:
+            groups[r["case_id"]] = (r["event_group"], s.leakage_group_id)
+    # One native event must map to one leakage group and back; otherwise grouping is not provably consistent.
+    event_groups: dict[str, set] = {}
+    leak_events: dict[str, set] = {}
+    for event, leak in groups.values():
+        event_groups.setdefault(event, set()).add(leak)
+        leak_events.setdefault(leak, set()).add(event)
+    for e in entries:
+        pair = groups.get(e["case_id"])
+        if pair and (len(event_groups[pair[0]]) > 1 or len(leak_events[pair[1]]) > 1):
+            e.update(status="REFUSED", reason="EVENT_LEAKAGE_GROUP_CONFLICT", role=None)
+    selected = {r["case_id"] for r in rows if r["status"] == "SELECTED"}
+    mapped = [e for e in entries if e["status"] == "MAPPED"]
+    count = Counter(e["status"] for e in entries)
+    return {
+        "binding_wp_id": BINDING_WP_ID,
+        "method": "EXACT_MARKET_ID_AND_DECISION_TIME_PLUS_CITED_NATIVE_PIT_METADATA_RECORD",
+        "rule_binding": "RULE_HASH_NOT_IN_RESEARCH_SAMPLE_CHECKED_ONLY_VIA_CITED_RULE_RECORD_VERSIONS",
+        "labels_read_for_mapping": False, "cohort_selection_changed": False,
+        "oos_release": "NOT_RELEASED", "run_evidence_receipt": None, "qualification_claim": False,
+        "research_dataset_manifest_id": manifest.research_dataset_manifest_id,
+        "dataset_binding_id": manifest.dataset_binding_id, "feature_set_id": manifest.feature_set_id,
+        "label_definition_id": manifest.label_definition_id, "split_assignment_hash": split.assignment_hash,
+        "membership_hashes": {role: EOS.membership_hash(split, role) for role in EOS.RESEARCH_ROLES},
+        "mapped_sample_ids_sha256": SG.sha256_hex(SG.canonical_bytes(sorted(e["sample_id"] for e in mapped))),
+        "denominators": {
+            "targets_offered": len(rows), "not_eligible_not_bound": len(rows) - len(entries), "binding_frame": len(entries),
+            **{k.lower(): count.get(k, 0) for k in ("MAPPED", "UNMAPPED", "AMBIGUOUS", "REFUSED")},
+            "by_reason": dict(sorted(Counter(e["reason"] for e in entries if e["reason"]).items())),
+            "mapped_by_role": {role: sum(1 for e in mapped if e["role"] == role) for role in EOS.RESEARCH_ROLES},
+            "selected_mapped_by_role": {role: sum(1 for e in mapped if e["role"] == role and e["case_id"] in selected)
+                                        for role in EOS.RESEARCH_ROLES},
+        },
+        "entries": entries,
+    }
 
 
 # ------------------------------------------------------------------ bands
@@ -613,17 +760,27 @@ def score_cohort(cases_by_id: dict, rows: list[dict], forecasts: dict, corpus_cl
 # ------------------------------------------------------------------ receipt core
 
 
-def build_evaluation_core(cases: dict, grounding: dict, wp170: dict, code_identity: str, input_hashes: dict) -> dict:
+def build_evaluation_core(cases: dict, grounding: dict, wp170: dict, code_identity: str, input_hashes: dict,
+                          wp170_native: dict | None = None, schema: str = RECEIPT_SCHEMA) -> dict:
+    """v1 rebuilds the historical receipt byte for byte; v2 adds the per-case WP170 membership block."""
+    _require(schema in RECEIPT_SCHEMAS, "RECEIPT_SCHEMA_UNSUPPORTED")
     validate_cases(cases, frozen=True)
     rows = evaluate_targets(cases, grounding)
     cohort = freeze_cohort(rows, cases["sampler"])  # before any outcome is read
+    if schema == RECEIPT_SCHEMA:
+        _require((wp170_native is None) == (wp170["experiment_id"] is None), "WP170_NATIVE_CONTEXT_MISSING")
+        membership = (None if wp170_native is None
+                      else map_wp170_membership(rows, wp170_native, grounding, _utc(cases["scoring_cutoff"])))
+        wp170 = dict(wp170, membership=membership)
+        if membership is not None and membership["denominators"]["mapped"]:
+            wp170["status"] = "WP170_REFERENCES_VERIFIED_READ_ONLY_MEMBERSHIP_MAPPED"
     target_groups = {r["event_group"] for r in rows if "event_group" in r}
     history_rows, valid_history = evaluate_history(cases, target_groups)
     forecasts = {r["case_id"]: forecast_case(r, valid_history, cases["method"]) for r in rows if r["status"] == "SELECTED"}
     cases_by_id = {t["case_id"]: t for t in cases["targets"] if isinstance(t, dict) and type(t.get("case_id")) is str}
     scoring = score_cohort(cases_by_id, rows, forecasts, cases["corpus_class"], _utc(cases["scoring_cutoff"]))
     core = {
-        "schema_id": RECEIPT_SCHEMA, "wp_id": WP_ID, "posture": "RESEARCH_ONLY", "score_status": "DIAGNOSTIC_ONLY",
+        "schema_id": schema, "wp_id": WP_ID, "posture": "RESEARCH_ONLY", "score_status": "DIAGNOSTIC_ONLY",
         "case_label": cases["case_label"], "corpus_class": cases["corpus_class"], "caller": CALLER,
         "code_identity": code_identity,
         "source_grounding": {"receipt_id": grounding["receipt_id"], "verify_status": "VERIFIED", "as_of": grounding["as_of"],
