@@ -1,5 +1,13 @@
 # Repo Truth Index
 
+## 2026-11-17 owner-accepted nine-agent + 36-capability completion baseline (current development priority)
+
+**Canonical owner decision:** [`docs/nine_agent_capability_first_owner_direction.md`](nine_agent_capability_first_owner_direction.md).
+**Complete source plan:** [`docs/roadmaps/nine_agent_capability_first_20261117/`](roadmaps/nine_agent_capability_first_20261117/README.md).
+
+Karl accepted the capability-first **implementation roadmap** with four binding refinements: all nine genuine useful on-demand agent roles; extended multi-cycle engineering/restart proof; substantive read-only source/test access for Agent 9; measurable, versioned and rollbackable efficiency improvements. The nine roles and 36 upstream commitments remain **NOT YET FULLY INTEGRATED / NOT ACCEPTED**. Complete capabilities and producer→consumer wiring, then independent `FULL_SYSTEM_INTEGRATION_ACCEPTANCE`; at a credible completion claim **STOP for independent review and Karl's express decision** before new Alpha discovery. The first proposed PROTECTED WP remains `S10-HERMES-DELEGATED-SPECIALISTS-01` for real upstream Forecaster/Falsifier delegation → trusted child evidence → grounded cooperation → native Alpha episode. W01 requires a separate certified exact-byte package and owner implementation authorization; this docs-only plan has no such authority. No provider/model calls, fresh market research, qualification, capital, trading, live or deployment permission is granted. Standing protected boundaries and earlier technical/historical status records are preserved.
+
+
 ## S10-LIVE-ORCH-01 Restricted Live Orchestration + First-Live Canary Core (current protected implementation target)
 
 The contract is `docs/live_orchestration_contract.md`; the single new module is
