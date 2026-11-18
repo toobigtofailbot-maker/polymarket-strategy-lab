@@ -365,6 +365,24 @@ ACTIVATION_GUARD_ADDITIONS = {
 }
 
 
+DELEGATED_GUARD_ADDITIONS = {
+    "tests/test_hermes_advisory_foundation_architecture_docs.py": (
+        "                # S10-HERMES-DELEGATED-SPECIALISTS-01: exact offline pinned-delegation witness source only.\n"
+        '                "src/research_runtime/hermes_controlled_runtime/delegated_specialists.py",\n',
+        "    # S10-HERMES-DELEGATED-SPECIALISTS-01: an unregistered sibling of the delegation module stays rejected.\n"
+        '    hostile = "src/research_runtime/hermes_controlled_runtime/delegated_specialists_shadow.py"\n'
+        "    assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n"),
+    "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py": (
+        "                # S10-HERMES-DELEGATED-SPECIALISTS-01: exact offline pinned-delegation witness source/test only.\n"
+        '                "src/research_runtime/hermes_controlled_runtime/delegated_specialists.py",\n'
+        '                "tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py",\n',
+        "    # S10-HERMES-DELEGATED-SPECIALISTS-01: unregistered siblings of the delegation module/test stay rejected.\n"
+        '    for hostile in ("src/research_runtime/hermes_controlled_runtime/delegated_specialists_shadow.py",\n'
+        '                    "tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists_shadow.py"):\n'
+        "        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)\n"),
+}
+
+
 def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
     scope = json.loads((ROOT / "docs/wp_specs/S10-HERMES-AUTO-02/wp_spec.json").read_text(encoding="utf-8"))
     paths = scope["scope"]["required_changed_files"]
@@ -397,8 +415,9 @@ def test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative():
             ):
                 assert current.count(approved) == 1
                 current = current.replace(approved, "", 1)
-        # S10-HERMES-AUTO-02-REAL-01 and -ACTIVATION exact additions
-        for real01 in ACTIVATION_GUARD_ADDITIONS[guard_path] + REAL01_GUARD_ADDITIONS[guard_path]:
+        # S10-HERMES-AUTO-02-REAL-01, -ACTIVATION and S10-HERMES-DELEGATED-SPECIALISTS-01 exact additions
+        for real01 in (ACTIVATION_GUARD_ADDITIONS[guard_path] + REAL01_GUARD_ADDITIONS[guard_path]
+                       + DELEGATED_GUARD_ADDITIONS[guard_path]):
             assert current.count(real01) == 1
             current = current.replace(real01, "", 1)
         assert current.count(addition) == 1 and current.replace(addition, "", 1) == base

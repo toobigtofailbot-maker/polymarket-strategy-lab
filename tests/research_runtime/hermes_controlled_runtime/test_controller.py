@@ -1340,3 +1340,35 @@ def test_exact_usage_session_id_drives_sanitized_read_only_projection(tmp_path):
     assert result.session_evidence.remote_firecrawl_http_redirect_telemetry == "UNAVAILABLE"
     assert result.session_evidence.exact_provider_attempt_count == "UNKNOWN"
     assert "s1" not in json.dumps(dataclasses.asdict(result.session_evidence))
+
+
+# --- S10-HERMES-DELEGATED-SPECIALISTS-01 R001: the original web-only H1 profile is frozen ----------
+
+H1_POLICY_ID_GOLDEN = "hermesinvocationpolicy:sha256:18b8f788fa436712b377c81b10bdbd594cdb7afb3844fcc8559fde3b28c25e81"
+H1_MANAGED_CONFIG_SHA256_GOLDEN = "7937426d2ada740e020ef4de8b6850c64ef302d426810335defdd7ab77c133cf"
+
+
+def test_original_web_only_profile_exactly_unchanged():
+    from src.research_runtime.hermes_controlled_runtime import policy as P
+
+    default = DEFAULT_HERMES_INVOCATION_POLICY
+    assert default.policy_id == HermesInvocationPolicy().policy_id == H1_POLICY_ID_GOLDEN
+    assert P.CONTROLLED_MANAGED_CONFIG_SHA256 == default.managed_config_sha256 == H1_MANAGED_CONFIG_SHA256_GOLDEN
+    assert default.allowed_toolsets == ("web",) and default.delegation is False and default.mcp is False
+    assert "delegation" not in default.managed_config_mapping()
+    for broadening in ({"allowed_toolsets": ("web", "delegation")}, {"delegation": True}, {"max_concurrency": 2}):
+        with pytest.raises(PolicyBroadeningError):
+            HermesInvocationPolicy(**broadening)
+    # The delegated profile is a separate class with its own identity; it is never the controller default.
+    delegated = P.DelegatedSpecialistsPolicy()
+    assert not isinstance(delegated, HermesInvocationPolicy) and delegated.policy_id != H1_POLICY_ID_GOLDEN
+    assert P.DEFAULT_HERMES_INVOCATION_POLICY is default
+    # The controller still builds the same one-web-toolset argv and validated receipt.
+    req = _request()
+    backend = FakeHermesBackend.from_transcript(_stdout(req.request_id), usage_file_bytes=_usage())
+    result = _run(req, backend)
+    argv = backend.recorded_argv[0]
+    assert result.error_code is None and result.receipt.terminal_status == "RESEARCH_DRAFT_VALIDATED"
+    assert result.receipt.configured_toolsets == ("web",)
+    assert argv.count("--toolsets") == 1 and argv[argv.index("--toolsets") + 1] == "web"
+    assert "delegation" not in " ".join(argv) and "--safe-mode" not in argv

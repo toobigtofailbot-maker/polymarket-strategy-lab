@@ -2329,3 +2329,13 @@ Approved exact-nine-path RUNTIME/Risk3 research package on merged PR264 b678b5c9
 ## S10-WALLET-EPOCH-01
 
 Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7b997e905e80b94a44bed5eee5ddf330b3bbfa7). Frozen prompt/spec: docs/wp_specs/S10-WALLET-EPOCH-01/. Source: src/data_layer/polymarket/public_client.py (ISO UTC -> epoch-second query for /v2/trades and /v2/activity only); tests: tests/data_layer/polymarket/test_public_client.py, tests/data_layer/wallet_intelligence/test_public_ingest.py; contract: docs/wallet_public_evidence_foundation_contract.md section 9; stable evidence: docs/status_entries/S10-WALLET-EPOCH-01.md. Canonical WALLET-01 receipt/run-key/PIT semantics unchanged; no product GET performed.
+
+
+## S10-HERMES-DELEGATED-SPECIALISTS-01
+
+- **Package.** Approved exact-18-path (17 + meta-guard amendment) RUNTIME/Risk3 package on merged PR #280 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f. Frozen prompt/spec: docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/.
+- **Source.** src/research_runtime/hermes_controlled_runtime/delegated_specialists.py (pinned upstream delegate_task witness), plus `DelegatedSpecialistsPolicy` in policy.py and `run_pinned_python_worker` in runner.py.
+- **Tool.** tools/alpha/run_hermes_delegated_specialists.py.
+- **Tests.** tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py and tests/tools/alpha/test_hermes_delegated_specialists.py. The native-pin tests need POLYMARKET_HERMES_PIN_ROOT.
+- **Docs.** Contract: docs/hermes_delegated_specialists_contract.md. Stable evidence: docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md.
+- **Boundaries.** The H1 web-only profile is unchanged. Evidence class: OFFLINE_NATIVE_DELEGATION_TEST_ONLY; real-provider acceptance is a separate gated WP. Real product GET 0; LIVE DISABLED.

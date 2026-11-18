@@ -1155,6 +1155,59 @@ def _kill_tree(process: "subprocess.Popen[bytes]") -> None:
         pass
 
 
+
+@dataclasses.dataclass(frozen=True)
+class PinnedWorkerOutcome:
+    """Sanitized result of one bounded pinned-venv worker process: digests only, never raw output."""
+
+    exit_code: int | None
+    timed_out: bool
+    launch_failed: bool
+    stdout_sha256: str
+    stderr_sha256: str
+    stderr_byte_len: int
+    duration_ms: int
+
+
+def run_pinned_python_worker(
+    python_executable: str, script_path: str, args: Sequence[str], *, env: dict[str, str], cwd: str,
+    timeout_seconds: float, max_output_bytes: int = 1 << 20,
+) -> PinnedWorkerOutcome:
+    """Launch ``python -I -B script args`` once (no shell, no retry) in its own process group.
+
+    S10-HERMES-DELEGATED-SPECIALISTS-01: the caller supplies the complete minimal env
+    (nothing is inherited) and an empty cwd. On timeout the whole tree is killed and the
+    caller must ignore anything the worker may have written (no late publication).
+    """
+    argv = [python_executable, "-I", "-B", script_path, *args]
+    popen_kwargs: dict[str, object] = {"cwd": cwd, "stdin": subprocess.DEVNULL, "stdout": subprocess.PIPE,
+                                       "stderr": subprocess.PIPE, "env": dict(env)}
+    if os.name == "posix":
+        popen_kwargs["start_new_session"] = True
+    else:  # pragma: no cover - Windows-only branch
+        popen_kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    start = time.monotonic()
+    empty = hashlib.sha256(b"").hexdigest()
+    try:
+        process = subprocess.Popen(argv, **popen_kwargs)  # noqa: S603 - fixed argv, no shell
+    except (OSError, ValueError):
+        return PinnedWorkerOutcome(None, False, True, empty, empty, 0, _elapsed_ms(start))
+    timed_out = False
+    try:
+        stdout, stderr = process.communicate(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        _kill_tree(process)
+        try:
+            stdout, stderr = process.communicate(timeout=5)
+        except (subprocess.TimeoutExpired, ValueError, OSError):
+            stdout, stderr = b"", b""
+    stdout, stderr = (stdout or b"")[:max_output_bytes], (stderr or b"")[:max_output_bytes]
+    return PinnedWorkerOutcome(None if timed_out else process.returncode, timed_out, False,
+                               hashlib.sha256(stdout).hexdigest(), hashlib.sha256(stderr).hexdigest(), len(stderr),
+                               _elapsed_ms(start))
+
+
 # Retained so the external backend can be exercised in a test harness using the
 # current interpreter as a harmless fake executable, never a provider process.
 FAKE_EXECUTABLE_INTERPRETER = sys.executable

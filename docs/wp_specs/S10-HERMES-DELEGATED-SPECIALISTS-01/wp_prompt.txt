@@ -1,0 +1,188 @@
+Package Identity:
+  WP ID: S10-HERMES-DELEGATED-SPECIALISTS-01
+  Title: Pinned upstream Hermes specialist delegation to grounded native Alpha evidence
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-hermes-delegated-specialists-01
+  Package class: HERMES_DELEGATED_SPECIALIST_GROUNDED_ALPHA_VERTICAL
+  Package size class: L
+  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED (only after actual checks)
+  Runtime impact: One separately gated dormant and opt-in bounded Hermes delegation research path; non-delegated H1 unchanged
+  Product impact: True FORECASTER/FALSIFIER child provenance, grounded cooperation and actual advisory Alpha registry consumption
+  Network impact: Implementation and native tests OFFLINE; Git/CI workflow may use normal GitHub network
+  Credential impact: NONE; no real provider/OAuth/account/session requests; fake/model-stub tests only
+  Dependency impact: NONE; upstream exact pin used from existing reviewed external installation/source under isolation
+  Trading impact: DISABLED; capital USD 0; order attempts 0; no Alpha discovery or qualification
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High / Extra High for bounded security-sensitive integration
+  Reason: Delegate tool permission control, real upstream child witness, provenance and protected Alpha consumer
+  Escalate to higher reasoning or STOP if: Pinned 0.21.3 cannot produce trusted child witness within exact scope, repo/guard scope differs, or security boundary cannot be proven
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. STATUS / EXECUTION GATE — READ BEFORE ANY CODE
+This is the executable, CC-oriented RUNTIME/Risk-3 W01 specification. Karl's 2026-11-17 owner directive conditionally authorizes bounded OFFLINE implementation of the original scope. The amended 17-path scope additionally requires Karl's explicit approval. Before any source edit, native `tools/wp/wp_readiness_gate.py` (no certificate) must return `IMPLEMENTATION_READY` with exit 0, the repo must be clean and current, PR #280 must be merged, and no incompatible merge or active W01 branch may exist. This package itself is not a claimed readiness PASS. PR #281 remains an unmerged documentation PR; do not stack on it. On changed main, revalidate the exact package/current scope, halt for material conflicts and do not silently reuse stale dependency assumptions. The implementation stays offline and read-only toward product/provider/venue.
+
+2. OBJECTIVE — DELIVER ONE ACTUALLY CONNECTED SOFTWARE CAPABILITY
+Implement a dedicated default-OFF **pinned upstream Hermes delegated specialist producer**: existing controlled runtime parent → actual upstream `delegate_task` children (one FORECASTER, one FALSIFIER) → trusted backend-owned child completion/witness → native cold-verified SRC-01 grounding and `research_cooperation` citation/claim checker → existing `alpha_factory.build_research_episode` / `alpha_factory_registry.append_alpha_factory_records` consumer, with a real append/reload in isolated offline test. No parallel agent framework. Make the smallest additions to `src/research_runtime/hermes_controlled_runtime/policy.py`, `runner.py` and one new `delegated_specialists.py`, plus bounded operator/tests/docs. Do not modify `src/data_layer/analytical_research/research_cooperation.py`, Alpha Factory core, Alpha registry or existing `tools/alpha/run_hermes_cooperation.py`. A new one-case path calls existing underlying validators; it does not pretend the old 40-case synthetic benchmark is a real two-child study.
+
+3. AUTHORITY / NON-AUTHORITY
+Implementation: exactly seventeen declared tracked paths; Karl authorizes the original bounded offline W01 only; this 17-path amendment additionally requires Karl's explicit narrow scope approval, then actual native RUNTIME readiness PASS and clean current-main/predecessor checks. No unauthorized file. Report/export: sanitized offline receipts, source/candidate/child content hashes, bounded safe reason codes, one final consolidated return ZIP. Canonical evidence: separate opt-in research-only child-origin and grounded receipt; no canonical qualification/trade authority. Runtime: offline source module/controlled child invoker only; no user process, daemon, timer, recurrence or deployment. Provider/credential: ZERO real provider/model/OAuth/Firecrawl, billing, accounts and no credential reads. Network: product network ZERO; ordinary GitHub git/CI publication is distinguished. Risk/trading/capital: ZERO; no wallet, signing, order, Gate B/C, live/paper execution, account or price-based strategy selection. No Alpha opportunity searches, no market GET or profitability study. New capture, weather DATA-03, NBA and paper-forward experiments remain suspended.
+All groups in `docs/ai/codex/PROTECTED_PATHS.md` apply. Cross ONLY `local_offline_tooling`, `canonical_evidence_policy`, `docs`, `tests`, `source_runtime`, `hermes_runtime`, and advisory `strategy`. Do NOT cross credential/secrets, authenticated client, wallet/account, order/cancel, execution, paper engine, scheduler/bot loop, runtime daemon, dashboard/deployment, dependency/lock, source-copy, generated artifact. Permissions code is PROTECTED Risk4 despite no real credentials/network.
+
+4. HARD MERGE / BASE GATE
+At drafting freeze, `main=1c981838c2cc3ff2fcd5991aa97cf78194a10a2f`; preceding merged PR #280 head `92e71a3d71dd4d2cb8500eb68bb2bce066c18567`, merge `1c981838c2cc3ff2fcd5991aa97cf78194a10a2f`. PR #268 remains open and separately owned. Before ANY edit, run:
+```
+git fetch origin --prune
+git checkout main
+git pull --ff-only origin main
+git rev-parse HEAD
+git log -1 --oneline
+git status --short --branch
+```
+Reverify PR #280 merged, exact predecessor ancestry, current protected main, no existing PR/branch for this WP, no completed status for this WP and no unrelated worktree changes. New main SHA not identical to the verified base means STOP for conflict/ancestor/release inspection, re-run native RUNTIME readiness on the actual target main and reconcile the exact WP before code edits; do not silently stack or rebase. PR #268 is not a dependency; do not edit it. Use dedicated clean worktree/branch; Karl alone merges.
+
+5. STARTUP / SKILLS — NON-OPTIONAL
+Read repo `AGENTS.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, mandatory Codex/CC governance and `docs/ai/codex/PROTECTED_PATHS.md`, `docs/ai/codex/WP_DRAFTING_STANDARD.md`, `docs/ai/codex/WP_SPEC_STANDARD.md`, `docs/ai/codex/WP_BUNDLING_POLICY.md`, readiness/help docs and applicable security guidance. Perform **fresh skill discovery** on actual executor machine; do not assume historical 55-skill inventory. Invoke **Ponytail LITE as the first actual skill** following mandatory startup; then mandatory WP/architecture/security/test/citation/upstream skills based on availability, recording actual invocations, unavailable options, and outcomes. Do not self-certify. Run real native readiness before edits; a missing/failed readiness is STOP, not a reason to relax gates.
+
+6. CONTEXT BUDGET
+Read first: the mandatory startup and governance files above. Then only exact seventeen file targets, `src/data_layer/analytical_research/research_cooperation.py`, `src/data_layer/analytical_research/source_grounding.py`, `src/data_layer/analytical_research/alpha_factory.py`, `src/data_layer/analytical_research/alpha_factory_registry.py`, `tools/alpha/run_source_grounding.py`, `docs/hermes_cooperation_citation_contract.md`, `src/research_runtime/hermes_controlled_runtime/{controller,models,context_broker}.py`, and focused tests. Read pinned upstream at exact `345cd2b057a452236de401d3534b8502a7465e8d`: `tools/delegate_tool.py`, `tools/delegate_tool_toolsets.py`, `tools/delegate_tool_config.py`, `toolsets.py`, `hermes_cli/oneshot.py`, `run_agent.py`; inspect only the necessary deeper event/session helpers if needed. Do not re-audit all 29 repositories. Do not edit/read secret files, credentials, user profiles, account paths, host state, legacy frozen WP dirs or provider artifacts. No whole-repo architecture rewrite.
+
+7. EXACT PIN / FEASIBILITY PREFLIGHT BEFORE SOURCE EDITS
+Hermes is **v0.21.3**, tag `v2026.9.14`, upstream SHA `345cd2b057a452236de401d3534b8502a7465e8d` (never assume current upstream HEAD). Native `HermesInvocationPolicy` currently pins `ALLOWED_TOOLSETS=('web',)` and `delegation=False`; its constructor rejects broadening. Protect it unmodified for all existing H1 calls. Existing controlled CLI one-shot `hermes -z` has plain stdout + usage-file, no trusted per-tool event telemetry. Upstream `run_agent.AIAgent._dispatch_delegate_task` uses native `tools.delegate_tool.delegate_task`; `hermes_cli.oneshot.run_oneshot` declares stateless channel so delegation results need not be discarded. That **does not establish trusted child origin from stdout**. Determine a small production-capable trusted witness seam in the existing isolated runner (not a custom framework), using the actual upstream child construction/completion path, with verifiable role/child/session/budget IDs. If the pin's true upstream events cannot be authoritatively captured within the 17-file budget without protected escalation, STOP BEFORE EDITS with a concrete feasibility blocker; do not settle for model-generated provenance or invent machine-readable telemetry.
+Prove pinned vendor installation and function import, method signatures, project license (MIT), controlled Python/runtime compatibility and no unexpected dependency action. If exact pin unavailable offline, STOP WITH `PINNED_RUNTIME_UNAVAILABLE`; no new provider session or package download unless separately owner-authorized. DO NOT silently upgrade/vendoring/copy.
+
+
+7A. PINNED HOST-OWNED WITNESS DESIGN — REQUIRED IMPLEMENTATION CHOICE
+Source inspection at exactly NousResearch/hermes-agent@345cd2b057a452236de401d3534b8502a7465e8d establishes these concrete seams:
+- `tools.delegate_tool.delegate_task(..., tasks=[...], parent_agent=..., background=False)` is the genuine native upstream entrypoint. `tools/delegate_tool.py::_build_children` constructs actual child agents using `_build_child_preserving_parent_tools`, which imports `tools.delegate_tool._build_child_agent` at call time; `tools/delegate_tool_dispatch.py::_Batch.run_child` imports `tools.delegate_tool._run_single_child` at call time and calls it for each child.
+- `_build_child_agent` assigns native `child.session_id`, `child._parent_session_id`, `child._subagent_id`, `_delegate_depth` and depth-derived `_delegate_role`. Project FORECASTER/FALSIFIER labels are caller-owned task-index commitments, **not** the upstream `role` argument, which has no child privilege/semantic role authority.
+- `tools.delegate_tool_toolsets._resolve_child_toolsets` inherits parent toolsets when `toolsets=None`; it expands composite toolsets, optionally inherits MCP (default TRUE), and can grant nested delegation to orchestrators. The subprocess must inspect the actual initialized `child.valid_tool_names` / model-facing schemas, not rely on text policy flags. Reject the entire run before any child inference on extra tools, unknown aliases or tool-registry drift.
+- `run_agent.AIAgent._dispatch_delegate_task` forces top-level *model-issued* delegation into background; `hermes_cli.oneshot.run_oneshot` declares a stateless channel and enables `HERMES_YOLO_MODE` and `HERMES_ACCEPT_HOOKS` internally. Do **not** make plain `hermes -z` stdout or a background handle the authoritative child witness. For this finite, deterministic W01 vertical, use an explicitly constructed, restricted native Hermes parent in the existing isolated runner, with a host-owned `delegate_task(... background=False)` call for the two frozen role tasks; later AI-driven dynamic parent routing is a separate W08 governed integration.
+- In the same single-invocation isolated Python process, `delegated_specialists.py` installs narrowly scoped *observation wrappers* around the EXACT imported upstream `_build_child_agent` and `_run_single_child`; each must call the pinned ORIGINAL implementation, not reproduce it. The wrappers are installed only for this bounded run and removed in `finally`. The runner enforces pin/source identity, no inherited project/user config, no network/credential access in engineering tests, unique task identity and no runtime-global monkeypatch persistence. Production source bytes are NOT edited or vendored. No model prompt, stdout or child-returned self-label can forge the observer-owned task identity.
+- Construction observation: before a child runs, bind external A3/A4 task index, caller input/source SHA, exact upstream pin, actual parent/child session lineage, native subagent ID, depth/leaf role, effective post-init model tools and verified config restrictions. If pre-inference rejection cannot be enforced for a task, **do not launch** it.
+- Completion observation: the wrapper's call through native `_run_single_child` must return a genuine host-owned structured result; bind completion/failure/timeout, child identity, content SHA of returned untrusted text, and observed native token/cost fields. Treat absent/ambiguous cost as `UNKNOWN`, not zero. Both children must be uniquely completed under the same bound request; refused, skipped, interrupted, duplicate, partial or unknown means no grounded/Alpha success. Bounded worker teardown must forbid late orphan publication.
+- The instrumentation must be tested against the pinned real upstream function bodies and dispatch path. Removing/renaming the pinned native entrypoint or child initializer must break acceptance. A fake model **at the provider boundary** is acceptable for offline tests; replacing `delegate_task`, `_build_children`, `_build_child_agent`, `_run_single_child` or the native child-toolset resolver with imitations is NOT.
+- This is a preliminary source-backed IMPLEMENTATION SEAM, not already executed local runtime proof. Before any code edit the executor must establish the exact pinned package is available and runnable locally, execute a no-provider, no-socket minimal native construction/dispatch witness, and prove the wrappers observe the two expected native calls and prevent extra tools **before inference**. If any step cannot be demonstrated within the 17 allowed files, STOP with one precise security/feasibility decision for explicit narrow owner scope amendment. Do not silently adopt CLI stdout, scrape live logs, depend on best-effort hook callbacks, upgrade Hermes or spawn an extra framework.
+
+7B. HERMES MANAGED CONFIG AND BUDGET REALITY
+Pin `delegation.max_concurrent_children=2`, `delegation.max_iterations` (this governs children; the `max_iterations` argument to `delegate_task` is ignored when different), `delegation.max_spawn_depth=1`, `delegation.orchestrator_enabled=false`, `delegation.inherit_mcp_toolsets=false`, `delegation.subagent_auto_approve=false`, `delegation.independent_completions=false`, and a bounded child timeout; no fallback provider, MCP, CLI platform plugins, memory, workspace edits or external hooks. An actual future paid provider/model invocation is NOT authorized by W01. Terminal/files/process/code/cron/browser/execute/trading must be absent from actual parent/child effective model toolsets. Use finite bounded sync dispatch with native upstream cleanup and no daemon. Treat unknown usage as unknown, enforce configured caps even if the model ignores instructions. If the upstream provider factory requires an unavailable credential to build a fake test run, STOP: no credential read or real API session is permitted.
+
+8. BOUNDED POLICY: TWO DISJOINT PROFILES
+Original H1 remains frozen `web` only. New opt-in `DelegatedSpecialistsPolicy` in `policy.py` must be independently content-addressed, immutable and never selected by default. Parent effective tools: exactly `web_search`, `web_extract`, `delegate_task` (toolsets `web`, `delegation`). Child effective model-facing tools: at most `web_search`, `web_extract`; no `delegate_task`, terminal, file, browser, memory, cron, code execution, wallet/account, orders, MCP/custom plugins, composite toolsets or unknown alias. Managed overlay explicitly enforces `delegation.max_concurrent_children=2`, `max_spawn_depth=1`, `orchestrator_enabled=false`, `inherit_mcp_toolsets=false`, `subagent_auto_approve=false`, `independent_completions=false`, no background execution, and retain the existing no-fallback/controlled managed-scope/plugin/security posture. Assert effective model-facing names after upstream resolution; never assume string declarations alone are safety. Fail closed on nonconforming pin/config, composite expansion/MCP inheritance, nested agents or tool registry drift. Owner/provider spending authorization remains separate.
+
+9. REAL PRODUCER / VERIFIED ROLES
+A restricted native Hermes parent, bound by the deterministic coordinator to one already-held frozen research question and SRC-01 grounding snapshot, must invoke the real upstream dispatcher for **exactly two native child executions**, separate ids/sessions, one FORECASTER and one FALSIFIER, with bounded concurrency and completion. No model-driven parent planning or forced background dispatch is needed in this W01 proof. Role classification is *project-assigned outside model text*; upstream `role` argument is not a trusted semantic role proof, and upstream depth-derived `leaf`/`orchestrator` role means something different. Parent-issued prompts cannot request any trading tool or new market; source access is restricted to admitted public research sources/frozen bytes in offline testing. Capture trusted backend-owned records binding request id, source cutoff/hash, upstream version, parent/child identities, exact role, effective tools, execution completion, output hashes, usage/budget and deterministic terminal. Pin stdout/child summary/child self-claim is **untrusted content**. Do not relabel caller-authored `FORECASTER`/`FALSIFIER` as independently invoked. Failure/partial/timeout/truncation/disagreement is a non-authorizing closed result, no fake success; no silent paid retries. Enforce at most one finite bounded parent operation and two children per invocation; no autonomous scheduling.
+
+10. GROUNDED COOPERATION / NATIVE ALPHA CONSUMPTION — NON-OPTIONAL
+Use `tools.alpha.run_source_grounding.verify`, `source_grounding` and native `research_cooperation` (per-question `assess_question`, citation and native draft validators) with the exact frozen source bytes and strict pre-cutoff times. Reject unsupported quotes, stale/unavailable source, changed IDs, hidden mutations, prompt injection, unverified child role provenance and no valid joined child pair. Do NOT change the existing `run_hermes_cooperation` historical API or its 40-case synthetic metric. New witness/grounding is a separate bound receipt; evidence class `OFFLINE_NATIVE_DELEGATION_TEST_ONLY`, *not* real provider origin or research quality.
+For the test's existing seeded candidate/family and source refs, build real native `ResearchEpisode` with `alpha_factory.build_research_episode` and append through `alpha_factory_registry.append_alpha_factory_records`; subsequently cold `load_and_verify_alpha_factory_registry`, check EXACT added episode id/head, replay/idempotence and failure atomicity. Never create fake new opportunities. For isolated offline fixture set `producer_type=OTHER_VALIDATED_ADVISORY`, `result_state=DATA_INSUFFICIENT`, explicit test-only evidence regime, `human_review_required=True`, all advisory/no-execution/no-strategy/no-qualification flags true, source and receipt refs bound by native rules. Real `HERMES_CONTROLLED_RESEARCH` producer classification requires future separate provider-origin acceptance. Any unsupported lineage/no trusted witness/failed cooperation must not append. The actual Alpha registry append is essential: standalone child or unused receipt fails acceptance.
+
+11. DETERMINISTIC OFFLINE SECURITY / ACCEPTANCE MATRIX
+Use the native exact-pinned upstream `delegate_task` and child resolver under a **fake model / blocked sockets / isolated ephemeral scratch**; it is insufficient to test a fake delegation implementation. Exercise real child construction/completion with trustworthy event witness, not mock everything upstream. Negative tests: deny parent/child composite `hermes-cli`, aliases, inherited MCP, orchestrator escape, recursive calls, file/terminal/process/code/browser/memory/cron, source outside cutoff, invented citations, role swap/copy, duplicate child/session, model-injected origin, missing usage, crash/recovery, partial completion, over budget, untrusted plugin/config. Tests must fail if upstream native function is removed or a synthetic text receipt is substituted. Permission labels and actual model-facing tools must match. Avoid building a complex benchmarking suite or novel provider testing framework. The proof is integration correctness, not measured Alpha/profitability.
+
+11A. NORMATIVE RULE MATRIX — APPLICABLE NATIVE REQUIREMENTS
+These rules are enforceable W01 actions tied to the actual machine-readable semantic fields and R001–R012 evidence nodes. They do not grant network, provider or economic authority.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|hermes|legacy_profile|nondelegated_default|PRESERVE_EXACT|unchanged_web_only|delegated.profile|R001
+NR002|hermes|upstream_delegate|synchronous_dispatch|REQUIRE|pinned_real_children|delegated.upstream|R002
+NR003|hermes|tool_permissions|before_inference|FORBID|unapproved_effective_tools|delegated.permissions|R003
+NR004|hermes|nested_delegation|leaf_depth|FORBID|mcp_or_recursion|delegated.permissions|R004
+NR005|hermes|child_witness|terminal_completion|REQUIRE|host_owned_original_calls|delegated.witness|R005
+NR006|hermes|failure_handling|partial_or_unknown|REJECT|no_success_receipt|delegated.budget_recovery|R006
+NR007|research|grounding|frozen_sources|REQUIRE|native_citation_verification|delegated.grounding|R007
+NR008|alpha|research_episode|verified_pair|REQUIRE|real_append_cold_read|delegated.alpha_consumer|R008
+NR009|alpha|lineage|forged_or_changed|REJECT|no_registry_mutation|delegated.alpha_consumer|R009
+NR010|security|offline_transport|engineering_only|FORBID|network_and_credentials|delegated.authority|R010
+NR011|security|restart_evidence|orphan_or_stale|REJECT|no_late_publication|delegated.budget_recovery|R011
+NR012|safety|advisory_boundary|pre_alpha_unlock|FORBID|economic_promotion|delegated.authority|R012
+END_NORMATIVE_RULE_MATRIX_V1
+
+12. EXACT FILE BOUNDARY / SIZING
+OWNER SCOPE AMENDMENT: The previous 15-file package stopped before edits when the new
+`src/research_runtime/hermes_controlled_runtime/delegated_specialists.py` path failed
+TWO historical exact-allowlist guards. The sole proposed compatibility addition,
+**pending Karl's explicit approval of this 17-file package**, is to amend only
+`tests/test_hermes_advisory_foundation_architecture_docs.py` and
+`tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py`.
+In each guard, add exactly the delegated_specialists.py path to the existing allowed set
+and add one same-pattern hostile sibling negative for
+`src/research_runtime/hermes_controlled_runtime/delegated_specialists_shadow.py`.
+Retain the original forbidden regex, no wildcard broadening, and every preexisting guard
+assertion. Run both complete guard test files (not only the changed assertion), plus the
+required 79-test adjacent architecture boundary family and the W01 R001-R012 tests.
+The prior 15-path readiness/probe receipts remain historical feasibility evidence only:
+rerun native readiness on this exact amended prompt/spec; never label old hashes current.
+This is one coherent L / 17-file RUNTIME (Risk 3) package. Exact repo paths are:
+  - src/research_runtime/hermes_controlled_runtime/policy.py
+  - src/research_runtime/hermes_controlled_runtime/runner.py
+  - src/research_runtime/hermes_controlled_runtime/delegated_specialists.py
+  - tools/alpha/run_hermes_delegated_specialists.py
+  - tests/research_runtime/hermes_controlled_runtime/test_controller.py
+  - tests/research_runtime/hermes_controlled_runtime/test_runner.py
+  - tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py
+  - tests/tools/alpha/test_hermes_delegated_specialists.py
+  - tests/test_hermes_advisory_foundation_architecture_docs.py
+  - tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py
+  - docs/hermes_delegated_specialists_contract.md
+  - docs/deferred_items_log.md
+  - docs/project_status.md
+  - docs/repo_truth_index.md
+  - docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md
+  - docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_prompt.txt
+  - docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json
+  - tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py
+OWNER SCOPE AMENDMENT 02 (2026-11-17, Karl in chat: "Yes, approve 18"): the Linux full suite
+showed that the historical meta-guard
+`tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative`
+pins both guard files to their base text plus enumerated approved additions, so the approved
+guard edits above fail it (HEAD 1 failed, base 1c98183 1 passed). The sole further addition is
+this eighteenth path: record this WP's exact guard additions in that meta-guard, in the same
+form as its existing REAL01/ACTIVATION addition lists. No guard regex is relaxed, no wildcard is
+added, and every preexisting assertion is retained. Where this prompt says seventeen/17 paths
+for the boundary, read eighteen/18; nothing else changes.
+Actual native RUNTIME IMPLEMENTATION_READY is mandatory before source edits; independent PROTECTED certification is NOT required for Risk 3. The certificate path is OUT OF SCOPE and must not be created or committed. Do NOT touch extra tracked paths to satisfy historical allowlists or formatting; discover a conflict before source edits, STOP and obtain Karl's narrowly scoped authorization for any extra affected file; do not silently broaden. No dependency/lock file, SDK update, .github change, copy of Hermes, existing cooperation/Alpha core, live authorization, account or data change. No tracked file outside the exact seventeen-path boundary. If the narrowly scoped observation wrappers cannot support verifiable authoritative evidence, STOP and return one exact blocker for a separately approved patch or alternate integration; do not add an eighteenth path. Ensure local test fixtures outside tracked repo or inside the allowed test files. Cost, scope and risk may not be enlarged to obtain a green test.
+
+13. EXECUTION / TESTING / PR POLICY (ONLY AFTER NATIVE RUNTIME READINESS AND CURRENT-MAIN PREFLIGHT)
+Work autonomously; no daily micromanagement or follow-up of routine fixes. Full required focused tests R001-R012 from `wp_spec.json`, relevant adjacent existing upstream/tool/citation/Alpha tests, required repo architectural/static scope checks, generated-artifact guard, no-secrets static audit, dependency security checks where applicable, one actual stable-head local full suite and correct native exact-head hosted CI plan. Before Ready, run native readiness and local PR evidence consistency guard against complete PR body; publish one coherent PR (never merge), one sanitized status entry, honest deferred items. Mark `READY_FOR_REVIEW` only when exact-head hosted CI, original policy regression, upstream delegated toolset tests, witnessed child output and Alpha append all pass. Unavailable tool is UNAVAILABLE, not PASS; any nonzero full suite or unapproved file touches -> BLOCKED. Do not pad the WP with unrelated mechanics, speculative long-loop tests, provider experiments, extra refactors or redundant new receipt architectures.
+
+13A. CONTINUOUS NINE-AGENT / 36-CAPABILITY TRACKER (MANDATORY AFTER IMPLEMENTATION)
+After W01 Side25 independently performs a one-page INTEGRATION_DELTA_REVIEW: A3/A4 and R3-05/R3-05-CITATIONS may advance only to the exact verified evidence level; A1/A2/A5-A9 and other 34 commitments remain open. Include upstream native call and real Alpha append proof, zero Alpha experiment, scope/pin/permission drift, actual skill-invocation ledger, CI and cross-WP dependency. No owner-approved substitute or economic qualification is implied. W08/W12 later govern nine-role conditional routing and multi-cycle engineering rehearsal; do not implement them inside W01.
+
+14. CLOSE / COLD EVIDENCE / REPLAY
+Produce a single ZIP outside tracked repo with `SUMMARY.md`, `NATIVE_UPSTREAM_PROOF.md`, `PERMISSION_NEGATIVE_MATRIX.md`, `CHILD_WITNESS_AND_ALPHA_CONSUMER.md`, `TESTS_CI_SECURITY.md`, `SCOPE_DIFF_AND_SHA256.md`, `BLOCKERS_AND_DEFERRED.md`, and relevant sanitized receipts/hashes. Every claimed PASS must cite exact command, actual exit code, relevant raw byte hashes, head SHA, PR url and test count from the final version. Preserve zero economic/provider activity proof. Where actual provider-backed children are absent, state `OFFLINE_IMPLEMENTATION_COMPLETE_REAL_PROVIDER_ACCEPTANCE_PENDING`; do NOT say real operational specialist quality is proven. Reviewer independently verifies changed files, permission blast radius, actual native upstream invocation, producer-to-consumer registry append and exact head CI. Only Karl may merge.
+
+15. HARD STOPS / EVIDENCE PRECEDENCE
+Stop before implementation if actual native RUNTIME readiness is not IMPLEMENTATION_READY, Karl has not explicitly approved the amended 17-path scope, the pin is unverified, or the 17-path boundary is incompatible. Stop during implementation if accurate runtime witness cannot be obtained without new scope, if a child can gain unapproved tools, if source/Alpha consumer is fake, or if any no-trade/new-provider boundary is crossed. A STOP reports precise observed code/line/test and one minimal correction, not an invented green result. If native tests are all green but the real pinned child function never ran or no native Alpha registry row was cold verified, mark BLOCKED. Synthetic results may prove software mechanics but **never** live eligibility, valid Alpha edge, forecast quality, real Hermes provider authority or readiness for trading. Future genuine provider-backed specialist invocation, context persistence/research memory, scheduled research, broader agents, all 36 adoption dispositions and Alpha discovery remain separate owner-gated phases. Preserve source evidence and no silent mandate drops.
+
+
+16. EVIDENCE PLAN — BIND REAL TEST NODES TO CLAIMS
+The authoritative evidence plan is exactly `wp_spec.json` `evidence_plan.items` R001–R012 with its explicit named pytest commands and expected assertions. R001 protects original H1 behavior; R002–R005 require original upstream `delegate_task` child dispatch, restrictive effective tools and host-owned child origin/completion; R006 and R011 prove partial/error/recovery refusals. R007 binds real native source/citation validation; R008–R009 require actual native Alpha registry append, cold verification and bad-lineage atomic rejection; R010–R012 forbid external provider/network, credentials, Alpha tests, qualification, paper and execution. A PASS requires a recorded actual assertion, exact command, exit code, native call identity and cold replay hash. New test nodes may be `PLANNED_NEW_NODE` only in the pre-implementation check when their exact test file is declared in the 17-path scope; they must exist and assert before implementation review. Mocked delegate_task is not sufficient.
+
+17. SUCCESSOR BOUNDARY — SEPARATE AUTHORITY
+Only this finite, offline original-Hermes A3/A4 delegation → native cooperation → Alpha ResearchEpisode consumer is authorized by W01 after its own verified native readiness and current-main preflight. `successor_boundary.next_wp` governs a separate Karl-approved real-provider technical acceptance, not automatic model spend or Alpha discovery. W08 coordinator, nine-role scheduling, DATA-03/NBA, source provider requests, research memory expansion, qualification, paper, wallet/account, host, economic execution and later role implementations remain forbidden. Exact-head CI, independent reviewer assessment and Karl merge are subsequent governance milestones, not extra machine state edges. PR #281 CI repair belongs to an independent workstream.
+
+18. REPORT BACK — CONSOLIDATED RETURN AND DRIFT GATE
+After actual native RUNTIME readiness PASS, current-main/predecessor checks and Karl's W01 offline authorization plus the explicit 17-path amendment approval, Claude Code must perform the implementation work autonomously within the approved scope and report back a single ZIP with the seven original report surfaces specified in section 14 and sanitized native upstream child event, permission, cold Alpha append and test/CI evidence. Report exact head SHA, changed path set, test commands/counters and all refusal/unknown states, including missing provider acceptance. Side25 then performs the one-page `INTEGRATION_DELTA_REVIEW` before W02; this specification becomes executable only after the RUNTIME readiness, native readiness PASS, and Karl’s explicit amended 17-path implementation authorization; until then it is a pre-authorized CC handoff only. No self-issued certificate, hidden source upgrade or fabricated child origin is permitted.

@@ -1,0 +1,539 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-HERMES-DELEGATED-SPECIALISTS-01",
+    "title": "Pinned upstream Hermes specialist delegation to grounded native Alpha evidence",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "HERMES_DELEGATED_SPECIALIST_GROUNDED_ALPHA_VERTICAL",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-hermes-delegated-specialists-01",
+    "required_predecessor": {
+      "pr_number": 280,
+      "head_sha": "92e71a3d71dd4d2cb8500eb68bb2bce066c18567",
+      "merge_sha": "1c981838c2cc3ff2fcd5991aa97cf78194a10a2f"
+    },
+    "objective": "One opt-in dormant permission-restricted pinned Hermes child delegation producer, grounded FORECASTER/FALSIFIER consumer, and verified advisory ResearchEpisode append to native AlphaFactoryRegistry. Preserve original web-only research profile. Offline model/venue mocks only; no provider, market discovery, strategy qualification, execution or trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "src/research_runtime/hermes_controlled_runtime/delegated_specialists.py",
+      "tools/alpha/run_hermes_delegated_specialists.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py",
+      "tests/tools/alpha/test_hermes_delegated_specialists.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "docs/hermes_delegated_specialists_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md",
+      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py"
+    ],
+    "allowed_changed_files": [
+      "src/research_runtime/hermes_controlled_runtime/policy.py",
+      "src/research_runtime/hermes_controlled_runtime/runner.py",
+      "src/research_runtime/hermes_controlled_runtime/delegated_specialists.py",
+      "tools/alpha/run_hermes_delegated_specialists.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_controller.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_runner.py",
+      "tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py",
+      "tests/tools/alpha/test_hermes_delegated_specialists.py",
+      "tests/test_hermes_advisory_foundation_architecture_docs.py",
+      "tests/test_hermes_input_output_contracts_and_validator_requirements_docs.py",
+      "docs/hermes_delegated_specialists_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md",
+      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/paper_trading/",
+      "src/strategy_lifecycle/",
+      "src/execution_feasibility/",
+      "src/data_layer/",
+      "src/operator_cockpit_frontend/",
+      "tools/deployment/",
+      "tools/qualification/"
+    ],
+    "max_changed_files": 18,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert only the seventeen declared task-owned tracked paths on a clean branch. No alteration of real Hermes homes, provider sessions, user source evidence, existing Alpha registries, host deployments or trading ledgers. No generated artifacts committed.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Add a separate opt-in delegated profile and producer-to-consumer research vertical; immutable H1 existing APIs and other bounded native stores are reused.",
+    "items": [
+      {
+        "surface": "HermesInvocationPolicy / run_controlled_hermes_research",
+        "before": "Immutable web-only profile with delegation=false; existing research controller supports one ordinary web-only -z provider invocation.",
+        "after": "Unchanged byte-for-byte public non-delegated policy semantics and default paths. A named, distinct delegated-only policy and controlled helper are optional.",
+        "change_authorized": true,
+        "compatibility_requirement": "Historical H1 policy id, CLI argv, safety profile, no project plugin loading and old tests remain unchanged; no global ALLOWED_TOOLSETS relaxation. Existing policy defaults and frozen ID remain exact. Explicit new profile never passed into old controller call implicitly, and no CLI YOLO profile is accepted by default.",
+        "authority": "OFFLINE_RUNTIME_SOFTWARE_ONLY"
+      },
+      {
+        "surface": "Pinned Hermes delegate_task + child-toolset resolution",
+        "before": "Pinned source has native delegation but currently no trusted role-production bridge in bot; caller-authored role texts are unverified.",
+        "after": "A separately selected restricted Hermes parent makes one host-controlled synchronous native delegate_task batch call with two real upstream leaf children; two bounded in-process observation wrappers record original upstream child construction and terminal execution into verifiable sanitized evidence; actual model-facing post-init tools are validated before inference.",
+        "change_authorized": true,
+        "compatibility_requirement": "Pinned upstream _build_children dynamically references delegate_tool._build_child_agent, _Batch.run_child dynamically references delegate_tool._run_single_child. Both observed originals must run; child model APIs faked only at provider boundary; no plain -z stdout, model-forged IDs, new fork, unverified dynamic injection or network/credentials.",
+        "authority": "OFFLINE_NATIVE_PIN_PROOF_ONLY"
+      },
+      {
+        "surface": "research_cooperation / run_hermes_cooperation",
+        "before": "Caller-supplied roles, 40+ SANITIZED_SYNTHETIC benchmark, NO_HERMES_INVOCATION, no Alpha registry write.",
+        "after": "Historical operator unchanged. A new trusted witnessed single-case path reuses underlying grounded assess_question/source verification with actual child outputs; old receipt identity remains intact.",
+        "change_authorized": false,
+        "compatibility_requirement": "Do not misstate legacy 40-case method as real role witness; do not alter old schemas or rewrite historical evidence.",
+        "authority": "RESEARCH_ONLY"
+      },
+      {
+        "surface": "alpha_factory.build_research_episode + alpha_factory_registry.append_alpha_factory_records",
+        "before": "Native advisory immutable ResearchEpisode and verified append store exist but do not consume genuine delegated cooperation.",
+        "after": "New bridge explicitly builds and appends one advisory DATA_INSUFFICIENT or similar non-qualifying episode to an already seeded exact candidate/family/source registry, only after witnessed child verification and native grounded evaluation.",
+        "change_authorized": false,
+        "compatibility_requirement": "No new candidate/family, no source ID invention, no direct SQLite mutation, no production store in offline tests, no strategy or qualification authority.",
+        "authority": "OFFLINE_ADVISORY_ALPHA_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Trust, scope, native consumer and negative-path invariants for the new opt-in delegated producer.",
+    "items": [
+      {
+        "path": "delegated.profile",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only separate named profile is allowed to expose delegation; existing immutable HermesInvocationPolicy remains strict web-only with same defaults, version, ids and managed config.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Legacy golden/negative tests pass, no default change.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Separate explicit policy identity.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.upstream",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Pin exactly NousResearch/hermes-agent v0.21.3 commit 345cd2b057a452236de401d3534b8502a7465e8d; invoke the upstream function and native tool resolver, not a copied imitation. Use genuine host-initiated delegate_task(...,tasks=[A3,A4],background=False,parent_agent=restricted_native_parent) from isolated managed worker; pinned _build_children and _Batch.run_child import original builder/executor dynamically. No CLI stdout provenance and no model-driven background dispatcher in W01.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Native exact-pin delegate_task creates two actual upstream AIAgent child sessions; observation-wrapped _build_child_agent and _run_single_child each forward into original pinned callable and can be removed in finally; forced model-background path and source mismatch reject.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Verified upstream commit and function names.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.permissions",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Parent effective model tools limited to web_search,web_extract,delegate_task; leaf children only web_search,web_extract. Test disallowed composite, terminal, file, browser, account, execution, plugin, MCP and extra tools; max_spawn_depth=1; orchestrator_enabled=false; inherit_mcp_toolsets=false; background=false or stateless validated join. Check parent and each child effective post-init model-facing schemas before child inference; actual child enabled/disabled fields and valid_tool_names are verified, not inferred from textual toolset labels. Pin delegation.max_iterations in managed config; API per-call max_iterations is not authority.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Real upstream resolver and real child AIAgent post-init inspection; deny hidden aliases, composite registry drift, MCP inheritance, orchestrator delegation and lazy tool exposure at first inference.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed capability whitelist/denial codes.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.witness",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Model text alone never witnesses two actual children. Producer-owned trusted runtime binds separate child ids/session refs, real native function path and completion status, exact role, request/source cutoff, bound input/output hashes and origin classification. Plain -z stdout is insufficient without trusted child events. Preferred minimal observer: same-process bounded wrappers around upstream tools.delegate_tool._build_child_agent (pre-inference tool/session witness) and _run_single_child (terminal completion witness), both calling original native implementation. Their call-site imports from delegate_tool_results._build_child_preserving_parent_tools and delegate_tool_dispatch._Batch.run_child are verified at exact pin; no on-disk upstream modification.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "The original pinned upstream builder and runner execute twice; observer binds project role by task index, native session/subagent IDs, exact effective pre-inference tools, completion/digest and real/UNKNOWN cost; model claims, best-effort event callbacks and stdout-only substitutes fail; observer must not outlive invocation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "COLD_VERIFIED_OFFLINE_NATIVE_CHILD_PATH; not real provider accepted.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.grounding",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Consume frozen SRC-01 source receipt and exact accepted source bytes using native cold verifier and research_cooperation citation/rule/claim checking. One-case operator must not reuse 40-case synthetic benchmark success as genuine research quality.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Unsupported source, postcutoff, missing role, forged quote or changed input rejects before append.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Native grounded per-case receipt, advisory only.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.alpha_consumer",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Require preexisting validated OpportunityCandidate, HypothesisFamily, source refs and registry head. Build native ResearchEpisode with exact lineage and deterministic_evidence_refs; commit via registry append and cold reload; test-only classification.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Prove actual new registry row and hash chained replay; tamper or conflict yields no append.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Native advisory ResearchEpisode id and final registry head.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.authority",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "No actual provider, model, Firecrawl or Polymarket network, credentials, wallet, strategy discovery, qualification, profitability study, economics, schedule, order, trade, host modification, live activation or production Alpha mutation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Deny actual external calls and any invocation lacking separately authorized provider gate.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "OFFLINE_TEST_ONLY; ZERO_REAL_PROVIDER_INVOCATIONS.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "delegated.budget_recovery",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Bound at most one parent with two leaf children per offline run and explicit timeout/size/token-simulated caps; no automatic retries; atomic scratch, deterministic cold replay, no ghost completion on crash. Upstream delegation.max_iterations config, not delegate_task kwarg, is authoritative; top-level run_agent._dispatch_delegate_task forces background, so finite W01 must directly call upstream synchronous delegate_task from native deterministic host parent. Unknown/missing usage is quarantined, never silently charged zero.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Hard two-child and source-bound bounded no-network run with no late publication, no unapproved retry; evidence includes exact native child call trace and source cutoff; real paid provider path prohibited.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed safe terminal statuses.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Use current native content-addressing, canonical SHA256 and append-only registry identities; no new cross-system canonical derivation algorithm.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Exactly the canonical native three-edge chain. RUNTIME Risk 3 requires deterministic prompt/spec validation and native readiness PASS, not an independent PROTECTED certificate. Karl has conditionally authorized bounded offline W01 implementation after verified current-main and predecessor gates. Provider and live authority remain separately gated.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native WP prompt/spec guard and RUNTIME readiness PASS on the exact files, with scope, authority, rule-matrix, evidence-node and successor checks; technical draftability never grants additional network, credentials or trading authority.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl's existing 2026-11-17 bounded offline RUNTIME W01 authorization applies only after his separate, explicit approval of this 15-to-17-path compatibility amendment, native IMPLEMENTATION_READY for the exact amended prompt/spec and verified clean current-main/predecessor checks. No new provider, model, credential, network, economic or live authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Authorized executor verifies real pinned upstream children and effective permissions, host-owned origin/completion evidence, native citations and real advisory Alpha append/cold read, with R001-R012 actual tests; PR review/merge and real-provider acceptance remain distinct.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Use unchanged WP159 canonical fifteen-code readiness precedence and safe closed runtime failures.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new independent canonical JSON identity algorithm; focused pytest native upstream/negative matrices are the executable oracle.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Twelve grouped acceptance cases; true native upstream delegation and an actual Alpha registry consumer are mandatory, alongside unchanged historical contract.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_original_web_only_profile_exactly_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_controller.py::test_original_web_only_profile_exactly_unchanged",
+        "expected_result": "Original web-only policy identity, managed bytes, argv, request/receipt and historical security negatives stay unchanged."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_pinned_upstream_delegate_task_real_function_called_offline",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py::test_pinned_upstream_delegate_task_real_function_called_offline",
+        "expected_result": "Actual exact-pinned upstream delegate_task invoked by one restricted native Hermes parent synchronously with exactly two child tasks; _build_children/_build_child_agent/_run_single_child real originals executed under fake provider and blocked product-network; no copied or fake delegate implementation, CLI stdout-only or forced model background path."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_actual_toolset_intersection_and_composite_denials",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py::test_actual_toolset_intersection_and_composite_denials",
+        "expected_result": "Observe true post-init AIAgent valid_tool_names and effective tool schemas for both native children before inference; parent web+delegation only and child web only, with zero file/terminal/account/browser/code/MCP/composite or nested delegation; fail on dynamic registry/toolset changes."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_no_recursive_or_mcp_inherited_delegation",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py::test_no_recursive_or_mcp_inherited_delegation",
+        "expected_result": "Pinned max_spawn_depth=1, orchestrator_enabled=false, inherit_mcp_toolsets=false, explicit leaf effective role, no nested or composite delegation; invalid controls stop."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_true_child_provenance_witness_not_model_self_report",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py::test_true_child_provenance_witness_not_model_self_report",
+        "expected_result": "Host-owned same-process observer sees original upstream child constructor and terminal _run_single_child for both distinct sessions; native returned completion/digest/cost or UNKNOWN bound to external role index; forged model output, best-effort hook-only evidence and unobserved child produce no success."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_refused_child_failure_missing_role_and_budget_overrun",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py::test_refused_child_failure_missing_role_and_budget_overrun",
+        "expected_result": "Any child error, missing second native call, timeout, unknown result, wrong effective tools, partial/duplicate child identity, missing/unknown cost when budget contract demands certainty, or stale/corrupt source prevents Alpha append."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_existing_grounded_cooperation_citations_are_reused",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_delegated_specialists.py::test_existing_grounded_cooperation_citations_are_reused",
+        "expected_result": "Cold-verify SRC-01 evidence, use native research_cooperation citation/rule/claim validation, preserve 40-case historical synthetic benchmark and reject unsupported quote or source origin."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_actual_alpha_registry_consumer_append_and_cold_replay",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_delegated_specialists.py::test_actual_alpha_registry_consumer_append_and_cold_replay",
+        "expected_result": "Verified native build_research_episode plus append_alpha_factory_records against isolated seeded candidate/family/source registry, then load_and_verify; second run idempotent; no invented candidate."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_alpha_rejects_forged_witness_or_broken_lineage",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_delegated_specialists.py::test_alpha_rejects_forged_witness_or_broken_lineage",
+        "expected_result": "Tampered source/candidate/family/role/event digest, outsider registry, missing predecessor or self-assigned receipt never appends and produces a closed safe result."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_engineering_only_no_product_network_or_credentials",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_delegated_specialists.py::test_engineering_only_no_product_network_or_credentials",
+        "expected_result": "Global sockets disallowed during implementation tests, no real model/provider calls, no credential, account, funded wallet, market GET, recurring loop, execution or live path."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_resume_replay_failure_and_sanitized_identity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_delegated_specialists.py::test_resume_replay_failure_and_sanitized_identity",
+        "expected_result": "Crash/restart stale owner/witness/receipt is refused; durable frozen inputs and cold re-derivation; output contains no raw stderr/secret/local user paths."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_no_alpha_qualification_paper_or_strategy_promotion",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_hermes_delegated_specialists.py::test_no_alpha_qualification_paper_or_strategy_promotion",
+        "expected_result": "Alpha ResearchEpisode advisory_only and all three no-authority flags true; no new Alpha discovery, forecasts/profitability claims, WP170/WP172/WP173, Gate C, orders or learning activation."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-HERMES-DELEGATED-SPECIALISTS-REAL-ACCEPTANCE",
+    "next_title": "Separately Karl-authorized bounded real provider session and independently witnessed specialist/Alpha consumer acceptance, without Alpha discovery",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-HERMES-DELEGATED-SPECIALISTS-01",
+    "forbidden_in_this_wp": [
+      "Absent actual native RUNTIME IMPLEMENTATION_READY and Karl's conditional owner authorization/current-main preflight: no W01 source edits or executor implementation may begin.",
+      "No change to web-only default H1 Hermes policy, old cooperation operator/40-case synthetic benchmark, legacy receipts or frozen evidence.",
+      "No actual Hermes provider/model/OAuth/Firecrawl/Polymarket network request or credential reading during this WP.",
+      "No Alpha discovery, strategy search, weather/NBA/copyability/arbitrage profitability experiment, WP170/172/173, training, evaluation or strategy admission.",
+      "No auth/account/signer/keys/ledger, orders, capital, deployment, scheduler, background automation or live authority.",
+      "No vendor source copy, root dependency/lock change, credential or config path edits, production Alpha registry writes, host access or merge.",
+      "No acceptance based solely on fake child records, model-self-reported child origin or isolated testing without native Alpha consumer."
+    ]
+  }
+}
