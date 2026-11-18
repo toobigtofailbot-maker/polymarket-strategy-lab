@@ -2255,3 +2255,13 @@ PR264 is merged at b678b5c98179a858f3df8b37016ae738a81311d0, final head bc51fc8f
 ## S10-WALLET-EPOCH-01 authorized wallet epoch wire repair
 
 Predecessor PR265 is merged at 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7b997e905e80b94a44bed5eee5ddf330b3bbfa7). Karl authorized the exact ten-path RUNTIME/Risk3/M package (prompt 3cca1a9132dc674826c41282bc13188479f7b465cd65e17a612bffa3112fcafd, spec 101825da1574aaae79c3143ca0ed452f4918d4407042789e92a4ca98d069ed2a) after native deterministic IMPLEMENTATION_READY. `get_wallet_trades_page` and `get_wallet_activity_page` now validate the caller's canonical ISO UTC window and send `start`/`end` as decimal Unix epoch seconds; invalid or reversed windows refuse before transport. WALLET-01 receipts, run key, PIT clocks and ingest/contracts sources are unchanged. Absent `/v2/activity` `is_combo` stays SCHEMA_DRIFT/ambiguous. Offline intercepted tests only; zero product GET. No live retest, wallet signal, profitability or trade-eligibility claim follows. Karl alone merges.
+
+
+## S10-HERMES-DELEGATED-SPECIALISTS-01 pinned upstream specialist delegation to grounded Alpha evidence
+
+- **Base and authority.** Predecessor PR #280 is merged at 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f (head 92e71a3d71dd4d2cb8500eb68bb2bce066c18567). Karl authorized the bounded offline RUNTIME/Risk3/L package after native deterministic IMPLEMENTATION_READY: an exact 17-path amendment, prompt 776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207, spec 160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970.
+- **Chain.** A separate opt-in `DelegatedSpecialistsPolicy` drives one host-owned synchronous upstream `delegate_task` batch on the exact pinned Hermes v0.21.3 (345cd2b). It yields two witnessed leaf children (FORECASTER = index 0, FALSIFIER = index 1). Their output goes through native SRC-01 grounding and `research_cooperation.assess_question`, then one advisory `DATA_INSUFFICIENT` / `OTHER_VALIDATED_ADVISORY` `ResearchEpisode` is appended and cold-verified.
+- **Unchanged.** The H1 web-only policy, `research_cooperation`, Alpha core/registry and the 40-case cooperation operator are unchanged.
+- **Status.** Offline scripted provider boundary only: OFFLINE_IMPLEMENTATION_COMPLETE_REAL_PROVIDER_ACCEPTANCE_PENDING.
+- **Zero activity.** No real provider, market GET, credential, Alpha discovery, qualification, paper, order or deployment. LIVE DISABLED.
+- **References.** Contract: docs/hermes_delegated_specialists_contract.md. Stable record: docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md. Karl alone merges.

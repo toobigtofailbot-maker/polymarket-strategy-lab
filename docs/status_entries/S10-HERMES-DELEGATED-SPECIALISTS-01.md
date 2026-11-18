@@ -1,0 +1,88 @@
+# S10-HERMES-DELEGATED-SPECIALISTS-01
+
+RUNTIME/Risk3/L, exactly 17 paths (approved 15 -> 17 amendment). Branch `codex/s10-hermes-delegated-specialists-01`
+cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
+
+- PR #281 (docs-only, open) and PR #268 (open) are separate and untouched; nothing is stacked on them.
+- Karl's 2026-11-17 owner directive authorizes only this bounded offline implementation. He approved the 17-path
+  amendment in chat ("Yes, I approve 17"). He also approved one extra exact allowlist entry in the second guard for the
+  in-scope test file `tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py`, with its hostile
+  `_shadow` negative ("Yes, add it"). No new path was added. Merge: NO (Karl only).
+
+## Identity
+
+- WP ID: S10-HERMES-DELEGATED-SPECIALISTS-01
+- Title: Pinned upstream Hermes specialist delegation to grounded native Alpha evidence
+- Branch: codex/s10-hermes-delegated-specialists-01
+- PR: see GitHub PR metadata and PR body.
+- Base commit: 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f
+- Validated implementation commit: recorded in the PR body (this fragment is stable and non-self-referential).
+- Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential.
+- Merge commit: (fill after merge)
+- Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED (only after the checks recorded in the PR body)
+
+## Readiness
+
+- Prompt SHA-256: `776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207`.
+- Spec SHA-256: `160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970`.
+- The committed copies under `docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/` are byte-identical to the continuation package.
+- The native gate ran on those exact bytes in an isolated `git archive` copy of `origin/main`, before any source edit:
+  - exit 0, `IMPLEMENTATION_READY`, RUNTIME, certificate_required=false;
+  - scope 17, 12 evidence items, 12 normative rules, error_codes [].
+- The earlier 15-path readiness and probe receipts are historical feasibility evidence only.
+- Ponytail LITE was the first actually invoked skill after startup.
+
+## Pin
+
+- Local exact checkout of NousResearch/hermes-agent at `345cd2b057a452236de401d3534b8502a7465e8d` (tag `v2026.9.14`, version 0.21.3). Tree clean, MIT, no `.env`.
+- Venv: CPython 3.11.9.
+- Bound by `.git/HEAD` plus LF-normalized SHA-256 of nine seam files.
+- The AUTO-02 runtime profile does not describe this venv (deferred D001).
+
+## Implementation
+
+Contract: `docs/hermes_delegated_specialists_contract.md`.
+
+- **Policy.** `DelegatedSpecialistsPolicy` is separate, frozen, content-addressed and narrowing-only. The H1 `HermesInvocationPolicy` is unchanged; R001 pins its golden policy id and managed-config digest.
+- **Runner.** `run_pinned_python_worker` makes one bounded `python -I -B` launch in its own process group:
+  - the caller supplies the full env and an empty cwd;
+  - a timeout kill-tree runs on expiry;
+  - it returns digests only, never raw output.
+- **Witness.** In the pinned venv, the worker observes the original upstream `_build_child_agent` and `_run_single_child`, restores them, and calls `delegate_task(tasks=[A3, A4], background=False)` once.
+  - The provider is scripted only at `agent.process_bootstrap.OpenAI`.
+  - Sockets and subprocesses are denied by an audit hook.
+  - The only network attempts observed were denied `127.0.0.1:9` sentinel probes.
+  - Upstream's `cmd.exe` launch attempts were denied and never executed; they are recorded as evidence.
+- **Host.** The host validates the witness into closed codes and seals it as a one-shot `DelegationWitness`. Roles come from the task index only.
+- **Consumer.** The operator runs this chain:
+  1. native SRC-01 `verify` and `grounding_context`;
+  2. `assess_question`;
+  3. a lineage check against the frozen registry chain;
+  4. `build_research_episode` (`DATA_INSUFFICIENT`, `OTHER_VALIDATED_ADVISORY`, human review);
+  5. `append_alpha_factory_records`;
+  6. cold `load_and_verify_alpha_factory_registry`.
+
+  The same inputs give an idempotent append, and `verify` is a cold re-derivation.
+- **Unchanged.** Not modified: `research_cooperation.py`, Alpha Factory core and registry, `run_hermes_cooperation.py`, upstream source, dependencies, workflows.
+
+## Outcome
+
+- Evidence class: `OFFLINE_NATIVE_DELEGATION_TEST_ONLY`.
+- Acceptance: `OFFLINE_IMPLEMENTATION_COMPLETE_REAL_PROVIDER_ACCEPTANCE_PENDING`.
+- In isolated test registries, real pinned children produced a grounded `CITATIONS_VERIFIED_REVIEW_REQUIRED` outcome. One advisory episode was appended and cold-verified, and a second run was idempotent.
+- No real provider, market GET, credential, Alpha discovery, qualification, paper, order, deployment or production registry write took place.
+- No claim is made about research quality, forecast quality or Alpha.
+
+## Limitations
+
+See `docs/deferred_items_log.md`, section "S10-HERMES-DELEGATED-SPECIALISTS-01 deferred items", D001–D005:
+
+- the profile mismatch;
+- hosted CI has no pin, so the native tests skip there;
+- real-provider acceptance is pending;
+- upstream's denied shell probes;
+- the guard-allowlist recurrence.
+
+## Validation state
+
+Validation commands and results, exact-head hosted checks, the evidence mode and the Ready decision belong in the PR body.

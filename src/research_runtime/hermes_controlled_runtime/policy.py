@@ -739,3 +739,115 @@ def parse_hermes_version(reported: object) -> str | None:
 def is_supported_hermes_version(reported: object) -> bool:
     """A real external run is invalid unless the reported version is exactly 0.21.3."""
     return parse_hermes_version(reported) == HERMES_EXPECTED_SEMVER
+
+
+# ---------------------------------------------------------------------------
+# S10-HERMES-DELEGATED-SPECIALISTS-01: a SEPARATE opt-in delegated profile.
+#
+# ``HermesInvocationPolicy`` above stays web-only and is never broadened. This
+# second, independently content-addressed policy is the only profile that may
+# expose ``delegate_task``; it is never a default and is never passed into the
+# H1 controller. It describes one host-owned synchronous upstream
+# ``tools.delegate_tool.delegate_task`` batch of exactly two leaf children
+# (task index 0 = FORECASTER, 1 = FALSIFIER; the roles are caller-owned index
+# commitments, not the upstream ``role`` argument). Real provider transport is
+# not authorized: the only accepted transport is the offline scripted provider
+# boundary used by engineering tests.
+# ---------------------------------------------------------------------------
+
+DELEGATED_POLICY_IDENTITY_PREFIX = "hermesdelegatedpolicy:sha256:"
+DELEGATED_POLICY_SCHEMA_VERSION = "hermes-delegated-specialists-policy/1.0.0"
+DELEGATED_PIN_COMMIT = "345cd2b057a452236de401d3534b8502a7465e8d"
+DELEGATED_PARENT_TOOLSETS = ("web", "delegation")
+DELEGATED_PARENT_TOOLS = ("delegate_task", "web_extract", "web_search")
+DELEGATED_CHILD_TOOLS = ("web_extract", "web_search")
+DELEGATED_ROLES = ("FORECASTER", "FALSIFIER")
+DELEGATED_TRANSPORT_OFFLINE = "OFFLINE_SCRIPTED_PROVIDER_BOUNDARY"
+_DELEGATED_EXACT = {
+    "schema_version": DELEGATED_POLICY_SCHEMA_VERSION, "hermes_release": HERMES_RELEASE,
+    "hermes_semver": HERMES_EXPECTED_SEMVER, "pin_commit": DELEGATED_PIN_COMMIT,
+    "parent_toolsets": DELEGATED_PARENT_TOOLSETS, "parent_tools": DELEGATED_PARENT_TOOLS,
+    "child_tools": DELEGATED_CHILD_TOOLS, "roles": DELEGATED_ROLES, "transport": DELEGATED_TRANSPORT_OFFLINE,
+    "background": False, "max_concurrent_children": 2, "max_spawn_depth": 1, "orchestrator_enabled": False,
+    "inherit_mcp_toolsets": False, "subagent_auto_approve": False, "independent_completions": False,
+    "automatic_retry": False,
+}
+# Narrowing-only bounds: (minimum, maximum) for each tunable integer cap.
+_DELEGATED_BOUNDS = {
+    "child_max_iterations": (1, 4), "child_timeout_seconds": (30, 120), "worker_timeout_seconds": (5, 600),
+    "max_child_api_calls": (1, 4), "max_child_tokens": (1, 32_000), "max_summary_chars": (1, 24_000),
+}
+
+
+@dataclasses.dataclass(frozen=True)
+class DelegatedSpecialistsPolicy:
+    """Immutable, opt-in delegated-specialist profile; any broadening raises."""
+
+    schema_version: str = DELEGATED_POLICY_SCHEMA_VERSION
+    hermes_release: str = HERMES_RELEASE
+    hermes_semver: str = HERMES_EXPECTED_SEMVER
+    pin_commit: str = DELEGATED_PIN_COMMIT
+    parent_toolsets: tuple[str, ...] = DELEGATED_PARENT_TOOLSETS
+    parent_tools: tuple[str, ...] = DELEGATED_PARENT_TOOLS
+    child_tools: tuple[str, ...] = DELEGATED_CHILD_TOOLS
+    roles: tuple[str, ...] = DELEGATED_ROLES
+    transport: str = DELEGATED_TRANSPORT_OFFLINE
+    background: bool = False
+    max_concurrent_children: int = 2
+    max_spawn_depth: int = 1
+    orchestrator_enabled: bool = False
+    inherit_mcp_toolsets: bool = False
+    subagent_auto_approve: bool = False
+    independent_completions: bool = False
+    automatic_retry: bool = False
+    child_max_iterations: int = 2
+    child_timeout_seconds: int = 60
+    worker_timeout_seconds: int = 180
+    max_child_api_calls: int = 2
+    max_child_tokens: int = 8_000
+    max_summary_chars: int = 16_000
+    cost_certainty_required: bool = False
+
+    def __post_init__(self) -> None:
+        for name, expected in _DELEGATED_EXACT.items():
+            value = getattr(self, name)
+            if type(value) is not type(expected) or value != expected:
+                raise PolicyBroadeningError("DELEGATED_POLICY_BROADENING_FORBIDDEN")
+        for name, (low, high) in _DELEGATED_BOUNDS.items():
+            value = getattr(self, name)
+            if type(value) is not int or not low <= value <= high:
+                raise PolicyBroadeningError("DELEGATED_POLICY_BOUND_INVALID")
+        if type(self.cost_certainty_required) is not bool:
+            raise PolicyBroadeningError("DELEGATED_POLICY_BOUND_INVALID")
+
+    def managed_config_mapping(self) -> dict[str, object]:
+        """H1 managed posture (no fallback, no plugins/memory/hooks/lazy installs) plus pinned delegation keys."""
+        mapping = DEFAULT_HERMES_INVOCATION_POLICY.managed_config_mapping()
+        mapping["delegation"] = {
+            "max_concurrent_children": self.max_concurrent_children,
+            "max_iterations": self.child_max_iterations,  # upstream child cap; the delegate_task kwarg is not authority
+            "max_spawn_depth": self.max_spawn_depth,
+            "orchestrator_enabled": self.orchestrator_enabled,
+            "inherit_mcp_toolsets": self.inherit_mcp_toolsets,
+            "subagent_auto_approve": self.subagent_auto_approve,
+            "independent_completions": self.independent_completions,
+            "child_timeout_seconds": self.child_timeout_seconds,
+        }
+        return mapping
+
+    def managed_config_bytes(self) -> bytes:
+        return canonical_json_bytes(self.managed_config_mapping())
+
+    @property
+    def managed_config_sha256(self) -> str:
+        return sha256_hex(self.managed_config_bytes())
+
+    def identity_fields(self) -> dict[str, object]:
+        fields = {f.name: getattr(self, f.name) for f in dataclasses.fields(self)}
+        fields = {k: list(v) if isinstance(v, tuple) else v for k, v in fields.items()}
+        fields["managed_config_sha256"] = self.managed_config_sha256
+        return fields
+
+    @property
+    def policy_id(self) -> str:
+        return content_address(DELEGATED_POLICY_IDENTITY_PREFIX, self.identity_fields())

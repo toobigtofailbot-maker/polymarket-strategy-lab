@@ -431,6 +431,9 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
                 # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: exact official OAuth plan-usage source/test only.
                 "src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b.py",
                 "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b.py",
+                # S10-HERMES-DELEGATED-SPECIALISTS-01: exact offline pinned-delegation witness source/test only.
+                "src/research_runtime/hermes_controlled_runtime/delegated_specialists.py",
+                "tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py",
             }
     findings = []
     for path in tracked:
@@ -452,6 +455,10 @@ def test_no_actual_hermes_implementation_artifacts_added() -> None:
     # S10-HERMES-AUTO-02-REAL-01-ACTIVATION: unregistered siblings of the OAuth module/test stay rejected.
     for hostile in ("src/research_runtime/hermes_controlled_runtime/oauth_plan_stage_b_shadow.py",
                     "tests/research_runtime/hermes_controlled_runtime/test_oauth_plan_stage_b_shadow.py"):
+        assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)
+    # S10-HERMES-DELEGATED-SPECIALISTS-01: unregistered siblings of the delegation module/test stay rejected.
+    for hostile in ("src/research_runtime/hermes_controlled_runtime/delegated_specialists_shadow.py",
+                    "tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists_shadow.py"):
         assert hostile not in allowed and any(pattern.search(hostile) for pattern in forbidden_patterns)
 
 
