@@ -2333,7 +2333,7 @@ Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 
 
 ## S10-HERMES-DELEGATED-SPECIALISTS-01
 
-- **Package.** Approved exact-17-path RUNTIME/Risk3 package on merged PR #280 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f. Frozen prompt/spec: docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/.
+- **Package.** Approved exact-18-path (17 + meta-guard amendment) RUNTIME/Risk3 package on merged PR #280 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f. Frozen prompt/spec: docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/.
 - **Source.** src/research_runtime/hermes_controlled_runtime/delegated_specialists.py (pinned upstream delegate_task witness), plus `DelegatedSpecialistsPolicy` in policy.py and `run_pinned_python_worker` in runner.py.
 - **Tool.** tools/alpha/run_hermes_delegated_specialists.py.
 - **Tests.** tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py and tests/tools/alpha/test_hermes_delegated_specialists.py. The native-pin tests need POLYMARKET_HERMES_PIN_ROOT.

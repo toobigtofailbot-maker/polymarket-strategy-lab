@@ -153,6 +153,16 @@ This is one coherent L / 17-file RUNTIME (Risk 3) package. Exact repo paths are:
   - docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md
   - docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_prompt.txt
   - docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json
+  - tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py
+OWNER SCOPE AMENDMENT 02 (2026-11-17, Karl in chat: "Yes, approve 18"): the Linux full suite
+showed that the historical meta-guard
+`tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py::test_auto02_historical_hermes_guards_exact_allowlist_and_sibling_negative`
+pins both guard files to their base text plus enumerated approved additions, so the approved
+guard edits above fail it (HEAD 1 failed, base 1c98183 1 passed). The sole further addition is
+this eighteenth path: record this WP's exact guard additions in that meta-guard, in the same
+form as its existing REAL01/ACTIVATION addition lists. No guard regex is relaxed, no wildcard is
+added, and every preexisting assertion is retained. Where this prompt says seventeen/17 paths
+for the boundary, read eighteen/18; nothing else changes.
 Actual native RUNTIME IMPLEMENTATION_READY is mandatory before source edits; independent PROTECTED certification is NOT required for Risk 3. The certificate path is OUT OF SCOPE and must not be created or committed. Do NOT touch extra tracked paths to satisfy historical allowlists or formatting; discover a conflict before source edits, STOP and obtain Karl's narrowly scoped authorization for any extra affected file; do not silently broaden. No dependency/lock file, SDK update, .github change, copy of Hermes, existing cooperation/Alpha core, live authorization, account or data change. No tracked file outside the exact seventeen-path boundary. If the narrowly scoped observation wrappers cannot support verifiable authoritative evidence, STOP and return one exact blocker for a separately approved patch or alternate integration; do not add an eighteenth path. Ensure local test fixtures outside tracked repo or inside the allowed test files. Cost, scope and risk may not be enlarged to obtain a green test.
 
 13. EXECUTION / TESTING / PR POLICY (ONLY AFTER NATIVE RUNTIME READINESS AND CURRENT-MAIN PREFLIGHT)

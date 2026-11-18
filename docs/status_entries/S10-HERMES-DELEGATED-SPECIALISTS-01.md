@@ -1,13 +1,16 @@
 # S10-HERMES-DELEGATED-SPECIALISTS-01
 
-RUNTIME/Risk3/L, exactly 17 paths (approved 15 -> 17 amendment). Branch `codex/s10-hermes-delegated-specialists-01`
+RUNTIME/Risk3/L, exactly 18 paths (approved 15 -> 17 -> 18 amendments). Branch `codex/s10-hermes-delegated-specialists-01`
 cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
 
 - PR #281 (docs-only, open) and PR #268 (open) are separate and untouched; nothing is stacked on them.
 - Karl's 2026-11-17 owner directive authorizes only this bounded offline implementation. He approved the 17-path
   amendment in chat ("Yes, I approve 17"). He also approved one extra exact allowlist entry in the second guard for the
   in-scope test file `tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py`, with its hostile
-  `_shadow` negative ("Yes, add it"). No new path was added. Merge: NO (Karl only).
+  `_shadow` negative ("Yes, add it"). The Linux full suite then showed the historical meta-guard
+  `tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py` pins both guard files to base text plus
+  enumerated additions; Karl approved it as the eighteenth path ("Yes, approve 18") to enumerate this WP's exact guard
+  additions. Merge: NO (Karl only).
 
 ## Identity
 
@@ -23,12 +26,15 @@ cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
 
 ## Readiness
 
-- Prompt SHA-256: `776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207`.
-- Spec SHA-256: `160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970`.
-- The committed copies under `docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/` are byte-identical to the continuation package.
-- The native gate ran on those exact bytes in an isolated `git archive` copy of `origin/main`, before any source edit:
+- Prompt SHA-256 (18-path amendment): `1b7c132fff0ee67480d46084d07c603264e0a065e1c89d88d978bc350a1721ac`; 17-path prompt `776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207` is historical.
+- Spec SHA-256 (18-path amendment): `cd048af5cebb7ffa78793bde32f552c2f6e9439bab4044205c491deae8b01cf8`; 17-path spec `160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970` is historical.
+- The 17-path copies were byte-identical to the continuation package. The committed copies add only the eighteenth path
+  to both scope lists and an "OWNER SCOPE AMENDMENT 02" paragraph in the prompt.
+- The native gate ran on the 17-path package bytes in an isolated `git archive` copy of `origin/main`, before any source edit:
   - exit 0, `IMPLEMENTATION_READY`, RUNTIME, certificate_required=false;
   - scope 17, 12 evidence items, 12 normative rules, error_codes [].
+- 18-path amendment, before re-running tests: `wp_readiness_gate.py` (no `--check-diff`) exit 0, `IMPLEMENTATION_READY`, RUNTIME,
+  certificate_required=false, scope 18, 12 evidence items, 12 rules, error_codes []. The final diff gate is in the PR body.
 - The earlier 15-path readiness and probe receipts are historical feasibility evidence only.
 - Ponytail LITE was the first actually invoked skill after startup.
 

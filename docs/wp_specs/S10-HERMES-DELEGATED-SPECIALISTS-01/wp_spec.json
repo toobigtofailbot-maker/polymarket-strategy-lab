@@ -38,7 +38,8 @@
       "docs/repo_truth_index.md",
       "docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md",
       "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_prompt.txt",
-      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json"
+      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py"
     ],
     "allowed_changed_files": [
       "src/research_runtime/hermes_controlled_runtime/policy.py",
@@ -57,7 +58,8 @@
       "docs/repo_truth_index.md",
       "docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md",
       "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_prompt.txt",
-      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json"
+      "docs/wp_specs/S10-HERMES-DELEGATED-SPECIALISTS-01/wp_spec.json",
+      "tests/research_runtime/hermes_controlled_runtime/test_autonomous_feedback.py"
     ],
     "forbidden_prefixes": [
       ".github/",
@@ -77,7 +79,7 @@
       "tools/deployment/",
       "tools/qualification/"
     ],
-    "max_changed_files": 17,
+    "max_changed_files": 18,
     "exact_scope_required": true,
     "historical_compatibility_edits": [],
     "rollback_surface": "Revert only the seventeen declared task-owned tracked paths on a clean branch. No alteration of real Hermes homes, provider sessions, user source evidence, existing Alpha registries, host deployments or trading ledgers. No generated artifacts committed.",
