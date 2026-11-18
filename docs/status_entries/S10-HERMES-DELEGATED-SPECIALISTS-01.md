@@ -81,13 +81,14 @@ Contract: `docs/hermes_delegated_specialists_contract.md`.
 
 ## Limitations
 
-See `docs/deferred_items_log.md`, section "S10-HERMES-DELEGATED-SPECIALISTS-01 deferred items", D001–D005:
+See `docs/deferred_items_log.md`, section "S10-HERMES-DELEGATED-SPECIALISTS-01 deferred items", D001–D006:
 
 - the profile mismatch;
 - hosted CI has no pin, so the native tests skip there;
 - real-provider acceptance is pending;
 - upstream's denied shell probes;
-- the guard-allowlist recurrence.
+- the guard-allowlist recurrence;
+- the external npm advisory that fails hosted `cockpit-frontend` (no frontend change here).
 
 ## Validation state
 
