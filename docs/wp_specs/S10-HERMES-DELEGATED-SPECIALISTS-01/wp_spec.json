@@ -82,7 +82,7 @@
     "max_changed_files": 18,
     "exact_scope_required": true,
     "historical_compatibility_edits": [],
-    "rollback_surface": "Revert only the seventeen declared task-owned tracked paths on a clean branch. No alteration of real Hermes homes, provider sessions, user source evidence, existing Alpha registries, host deployments or trading ledgers. No generated artifacts committed.",
+    "rollback_surface": "Revert only the eighteen declared task-owned tracked paths on a clean branch. No alteration of real Hermes homes, provider sessions, user source evidence, existing Alpha registries, host deployments or trading ledgers. No generated artifacts committed.",
     "mode_boundaries": [
       {
         "boundary": "workflow_governance",
@@ -334,7 +334,7 @@
       {
         "from_state": "DRAFTABILITY_PASS",
         "to_state": "AUTHORIZED",
-        "condition": "Karl's existing 2026-11-17 bounded offline RUNTIME W01 authorization applies only after his separate, explicit approval of this 15-to-17-path compatibility amendment, native IMPLEMENTATION_READY for the exact amended prompt/spec and verified clean current-main/predecessor checks. No new provider, model, credential, network, economic or live authority.",
+        "condition": "Karl's existing 2026-11-17 bounded offline RUNTIME W01 authorization applies only after his separate, explicit approvals of the 15-to-17-path and 17-to-18-path compatibility amendments, native IMPLEMENTATION_READY for the exact amended prompt/spec and verified clean current-main/predecessor checks. No new provider, model, credential, network, economic or live authority.",
         "failure_category": "AUTHORITY_CONTRADICTION"
       },
       {

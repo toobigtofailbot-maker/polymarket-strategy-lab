@@ -3,8 +3,9 @@
 RUNTIME/Risk3/L, exactly 18 paths (approved 15 -> 17 -> 18 amendments). Branch `codex/s10-hermes-delegated-specialists-01`
 cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
 
-- PR #281 (docs-only, open) and PR #268 (open) are separate and untouched; nothing is stacked on them.
-- Karl's 2026-11-17 owner directive authorizes only this bounded offline implementation. He approved the 17-path
+- PR #281 (docs-only) was open at implementation and merged on 2026-11-21 as main `743a3b1`. PR #268 (open) is separate and untouched; nothing is stacked on either.
+- Stage C (2026-11-21, Side26 scope-limited grant under Karl's standing software-development delegation): merged `origin/main` `743a3b1` into this branch with a normal merge, corrected stale prompt/spec/doc wording within the same 18 paths, and changed no source or test code.
+- The 2026-11-17 planning note alone was not the implementation grant. The distinct `S10_HERMES_DELEGATED_SPECIALISTS_01_CC_BOOTSTRAP.md` owner authorization covered the bounded offline 15-path implementation, conditional on native RUNTIME readiness. Karl then approved the 17-path
   amendment in chat ("Yes, I approve 17"). He also approved one extra exact allowlist entry in the second guard for the
   in-scope test file `tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py`, with its hostile
   `_shadow` negative ("Yes, add it"). The Linux full suite then showed the historical meta-guard
@@ -18,7 +19,7 @@ cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
 - Title: Pinned upstream Hermes specialist delegation to grounded native Alpha evidence
 - Branch: codex/s10-hermes-delegated-specialists-01
 - PR: see GitHub PR metadata and PR body.
-- Base commit: 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f
+- Base commit: 1c981838c2cc3ff2fcd5991aa97cf78194a10a2f (original cut); Stage C sync base: 743a3b1d2478737a81eb6691e6cf2ec15ee5fd5a
 - Validated implementation commit: recorded in the PR body (this fragment is stable and non-self-referential).
 - Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential.
 - Merge commit: (fill after merge)
@@ -26,8 +27,9 @@ cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
 
 ## Readiness
 
-- Prompt SHA-256 (18-path amendment): `1b7c132fff0ee67480d46084d07c603264e0a065e1c89d88d978bc350a1721ac`; 17-path prompt `776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207` is historical.
-- Spec SHA-256 (18-path amendment): `cd048af5cebb7ffa78793bde32f552c2f6e9439bab4044205c491deae8b01cf8`; 17-path spec `160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970` is historical.
+- Prompt SHA-256 (Stage C wording correction): `6847bc4004f2f8ec714f4c4303d5006e942434f4a8bad6ddd670d9da6cf0d5cb`; spec `a1e8b4d913b4862a08cb3460b5bd96a4d22876bfa74351c6dd5d4bdaac90f69b`. Native gate on these bytes before and after the edits: exit 0, `IMPLEMENTATION_READY`, RUNTIME, certificate_required=false, scope 18, 12 evidence items, 12 rules, error_codes [].
+- Prompt SHA-256 (18-path amendment, historical): `1b7c132fff0ee67480d46084d07c603264e0a065e1c89d88d978bc350a1721ac`; 17-path prompt `776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207` is historical.
+- Spec SHA-256 (18-path amendment, historical): `cd048af5cebb7ffa78793bde32f552c2f6e9439bab4044205c491deae8b01cf8`; 17-path spec `160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970` is historical.
 - The 17-path copies were byte-identical to the continuation package. The committed copies add only the eighteenth path
   to both scope lists and an "OWNER SCOPE AMENDMENT 02" paragraph in the prompt.
 - The native gate ran on the 17-path package bytes in an isolated `git archive` copy of `origin/main`, before any source edit:
@@ -88,7 +90,7 @@ See `docs/deferred_items_log.md`, section "S10-HERMES-DELEGATED-SPECIALISTS-01 d
 - real-provider acceptance is pending;
 - upstream's denied shell probes;
 - the guard-allowlist recurrence;
-- the external npm advisory that fails hosted `cockpit-frontend` (no frontend change here).
+- the external npm advisory that failed hosted `cockpit-frontend` (resolved 2026-11-21: advisory withdrawn; 4 moderate advisories remain).
 
 ## Validation state
 
