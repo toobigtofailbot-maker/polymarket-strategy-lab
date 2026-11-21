@@ -684,6 +684,28 @@ _WP162_AUTHORIZED_FILES = {
     "docs/deferred_items_log.md",
 }
 
+# PR #281 nine-agent roadmap publication: exactly 14 original owner-roadmap docs plus the two
+# historical exact-scope guard tests (Side26-delegated 16-path amendment). Exact-set only.
+_PR281_NINE_AGENT_ROADMAP_AUTHORIZED_FILES = frozenset({
+    "docs/nine_agent_capability_first_owner_direction.md",
+    "docs/repo_truth_index.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/00_OWNER_EXECUTIVE_DECISION.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/01_AS_IS_TO_BE_ARCHITECTURE.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/02_NINE_AGENT_IMPLEMENTATION_BLUEPRINT.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/03_FULL_36_CAPABILITY_ADOPTION_MATRIX.csv",
+    "docs/roadmaps/nine_agent_capability_first_20261117/04_DEPENDENCY_ORDERED_WP_ROADMAP.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/05_HERMES_FIRST_WP_DELTA_REVIEW.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/06_AGENT_LEARNING_AND_OPTIMIZATION_SPEC.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/07_WP_SELF_AUDIT_AND_PROGRESS_GATES.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/08_INDEPENDENT_ACCEPTANCE_AND_OPEN_DECISIONS.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/09_SOURCE_TO_CLAIM_REGISTER.csv",
+    "docs/roadmaps/nine_agent_capability_first_20261117/README.md",
+    "docs/roadmaps/nine_agent_capability_first_20261117/SHA256SUMS.txt",
+    "tests/test_adoption_architecture_dependency_registry_and_alpha_factory_roadmap_lock_in_docs.py",
+    "tests/test_local_research_workflow_value_measurement_harness_contract_docs.py",
+})
+
+
 _WP168_AUTHORIZED_FILES = {
     "docs/wp_specs/WP168/wp_prompt.txt",
     "docs/wp_specs/WP168/wp_spec.json",
@@ -950,6 +972,10 @@ def test_exact_six_file_scope_and_no_implementation_or_deferred_log_change():
         for line in (result.stdout + untracked_result.stdout).splitlines()
         if line
     }
+    if "docs/nine_agent_capability_first_owner_direction.md" in changed:
+        # PR #281 owns its exact 16-path roadmap scope; extra or missing paths fail.
+        assert changed == _PR281_NINE_AGENT_ROADMAP_AUTHORIZED_FILES
+        return
     if "docs/status_entries/WP168.md" in changed:
         # WP168 owns its exact 35-file XL scope (offline NautilusTrader replay kernel).
         assert changed == _WP168_AUTHORIZED_FILES
@@ -1247,3 +1273,28 @@ def test_status_fragment_is_stable_model_d_and_has_required_headings():
     assert re.search(r"\b[0-9a-f]{40}\b", status, re.IGNORECASE) is None
     assert "TBD" not in status
     assert "future mergeability" not in status.lower()
+
+def test_pr281_roadmap_scope_is_exact_and_fails_closed(monkeypatch):
+    """PR #281 branch: the exact 16-path set passes; a 17th path or a missing path fails."""
+    def run_with(paths):
+        listing = iter(["\n".join(sorted(paths)) + "\n", ""])
+        monkeypatch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, next(listing), ""))
+        test_exact_six_file_scope_and_no_implementation_or_deferred_log_change()
+
+    exact = set(_PR281_NINE_AGENT_ROADMAP_AUTHORIZED_FILES)
+    assert len(exact) == 16
+    run_with(exact)
+    hostile_sets = [
+        exact | {"docs/roadmaps/nine_agent_capability_first_20261117/10_UNAPPROVED.md"},
+        exact | {"src/research_runtime/hermes_controlled_runtime/delegated_specialists.py"},
+        exact | {"src/operator_cockpit_frontend/package-lock.json"},
+        exact - {"docs/repo_truth_index.md"},
+        exact - {"tests/test_local_research_workflow_value_measurement_harness_contract_docs.py"},
+        exact - {"docs/nine_agent_capability_first_owner_direction.md"},
+    ]
+    for paths in hostile_sets:
+        try:
+            run_with(paths)
+        except AssertionError:
+            continue
+        raise AssertionError(f"scope guard accepted a non-exact PR #281 set of {len(paths)} paths")
