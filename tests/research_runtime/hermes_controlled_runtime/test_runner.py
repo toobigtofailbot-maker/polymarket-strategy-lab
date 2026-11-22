@@ -1845,3 +1845,40 @@ def test_ctx02_t14_no_broad_allowlist_surface():  # T14
     module_source = inspect.getsource(runner_mod)
     assert re.findall(r"\b[0-9a-f]{64}\b", module_source) == [_FROZEN_SOUL_SHA256]
     assert "SOUL.md" not in runner_mod._RESEARCH_HOME_PROFILE_CONTEXT_FILES
+
+
+# --- S10-HERMES-DELEGATED-SPECIALISTS-01: bounded pinned-venv worker launcher -------------------------
+
+
+def test_pinned_worker_launch_returns_digests_only_and_uses_given_env(tmp_path):
+    script = tmp_path / "worker.py"
+    script.write_text(
+        "import os, sys\n"
+        "sys.stdout.write('stdout-secret-free')\n"
+        "sys.stderr.write('stderr-text')\n"
+        "raise SystemExit(0 if os.environ.get('W01_ONLY') == '1' and 'W01_LEAK' not in os.environ else 7)\n",
+        encoding="utf-8")
+    os.environ["W01_LEAK"] = "must-not-reach-worker"
+    try:
+        env = {"W01_ONLY": "1", **({"SYSTEMROOT": os.environ["SYSTEMROOT"]} if "SYSTEMROOT" in os.environ else {})}
+        outcome = runner_mod.run_pinned_python_worker(sys.executable, str(script), [], env=env, cwd=str(tmp_path),
+                                                      timeout_seconds=60)
+    finally:
+        del os.environ["W01_LEAK"]
+    assert outcome.exit_code == 0 and not outcome.timed_out and not outcome.launch_failed
+    import hashlib
+    assert outcome.stdout_sha256 == hashlib.sha256(b"stdout-secret-free").hexdigest()
+    assert outcome.stderr_byte_len == len(b"stderr-text")
+    assert "stderr-text" not in repr(outcome) and "stdout-secret-free" not in repr(outcome)
+
+
+def test_pinned_worker_timeout_kills_and_launch_failure_is_closed(tmp_path):
+    script = tmp_path / "sleepy.py"
+    script.write_text("import time\ntime.sleep(60)\n", encoding="utf-8")
+    env = {"SYSTEMROOT": os.environ["SYSTEMROOT"]} if "SYSTEMROOT" in os.environ else {}
+    outcome = runner_mod.run_pinned_python_worker(sys.executable, str(script), [], env=env, cwd=str(tmp_path),
+                                                  timeout_seconds=2)
+    assert outcome.timed_out and outcome.exit_code is None and outcome.duration_ms < 30_000
+    missing = runner_mod.run_pinned_python_worker(str(tmp_path / "no-python"), str(script), [], env={},
+                                                  cwd=str(tmp_path), timeout_seconds=2)
+    assert missing.launch_failed and missing.exit_code is None
