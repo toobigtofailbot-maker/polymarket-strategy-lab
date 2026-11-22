@@ -6,7 +6,7 @@ Package Identity:
   Suggested branch: codex/s10-hermes-delegated-specialists-01
   Package class: HERMES_DELEGATED_SPECIALIST_GROUNDED_ALPHA_VERTICAL
   Package size class: L
-  Evidence mode expected: PRIVATE_REPO_MANUAL_VERIFIED (only after actual checks)
+  Evidence mode expected: PUBLIC_VERIFIER_PASS (public repo; only after an actual posted-body verifier pass on the exact head; this does not show that pinned Hermes tests ran in hosted CI, see D002)
   Runtime impact: One separately gated dormant and opt-in bounded Hermes delegation research path; non-delegated H1 unchanged
   Product impact: True FORECASTER/FALSIFIER child provenance, grounded cooperation and actual advisory Alpha registry consumption
   Network impact: Implementation and native tests OFFLINE; Git/CI workflow may use normal GitHub network

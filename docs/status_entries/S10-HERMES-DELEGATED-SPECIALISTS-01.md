@@ -23,11 +23,11 @@ cut from clean synchronized main `1c98183` (merge of PR #280, head `92e71a3`).
 - Validated implementation commit: recorded in the PR body (this fragment is stable and non-self-referential).
 - Current live PR head: see GitHub PR metadata and PR body. This status fragment is stable and non-self-referential.
 - Merge commit: (fill after merge)
-- Evidence mode: PRIVATE_REPO_MANUAL_VERIFIED (only after the checks recorded in the PR body)
+- Evidence mode: PUBLIC_VERIFIER_PASS (public repo; from the posted-body verifier run recorded in the PR body; it covers posted reporting only and does not show that pinned Hermes tests ran in hosted CI, see D002)
 
 ## Readiness
 
-- Prompt SHA-256 (Stage C wording correction): `6847bc4004f2f8ec714f4c4303d5006e942434f4a8bad6ddd670d9da6cf0d5cb`; spec `a1e8b4d913b4862a08cb3460b5bd96a4d22876bfa74351c6dd5d4bdaac90f69b`. Native gate on these bytes (the pre-edit run on the previous 18-path bytes also passed): exit 0, `IMPLEMENTATION_READY`, RUNTIME, certificate_required=false, scope 18, 12 evidence items, 12 rules, error_codes [].
+- Prompt SHA-256 (evidence-mode correction, current): `2ae7470bbf52f80f312441c576fbdf05e665a89b8167b36a7bbfb00c22213e32` (Stage C prompt `6847bc4004f2f8ec714f4c4303d5006e942434f4a8bad6ddd670d9da6cf0d5cb` is historical); spec `a1e8b4d913b4862a08cb3460b5bd96a4d22876bfa74351c6dd5d4bdaac90f69b`. Native gate on these bytes (the pre-edit run on the previous 18-path bytes also passed): exit 0, `IMPLEMENTATION_READY`, RUNTIME, certificate_required=false, scope 18, 12 evidence items, 12 rules, error_codes [].
 - Prompt SHA-256 (18-path amendment, historical): `1b7c132fff0ee67480d46084d07c603264e0a065e1c89d88d978bc350a1721ac`; 17-path prompt `776077b6c852c1aea6a39103941fda4f43f16b863b596285e4b73625cb10d207` is historical.
 - Spec SHA-256 (18-path amendment, historical): `cd048af5cebb7ffa78793bde32f552c2f6e9439bab4044205c491deae8b01cf8`; 17-path spec `160f1ad84ddea73bcdf2cdcebe67a76003ce22e6bc05e6aa79c617ba8d258970` is historical.
 - The 17-path copies were byte-identical to the continuation package. The committed copies add only the eighteenth path
