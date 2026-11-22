@@ -2266,3 +2266,13 @@ Predecessor PR265 is merged at 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7
 - **Status.** Offline scripted provider boundary only: OFFLINE_IMPLEMENTATION_COMPLETE_REAL_PROVIDER_ACCEPTANCE_PENDING.
 - **Zero activity.** No real provider, market GET, credential, Alpha discovery, qualification, paper, order or deployment. LIVE DISABLED.
 - **References.** Contract: docs/hermes_delegated_specialists_contract.md. Stable record: docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md. Karl alone merges.
+
+
+## S10-CAP-B1-SOURCE-FORECAST-01 B1-A source/PIT to research and forecast consumer spine
+
+- **Base and authority.** Predecessor PR #282 is merged at b637c00230e698129e8696bcb3927db157106a86 (head f932d4928f4dd0100553b4ad858004ec0e69c285). Side26 granted the exact 11-path B1-A package under Karl's 2026-11-21 standing software-development delegation, conditional on native readiness. RUNTIME/Risk3/L. The external package failed the native gate; prompt section 8 corrected its structure only, and the gate then passed. A post-edit, session-approved path rename (section 9, still 11 paths) fixed a duplicate test basename.
+- **Chain.** A cold-verified SRC-01 grounding feeds the A1 scout (alpha_discovery universe, native identity normalization, market-catalog round trip, Alpha candidate join). It then feeds A2 research: SRC-01 accepted sources narrowed by the pinned Metaculus quality leaves, plus the official SDK on MockTransport as an identity cross-check. Next, the unmodified forecast_evaluation run/verify produces a DIAGNOSTIC_ONLY receipt bound to the same market, rule and grounding. Finally, the unmodified W01 run/verify (pinned Hermes, two witnessed leaf children, scripted boundary) makes an advisory Alpha append with a cold read, and one write-once spine receipt is produced.
+- **Measurement.** Native vs SDK ranking is measured on the same query; the result is NO_LIFT unless the SDK ranks the target strictly better. Model cost is UNKNOWN.
+- **Status.** OFFLINE_ENGINEERING_DEMONSTRATION. R3-02, R3-01-SOURCE_ARCHIVE, R3-23, R3-05 and R3-05-CITATIONS are touched but not VALUE_VERIFIED. B1-B method parity (R3-01, R3-10/WANG, R3-12/SAMPLER, R3-18) and provider-gated rows remain open.
+- **Zero activity.** No real provider, market GET, credential, Alpha discovery, qualification, paper, order or deployment. LIVE DISABLED.
+- **References.** Contract: docs/source_forecast_spine_contract.md. Stable record: docs/status_entries/S10-CAP-B1-SOURCE-FORECAST-01.md. Side26 reviews; Karl alone merges.

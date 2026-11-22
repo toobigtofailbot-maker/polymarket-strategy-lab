@@ -1,0 +1,122 @@
+Package Identity:
+  WP ID: S10-CAP-B1-SOURCE-FORECAST-01
+  Title: B1-A — Source/PIT to research and forecast consumer spine
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-cap-b1-source-forecast-01
+  Package class: B1_OFFLINE_SOURCE_FORECAST_CONSUMER_SPINE
+  Package size class: L (11 exact paths; no XL)
+  Governance track expected: RUNTIME
+  Risk level: 3
+  Immediate predecessor: PR #282 head f932d4928f4dd0100553b4ad858004ec0e69c285, merge b637c00230e698129e8696bcb3927db157106a86
+  Scope: exact 11 tracked files in wp_spec.json; zero out-of-scope touches
+  Status: CONDITIONAL_IMPLEMENTATION_GRANT — actual native readiness gate must PASS before any source edit
+  Output posture: offline engineering demonstration, no economic or provider authority
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: true
+strategy: true
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. OWNER GRANT / BOUNDARIES
+Karl's formal 2026-11-21 standing software-development authorization approves ordinary roadmap implementation, scope-bound corrections and follow-ups. Side26 hereby authorizes this B1-A package specifically, conditional on current-main + native deterministic readiness passing. This is authority granted by delegation, NOT a newly signed Karl message. Do not request another routine approval after readiness PASS. Karl alone merges; independent Side26 review comes before any merge.
+
+This WP explicitly authorizes a tightly bounded, OFFLINE call from a new source/PIT bridge to already-merged W01's opt-in A3/A4 delegated operator, and disposable test-only native Alpha append/verify, at the existing closed policy. It does NOT authorize any changes to Hermes W01 source/policy, model access or real product network. Track RUNTIME Risk3; if actual policy/authority demands PROTECTED or any separate certificate, stop without modifying protected source and return the specific reason. Explicitly reference every group in docs/ai/codex/PROTECTED_PATHS.md; credentials/secrets, authenticated clients, wallet/account, orders/cancel, gateway/risk, paper, scheduler/runtime daemon, dashboard/deployment, dependency/lock, external code copying and generated artifacts remain forbidden. Existing calls do not imply activation rights.
+
+2. REQUIRED STARTUP + READINESS, ORDERED
+Read AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md, then pertinent docs/project_status.md, docs/repo_truth_index.md, docs/deferred_items_log.md, docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE.md, WP_DRAFTING_STANDARD.md, WP_SPEC_STANDARD.md, WP_BUNDLING_POLICY.md, NEGATIVE_TEST_MATRIX_POLICY.md, PROTECTED_PATHS.md, existing merged W01 contract/spec/status and B1 mapping 03/04/07 in the merged nine-agent roadmap. Follow active WP only when narrower than general rules.
+
+Fresh skill discovery. After mandatory startup and discovery, first ACTUAL invocation must be ponytail LITE if installed. Then invoke genuinely applicable available skills in phases:
+- pre-edit: wp-readiness-preflight, wp-predraft-inspector, wp-one-shot-review, wp-minimum-test-plan, hermes-alpha-reuse-check, runtime-authority-boundary-review;
+- evidence boundary: canonical-evidence-audit, any specific source/PIT skill if available;
+- implementation review: spec-to-code-compliance, find-bugs;
+- post-patch/final: post-patch-validation when applicable, verification-before-completion, pr-evidence-reconcile, ponytail-review.
+Report exact genuine invocations, results, non-applicability and UNAVAILABLE tools; never claim a tool PASS based on a manual substitute or run all skills performatively.
+
+Before branch SOURCE edits: fetch and verify actual main equals {base}, PR #282 merged at {base}, PR #268 still separately owned, clean worktree, predecessor content, no existing B1-A PR/branch. Inspect exact APIs and test guards before freezing implementation. Material new merge SHA or conflicting precursor: STOP and report changed facts; do not fabricate a stable base.
+
+Install these two artifact files at {wpdir}/wp_prompt.txt and wp_spec.json on a clean B1-A worktree solely for pre-implementation validation. Run exactly:
+python -B tools/wp/wp_readiness_gate.py --wp {wpdir}/wp_prompt.txt --spec {wpdir}/wp_spec.json --repo-root . --format json
+Require exit 0, IMPLEMENTATION_READY, RUNTIME, no unresolved decisions BEFORE ANY source code edit. Spec/prompt wording fixes within the same two paths may be made once before edits; rerun gate after every prompt/spec modification. No PROTECTED certificate is included or authorized on the expected RUNTIME path. If the repo's actual gate rejects, stop before implementation; return the exact failing category and smallest recommended correction, without self-certification. Preflight may inspect and prepare only the two WP artifact files before pass.
+
+3. SINGLE DELIVERABLE — THE REAL A1→A2→A3/A4 INPUT/CONSUMER VERTICAL
+Connect existing systems; do not replace them. One short, finite, manual, offline, non-daemon tool and thin native bridge. Reuse existing native functions and receipt/case shapes without redefining canonical market, source, forecast, Alpha or W01 witness identities:
+- A1 MARKET SCOUT: consume a previously held frozen PIT universe via alpha_discovery.build_alpha_universe_snapshot and existing triage; cross-check market_catalog native identifiers where the source records permit. Choose only an eligible known seeded market; count examined/admitted/filtered/duplicate/ambiguous/refused, including empty universe. Do NOT create real candidates or scan new markets.
+- A2 RESEARCH SPECIALIST: evaluate existing source_grounding ranks, hash-verified rule text, pre-cutoff raw bytes, accepted/refused sources and literal cited excerpts. Where eligible in the same fixed case, actually call existing offline official_sdk_search_bridge.invoke_search (fixed MockTransport / pinned SDK) and metaculus_source_archive_bridge.assess_sources (existing pinned, verified local leaves); consume their results as checked supplemental evidence or explicit refusals. A native baseline beating a candidate method is not an improvement. Preserve raw_evidence_reference IDs and seen/known/ingestion/correction clocks.
+- A3/A4: construct a real W01-parseable frozen question/case and grounding handoff ONLY from verified market/candidate/family/source IDs. Call existing, UNMODIFIED tools.alpha.run_hermes_delegated_specialists.run and .verify on disposable local test directories with the actual pinned Hermes v0.21.3 checkout, still using W01's scripted provider boundary. Its two distinct native children must remain host-witnessed, blind-first-pass and web-tools-only; Alpha episode must remain OTHER_VALIDATED_ADVISORY, DATA_INSUFFICIENT, with cold-verified existing-registry append. Do not copy or mint child/tool lineage in the bridge. If A1/A2 refuses, do not dispatch or append.
+- W03 LIMITED FORECAST READ: for the same frozen market/rule/decision clock, use existing forecast_evaluation public diagnostic output/receipt (native train-only baselines, cohort, abstention and WP170 read-only mapping where valid), cold verify and bind its actual receipt reference. The forecast diagnostic is SEPARATE from W01's child claim output: do not pretend that an A3 child predicted p_yes or has real calibration. Real upstream ForecastBot/Wang MLE/ForecastBench method parity remains pending B1-B.
+- Return a bounded B1 case summary backed by actual source/PIT→scout→source/quote→W01 A3/A4→native Alpha append/read and native forecast diagnostic receipts, with exact ID/cutoff correlation, deterministic refusal reasons and honest denominators. The bridge is a disposable deterministic observation/projection, NOT a new canonical store, agent coordinator, source crawler or generic orchestration framework.
+
+If existing APIs cannot connect this vertical WITHOUT changing unapproved canonical source/forecast/W01 modules or fabricating a link, fail closed and report the specific technical blocker; do not silently weaken R001–R009 or write another adapter framework. Prefer one thin new module and one CLI over wrapper cascades. Any public API addition must remain limited to these new files.
+
+4. BUNDLE SAFETY / EXACT FILES
+One coherent capability: frozen source/PIT data is read and consumed by already merged W01/forecast components. L is required because 11 paths exceed the M ten-file cap, while all code changes are confined to the new bridge/operator plus two focused tests; no authority broadening, dependency, CI, real network or protected core edit. This is the smallest valid combined A1/A2-to-A3/A4 vertical. The remaining distinct upstream forecast-method comparison requires a separate B1-B validation and source-method ownership surface, so W02/W03 are not administratively declared complete by this WP.
+
+Eleven required tracked paths, ALL and ONLY these:
+- src/data_layer/analytical_research/source_forecast_spine.py
+- tools/alpha/run_source_forecast_spine.py
+- tests/data_layer/analytical_research/test_source_forecast_spine.py
+- tests/tools/alpha/test_run_source_forecast_spine.py
+- docs/source_forecast_spine_contract.md
+- docs/deferred_items_log.md
+- docs/project_status.md
+- docs/repo_truth_index.md
+- docs/status_entries/S10-CAP-B1-SOURCE-FORECAST-01.md
+- docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/wp_prompt.txt
+- docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/wp_spec.json
+
+All original upstream/vendor files, src/data_layer/analytical_research/alpha_discovery.py, source_grounding.py, forecast_evaluation.py, research_cooperation.py, alpha_factory.py/registry.py, all W01 src/research_runtime/** and tools/alpha/run_hermes_delegated_specialists.py, original 12-file nine-agent roadmap archive and PR #268 branch MUST REMAIN BYTE-UNMODIFIED. Read APIs, do not edit. If a historical test guard actually requires another tracked path, STOP with exact file/test: the standing grant does not turn a 12th file into approved scope. Do not expand to XL. PR #268 contains docs/deferred_items_log.md; treat that as a real future collision, not a reason to edit PR #268 or silently drop this WP's deferred disclosures.
+
+5. NORMATIVE ACCEPTANCE AND NEGATIVE MATRIX
+Implement tests R001–R009 precisely as in wp_spec.json; include all nine named pytest nodes. Required evidence: one entire frozen source/PIT→A1→A2→W01 A3/A4→Alpha→forecast diagnostic trace with producer/consumer call assertions and cold read; no unconsumed JSON-only output. Frozen source validity and successful citation are not proof of facts being true. Preserve all original IDs, false/abstention/skip denominators and historical receipts; no real external source or model calls. Test idempotence, restart/partial scratch, source post-cutoff, missing/duplicate ID, wrong rule, poisoned source, invalid provider and wrong pin, no append on invalid evidence, unknown cost preserved, no duplicate work or live permissions. Apply docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md, mark inapplicable categories with reasons. No invalid source text echo into logs.
+
+Measure same-case native retrieval versus only genuinely invoked candidate methods and say NO_LIFT when not better. For the 36-ID ledger, explicitly identify R3-02, R3-01-SOURCE_ARCHIVE, R3-23, R3-05/R3-05-CITATIONS and related W02/W03 IDs touched; only credit actual new receipt + downstream consumer, preserve original immutable CSV/pins. Mark R3-01, R3-10/WANG, R3-12/SAMPLER, PMXT/Router, TS/stream/CCXT/Kalshi, external providers and all 36 rows OPEN as appropriate until their specific evidence or owner dispositions exist. Keep roles A1/A2 as deterministic research functions and A3/A4 as W01's offline witnessed children; do NOT claim 9-of-9 operating, prospective forecasting, profitability or live availability.
+
+6. VALIDATION / PR / ADOPT LOOP
+Confirm no existing API/receipt/old test regressions. Run exact R001–R009, existing adjacent source/PIT/market_catalog/official SDK/source-grounding/Metaculus/forecast/W01/Alpha tests, historical docs/scope tests and generated-artifact guard. Run one stable-final-head full applicable Linux suite with network blocked; verify local Hermes pinned tests separately on exact final head (CI may skip due D002; disclose honestly). Execute git diff --check, relevant no-secrets/security checks and any native method-parity diagnostics. Run native readiness after prompt/spec edits and final exact-head --check-diff against current merged base, native diff_scope_summary --require-exact-scope, and exact-head hosted CI; inspect all expanded jobs, not only summary green.
+
+One new B1-A branch, one PR, no merges. Freeze one complete primary PR body with exact changed paths, true call trace, tests and failures (including prior failing runs), network categories, pin/lock facts, skill ledger, hosted results, evidence mode and guard result. Use PUBLIC_VERIFIER_PASS only if posted verifier actually exit-0 on final head; else accurately select PRIVATE_REPO_MANUAL_VERIFIED or BLOCKED_NOT_READY, under current repo state machine. No recycled prior-head CI, no false counts or green claim without public posted verification. Side26 independently reviews; Karl alone merges.
+
+MANDATORY DOWNLOADABLE CC REPORT: SIDE26_B1A_CC_REPORT_BACK.md, including stage/authority grants, all commands + real exit codes, skill invocation ledger, actual upstream method traces and native consumers, R001–R009 outcome/negative matrix, full suite/CI/GitLeaks, exact paths/PR/head, unchanged native core hashes, permissions, remaining open 36 IDs, nine-role delta, limitations, and an <=1-page INTEGRATION_DELTA_REVIEW. Create and attach the actual file even if stopped. No chat-only reporting.
+
+7. HARD STOPS / SUCCESSOR
+STOP_SOURCE_PRE_EDIT if main/predecessor/pr overlap differs, if exact fresh readiness is not IMPLEMENTATION_READY, if policy requires ungranted PROTECTED certification, or if source contracts cannot be reconciled within 11 files. STOP_SCOPE_OR_AUTHORITY on a 12th path, new lock/dependency/protected edit, actual provider/model/product data network, external rights or user wallet/account, scheduler, OOS/Alpha discovery, Gate B/C, paper, execution/live/capital. STOP_EVIDENCE_INCOMPLETE if real pin/W01 local proof, native consumer, truthful denominator, cold verification, final full suite or exact-head hosted CI cannot be proven. No owner ping for routine in-scope fixes; report exactly one material blocker if necessary. Do not start B1-B until Karl has merged reviewed B1-A. Subsequent B1-B owns actual ForecastBot/Wang/ForecastBench method-parity and other still-open W03 source-method commitments with independent source/security review.
+
+8. READINESS STRUCTURE (pre-edit structural correction; no scope or authority change)
+Objective: connect existing offline A1 scout and A2 sourced PIT output to the existing unmodified W01 A3/A4 Hermes/Alpha consumer and the existing frozen forecast diagnostic, with cold-verifiable provenance, truthful denominators and no provider or economic authority (identical to wp_spec.json identity.objective).
+Authority / Non-Authority: exactly the BEGIN_GOVERNANCE_AUTHORITY_V1 mirror above and wp_spec.json authority; RUNTIME Risk3; sections 1 and 4 govern. Non-authority: no network, credentials, dependencies, workflow files, scheduler, paper, execution or live; every group in docs/ai/codex/PROTECTED_PATHS.md remains forbidden.
+Negative-test matrix: required under docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md and bound to R005, R006 and R007; inapplicable categories are recorded NOT_APPLICABLE with a reason in the status fragment and PR body.
+Evidence plan: the authoritative evidence plan is wp_spec.json evidence_plan.items R001-R009 with their exact named pytest nodes; each PASS requires the actual command, exit code and assertion.
+Successor boundary: wp_spec.json successor_boundary; S10-CAP-B1-METHODS-01 (B1-B) is separately gated and does not start until Karl merges reviewed B1-A.
+Report-back: mandatory downloadable SIDE26_B1A_CC_REPORT_BACK.md as specified in section 6.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|scout|market_identity|frozen_pit_universe|PRESERVE_EXACT|native_ids_and_denominators|requirements.r001|R001
+NR002|source|grounding|frozen_pre_cutoff_bytes|REQUIRE|cold_verified_quotes_and_upstream_consumed|requirements.r002|R002
+NR003|hermes|w01_consumer|verified_a1_a2_packet|REQUIRE|unmodified_w01_run_verify_append|requirements.r003|R003
+NR004|forecast|diagnostic|same_frozen_scope|REQUIRE|bound_cold_verified_receipt|requirements.r004|R004
+NR005|source|identity_time|invalid_or_ambiguous|REJECT|refusal_no_alpha_append|requirements.r005|R005
+NR006|security|authority|fabricated_or_unpermitted|FORBID|never_valid_profitable_or_live|requirements.r006|R006
+NR007|recovery|replay|identical_or_partial|REJECT|idempotent_no_extra_episode|requirements.r007|R007
+NR008|value|measurement|baseline_not_beaten|REJECT|no_false_lift|requirements.r008|R008
+NR009|progress|capability_ledger|thirty_six_ids|PRESERVE_EXACT|touched_and_open_ids_recorded|requirements.r009|R009
+END_NORMATIVE_RULE_MATRIX_V1
+
+9. POST-EDIT SPEC CORRECTION (owner-session approved 2026-11-22; path rename only, still 11 paths)
+The originally frozen tools test path tests/tools/alpha/test_source_forecast_spine.py shared its basename with tests/data_layer/analytical_research/test_source_forecast_spine.py; neither directory is a package, so the default-mode full suite (python -m pytest -q, .github/workflows/ci.yml) fails at collection with an import-file-mismatch error. The tools test is therefore tests/tools/alpha/test_run_source_forecast_spine.py (repository test_run_* convention) in the scope list and in the R003, R006, R007 and R009 evidence commands. No other scope, authority or requirement changed.
