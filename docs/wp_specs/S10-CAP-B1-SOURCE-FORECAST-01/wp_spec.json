@@ -1,0 +1,506 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CAP-B1-SOURCE-FORECAST-01",
+    "title": "B1-A: Native source/PIT scout and research to existing W01 Hermes and forecast consumer spine",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "B1_OFFLINE_SOURCE_FORECAST_CONSUMER_SPINE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-cap-b1-source-forecast-01",
+    "required_predecessor": {
+      "pr_number": 282,
+      "head_sha": "f932d4928f4dd0100553b4ad858004ec0e69c285",
+      "merge_sha": "b637c00230e698129e8696bcb3927db157106a86"
+    },
+    "objective": "Connect existing offline A1 scout and A2 sourced PIT output to existing W01 A3/A4 native Hermes/Alpha consumer and frozen forecast diagnostics with cold-verifiable provenance, truthful denominators and no provider or economic authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/source_forecast_spine.py",
+      "tools/alpha/run_source_forecast_spine.py",
+      "tests/data_layer/analytical_research/test_source_forecast_spine.py",
+      "tests/tools/alpha/test_run_source_forecast_spine.py",
+      "docs/source_forecast_spine_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-B1-SOURCE-FORECAST-01.md",
+      "docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/source_forecast_spine.py",
+      "tools/alpha/run_source_forecast_spine.py",
+      "tests/data_layer/analytical_research/test_source_forecast_spine.py",
+      "tests/tools/alpha/test_run_source_forecast_spine.py",
+      "docs/source_forecast_spine_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-B1-SOURCE-FORECAST-01.md",
+      "docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/live_pilot/",
+      "src/paper_trading/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/operator_cockpit_frontend/",
+      "src/research_runtime/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/execution/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly the 11 B1-A paths. All existing source/PIT, forecast, experiment, Hermes W01, Alpha stores and source-contract modules remain unchanged; only disposable offline test registry inputs may be appended via existing W01 operator. No runtime/provider/venue/host state.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "strategy",
+        "crossed": true
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": true,
+    "strategy": true,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Add one thin, offline-only producer-consumer bridge and a CLI without changing the existing canonical source, market, forecast, Hermes or Alpha schemas.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/source_forecast_spine.py",
+        "before": "Existing source/PIT scout, source-grounding, native forecast, W01 delegated specialist and Alpha consumers are separately callable, but a single canonical case/receipt handoff is not established.",
+        "after": "Small read-only validation/adapter that binds existing native identities and cold-verifiable source+forecast inputs to W01 without minting market or source IDs; explicit admitted/refused/skipped denominator.",
+        "change_authorized": true,
+        "compatibility_requirement": "No schema change, no second registry, no edit to preexisting source/forecast/W01/Alpha modules; synthetic and offline only, no economic admission.",
+        "authority": "RUNTIME_RISK3_OFFLINE_ADVISORY_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_source_forecast_spine.py",
+        "before": "Separately callable pre-existing tools for source grounding, SDK mock search, Hermes W01 and forecast evaluation.",
+        "after": "One finite manually invoked operator with run and cold verify; uses the actual existing operators and frozen input bytes, not the model as the identity authority.",
+        "change_authorized": true,
+        "compatibility_requirement": "No loop, daemon, real GET, model spend, provider, runtime home, credential or production Alpha mutation; no historical receipt reinterpretation.",
+        "authority": "RUNTIME_RISK3_OFFLINE_ADVISORY_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Nine normative, test-linked producer/consumer and boundary requirements; reuse native canonical serialization and cold verification.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A1: Given a preexisting frozen PIT market universe, run existing alpha_discovery (load_corpus, universe/triage where applicable) and native market_catalog identity lookups; preserve event/condition/CTF/token/rule identifiers. Return admitted/skipped/refused/ambiguous denominators; never manufacture market identities or discoveries.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A1: Given a preexisting frozen PIT market universe, run existing alpha_discovery (load_corpus, universe/triage where applicable) and native market_catalog identity lookups; preserve event/condition/CTF/token/rule identifiers. Return admitted/skipped/refused/ambiguous denominators; never manufacture market identities or discoveries.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A2: Call existing source_grounding cold verification/quote logic; exercise existing approved offline official_sdk_search_bridge.invoke_search against frozen MockTransport and metaculus_source_archive_bridge.assess_sources against pinned local leaves. Bind usable result to source_reference_ids and cutoff; count rejected and missing inputs; do not imply live upstream calls.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A2: Call existing source_grounding cold verification/quote logic; exercise existing approved offline official_sdk_search_bridge.invoke_search against frozen MockTransport and metaculus_source_archive_bridge.assess_sources against pinned local leaves. Bind usable result to source_reference_ids and cutoff; count rejected and missing inputs; do not imply live upstream calls.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "A1/A2 to A3/A4: Feed only independently cold-verified native source/market/rule identity into the existing unmodified W01 case/grounding interface; for a local exact Hermes pin, invoke the real existing W01 delegated operator with two scripted leaf children, native cooperation, Alpha append and cold read. Do not assign model-origin claims or probabilities by fiat.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "A1/A2 to A3/A4: Feed only independently cold-verified native source/market/rule identity into the existing unmodified W01 case/grounding interface; for a local exact Hermes pin, invoke the real existing W01 delegated operator with two scripted leaf children, native cooperation, Alpha append and cold read. Do not assign model-origin claims or probabilities by fiat.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "W03 contribution: On the same frozen market/decision/cutoff, invoke existing forecast_evaluation (via its real public run/verify interface when feasible) with training-known-before-decision, native baseline and abstain; refer to its actual cold-verified receipt by identity, not by recomputing or fabricating a score. Forecast receipt is a separate diagnostic; do not claim it is the A3 child forecast.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "W03 contribution: On the same frozen market/decision/cutoff, invoke existing forecast_evaluation (via its real public run/verify interface when feasible) with training-known-before-decision, native baseline and abstain; refer to its actual cold-verified receipt by identity, not by recomputing or fabricating a score. Forecast receipt is a separate diagnostic; do not claim it is the A3 child forecast.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Negative matrix: unknown/cross-venue market or token, mismatched rule hash, duplicate/ambiguous canonical ID, absent source bytes, late capture/revision, unsupported/false quote, missing or conflicting candidate/family, unauthorized dataset/source. Fail/refuse or abstain with full original denominator and no native Alpha append.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Negative matrix: unknown/cross-venue market or token, mismatched rule hash, duplicate/ambiguous canonical ID, absent source bytes, late capture/revision, unsupported/false quote, missing or conflicting candidate/family, unauthorized dataset/source. Fail/refuse or abstain with full original denominator and no native Alpha append.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Hard boundaries: fabricated child/session/tool/citation evidence, nested/MCP/terminal tool attempt, injected source instructions, credentials or trade verbs, missing pin, unknown cost and unknown execution result never become valid/profitable/live. No provider/API calls, sockets, orders, new permissions, fallback or risk/OMS mutation.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Hard boundaries: fabricated child/session/tool/citation evidence, nested/MCP/terminal tool attempt, injected source instructions, credentials or trade verbs, missing pin, unknown cost and unknown execution result never become valid/profitable/live. No provider/API calls, sockets, orders, new permissions, fallback or risk/OMS mutation.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Recovery: identical frozen case and policy rerun is idempotent; cold verification preserves original input/provenance, no extra Alpha episode; partial scratch/unknown worker result, altered receipt, stale source, wrong registry lineage, duplicate market record and unsupported prior code identity refuse without hidden retry or append.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Recovery: identical frozen case and policy rerun is idempotent; cold verification preserves original input/provenance, no extra Alpha episode; partial scratch/unknown worker result, altered receipt, stale source, wrong registry lineage, duplicate market record and unsupported prior code identity refuse without hidden retry or append.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Value/use: Record native source-ranking baseline versus candidate upstream retrieval on exactly the same held fixture; no inferred uplift when baseline wins. Prove imported upstream calls have actual downstream read; measure valid citations, refusal/coverage and model usage UNKNOWN rather than invented costs or economic edge.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Value/use: Record native source-ranking baseline versus candidate upstream retrieval on exactly the same held fixture; no inferred uplift when baseline wins. Prove imported upstream calls have actual downstream read; measure valid citations, refusal/coverage and model usage UNKNOWN rather than invented costs or economic edge.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Progress: test the A1/A2 consumed source packet and A3/A4 offline W01 association without inventing live forecasts. Record exact touched original capability IDs and explicit unchanged/open IDs out of 36, including provider blockers and B1-B method parity. No changes to original immutable 12-file roadmap archive, #268 or Lane B.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Progress: test the A1/A2 consumed source packet and A3/A4 offline W01 association without inventing live forecasts. Record exact touched original capability IDs and explicit unchanged/open IDs out of 36, including provider blockers and B1-B method parity. No changes to original immutable 12-file roadmap archive, #268 or Lane B.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Frozen offline advisory receipts or closed refusal codes; never provider, trading, credentials, strategy or OOS authority.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "The bridge reuses existing canonical IDs and native cold-verified receipts; no new canonical ID derivation rule or authoritative store is introduced.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Conditional owner-delegated RUNTIME implementation after the real native readiness gate and repository preflight.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Run native wp_readiness_gate.py on final exact prompt/spec bytes against the current merged head before source edits; result IMPLEMENTATION_READY and no open contradiction.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Standing 2026-11-21 Karl software-development delegation plus Side26 exact B1-A scope grant in this package; no new provider/economic authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Implement precisely the approved offline native producer-consumer spine, pass R001-R009 including genuine W01 pinned-local witness and exact unchanged native consumers, then obtain exact-head validation and posted PR evidence.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed WP159 schema-1.0.0 public error precedence, without a new custom error framework.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Direct frozen source/market/W01/forecast inputs are already fixture-backed. Named positive and negative pytest evidence is required; no duplicate examples embedded in the WP spec.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Named pytest nodes for every one of the nine normative requirements, plus applicable full suite, exact-head CI, security and independent review.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_a1_native_pit_scout_keeps_exact_market_identity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_source_forecast_spine.py::test_a1_native_pit_scout_keeps_exact_market_identity",
+        "expected_result": "A1: Given a preexisting frozen PIT market universe, run existing alpha_discovery (load_corpus, universe/triage where applicable) and native market_catalog identity lookups; preserve event/condition/CTF/token/rule identifiers. Return admitted/skipped/refused/ambiguous denominators; never manufacture market identities or discoveries."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_a2_cold_source_grounding_and_upstream_leaves_consumed",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_source_forecast_spine.py::test_a2_cold_source_grounding_and_upstream_leaves_consumed",
+        "expected_result": "A2: Call existing source_grounding cold verification/quote logic; exercise existing approved offline official_sdk_search_bridge.invoke_search against frozen MockTransport and metaculus_source_archive_bridge.assess_sources against pinned local leaves. Bind usable result to source_reference_ids and cutoff; count rejected and missing inputs; do not imply live upstream calls."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_bound_a1_a2_packet_consumed_by_existing_w01",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_source_forecast_spine.py::test_bound_a1_a2_packet_consumed_by_existing_w01",
+        "expected_result": "A1/A2 to A3/A4: Feed only independently cold-verified native source/market/rule identity into the existing unmodified W01 case/grounding interface; for a local exact Hermes pin, invoke the real existing W01 delegated operator with two scripted leaf children, native cooperation, Alpha append and cold read. Do not assign model-origin claims or probabilities by fiat."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_forecast_diagnostic_consumer_bound_to_frozen_scope",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_source_forecast_spine.py::test_forecast_diagnostic_consumer_bound_to_frozen_scope",
+        "expected_result": "W03 contribution: On the same frozen market/decision/cutoff, invoke existing forecast_evaluation (via its real public run/verify interface when feasible) with training-known-before-decision, native baseline and abstain; refer to its actual cold-verified receipt by identity, not by recomputing or fabricating a score. Forecast receipt is a separate diagnostic; do not claim it is the A3 child forecast."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_b1_negative_identity_time_and_source_matrix",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_source_forecast_spine.py::test_b1_negative_identity_time_and_source_matrix",
+        "expected_result": "Negative matrix: unknown/cross-venue market or token, mismatched rule hash, duplicate/ambiguous canonical ID, absent source bytes, late capture/revision, unsupported/false quote, missing or conflicting candidate/family, unauthorized dataset/source. Fail/refuse or abstain with full original denominator and no native Alpha append."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_b1_negative_permissions_model_and_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_source_forecast_spine.py::test_b1_negative_permissions_model_and_authority",
+        "expected_result": "Hard boundaries: fabricated child/session/tool/citation evidence, nested/MCP/terminal tool attempt, injected source instructions, credentials or trade verbs, missing pin, unknown cost and unknown execution result never become valid/profitable/live. No provider/API calls, sockets, orders, new permissions, fallback or risk/OMS mutation."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_b1_idempotent_cold_replay_and_partial_failure",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_source_forecast_spine.py::test_b1_idempotent_cold_replay_and_partial_failure",
+        "expected_result": "Recovery: identical frozen case and policy rerun is idempotent; cold verification preserves original input/provenance, no extra Alpha episode; partial scratch/unknown worker result, altered receipt, stale source, wrong registry lineage, duplicate market record and unsupported prior code identity refuse without hidden retry or append."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_b1_upstream_vs_native_measurement_no_false_lift",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_source_forecast_spine.py::test_b1_upstream_vs_native_measurement_no_false_lift",
+        "expected_result": "Value/use: Record native source-ranking baseline versus candidate upstream retrieval on exactly the same held fixture; no inferred uplift when baseline wins. Prove imported upstream calls have actual downstream read; measure valid citations, refusal/coverage and model usage UNKNOWN rather than invented costs or economic edge."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_b1_role_capability_progress_and_unchanged_boundaries",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_source_forecast_spine.py::test_b1_role_capability_progress_and_unchanged_boundaries",
+        "expected_result": "Progress: test the A1/A2 consumed source packet and A3/A4 offline W01 association without inventing live forecasts. Record exact touched original capability IDs and explicit unchanged/open IDs out of 36, including provider blockers and B1-B method parity. No changes to original immutable 12-file roadmap archive, #268 or Lane B."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CAP-B1-METHODS-01",
+    "next_title": "B1-B: bounded source-method parity and native forecast benchmark adoption after B1-A frozen source/role envelope merges.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CAP-B1-SOURCE-FORECAST-01",
+    "forbidden_in_this_wp": [
+      "Do not modify existing W01 Hermes agent/runtime policy, external profiles, provider, toolsets, child execution, or Alpha/forecast/market/source canonical engine files.",
+      "No genuine model/provider spending, Firecrawl, authenticated/account access, external market GET, real discovery, prospective data, OOS qualification, strategy or trading claims.",
+      "No PMXT Router, Agent-Reach, LSE, Kairos, Synpath, paid service or source-rights activation; mark blocked or pending accurately.",
+      "No new dependency/lock, vendored repository, CI/workflow change or additional data framework; no false upstream parity or accepted 36-row adoption.",
+      "No edits to separately owned PR #268 or Lane B; collision only on deferred-items documentation may be reconciled after separate Karl decision.",
+      "No scheduler, daemon, polling, account, wallet, paper, risk/OMS, Gate C, deployment, capital, order or live trading.",
+      "No claim that W01 native offline child citations prove independent semantic truth, calibrated model forecasts or real-provider acceptance."
+    ]
+  }
+}

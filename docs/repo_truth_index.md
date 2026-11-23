@@ -2346,3 +2346,13 @@ Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 
 - **Tests.** tests/research_runtime/hermes_controlled_runtime/test_delegated_specialists.py and tests/tools/alpha/test_hermes_delegated_specialists.py. The native-pin tests need POLYMARKET_HERMES_PIN_ROOT.
 - **Docs.** Contract: docs/hermes_delegated_specialists_contract.md. Stable evidence: docs/status_entries/S10-HERMES-DELEGATED-SPECIALISTS-01.md.
 - **Boundaries.** The H1 web-only profile is unchanged. Evidence class: OFFLINE_NATIVE_DELEGATION_TEST_ONLY; real-provider acceptance is a separate gated WP. Real product GET 0; LIVE DISABLED.
+
+
+## S10-CAP-B1-SOURCE-FORECAST-01
+
+- **Package.** Exact 11-path RUNTIME/Risk3/L package on merged PR #282 (merge b637c00230e698129e8696bcb3927db157106a86). Frozen prompt/spec: docs/wp_specs/S10-CAP-B1-SOURCE-FORECAST-01/. Implementation PR pending Side26 review and Karl's merge decision.
+- **Source.** src/data_layer/analytical_research/source_forecast_spine.py (thin read-only A1/A2 projection and binding; no new canonical store or identity).
+- **Tool.** tools/alpha/run_source_forecast_spine.py.
+- **Tests.** tests/data_layer/analytical_research/test_source_forecast_spine.py and tests/tools/alpha/test_run_source_forecast_spine.py. The pinned parts need POLYMARKET_HERMES_PIN_ROOT.
+- **Docs.** Contract: docs/source_forecast_spine_contract.md. Stable evidence: docs/status_entries/S10-CAP-B1-SOURCE-FORECAST-01.md.
+- **Boundaries.** All W01, source-grounding, forecast, Alpha and market modules are byte-unchanged. Real product GET 0; LIVE DISABLED.

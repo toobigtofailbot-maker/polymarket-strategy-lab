@@ -1,5 +1,17 @@
 # Deferred Items Log
 
+## S10-CAP-B1-SOURCE-FORECAST-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-CAP-B1-SOURCE-FORECAST-01-D001 | Hosted CI has no pinned Hermes checkout (inherits S10-HERMES-DELEGATED-SPECIALISTS-01-D002). R003 and the pinned parts of R006, R007 and R009 skip in CI; R001, R002, R004, R005, R008 and the unpinned refusals of R006, R007 and R009 run there | OPEN_EVIDENCE_LIMITATION | P2 | Accept the local exact-pin run recorded in the PR body, or a reviewed CI pin-provisioning WP | A configured but non-matching pin refuses (`DELEGATION_REFUSED`), never a false pass |
+| S10-CAP-B1-SOURCE-FORECAST-01-D002 | Upstream forecast-method parity (ForecastBot, Wang MLE, sampler, ForecastBench: R3-01, R3-10, R3-10-WANG, R3-12, R3-12-SAMPLER, R3-18) is not exercised; the forecast receipt is a native DIAGNOSTIC_ONLY read | DEFERRED_TO_B1_B | P1 | S10-CAP-B1-METHODS-01 after Karl merges reviewed B1-A, with independent source/security review | `bind_forecast` records `method_parity = B1_B_PENDING` and `is_a3_child_forecast = false` |
+| S10-CAP-B1-SOURCE-FORECAST-01-D003 | The PIT store has no WP10 `MarketMetadataSnapshotRecord` rows; the market-catalog check is a projection-only round trip, not an independent second identity source | RECORDED_LIMITATION | P3 | A future WP that holds genuine WP10 snapshot records for the same markets | Projection labelled `native_pit_projection_cross_check`; it never mints or replaces an identity |
+| S10-CAP-B1-SOURCE-FORECAST-01-D004 | The frozen package named two test files with the same basename in non-package directories, so the default-mode full suite failed at collection. A post-edit correction (session-approved, path rename only, still 11 paths) renamed the tools test to `tests/tools/alpha/test_run_source_forecast_spine.py` | RESOLVED_2026-11-22 | P3 | None. Future packages should check test-basename uniqueness before freezing | Prompt section 9 records the correction; the native readiness gate was rerun with exit 0 `IMPLEMENTATION_READY` |
+| S10-CAP-B1-SOURCE-FORECAST-01-D005 | Open PR #268 also edits `docs/deferred_items_log.md` (a future text collision) | RECORDED_COLLISION | P3 | Reconcile on whichever merges second, after a separate Karl decision; PR #268 is not edited here | No PR #268 branch change; this section is self-contained |
+| S10-CAP-B1-SOURCE-FORECAST-01-D006 | Real provider-backed A3/A4 acceptance and real (non-synthetic) sources are absent; all evidence is a SANITIZED_SYNTHETIC offline engineering demonstration | REAL_PROVIDER_ACCEPTANCE_PENDING | P1 | S10-HERMES-DELEGATED-SPECIALISTS-REAL-ACCEPTANCE (inherits W01 D003) and separately authorized real source capture | Model spend is recorded as UNKNOWN; provider calls 0; network calls 0 |
+
+
 ## S10-HERMES-DELEGATED-SPECIALISTS-01 deferred items
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
