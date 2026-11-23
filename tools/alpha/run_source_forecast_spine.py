@@ -26,6 +26,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.data_layer.analytical_research import forecast_evaluation as FE  # noqa: E402
+from src.data_layer.analytical_research import metaculus_source_archive_bridge as MSA  # noqa: E402
 from src.data_layer.analytical_research import research_cooperation as HC  # noqa: E402
 from src.data_layer.analytical_research import source_forecast_spine as SP  # noqa: E402
 from src.data_layer.analytical_research import source_grounding as SG  # noqa: E402
@@ -35,7 +36,7 @@ from tools.alpha import run_source_grounding as SGCLI  # noqa: E402
 
 MAX_CASE_BYTES = 1 << 20
 OK_STATUSES = ("RUN_COMPLETE", "VERIFIED", "IDEMPOTENT_VERIFIED")
-STOPS = (SP.SpineStop, SG.GroundingStop, FE.EvaluationStop, HC.CoopStop)
+STOPS = (SP.SpineStop, SG.GroundingStop, FE.EvaluationStop, HC.CoopStop, MSA.MetaculusStop)
 
 
 def code_identity() -> str:
@@ -99,7 +100,9 @@ def run(case_path: Path, grounding_dir: Path, forecast_cases: Path, registry: Pa
         SP._require(w01["status"] == "RUN_COMPLETE", "W01_NOT_COMPLETE")
         checked = W01.verify(scratch / "w01", Path(registry))
         SP._require(checked["status"] == "VERIFIED", "W01_NOT_VERIFIED")
-        core = SP.build_core(case, scouted, researched, forecast, _w01_summary(scratch, w01["receipt_id"]), code_identity())
+        summary = _w01_summary(scratch, w01["receipt_id"])
+        SP._require(summary["grounding_receipt_id"] == scouted["grounding_receipt_id"], "W01_GROUNDING_MISMATCH")
+        core = SP.build_core(case, scouted, researched, forecast, summary, code_identity())
     SP._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
     receipt = SP.finalize(core)
     with open(scratch / "receipt.json", "xb") as handle:
@@ -150,8 +153,10 @@ def verify(scratch_dir: Path, registry: Path) -> dict:
                     or SG.canonical_bytes(handoff) != (scratch / "w01" / "inputs" / "case.json").read_bytes():
                 failures.append("W01_HANDOFF_MISMATCH")
             forecast = SP.bind_forecast(json.loads((scratch / "forecast" / "receipt.json").read_bytes()), scouted, researched)
-            core = SP.build_core(case, scouted, researched, forecast,
-                                 _w01_summary(scratch, receipt["core"]["w01"]["receipt_id"]), code_identity())
+            summary = _w01_summary(scratch, receipt["core"]["w01"]["receipt_id"])
+            if summary["grounding_receipt_id"] != scouted["grounding_receipt_id"]:
+                failures.append("W01_GROUNDING_MISMATCH")
+            core = SP.build_core(case, scouted, researched, forecast, summary, code_identity())
             if core != receipt["core"]:
                 failures.append("CORE_MISMATCH")
             if receipt.get("receipt_id") != SP.finalize(core)["receipt_id"]:

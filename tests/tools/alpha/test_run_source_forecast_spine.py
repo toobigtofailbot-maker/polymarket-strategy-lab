@@ -167,6 +167,15 @@ def test_b1_negative_permissions_model_and_authority(world, tmp_path, capsys, mo
         assert code == 1 and out["status"] == "STOPPED" and out["reason_code"].startswith("DELEGATION_REFUSED")
         assert not (tmp_path / name / "receipt.json").exists() and not (tmp_path / name / "w01" / "receipt.json").exists()
     assert _rows(registry) == before and connects == []
+    # a drifted / unverifiable pinned upstream leaf is a closed refusal code, never an internal error or a pass
+    from src.data_layer.analytical_research import metaculus_source_archive_bridge as MSA
+    def drifted():
+        raise MSA.MetaculusStop("UPSTREAM_BLOB_MISMATCH")
+    monkeypatch.setattr(MSA, "load_upstream", drifted)
+    code, out = attempt(spine_case(world), "drift", tmp_path)
+    assert code == 1 and out["reason_code"] == "UPSTREAM_BLOB_MISMATCH" and not (tmp_path / "drift").exists()
+    monkeypatch.undo()
+    monkeypatch.setattr(socket.socket, "connect", lambda *a: connects.append(a))
     # unknown cost and unknown execution result are recorded UNKNOWN / absent, never profitable or live
     assert SP.AUTHORITY["model_spend"].startswith("UNKNOWN") and SP.AUTHORITY["orders"] is False
     assert SP.AUTHORITY["live"] is False and SP.AUTHORITY["strategy"] is False and SP.AUTHORITY["paper"] is False
