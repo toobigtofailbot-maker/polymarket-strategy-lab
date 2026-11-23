@@ -1,5 +1,17 @@
 # Deferred Items Log
 
+## S10-CAP-B1-METHODS-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-CAP-B1-METHODS-01-D001 | Upstream callables run only locally: hosted CI has no upstream checkout. The live upstream comparisons inside R001 and R003 need `POLYMARKET_UPSTREAM_ROOT` and skip in CI; the pinned goldens (numpy legacy sampler, Metaculus `score_math`, fbsim `CachedForecast`, ForecastBench selection) always run | OPEN_EVIDENCE_LIMITATION | P2 | Accept the local live-upstream run recorded in the PR body, or a reviewed CI provisioning of the pinned checkouts | Goldens were produced by the real pinned callables (400/400 random-pool sampler parity); CI never imports upstream code |
+| S10-CAP-B1-METHODS-01-D002 | `run_learning_feedback.code_identity` binds `run_forecast_evaluation.code_identity()` transitively, so learning receipts sealed before this change recompute under the new forecast identity (same effect as PR #280). `run_learning_feedback.py` is outside this package | RECORDED_LIMITATION | P2 | A LEARN-01 successor that accepts a pinned legacy forecast identity, if Karl wants old learning receipts replayable | Forecast v1/v2 receipts themselves still cold-verify (R008) |
+| S10-CAP-B1-METHODS-01-D003 | R3-10-WANG and R3-06 are SOURCE_PORT_UPSTREAM_NOT_EXECUTED: scipy (Wang `estimate_mle`) and sklearn/tqdm/web3 (Gnosis `Benchmarker`) are not installed and installs are not authorized. Port and formula parity are run evidence only | BLOCKED_DEPENDENCY | P2 | A dependency-authorized WP with security review, or an isolated reviewed upstream environment | Disposition BLOCKED with cause in the register; `check_register` refuses ENG_OFFLINE without an executed callable |
+| S10-CAP-B1-METHODS-01-D004 | R3-01 ForecastBot, R3-10 external benchmark and R3-18 lightningrod template produce zero forecasts: they need providers, model spend (cost UNKNOWN), an `ODDS_API_KEY` credential and network; the template declares no license | BLOCKED / OPEN_OWNER_RIGHTS | P1 | Separately Karl-authorized provider/credential acceptance (inherits W01 D003) and an owner license decision for R3-18 | `provider_methods` must be `[]`; any entry refuses `PROVIDER_EXECUTION_NOT_AUTHORIZED_COST_UNKNOWN` |
+| S10-CAP-B1-METHODS-01-D005 | The R3-20 Metaculus baseline was executed with unused Django and scipy imports stubbed; the binary path never touches them, but the full module was not imported unmodified | RECORDED_LIMITATION | P3 | None for binary parity; a full-environment run if a non-binary path is ever adopted | Pinned function body executed byte-for-byte; goldens pinned in R001 |
+| S10-CAP-B1-METHODS-01-D006 | Open PR #268 also edits `docs/deferred_items_log.md` (a future text collision) | RECORDED_COLLISION | P3 | Reconcile on whichever merges second, after a separate Karl decision; PR #268 is not edited here | Self-contained section; no PR #268 branch change |
+| S10-CAP-B1-METHODS-01-D007 | All evidence is a SANITIZED_SYNTHETIC offline engineering demonstration; no real cohort, lift or value. The synthetic candidate is MARKET_PRICE_DERIVED and paired below 30 real cases would be INCONCLUSIVE | NOT_VALUE_VERIFIED | P1 | A separately authorized real LOCAL_REAL_PIT cohort with a preregistered WP170 experiment | `lift_status` INCONCLUSIVE_SYNTHETIC_LABELS_NOT_VALUE; no path emits lift or value |
+
 ## S10-CAP-B1-SOURCE-FORECAST-01 deferred items
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |

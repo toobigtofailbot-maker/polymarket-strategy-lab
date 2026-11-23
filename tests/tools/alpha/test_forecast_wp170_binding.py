@@ -44,6 +44,7 @@ from tools.alpha import run_forecast_evaluation as CLI
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 LEGACY_COMMIT = "c249409de3be81de753ef1721842d3c2a5f6fdeb"
+LEGACY_V2_COMMIT = "0d5ddfaada8289454d8b4b2b08548c36ff18b16a"  # merged main before S10-CAP-B1-METHODS-01
 IDENTITY_FILES = ("src/data_layer/analytical_research/forecast_evaluation.py", "tools/alpha/run_forecast_evaluation.py",
                   "src/data_layer/analytical_research/source_grounding.py", "tools/alpha/run_source_grounding.py")
 FILLERS = {"f": "2026-01-10T00:00:00Z", "s": "2026-03-10T00:00:00Z"}  # keep every split role non-empty
@@ -178,11 +179,10 @@ def full_registry(tmp_path_factory, nm):
     return _registry(tmp_path_factory.mktemp("wp170_full") / "registry.sqlite3", nm, [_sample(nm[s]) for s in eligible])
 
 
-@pytest.fixture(scope="module")
-def legacy(world, full_registry, tmp_path_factory):
-    """Genuine pre-WP v1 receipts: the unchanged merged-main c249409 CLI, run as its own process."""
+def legacy_runs(commit, world, full_registry, tmp_path_factory):
+    """Genuine receipts from the unchanged CLI at a pinned merged-main commit, run as its own process."""
     root = tmp_path_factory.mktemp("legacy_code")
-    archive = subprocess.run(["git", "-C", str(REPO_ROOT), "archive", "--format=tar", LEGACY_COMMIT, "src", "tools"],
+    archive = subprocess.run(["git", "-C", str(REPO_ROOT), "archive", "--format=tar", commit, "src", "tools"],
                              capture_output=True, timeout=300)
     assert archive.returncode == 0, "the pinned legacy commit must be in the checkout history (fetch-depth 0)"
     with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
@@ -200,6 +200,26 @@ def legacy(world, full_registry, tmp_path_factory):
         assert proc.returncode == 0, proc.stdout + proc.stderr
         out[name] = (scratch, json.loads((scratch / "receipt.json").read_text(encoding="utf-8")), json.loads(proc.stdout))
     return out
+
+
+@pytest.fixture(scope="module")
+def legacy(world, full_registry, tmp_path_factory):
+    """Genuine pre-WP v1 receipts: the unchanged merged-main c249409 CLI, run as its own process."""
+    return legacy_runs(LEGACY_COMMIT, world, full_registry, tmp_path_factory)
+
+
+@pytest.fixture(scope="module")
+def legacy_v2(world, full_registry, tmp_path_factory):
+    """Genuine pre-S10-CAP-B1-METHODS-01 v2 receipts: the unchanged merged-main 0d5ddfa CLI, run as its own process."""
+    return legacy_runs(LEGACY_V2_COMMIT, world, full_registry, tmp_path_factory)
+
+
+def identity_at(commit: str) -> str:
+    blobs = hashlib.sha256()
+    for path in IDENTITY_FILES:
+        blobs.update(subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{commit}:{path}"], capture_output=True,
+                                    check=True).stdout)
+    return "code:sha256:" + blobs.hexdigest()
 
 
 # ------------------------------------------------------------------ R001
@@ -452,6 +472,38 @@ def test_wp170_receipt_identity_denominators_and_tamper(world, baseline, full_re
             bad = json.loads(json.dumps(lreceipt))
             mutate(bad["core"])
             bad["receipt_id"] = FE.RECEIPT_PREFIX + FE.SG.sha256_hex(FE.SG.canonical_bytes(bad["core"]))  # self-consistent forgery
+            _write(lscratch / "receipt.json", bad)
+            out = CLI.verify(lscratch)
+            assert out["status"] == "TAMPER_DETECTED" and any(f.startswith("OUTPUT_MISMATCH:") for f in out["failures"]), name
+    finally:
+        _write(lscratch / "receipt.json", lreceipt)
+    assert CLI.verify(lscratch)["status"] == "VERIFIED"
+
+
+def test_wp170_legacy_v2_receipts_from_pinned_pre_b1b_code_replay(baseline, legacy_v2):
+    """S10-CAP-B1-METHODS-01: sealed v2 receipts of the pinned 0d5ddfa code replay unchanged, never restamped."""
+    assert FE.LEGACY_V2_CODE_IDENTITY == identity_at(LEGACY_V2_COMMIT) != CLI.code_identity()
+    assert FE.LEGACY_V1_CODE_IDENTITY == identity_at(LEGACY_COMMIT)
+    for name in ("unbound", "bound"):
+        lscratch, lreceipt, run_out = legacy_v2[name]
+        lcore = lreceipt["core"]
+        assert lcore["schema_id"] == FE.RECEIPT_SCHEMA and lcore["code_identity"] == FE.LEGACY_V2_CODE_IDENTITY
+        assert run_out["receipt_id"] == lreceipt["receipt_id"]
+        assert CLI.verify(lscratch) == {"status": "VERIFIED", "failures": [], "receipt_id": lreceipt["receipt_id"],
+                                        "network_attempts": 0}
+    # the legacy v2 core equals the current v2 core except its pinned identity: v2 logic is unchanged
+    current = baseline[1]["core"]
+    assert dict(legacy_v2["unbound"][1]["core"], code_identity=None) == dict(current, code_identity=None)
+    # a sealed legacy v2 receipt is never accepted rescored, downgraded or with a forged identity (relabelling it with
+    # the current identity is exactly the receipt current code computes from the same frozen inputs, so it verifies)
+    lscratch, lreceipt, _ = legacy_v2["bound"]
+    try:
+        for name, mutate in (("forged", lambda c: c.update(code_identity="code:sha256:" + "0" * 64)),
+                             ("score", lambda c: c["scoring"]["denominators"].update(paired_intersection=0)),
+                             ("downgrade", lambda c: c.update(schema_id=FE.LEGACY_RECEIPT_SCHEMA))):
+            bad = json.loads(json.dumps(lreceipt))
+            mutate(bad["core"])
+            bad["receipt_id"] = FE.RECEIPT_PREFIX + FE.SG.sha256_hex(FE.SG.canonical_bytes(bad["core"]))
             _write(lscratch / "receipt.json", bad)
             out = CLI.verify(lscratch)
             assert out["status"] == "TAMPER_DETECTED" and any(f.startswith("OUTPUT_MISMATCH:") for f in out["failures"]), name

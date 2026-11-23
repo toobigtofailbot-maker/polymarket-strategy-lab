@@ -1,0 +1,593 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CAP-B1-METHODS-01",
+    "title": "B1-B: Bundled pinned forecast, sampling and benchmark parity into native diagnostic consumers",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "B1_BUNDLED_OFFLINE_FORECAST_SAMPLE_BENCHMARK_PARITY",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-cap-b1-methods-01",
+    "required_predecessor": {
+      "pr_number": 283,
+      "head_sha": "af34e060ad05627a3b0949c53ee829ad52cfc09b",
+      "merge_sha": "0d5ddfaada8289454d8b4b2b08548c36ff18b16a"
+    },
+    "objective": "One offline method-comparison vertical: pinned source forecasting, Wang and stratified sampling plus same-cohort scoring parity, consumed by native forecast evaluation and read-only WP170/learning metrics, without changing sealed v1/v2 evidence.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/forecast_methods_integration.py",
+      "src/data_layer/analytical_research/forecast_evaluation.py",
+      "tools/alpha/run_forecast_methods_integration.py",
+      "tools/alpha/run_forecast_evaluation.py",
+      "tests/data_layer/analytical_research/test_forecast_methods_integration.py",
+      "tests/tools/alpha/test_run_forecast_methods_integration.py",
+      "tests/tools/alpha/test_forecast_evaluation.py",
+      "tests/tools/alpha/test_forecast_wp170_binding.py",
+      "docs/forecast_methods_integration_contract.md",
+      "docs/forecast_evaluation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-B1-METHODS-01.md",
+      "docs/wp_specs/S10-CAP-B1-METHODS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-B1-METHODS-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/forecast_methods_integration.py",
+      "src/data_layer/analytical_research/forecast_evaluation.py",
+      "tools/alpha/run_forecast_methods_integration.py",
+      "tools/alpha/run_forecast_evaluation.py",
+      "tests/data_layer/analytical_research/test_forecast_methods_integration.py",
+      "tests/tools/alpha/test_run_forecast_methods_integration.py",
+      "tests/tools/alpha/test_forecast_evaluation.py",
+      "tests/tools/alpha/test_forecast_wp170_binding.py",
+      "docs/forecast_methods_integration_contract.md",
+      "docs/forecast_evaluation_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-B1-METHODS-01.md",
+      "docs/wp_specs/S10-CAP-B1-METHODS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-B1-METHODS-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/live_pilot/",
+      "src/paper_trading/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/operator_cockpit_frontend/",
+      "src/research_runtime/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/execution/",
+      "tools/qualification/"
+    ],
+    "max_changed_files": 16,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly the 16 declared tracked paths. Historical v1/v2 receipts and existing W01/B1-A Alpha, source/PIT and native stores remain valid and unmodified; only new offline optional method receipts and disposable test data may be written. No provider/host or economic state.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One opt-in, offline method-comparison path over the existing frozen forecast cohort. Historical evaluator entrypoints, receipt identities, WP170 and B1-A remain backward compatible.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/forecast_evaluation.py",
+        "before": "Native four-method forecast evaluator and versioned v1/v2 sealed receipts; no source-method candidate forecast path.",
+        "after": "Opt-in versioned diagnostic candidate forecast/method comparison, using the native scorable row and scoring interfaces, with legacy run/verify behavior preserved.",
+        "change_authorized": true,
+        "compatibility_requirement": "No v1/v2 semantic reinterpretation, historical receipt rewrite, new qualification, learning feedback promotion or change to existing default forecast cases. Additive v3 only if versioned and compatible.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_forecast_evaluation.py",
+        "before": "Finite run/verify over strict frozen v1/v2 cases and cold-verified SRC-01.",
+        "after": "Optional version-aware diagnostic candidate support only; old CLI, v1/v2 cold verify, default v2 outputs, safe replay unchanged.",
+        "change_authorized": true,
+        "compatibility_requirement": "Preserve legacy receipt preimages and pinned code identities for historical verification; no product egress, registry write, provider, generated tracked artifacts or runtime authority.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "src/data_layer/analytical_research/forecast_methods_integration.py",
+        "before": "Pinned forecast/sampler/metric methods do not have a unified same-case producer and native-consumer trace.",
+        "after": "One thin adapter for pinned source-call/port-parity evidence, actual frozen method inputs and native cohort/metric consumers, with source-dependent refusal.",
+        "change_authorized": true,
+        "compatibility_requirement": "No copied framework, license bypass, second predictor registry, synthetic lift claims, provider network or upstream method impersonation.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_forecast_methods_integration.py",
+        "before": "No finite local operator emits one cold-verified upstream-method-to-native-consumer receipt.",
+        "after": "One finite offline run/verify command, write-once receipts, actual frozen source identities and per-ID capability evidence.",
+        "change_authorized": true,
+        "compatibility_requirement": "No daemon, credential, model invocation, live source collection, post-outcome training or modifications to existing B1-A/W01 operator.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Twelve matched requirements covering actual source-call and parity, frozen native consumers, method receipt compatibility, negative cases, and original capability accounting.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R001: Pre-edit source feasibility: inspect exact upstream pins/licenses/functions/dependency closure for Metaculus ForecastBot a54dd64, pricing 04b916c, ForecastBench e8d3c94, Metac-bot-template bcbd016, and metric sources Gnosis 817117d, Metaculus bfae5fe, ForecastBench-sim 27776fc. Record which selected callable genuinely runs under an isolated fake provider/offline fixture, which faithful port is source-compared, and which remains OPEN/blocked. No fabricated upstream calls, no vendor code copied without license/security verification.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001: Pre-edit source feasibility: inspect exact upstream pins/licenses/functions/dependency closure for Metaculus ForecastBot a54dd64, pricing 04b916c, ForecastBench e8d3c94, Metac-bot-template bcbd016, and metric sources Gnosis 817117d, Metaculus bfae5fe, ForecastBench-sim 27776fc. Record which selected callable genuinely runs under an isolated fake provider/offline fixture, which faithful port is source-compared, and which remains OPEN/blocked. No fabricated upstream calls, no vendor code copied without license/security verification.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R002: Feed a cold-verified B1-A/SRC-01 forecast cohort and exact original market/rule/event/decision/source/WP170 identities to the method adapter, without reading target outcomes in the sampling, forecast or training phase; verify producer and native consumer call tracing and cutoff refusal.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002: Feed a cold-verified B1-A/SRC-01 forecast cohort and exact original market/rule/event/decision/source/WP170 identities to the method adapter, without reading target outcomes in the sampling, forecast or training phase; verify producer and native consumer call tracing and cutoff refusal.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R003: Exercise the pinned ForecastBench category thinning and stratified sampling on a fixed seed, or a license-permitted source-faithful port with demonstrated exact upstream parity. Consume final selected IDs as an existing native ResearchSample/TemporalSplitManifest membership read; retain full eligible, ineligible, per-stratum and missing denominators. Never silently equate a different sampling algorithm.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003: Exercise the pinned ForecastBench category thinning and stratified sampling on a fixed seed, or a license-permitted source-faithful port with demonstrated exact upstream parity. Consume final selected IDs as an existing native ResearchSample/TemporalSplitManifest membership read; retain full eligible, ineligible, per-stratum and missing denominators. Never silently equate a different sampling algorithm.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R004: Exercise pinned upstream estimate_mle/train-only Wang source logic, or a faithful source-tested port, against native fit_wang/forecast_case over identical training data. Require declared tolerance, convergence/parameterization evidence, held-out exclusions and differences; mismatch is PARITY_FAILED, not PASS or silently substituted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004: Exercise pinned upstream estimate_mle/train-only Wang source logic, or a faithful source-tested port, against native fit_wang/forecast_case over identical training data. Require declared tolerance, convergence/parameterization evidence, held-out exclusions and differences; mismatch is PARITY_FAILED, not PASS or silently substituted.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R005: For ForecastBot _run_individual_question/_aggregate_predictions and Metac-bot-template LightningRod/template, attempt only exact pinned offline dependency-closed fake-provider execution if feasible; a non-executed method is EXPLICIT_OPEN and contributes zero fake forecasts. Any successful candidate must be matched to the same source/market cutoff and read by native forecast diagnostics, not a standalone report.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005: For ForecastBot _run_individual_question/_aggregate_predictions and Metac-bot-template LightningRod/template, attempt only exact pinned offline dependency-closed fake-provider execution if feasible; a non-executed method is EXPLICIT_OPEN and contributes zero fake forecasts. Any successful candidate must be matched to the same source/market cutoff and read by native forecast diagnostics, not a standalone report.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R006: Opt-in evaluator support must cold-verify the new candidate input, recompute source/method identity, call the actual existing native scoring/calibration math on a predeclared diagnostic cohort, and produce a separate versioned receipt. No method may be described as a real A3 child probability, qualified strategy, confirmed edge or WP170 OOS release.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006: Opt-in evaluator support must cold-verify the new candidate input, recompute source/method identity, call the actual existing native scoring/calibration math on a predeclared diagnostic cohort, and produce a separate versioned receipt. No method may be described as a real A3 child probability, qualified strategy, confirmed edge or WP170 OOS release.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R007: Gnosis Benchmarker metric leaf, Metaculus binary score_math and ForecastBench-sim binary/reject/floor checks: use real pinned callable/fixture source behavior or source-faithful parity tests and consume fixed outcomes through existing native forecast_evaluation.score_one/score_cohort and learning_feedback.score_frozen/diagnostics where compatible. If a full upstream agent runner requires network or new deps, keep it blocked while scoring leaf can be measured.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007: Gnosis Benchmarker metric leaf, Metaculus binary score_math and ForecastBench-sim binary/reject/floor checks: use real pinned callable/fixture source behavior or source-faithful parity tests and consume fixed outcomes through existing native forecast_evaluation.score_one/score_cohort and learning_feedback.score_frozen/diagnostics where compatible. If a full upstream agent runner requires network or new deps, keep it blocked while scoring leaf can be measured.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R008: Historical v1/v2 forecast receipt cold verification, pinned legacy v1 identity and v2 identity handling, original default run/verify, unchanged WP170 split membership, existing B1-A spine forecasts and W01/Hermes/Alpha receipts must remain compatible. Version-aware additive changes may never rewrite sealed history or fake an unchanged code hash.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008: Historical v1/v2 forecast receipt cold verification, pinned legacy v1 identity and v2 identity handling, original default run/verify, unchanged WP170 split membership, existing B1-A spine forecasts and W01/Hermes/Alpha receipts must remain compatible. Version-aware additive changes may never rewrite sealed history or fake an unchanged code hash.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R009: Failure cases: unsupported pin, missing source file/permission/license, changed method signature, absent predicted probability, duplicate sample, stale or future source, label leakage, train/test overlap, scorer direction mismatch, invalid probability NaN or boundary, source mismatch, unknown model cost. Closed refusal with accurate offered/admitted/scored/abstained/excluded/paired counts; no credential, source text, traceback or raw path echo.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009: Failure cases: unsupported pin, missing source file/permission/license, changed method signature, absent predicted probability, duplicate sample, stale or future source, label leakage, train/test overlap, scorer direction mismatch, invalid probability NaN or boundary, source mismatch, unknown model cost. Closed refusal with accurate offered/admitted/scored/abstained/excluded/paired counts; no credential, source text, traceback or raw path echo.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R010: Write-once new diagnostic receipts must cold-recompute with exact source pin/method input and code hash; repeated same input is idempotent, altered source or a partial scratch refuses rather than replays; test no socket attempts in method run, CLI or upstream fake provider, and no external product API or spend.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010: Write-once new diagnostic receipts must cold-recompute with exact source pin/method input and code hash; repeated same input is idempotent, altered source or a partial scratch refuses rather than replays; test no socket attempts in method run, CLI or upstream fake provider, and no external product API or spend.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R011: On same paired frozen cases, compare candidate method versus actual native baseline without selective denominator or false lift; report metric orientation, clipped log loss, cohort/split hash, uncertainty, abstentions and test-only values. Calls to the real native score consumer required; NO_LIFT/INCONCLUSIVE if evidence insufficient.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011: On same paired frozen cases, compare candidate method versus actual native baseline without selective denominator or false lift; report metric orientation, clipped log loss, cohort/split hash, uncertainty, abstentions and test-only values. Calls to the real native score consumer required; NO_LIFT/INCONCLUSIVE if evidence insufficient.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R012: 36 original IDs retain unchanged source register and pins; record exact disposition/evidence for nine touched R3-01, R3-10, R3-10-WANG, R3-12, R3-12-SAMPLER, R3-18, R3-06, R3-20, R3-22. No other IDs silently accepted; A8 only diagnostics, A3 model/provider and A4 genuine claims remain open. Confirm 16-file scope, #268 not touched, no new permissions, no pipeline alteration.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012: 36 original IDs retain unchanged source register and pins; record exact disposition/evidence for nine touched R3-01, R3-10, R3-10-WANG, R3-12, R3-12-SAMPLER, R3-18, R3-06, R3-20, R3-22. No other IDs silently accepted; A8 only diagnostics, A3 model/provider and A4 genuine claims remain open. Confirm 16-file scope, #268 not touched, no new permissions, no pipeline alteration.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Offline diagnostic and explicit refusals only, no product network/model spend, prospective/OOS release, credentials or trading.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "All canonical market/sample/forecast IDs come from existing native code; new sidecar receipt uses existing source_grounding canonical hash. No new independent canonical identity derivation.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness followed by standing-owner-authorized bounded offline implementation and independent review.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Actual native readiness gate validates final prompt and spec on synchronized main before any source edit; no PROTECTED certificate for the expected RUNTIME track.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl standing software-development authorization plus Side26 specific limited B1-B grant; any new provider/credential/PROTECTED boundary stops.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "CC executes only 16 files, validates 12 exact tests and full suite, zero unauthorized network, publishes exact-head evidence on one PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed WP159 schema-1.0.0 public error precedence, without a new custom error framework.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Real frozen native and upstream fixtures are required in R001-R012 pytest evidence. No second duplicated literal examples schema.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Every normative rule R001-R012 has one uniquely named exact pytest node plus required complete-suite/CI/security and cold-read evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_upstream_pin_api_license_and_call_trace",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_upstream_pin_api_license_and_call_trace",
+        "expected_result": "R001: Pre-edit source feasibility: inspect exact upstream pins/licenses/functions/dependency closure for Metaculus ForecastBot a54dd64, pricing 04b916c, ForecastBench e8d3c94, Metac-bot-template bcbd016, and metric sources Gnosis 817117d, Metaculus bfae5fe, ForecastBench-sim 27776fc. Record which selected callable genuinely runs under an isolated fake provider/offline fixture, which faithful port is source-compared, and which remains OPEN/blocked. No fabricated upstream calls, no vendor code copied without license/security verification."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_native_cohort_and_wp170_identity_bound_before_methods",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_native_cohort_and_wp170_identity_bound_before_methods",
+        "expected_result": "R002: Feed a cold-verified B1-A/SRC-01 forecast cohort and exact original market/rule/event/decision/source/WP170 identities to the method adapter, without reading target outcomes in the sampling, forecast or training phase; verify producer and native consumer call tracing and cutoff refusal."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_forecastbench_stratified_sampler_same_seed_native_membership",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_forecastbench_stratified_sampler_same_seed_native_membership",
+        "expected_result": "R003: Exercise the pinned ForecastBench category thinning and stratified sampling on a fixed seed, or a license-permitted source-faithful port with demonstrated exact upstream parity. Consume final selected IDs as an existing native ResearchSample/TemporalSplitManifest membership read; retain full eligible, ineligible, per-stratum and missing denominators. Never silently equate a different sampling algorithm."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_upstream_wang_mle_train_only_parity_or_refusal",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_upstream_wang_mle_train_only_parity_or_refusal",
+        "expected_result": "R004: Exercise pinned upstream estimate_mle/train-only Wang source logic, or a faithful source-tested port, against native fit_wang/forecast_case over identical training data. Require declared tolerance, convergence/parameterization evidence, held-out exclusions and differences; mismatch is PARITY_FAILED, not PASS or silently substituted."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_forecastbot_and_metac_template_fake_provider_or_explicit_open",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_forecastbot_and_metac_template_fake_provider_or_explicit_open",
+        "expected_result": "R005: For ForecastBot _run_individual_question/_aggregate_predictions and Metac-bot-template LightningRod/template, attempt only exact pinned offline dependency-closed fake-provider execution if feasible; a non-executed method is EXPLICIT_OPEN and contributes zero fake forecasts. Any successful candidate must be matched to the same source/market cutoff and read by native forecast diagnostics, not a standalone report."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_native_evaluator_consumes_method_probability_opt_in",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_forecast_methods_integration.py::test_native_evaluator_consumes_method_probability_opt_in",
+        "expected_result": "R006: Opt-in evaluator support must cold-verify the new candidate input, recompute source/method identity, call the actual existing native scoring/calibration math on a predeclared diagnostic cohort, and produce a separate versioned receipt. No method may be described as a real A3 child probability, qualified strategy, confirmed edge or WP170 OOS release."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_three_benchmark_scoring_sources_same_cohort_parity",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_three_benchmark_scoring_sources_same_cohort_parity",
+        "expected_result": "R007: Gnosis Benchmarker metric leaf, Metaculus binary score_math and ForecastBench-sim binary/reject/floor checks: use real pinned callable/fixture source behavior or source-faithful parity tests and consume fixed outcomes through existing native forecast_evaluation.score_one/score_cohort and learning_feedback.score_frozen/diagnostics where compatible. If a full upstream agent runner requires network or new deps, keep it blocked while scoring leaf can be measured."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_legacy_v1_v2_receipts_and_b1a_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_forecast_methods_integration.py::test_legacy_v1_v2_receipts_and_b1a_compatibility",
+        "expected_result": "R008: Historical v1/v2 forecast receipt cold verification, pinned legacy v1 identity and v2 identity handling, original default run/verify, unchanged WP170 split membership, existing B1-A spine forecasts and W01/Hermes/Alpha receipts must remain compatible. Version-aware additive changes may never rewrite sealed history or fake an unchanged code hash."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_method_parity_negative_matrix_and_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_method_parity_negative_matrix_and_denominators",
+        "expected_result": "R009: Failure cases: unsupported pin, missing source file/permission/license, changed method signature, absent predicted probability, duplicate sample, stale or future source, label leakage, train/test overlap, scorer direction mismatch, invalid probability NaN or boundary, source mismatch, unknown model cost. Closed refusal with accurate offered/admitted/scored/abstained/excluded/paired counts; no credential, source text, traceback or raw path echo."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_method_parity_cold_verify_idempotence_network_deny",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_forecast_methods_integration.py::test_method_parity_cold_verify_idempotence_network_deny",
+        "expected_result": "R010: Write-once new diagnostic receipts must cold-recompute with exact source pin/method input and code hash; repeated same input is idempotent, altered source or a partial scratch refuses rather than replays; test no socket attempts in method run, CLI or upstream fake provider, and no external product API or spend."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_paired_native_vs_upstream_no_false_lift",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_forecast_methods_integration.py::test_paired_native_vs_upstream_no_false_lift",
+        "expected_result": "R011: On same paired frozen cases, compare candidate method versus actual native baseline without selective denominator or false lift; report metric orientation, clipped log loss, cohort/split hash, uncertainty, abstentions and test-only values. Calls to the real native score consumer required; NO_LIFT/INCONCLUSIVE if evidence insufficient."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_capability_register_and_unchanged_source_boundaries",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_forecast_methods_integration.py::test_capability_register_and_unchanged_source_boundaries",
+        "expected_result": "R012: 36 original IDs retain unchanged source register and pins; record exact disposition/evidence for nine touched R3-01, R3-10, R3-10-WANG, R3-12, R3-12-SAMPLER, R3-18, R3-06, R3-20, R3-22. No other IDs silently accepted; A8 only diagnostics, A3 model/provider and A4 genuine claims remain open. Confirm 16-file scope, #268 not touched, no new permissions, no pipeline alteration."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CAP-RULES-RELATIONS-01",
+    "next_title": "B2: Bundled rules, settlement, related-market and wallet/public-intelligence connection after validated source and methods envelopes.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CAP-B1-METHODS-01",
+    "forbidden_in_this_wp": [
+      "No provider/LLM/Firecrawl/Search or external product GET, authenticated client, account read, credentials, or new permissions.",
+      "No inference that fake-provider ForecastBot proves an A3 child probability, independent real model behavior, economic edge, or future strategy.",
+      "No changes to W01 Hermes, B1-A source/PIT/Alpha consumer spine, runtime policy, original roadmap CSV/archive, PR268 or Lane B.",
+      "No new raw outside repo copied into repository, unaudited licensing, dependency/lock/install, scheduler/daemon/agent framework.",
+      "No modification of point-in-time market/source records, production Alpha/experiment registry schema/store, canonical WP170 state or OOS run release.",
+      "No paper, qualification, order, execution, strategy, risk engine, Gate C, capital, wallet or live trading.",
+      "No false 9/36 capability completion, no source-method equivalence without pinned code/fixture proof; unverified rows remain OPEN."
+    ]
+  }
+}

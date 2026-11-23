@@ -26,6 +26,9 @@ S10-R3-FORECAST-WP170-BIND-01 binds each eligible target to at most one native W
 ``experiment_os.membership_hash`` values, in v2 receipts. Unbound cases are counted per reason. v1 receipts
 still replay in their original shape.
 
+S10-CAP-B1-METHODS-01 adds only ``score_diagnostic_candidate`` (an opt-in scorer for one external diagnostic candidate,
+called by ``forecast_methods_integration``) and the pinned ``LEGACY_V2_CODE_IDENTITY``; default run/verify is unchanged.
+
 Posture: research only, stdlib only, read-only over native stores, no network, no LLM/Hermes,
 no price/edge/strategy/paper/order/live authority. Scores are DIAGNOSTIC_ONLY research evidence.
 """
@@ -54,6 +57,9 @@ RECEIPT_SCHEMA = "s10-r3-forecast01-score-receipt-v2"
 RECEIPT_SCHEMAS = (LEGACY_RECEIPT_SCHEMA, RECEIPT_SCHEMA)
 # code_identity() of the four identity files at merged main c249409 (the last v1-producing code), LF bytes.
 LEGACY_V1_CODE_IDENTITY = "code:sha256:1309f030573183d99c6b9ee5a7b281bcf07fcbf19667946b09eb53568ea419ed"
+# code_identity() at merged main 0d5ddfa (unchanged since PR #280): the last code that produced v2 receipts before
+# S10-CAP-B1-METHODS-01 added the opt-in candidate scorer below; v2 core logic is unchanged, so they replay as sealed.
+LEGACY_V2_CODE_IDENTITY = "code:sha256:017cf39eea06b3c5ef7370f4cb1b686614b80daa3e6aeba89bba63175ca344aa"
 BINDING_WP_ID = "S10-R3-FORECAST-WP170-BIND-01"
 RECEIPT_PREFIX = "fcsteval:sha256:"
 CALLER = ("tools/alpha/run_forecast_evaluation.py:run -> run_source_grounding.verify -> "
@@ -97,6 +103,7 @@ TRADE_KEY_WORDS = ("order", "orders", "side", "size", "amount", "signature", "st
 _ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,95}")
 _SHA_RE = re.compile(r"[0-9a-f]{64}")
 _PROB_RE = re.compile(r"0|1|0\.[0-9]{0,11}[1-9]")  # canonical: no sign, exponent, trailing zero or > 12 dp
+_CANDIDATE_RE = re.compile(r"0|1|0\.[0-9]{1,12}|1\.0{1,12}")  # finite, in [0, 1], at most 12 dp (no NaN/sign/exponent)
 _POS_DEC_RE = re.compile(r"[1-9][0-9]{0,3}|(0|[1-9][0-9]{0,3})\.[0-9]{0,5}[1-9]")
 
 
@@ -754,6 +761,44 @@ def score_cohort(cases_by_id: dict, rows: list[dict], forecasts: dict, corpus_cl
         "lift_status": ("NO_PAIRED_CASES" if not paired else "SYNTHETIC_CONTRACT_EVIDENCE_NOT_VALUE"
                         if corpus_class == "SANITIZED_SYNTHETIC" else "LOCAL_OBSERVATION_UNREVIEWED_NOT_VALUE"),
         "cases": per_case,
+    }
+
+
+def score_diagnostic_candidate(cases_by_id: dict, rows: list[dict], forecasts: dict, candidate: dict, corpus_class: str,
+                               cutoff: str) -> dict:
+    """Opt-in (S10-CAP-B1-METHODS-01): score one external diagnostic candidate next to the four native methods.
+
+    Same selected cohort, same outcome gate and the same ``score_one``; pairs only cases where the candidate and every
+    native method forecast. Never called by ``build_evaluation_core``: v1/v2 receipts and defaults are unchanged."""
+    p_yes = candidate["p_yes"]
+    _require(candidate["method_id"] not in METHODS and set(p_yes) == set(forecasts), "CANDIDATE_SHAPE_INVALID")
+    _require(all(v is None or (type(v) is str and _CANDIDATE_RE.fullmatch(v) is not None) for v in p_yes.values()),
+             "CANDIDATE_PROBABILITY_INVALID")
+    selected = [r["case_id"] for r in rows if r["status"] == "SELECTED"]
+    labels = {c: resolve_outcome(next(r for r in rows if r["case_id"] == c), cases_by_id[c]["outcome"], corpus_class,
+                                 cutoff)[0] for c in selected}
+    scorable = [c for c in selected if labels[c] is not None]
+    own = [c for c in scorable if p_yes[c] is not None]
+    paired = [c for c in own if all(forecasts[c]["methods"][m]["status"] == "FORECAST" for m in METHODS)]
+    prob = {m: (lambda c, m=m: Decimal(forecasts[c]["methods"][m]["p_yes"])) for m in METHODS}
+    prob[candidate["method_id"]] = lambda c: Decimal(p_yes[c])
+    per_case = {c: {m: score_one(prob[m](c), labels[c]) for m in prob} for c in paired}
+    methods = {m: {"lineage": candidate["lineage"] if m not in METHODS else LINEAGE[m],
+                   "on_paired": _aggregate([per_case[c][m] for c in paired])} for m in prob}
+    methods[candidate["method_id"]]["on_own_available"] = _aggregate([score_one(prob[candidate["method_id"]](c), labels[c])
+                                                                      for c in own])
+    return {
+        "scorer": "forecast_evaluation.score_one", "log_loss_epsilon": str(EPSILON),
+        "orientation": {"BRIER_SCORE": "LOWER_IS_BETTER", "LOG_LOSS": "LOWER_IS_BETTER",
+                        "METACULUS_BINARY_BASELINE_SCORE": "HIGHER_IS_BETTER"},
+        "denominators": {"selected": len(selected), "scorable": len(scorable), "candidate_available": len(own),
+                         "candidate_missing": len(scorable) - len(own), "paired_with_all_native": len(paired)},
+        "paired_case_ids_sha256": SG.sha256_hex(SG.canonical_bytes(paired)),
+        "methods": methods,
+        "per_case": {c: {m: {k: _q(v[k]) for k in ("brier", "log_loss", "baseline_score")} | {"clipped": v["clipped"]}
+                         for m, v in per_case[c].items()} for c in paired},
+        "labels": {c: labels[c] for c in paired},
+        "lift_status": "DIAGNOSTIC_CANDIDATE_NOT_VALUE",
     }
 
 
