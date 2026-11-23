@@ -2359,9 +2359,9 @@ Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 
 
 ## S10-CAP-B1-METHODS-01
 
-- **Package.** Exact 16-path RUNTIME/Risk3/L package on merged PR #283 (merge 0d5ddfaada8289454d8b4b2b08548c36ff18b16a). Frozen prompt/spec: docs/wp_specs/S10-CAP-B1-METHODS-01/. Implementation PR pending Side26 review and Karl's merge decision.
+- **Package.** Exact 18-path RUNTIME/Risk3/L package (16 + 2 via Side26 Amendment 01) on merged PR #283 (merge 0d5ddfaada8289454d8b4b2b08548c36ff18b16a). Frozen prompt/spec: docs/wp_specs/S10-CAP-B1-METHODS-01/. Implementation PR pending Side26 review and Karl's merge decision.
 - **Source.** src/data_layer/analytical_research/forecast_methods_integration.py (stdlib method register, sampler/Wang ports, metric parity; no new scorer, store or identity). Additive opt-in `score_diagnostic_candidate` and `LEGACY_V2_CODE_IDENTITY` in forecast_evaluation.py.
-- **Tool.** tools/alpha/run_forecast_methods_integration.py; tools/alpha/run_forecast_evaluation.py gains pinned legacy-v2 replay only.
+- **Tool.** tools/alpha/run_forecast_methods_integration.py. tools/alpha/run_forecast_evaluation.py gains pinned legacy-v2 replay only. tools/alpha/run_learning_feedback.py gains pinned replay of `0d5ddfa`-sealed LEARN-01 receipts only.
 - **Tests.** tests/data_layer/analytical_research/test_forecast_methods_integration.py and tests/tools/alpha/test_run_forecast_methods_integration.py; additive checks in test_forecast_evaluation.py and test_forecast_wp170_binding.py. Live upstream comparisons need POLYMARKET_UPSTREAM_ROOT.
 - **Docs.** Contract: docs/forecast_methods_integration_contract.md. Stable evidence: docs/status_entries/S10-CAP-B1-METHODS-01.md.
-- **Boundaries.** W01, B1-A, source-grounding, learning_feedback, experiment_os, Alpha and roadmap archive are byte-unchanged. Real product GET 0; LIVE DISABLED.
+- **Boundaries.** W01, B1-A, source-grounding, native learning_feedback, experiment_os, Alpha and the roadmap archive are byte-unchanged. Real product GET 0; LIVE DISABLED.

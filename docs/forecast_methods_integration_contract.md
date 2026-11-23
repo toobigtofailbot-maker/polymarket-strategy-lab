@@ -136,6 +136,15 @@ unless mean + 2·SE < 0, which gives `LOCAL_OBSERVATION_UNREVIEWED_NOT_VALUE`. N
   works because v2 core logic is unchanged; the test proves the legacy and current cores are equal apart from
   `code_identity`.
 - v1 replays as before. Default run/verify, WP170 membership and B1-A `bind_forecast` output are unchanged.
-- Known limit: `run_learning_feedback.code_identity` binds `run_forecast_evaluation.code_identity()` transitively, by
-  design. Learning receipts sealed before this change therefore recompute under the new identity, as after every prior
-  forecast-code change (for example PR #280). `run_learning_feedback.py` is outside this package (D002).
+- LEARN-01 (Side26 Amendment 01, D002 resolved). `run_learning_feedback.code_identity` binds the forecast identity
+  transitively, so the forecast change had broken cold verify of LEARN-01 receipts sealed at `0d5ddfa`. `verify` now
+  recomputes such a receipt under the pinned former identity `LEGACY_V2_LEARN_CODE_IDENTITY` (sha256 of the `0d5ddfa`
+  `learning_feedback.py` and `run_learning_feedback.py` blobs plus `FE.LEGACY_V2_CODE_IDENTITY`). It does so only when:
+  - the receipt claims exactly that identity;
+  - its nested forecast receipt first passes the native forecast cold verifier with `FE.LEGACY_V2_CODE_IDENTITY`.
+
+  New runs and current receipts use the current identity, and a new run on a legacy forecast refuses. Only the
+  `0d5ddfa` epoch is proven, with the real base CLIs; no earlier learning epoch is claimed.
+- What a legacy identity proves: every field is recomputed, and the result must equal the sealed content. The label
+  attests that the pinned former logic produces exactly these bytes. Because the v2 forecast and LEARN-01 core logic
+  is unchanged, it cannot by itself prove which code binary sealed the receipt.

@@ -1,7 +1,7 @@
 # S10-CAP-B1-METHODS-01
 
 B1-B: bundled forecast, sampling and benchmark method parity over one native forecast cohort, consumed by the native
-scorers. RUNTIME/Risk3/L, exactly 16 paths. Branch `codex/s10-cap-b1-methods-01` was cut from clean synchronized main
+scorers. RUNTIME/Risk3/L, exactly 18 paths (16 plus 2 by Side26 Amendment 01). Branch `codex/s10-cap-b1-methods-01` was cut from clean synchronized main
 `0d5ddfa` (merge of PR #283, head `af34e06`). PR #268 is open, separately owned and untouched; nothing is stacked on it.
 
 ## Identity
@@ -35,6 +35,7 @@ scorers. RUNTIME/Risk3/L, exactly 16 paths. Branch `codex/s10-cap-b1-methods-01`
 ## Readiness
 
 - The frozen package bytes passed the native gate unmodified: exit 0, `IMPLEMENTATION_READY`, RUNTIME, certificate_required=false, scope 16, 12 evidence items, 12 rules, error_codes [].
+- Side26 Amendment 01 (2026-11-23) added `tools/alpha/run_learning_feedback.py` and `tests/tools/alpha/test_learning_feedback.py` after a base-vs-head witness reproduced a LEARN-01 historical cold-verify regression (D002). Prompt section 9, spec arrays and `max_changed_files=18` were updated before any source edit. Gate: exit 0, `IMPLEMENTATION_READY`, 18/12/12, error_codes [].
 - Prompt and spec SHA-256 values are recorded in the PR body with the gate output.
 
 ## Implementation
@@ -50,8 +51,9 @@ Contract: `docs/forecast_methods_integration_contract.md`.
   - the paired comparison, plus `build_methods_core`, `finalize_receipt` and `verify_receipt`.
 - `forecast_evaluation.py` gains the additive opt-in `score_diagnostic_candidate` (never called by `build_evaluation_core`) and the pinned `LEGACY_V2_CODE_IDENTITY`.
 - `run_forecast_evaluation.py`: `verify` replays a v2 receipt that claims the pinned legacy identity. Nothing else changes.
+- `run_learning_feedback.py` (Amendment 01): `verify` replays a LEARN-01 receipt sealed at `0d5ddfa`. It requires the exactly pinned former identity `LEGACY_V2_LEARN_CODE_IDENTITY` and a nested forecast that natively verifies with `FE.LEGACY_V2_CODE_IDENTITY`. Runs and current receipts are unchanged.
 - `run_forecast_methods_integration.py` provides `run` (cold forecast verify, freeze, method phase, native scoring, write-once receipt) and a cold `verify`.
-- W01, B1-A, source-grounding, learning_feedback, experiment_os, the Alpha modules and the roadmap archive are byte-unchanged.
+- W01, B1-A, source-grounding, native learning_feedback.py, experiment_os, the Alpha modules and the roadmap archive are byte-unchanged.
 
 ## Dispositions
 
@@ -74,6 +76,8 @@ None is VALUE_VERIFIED. The other 27 of the 36 program IDs are unchanged.
 - tests/tools/alpha/test_run_forecast_methods_integration.py
 - tests/tools/alpha/test_forecast_evaluation.py
 - tests/tools/alpha/test_forecast_wp170_binding.py
+- tools/alpha/run_learning_feedback.py
+- tests/tools/alpha/test_learning_feedback.py
 - docs/forecast_methods_integration_contract.md
 - docs/forecast_evaluation_contract.md
 - docs/deferred_items_log.md
@@ -99,6 +103,7 @@ None is VALUE_VERIFIED. The other 27 of the 36 program IDs are unchanged.
 | Scorer direction / native disagreement | R009 (`SCORER_DIRECTION_MISMATCH`) |
 | False lift / value | R011 (`INCONCLUSIVE_SYNTHETIC_LABELS_NOT_VALUE`, `INCONCLUSIVE_INSUFFICIENT_PAIRED`, `NO_LIFT`, `LOCAL_OBSERVATION_UNREVIEWED_NOT_VALUE`) |
 | Replay / tamper / code identity / network | R010 (`TAMPER_DETECTED`, `RECEIPT_ID_MISMATCH`, `NETWORK_ATTEMPT_BLOCKED`), R008 legacy tamper |
+| Historical LEARN-01 identity (Amendment 01) | `test_learning_sealed_pre_b1b_receipts_replay_current_and_refusals` (forged and current-claimed identity, downgrade, score, outcome, nested identity and swapped forecast all refuse) |
 | Safe allowed vocabulary | R010 (`DIAGNOSTICS_ONLY` and `NOT_RELEASED` accepted; `CONFIRMED_EDGE`, `QUALIFIED_STRATEGY` and `OOS_RELEASED` absent) |
 | No-citation | NOT_APPLICABLE: no text claim or citation is produced; upstream identity is pinned by commit, file and license |
 | Trade fee / order / live | NOT_APPLICABLE: no price, size, fee, order or live path exists in the new code |
@@ -109,7 +114,7 @@ None is VALUE_VERIFIED. The other 27 of the 36 program IDs are unchanged.
 
 ## Deferred Items
 
-- Added S10-CAP-B1-METHODS-01-D001 to D007.
+- Added S10-CAP-B1-METHODS-01-D001 to D007; D002 resolved in-WP by Amendment 01.
 
 ## Next WP Pointer
 

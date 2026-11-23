@@ -257,10 +257,11 @@ def test_capability_register_and_unchanged_source_boundaries(methods_run):
     assert register["R3-12-SAMPLER"]["membership_sha256"] == core["sampler"]["membership_sha256"]
     text = json.dumps(core)
     assert "VALUE_VERIFIED\"" not in text and core["authority"]["real_value_verified"] is False
-    # declared scope: exactly 16 paths, no workflow/dependency/credential/Hermes/execution surface
+    # declared scope: exactly 18 paths (16 + Side26 Amendment 01), no workflow/dependency/credential/Hermes/execution surface
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     allowed = spec["scope"]["allowed_changed_files"]
-    assert len(allowed) == 16 == spec["scope"]["max_changed_files"] and spec["scope"]["exact_scope_required"] is True
+    assert len(allowed) == 18 == spec["scope"]["max_changed_files"] and spec["scope"]["exact_scope_required"] is True
+    assert {"tools/alpha/run_learning_feedback.py", "tests/tools/alpha/test_learning_feedback.py"} <= set(allowed)
     assert not [p for p in allowed if p.startswith((".github/", "config/", "tools/hermes/", "src/execution_gateway/"))
                 or p.endswith(("requirements.txt", "pyproject.toml", ".lock"))]
     assert spec["authority"]["network"] is False and spec["authority"]["credentials"] is False
