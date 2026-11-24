@@ -32,6 +32,10 @@ from tools.alpha import run_source_grounding as SRC  # noqa: E402
 MAX_OUTCOMES_BYTES = FCLI.MAX_CASES_BYTES
 MAX_REGISTRY_BYTES = FCLI.MAX_REGISTRY_BYTES
 MAX_FORECAST_BYTES = FCLI.MAX_GROUNDING_BYTES + FCLI.MAX_CASES_BYTES + FCLI.MAX_REGISTRY_BYTES
+# code_identity() of this tool at merged main 0d5ddfa (before S10-CAP-B1-METHODS-01 changed the transitively bound
+# forecast identity): sha256(learning_feedback.py + run_learning_feedback.py blobs at 0d5ddfa + FE.LEGACY_V2_CODE_IDENTITY).
+# verify recomputes a receipt claiming it only over a forecast receipt sealed with FE.LEGACY_V2_CODE_IDENTITY.
+LEGACY_V2_LEARN_CODE_IDENTITY = "code:sha256:4cd8eb0375816087c742b5f235be2cf2660ce804befec948f3c8858bff4982c9"
 
 
 def code_identity() -> str:
@@ -84,19 +88,29 @@ def _read(path: Path, code: str):
     return SRC._strict_json(path.read_bytes() if path.is_file() else b"", code)
 
 
-def _evaluate(scratch: Path) -> dict:
+def _learning_identity(forecast_identity: object, claimed: object) -> str:
+    """Current forecast code -> current identity. A pre-B1-B v2 forecast is replayed only for a sealed historical
+    receipt claiming exactly the pinned former LEARN-01 identity; new runs never mint it."""
+    if forecast_identity == FCLI.code_identity():
+        return code_identity()
+    FE._require(forecast_identity == FE.LEGACY_V2_CODE_IDENTITY and claimed == LEGACY_V2_LEARN_CODE_IDENTITY,
+                "FORECAST_CODE_IDENTITY_MISMATCH")
+    return LEGACY_V2_LEARN_CODE_IDENTITY
+
+
+def _evaluate(scratch: Path, claimed_identity: object = None) -> dict:
     """Shared by run and verify: cold-verify the frozen forecast copy, then compute the learning core."""
     inputs = scratch / "inputs"
     forecast_dir = inputs / "forecast"
     FE._require(_forecast_verified(forecast_dir), "FORECAST_VERIFY_FAILED")
     forecast = _read(forecast_dir / "receipt.json", "FORECAST_RECEIPT_UNREADABLE")
     frozen_cases = _read(forecast_dir / "frozen_cases.json", "FORECAST_RECEIPT_UNREADABLE")
-    FE._require(forecast["core"]["code_identity"] == FCLI.code_identity(), "FORECAST_CODE_IDENTITY_MISMATCH")
+    identity = _learning_identity(forecast["core"]["code_identity"], claimed_identity)
     packet = _read(inputs / "outcomes.json", "OUTCOMES_JSON_INVALID")
     registry = inputs / "alpha.sqlite3"
     selected = {r["market_id"] for r in forecast["core"]["targets"] if r["status"] == "SELECTED"}
     links = LF.alpha_links(registry if registry.is_file() else None, selected)
-    return LF.build_learning_core(forecast, frozen_cases, packet, links, code_identity(), _input_hashes(inputs))
+    return LF.build_learning_core(forecast, frozen_cases, packet, links, identity, _input_hashes(inputs))
 
 
 def run(forecast_scratch: Path, outcomes_path: Path, scratch_dir: Path, alpha_registry: Path | None = None) -> dict:
@@ -144,7 +158,8 @@ def verify(scratch_dir: Path) -> dict:
     scratch = scratch.resolve()
     with SRC.no_network() as attempts:
         receipt = _read(scratch / "receipt.json", "RECEIPT_UNREADABLE")
-        core = _evaluate(scratch)
+        claimed = receipt["core"].get("code_identity") if isinstance(receipt, dict) and isinstance(receipt.get("core"), dict) else None
+        core = _evaluate(scratch, claimed)
         failures = LF.verify_receipt(receipt, core)
     FE._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
     return {"status": "VERIFIED" if not failures else "TAMPER_DETECTED", "failures": failures,

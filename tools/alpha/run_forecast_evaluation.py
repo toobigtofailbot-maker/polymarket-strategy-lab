@@ -7,6 +7,7 @@
          re-verify the frozen SRC-01 copy and recompute everything from frozen copies; never writes.
          Version-aware: v2 receipts (current, with WP170 per-case membership) and historical v1
          receipts (rebuilt in the v1 shape against the pinned original code identity) both cold-verify.
+         v2 receipts sealed by the pinned pre-S10-CAP-B1-METHODS-01 code replay against that pinned identity.
 
 Inputs are only caller-named local files. No network (a guard fails the run on any socket use),
 no provider, LLM or Hermes, no canonical store write. Output goes only into an empty absolute
@@ -72,7 +73,15 @@ def _safe_id(receipt: object) -> str | None:
     return value if type(value) is str and FE.re.fullmatch(FE.re.escape(FE.RECEIPT_PREFIX) + "[0-9a-f]{64}", value) else None
 
 
-def _evaluate(scratch: Path, frozen: dict, schema: str = FE.RECEIPT_SCHEMA) -> dict:
+def _identity(schema: str, claimed: object) -> str:
+    """v1 always replays against its pinned identity; a v2 receipt sealed by the pinned pre-B1-B code replays against
+    that pinned identity (v2 core logic is unchanged); anything else is recomputed with the current identity."""
+    if schema == FE.LEGACY_RECEIPT_SCHEMA:
+        return FE.LEGACY_V1_CODE_IDENTITY
+    return FE.LEGACY_V2_CODE_IDENTITY if claimed == FE.LEGACY_V2_CODE_IDENTITY else code_identity()
+
+
+def _evaluate(scratch: Path, frozen: dict, schema: str = FE.RECEIPT_SCHEMA, claimed_identity: object = None) -> dict:
     """Shared by run and verify: cold-verify the frozen SRC-01 copy, bind it, compute the core.
 
     A v1 receipt is rebuilt with the v1 shape and the pinned original code identity, never the current one."""
@@ -86,7 +95,7 @@ def _evaluate(scratch: Path, frozen: dict, schema: str = FE.RECEIPT_SCHEMA) -> d
     grounding = FE.bind_grounding(receipt, frozen_case, grounding_dir / "inputs", frozen)
     wp170, native = FE.load_wp170(inputs / "wp170.sqlite3" if frozen["wp170"] else None,
                                   frozen["wp170"]["experiment_id"] if frozen["wp170"] else None)
-    identity = FE.LEGACY_V1_CODE_IDENTITY if schema == FE.LEGACY_RECEIPT_SCHEMA else code_identity()
+    identity = _identity(schema, claimed_identity)
     return FE.build_evaluation_core(frozen, grounding, wp170, identity, _input_hashes(inputs), native, schema)
 
 
@@ -152,7 +161,8 @@ def verify(scratch_dir: Path) -> dict:
                     "receipt_id": _safe_id(receipt)}
         claimed = receipt["core"].get("schema_id") if isinstance(receipt, dict) and isinstance(receipt.get("core"), dict) else None
         # an unknown or forged schema is recomputed as current v2 and so fails as a mismatch, never trusted
-        core = _evaluate(scratch, frozen, claimed if claimed in FE.RECEIPT_SCHEMAS else FE.RECEIPT_SCHEMA)
+        core = _evaluate(scratch, frozen, claimed if claimed in FE.RECEIPT_SCHEMAS else FE.RECEIPT_SCHEMA,
+                         receipt["core"].get("code_identity") if claimed is not None else None)
         failures = FE.verify_receipt(receipt, core)
     FE._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
     return {"status": "VERIFIED" if not failures else "TAMPER_DETECTED", "failures": failures,

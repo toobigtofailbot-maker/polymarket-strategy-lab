@@ -2276,3 +2276,13 @@ Predecessor PR265 is merged at 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7
 - **Status.** OFFLINE_ENGINEERING_DEMONSTRATION. R3-02, R3-01-SOURCE_ARCHIVE, R3-23, R3-05 and R3-05-CITATIONS are touched but not VALUE_VERIFIED. B1-B method parity (R3-01, R3-10/WANG, R3-12/SAMPLER, R3-18) and provider-gated rows remain open.
 - **Zero activity.** No real provider, market GET, credential, Alpha discovery, qualification, paper, order or deployment. LIVE DISABLED.
 - **References.** Contract: docs/source_forecast_spine_contract.md. Stable record: docs/status_entries/S10-CAP-B1-SOURCE-FORECAST-01.md. Side26 reviews; Karl alone merges.
+
+## S10-CAP-B1-METHODS-01 B1-B bundled forecast/sampling/benchmark method parity
+
+- **Base and authority.** Predecessor PR #283 is merged at 0d5ddfaada8289454d8b4b2b08548c36ff18b16a (head af34e06). Side26 granted the B1-B package (16 paths, amended to 18 by Side26 Amendment 01) under Karl's standing software-development authorization, conditional on native readiness. RUNTIME/Risk3/L. The frozen prompt/spec passed the native gate unmodified (IMPLEMENTATION_READY, 16/12/12).
+- **Chain.** A cold-verified v2 forecast_evaluation receipt (and through it SRC-01 and WP170) feeds a label-free method phase: the ForecastBench sampler port over the native sampling frame, read against the native WP170 split, and the upstream-objective Wang port on pre-decision history. The scoring phase uses only native scorers (score_one via the additive opt-in `score_diagnostic_candidate`, learning_feedback score_frozen/_uncertainty/calibration). One write-once `fcstmeth:sha256:` receipt with cold verify.
+- **Dispositions.** ENG_OFFLINE (real pinned callables executed locally, goldens pinned): R3-12, R3-12-SAMPLER, R3-20, R3-22. BLOCKED: R3-10-WANG, R3-06 (dependencies absent), R3-10, R3-01 (provider/credential/network). OPEN_OWNER_RIGHTS: R3-18. None is VALUE_VERIFIED; the other 27 IDs are unchanged.
+- **Measurement.** Synthetic candidate paired Brier equals native Wang (0.151590323677, 29 paired); lift INCONCLUSIVE_SYNTHETIC_LABELS_NOT_VALUE. Model cost UNKNOWN; no provider ran.
+- **Compatibility.** Legacy v1 and v2 forecast receipts still cold-verify, and so do LEARN-01 receipts sealed at `0d5ddfa` (Amendment 01 fixes a reproduced regression). Default forecast, WP170 and B1-A bind outputs are unchanged.
+- **Zero activity.** No real provider, market GET, credential, install, Alpha discovery, paper, order or deployment. LIVE DISABLED.
+- **References.** Contract: docs/forecast_methods_integration_contract.md. Stable record: docs/status_entries/S10-CAP-B1-METHODS-01.md. Side26 reviews; Karl alone merges.

@@ -1,0 +1,151 @@
+Package Identity:
+  WP ID: S10-CAP-B1-METHODS-01
+  Title: B1-B — Bundled Forecast, Sampling and Benchmark Parity
+  Repository: toobigtofailbot-maker/polymarket-strategy-lab
+  Base branch: main
+  Suggested branch: codex/s10-cap-b1-methods-01
+  Package class: B1_BUNDLED_OFFLINE_FORECAST_SAMPLE_BENCHMARK_PARITY
+  Package size class: L (18 exact tracked paths after Side26 Amendment 01; no XL)
+  Risk level: 3
+  Evidence mode expected: PUBLIC_VERIFIER_PASS only after successful exact-head posted verifier; else truthful PRIVATE_REPO_MANUAL_VERIFIED or BLOCKED_NOT_READY
+  Runtime impact: Opt-in finite offline forecast diagnostics only; old paths unchanged by default
+  Product impact: Source-faithful selected forecasting/sampler/benchmark methods consumed by native diagnostics, no production inference
+  Network impact: No product/source/provider egress; normal GitHub workflow communication only
+  Credential impact: NONE
+  Dependency impact: NONE; no installs or lock edits
+  Trading impact: NONE; all live, paper, risk, OMS and qualification authority OFF
+  Governance track expected: RUNTIME
+
+Recommended Claude/Codex Mode:
+  Model/reasoning: High for strict legacy receipt compatibility and upstream source semantics
+  Reason: One 18-file source-method/forecast integration spanning several pinned methods and immutable legacy receipts
+  Escalate to higher reasoning or STOP if: Exact pin cannot be verified, original API cannot be adapted without extra scope, native readiness fails, legacy identities would be silently invalidated, or protected/provider rights are required
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: true
+workflow_files: false
+dependencies: false
+network: false
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+1. EXACT STANDING EXECUTION AUTHORITY / NO IMPLIED OTHER AUTHORITY
+Karl's explicit 2026-11-21 standing software-development authorization applies. SIDE26 hereby specifically authorizes this one offline RUNTIME/Risk3/L B1-B WP under that delegation, conditioned on verified merged predecessor/main and actual native deterministic IMPLEMENTATION_READY on final prompt/spec bytes before source edits. This is a delegated grant, not a new fabricated Karl quotation or merger. No repeated generic approval needed for ordinary in-scope edits and follow-ups. Karl exclusively merges. Side26 independently reviews. No new provider, credential, spending, host, new Alpha discovery, economic/real strategy, OOS qualification, trading or activation. A real source/method read at a pinned public GitHub commit is software inspection, NOT a real product/provider runtime request; only where permitted by repo governance and its license. Local upstream checkout outside tracked repo allowed for read-only code comparison; no runtime network.
+
+Authority / Non-Authority:
+Implementation authority: YES, exactly 18 listed tracked paths, offline research diagnostic only after readiness.
+Report/export authority: YES, temporary local evidence and one PR + attached CC Markdown report.
+Paper authority: NO. Execution authority: NO. Live authority: NO. Credential authority: NO.
+Runtime/scheduler authority: NO daemon, cron, host or agent tool permission change; finite manual tools only.
+Canonical evidence authority: bounded opt-in versioned diagnostic and strict legacy preservation, no source/PIT/WP170/Alpha store mutations.
+Network authority: NO product network, model/provider, source acquisition or account calls; ordinary git/gh/CI publication only.
+Dependency-change authority: NO requirements, package manifests, lock or external code vendoring/install.
+All groups in docs/ai/codex/PROTECTED_PATHS.md (credentials/secrets; authenticated clients; wallet/account; orders/cancel; gateway/risk; paper; scheduler/runtime daemon; dashboard/deployment; dependency/lock; external copying; generated artifacts) remain prohibited. No touching W01 Hermes policy, B1-A spine, PR268, Lane B, execution, Gate C or economic controls.
+
+2. STARTUP, SKILLS AND PRE-EDIT GATES — STRICT ORDER
+Read fully AGENTS.md, AI_CODING_AGENT_START_HERE.md, CLAUDE_START_HERE.md, docs/ai/codex/README.md, WP_EXECUTION_STATE_MACHINE.md, WP_DRAFTING_STANDARD.md, WP_SPEC_STANDARD.md, WP_BUNDLING_POLICY.md, NEGATIVE_TEST_MATRIX_POLICY.md and PROTECTED_PATHS.md. Inspect current project_status, repo_truth_index, deferred log, merged B1-A contract/status, existing forecast/evaluation/learning/WP170 contracts and spec, and accepted nine-role/36-source roadmap 03/04/07. No whole-repository research. Current repo truth wins over this frozen handoff; report any material conflict.
+Perform fresh actual skill discovery, then the first genuine skill invocation MUST be Ponytail LITE if available. Pre-edit: wp-readiness-preflight, wp-predraft-inspector, wp-one-shot-review, wp-minimum-test-plan, hermes-alpha-reuse-check and runtime-authority-boundary-review when applicable. Evidence: canonical-evidence-audit, pinned-upstream research/source skill if installed. Implementation: spec-to-code-compliance, find-bugs. Post-edit/final: post-patch-validation when applicable, verification-before-completion, pr-evidence-reconcile and ponytail-review. Invoke genuinely available/applicable skills and keep a truthful invocation ledger; UNAVAILABLE/NOT_APPLICABLE with reasons, never invent skill PASS, never invoke all skills without purpose.
+
+Run the actual mandatory remote-main preflight on the current worktree: `git fetch origin --prune`; `git checkout main`; `git pull --ff-only origin main`; `git rev-parse HEAD`; `git log -1 --oneline`; `git status --short --branch`. Verify actual current origin/main SHA == 0d5ddfaada8289454d8b4b2b08548c36ff18b16a, PR #283 MERGED (head af34e060ad05627a3b0949c53ee829ad52cfc09b, merge 0d5ddfaada8289454d8b4b2b08548c36ff18b16a), PR #268 independently open/owned, clean worktree; no B1-B branch/PR already exists; check changed native APIs, historical literal hash guards and fixture names. If main advanced benignly, do not blindly pin a stale base: STOP and report drift for Side26 reconciliation before source edits. Start a clean worktree based on merged main only; do not merge PR268. Inspect that two new test filenames are unique across pytest collection paths (they are intentionally different).
+
+Pre-edit: materialize ONLY this package's two new docs/wp_specs/S10-CAP-B1-METHODS-01/wp_* files, run
+  python -B tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-CAP-B1-METHODS-01/wp_prompt.txt --spec docs/wp_specs/S10-CAP-B1-METHODS-01/wp_spec.json --repo-root . --format json
+Require exit 0, IMPLEMENTATION_READY, RUNTIME, certificate_required=false, no unresolved decision and exact 18 allowed paths. Correct an ordinary prompt/spec structure contradiction ONLY inside these two files before source edits, rerun gate; if native requirement forces PROTECTED or extra path, STOP, do not self-certify. Re-run readiness after EVERY prompt/spec change and final exact-head --check-diff. The pre-draft external package has NOT been run on the real repository gate; do not report that it passed here.
+
+3. SINGLE LARGE DELIVERABLE — FROZEN METHOD-TO-NATIVE CONSUMER VERTICAL
+Purpose: close repeated method-compatibility implementation overhead in ONE coherent offline L bundle. Reuse the exact merged B1-A source, W01 two-child case envelope and the existing native forecast_evaluation, experiment_os, WP170 read, learning_feedback and score_one/score_cohort. Do not create another Alpha registry/forecast engine, generic LLM agent or scorer. Implement only a small selected-upstream method adapter, a finite run/verify CLI, minimum additive opt-in evaluator compatibility, focused tests and one versioned contract/status.
+
+Target original 36-ID commitments addressed by actual evidence or explicit blockers:
+  W03 + W02 sampler: R3-01 (Metaculus ForecastBot), R3-10 (pricing external benchmark), R3-10-WANG (true MLE), R3-12 and R3-12-SAMPLER (ForecastBench same-seed sampler), R3-18 (metac-bot-template/LightningRod).
+  W09 parity pulled forward: R3-06 (Gnosis benchmark metric leaf), R3-20 (Metaculus binary score math), R3-22 (ForecastBench-sim validation tests).
+  This is exactly NINE selected IDs. Other 27 keep their original status. Existing R3-05/W01 and B1-A five-ID consumption is preserved but does not gain real-provider certification.
+
+Core flow (one frozen case/known denominator): cold verify existing SRC-01 and native B1-A/forecast receipt -> enumerate actual forecast/sampler inputs and pre-decision eligible samples -> pinned upstream method call OR source-faithful callable port with matching pinned fixture and license -> conservative candidate probability/abstention and sample selection -> native forecast_evaluation score, temporal/experiment_os membership where valid and learning_feedback read-only diagnostic metrics -> cold-verified new opt-in receipt -> explicit A3/A8 capability status. A4 stays existing W01 falsifier; do not pretend ForecastBot simulated values originated from actual A3 child. All sources/pins/callables verified BEFORE implementing; never replace actual upstream method with an unrelated hand-tuned approximation and label it parity.
+
+Source families and tradeoffs:
+- ForecastBench seed, category thinning, membership hash MUST be exact/testable; if native sampling differs, report divergence rather than rewrite native historical sample IDs.
+- Wang true upstream MLE may not match existing native scalar fit_wang; compare on identical frozen training and held-out cases, preserve both parameterizations and tolerance, report mismatches; do not equate different estimators.
+- ForecastBot and LightningRod runtime may require paid provider or new dependency; use exact pinned isolated fake-provider only if safe, otherwise explicit CAPABILITY_BLOCKED / OWNER_DISPOSITION_REQUIRED. No fake model output attribution, no broad install.
+- Gnosis benchmark runner may require network; exercise licensed offline scorer/metrics leaf or pinned fixtures only; never simulate full run_agents as if invoked. Metaculus score_math and ForecastBench-sim fixtures are meaningful offline parity probes on the same cohort. A8 learning automatic routing stays for future B5; this WP only pulls forward source metric parity.
+- New candidate probabilities are diagnostic, do not overwrite market/native probabilities or issue OOS RunEvidenceReceipt. Match SOURCE/market/rule/event/decision/source cutoff and WP170 sample membership before score. Strict source identity and no train/test/label leakage.
+
+Immutable compatibility trap: Current FE score_cohort/learning_feedback.score_frozen assume the four native method IDs and existing native receipt schemas. If a genuinely useful new candidate cannot reach a native consumer without additive opt-in versioning, use the authorized existing forecast_evaluation.py + run_forecast_evaluation.py paths to add a NEW isolated diagnostic candidate shape/version only. Preserve v1/v2 receipt exact historical cold-verify with pinned legacy code identity and no reinterpretation, default existing run/verify semantics and B1-A receipt consumption. Do NOT shoehorn external method into one of the four existing IDs, mutate FE.METHODS default, lose prior hashes, reinterpret WP170 membership, weaken security scanners or rewrite native scoring math. If existing FE cannot be extended safely within this frozen 16-path boundary, STOP with exact blocker instead of inventing a detached second scoring system. Any sidecar receipt must be cold verified and its downstream scorer genuinely called.
+
+For every touched ID record: pinned repo and SHA; exact checked upstream method and source license; actual real callable/port parity; frozen input count and hash; output type/probability or abstention; exact native function invoked and consumed receipt; per-stratum and paired denominators; source/method freshness and missed cases; result ENG_OFFLINE / PARITY_FAILED / OPEN_OWNER_RIGHTS / BLOCKED with cause. No fake VALUE_VERIFIED or source/runtime/financial win. Do not edit the immutable 36-row roadmap archive or invent an owner's elimination decision. When a source cannot run, a truthful documented OPEN may be delivered within the WP so independent Side26 can decide if the resulting material capability is sufficient; never silently treat a blocked ID as complete.
+
+4. EXACT CHANGED FILES; L BUNDLE JUSTIFICATION
+One safety class: local offline, read-only forecasting and same-cohort benchmark diagnostics. One validation surface: frozen source case/forecast/WP170 cohort -> method -> native forecast score/learning read. One rollback: 18 paths, no framework replacement. This bundles six W03/W02 sampler IDs plus three A8 source-metric parity IDs, saving a standalone scoring-adoption WP later; A8 future routing/feedback remains separately gated. 16 <= L budget 20, XL not authorized.
+Only these EXACT 18 tracked paths may change:
+  - src/data_layer/analytical_research/forecast_methods_integration.py
+  - src/data_layer/analytical_research/forecast_evaluation.py
+  - tools/alpha/run_forecast_methods_integration.py
+  - tools/alpha/run_forecast_evaluation.py
+  - tests/data_layer/analytical_research/test_forecast_methods_integration.py
+  - tests/tools/alpha/test_run_forecast_methods_integration.py
+  - tests/tools/alpha/test_forecast_evaluation.py
+  - tests/tools/alpha/test_forecast_wp170_binding.py
+  - tools/alpha/run_learning_feedback.py
+  - tests/tools/alpha/test_learning_feedback.py
+  - docs/forecast_methods_integration_contract.md
+  - docs/forecast_evaluation_contract.md
+  - docs/deferred_items_log.md
+  - docs/project_status.md
+  - docs/repo_truth_index.md
+  - docs/status_entries/S10-CAP-B1-METHODS-01.md
+  - docs/wp_specs/S10-CAP-B1-METHODS-01/wp_prompt.txt
+  - docs/wp_specs/S10-CAP-B1-METHODS-01/wp_spec.json
+
+The original W01/B1-A Hermes, source/PIT, Alpha registry, experiment_os and learning_feedback code and original roadmap source docs remain byte-unchanged. Append to docs/repo_truth_index.md without disturbing its canonical first H2 heading or prior ordered historical sections. Historical docs/tests may contain hard-coded expectations; inspect before editing; no 17th file for an incidental old guard. Only the ten authorized code/test paths and eight docs paths above, no new package dependencies. If such a collision truly requires an additional path, STOP with the exact file and test rather than silently widen scope. #268 shares the deferred-items log: record collision but never edit/merge/rebase its branch.
+
+5. NORMATIVE REQUIREMENTS / FIXED EVIDENCE
+The authoritative tests and requirements are wp_spec.json evidence_plan R001–R012. Every requirement must run as an actual named pytest test node (no CRLF node-id loophole). Negative matrix applicable under docs/ai/codex/NEGATIVE_TEST_MATRIX_POLICY.md: malformed/duplicated records, type/null/empty, unsorted/overlapping temporal splits, unsupported source, wrong pin, sandbox escape, forbidden credential/trade wording, wrong outcome availability, unknown cost, no-citation, rejected and safe allowed vocab; irrelevant trade fee/order and live categories marked with reason. No invalid input echo.
+Source verification must distinguish real pinned method invocation, source-parity-only, cached fake-provider test, unavailable dependency/license and not implemented. A declared 9-ID scope does NOT grant 9-ID acceptance by assertion. Do not make a network call to a real model or external market. Native single-producer methods, score orientations, legacy Brier/log-loss, OOS seals and identity properties are unchanged. Use a known same-fixture comparator; do not claim precision or profitability gain on synthetic labels, even if a synthetic score is lower.
+
+6. VALIDATE ON FINAL EXACT HEAD / REPORT-BACK
+After scoped edits: mandatory actual R001-R012 exact node tests, all adjacent existing forecast_evaluation/forecast_wp170/learning_feedback/source_forecast_spine/W01/Alpha tests, historical doc and scope guards, negative cases, full applicable native Linux suite with a stable configured test user and no network, security and dependency audits. Preflight generated-artifact guard, git diff --check, final native readiness after any prompt/spec change, `--check-diff --base <ACTUAL_MERGED_MAIN_SHA> --head <FINAL_HEAD_SHA>` and `tools/git/diff_scope_summary.py --wp-spec ... --require-exact-scope`; exact 16 paths. Hosted exact-head CI all expanded jobs (not headline green), gitleaks and audits. No false skipped/pass counts. Avoid duplicate pytest basenames and do not broaden to extra guard-file edits. Usual local-first CI tiering applies; final meaningful merge-readiness requires actual exact-head hosted evidence, not earlier success.
+
+One normal B1-B branch and PR, bounded fixes before final push; no merges by CC. Freeze and post complete real PR body with current head, exact scope, actual positive/negative counts, early failures, skill ledger, source-pin/license checks, source->native call traces, old v1/v2 historical receipt verification, skipped/pending capability IDs, no network/product/provider, and evidence verification. Public posted verifier PASS only after actual exit 0 on posted final exact-head body (comment optional under policy; if verifier imposes comment, use one noncanonical pointer only). If unable, choose truthful mode and STOP_NOT_READY rather than fake pass. Keep one complete CC downloadable Markdown report `SIDE26_B1B_CC_REPORT_BACK.md` even on STOP, with all real command exits and an INTEGRATION_DELTA_REVIEW (<=1 page), 9 ID evidence table and 27 unchanged IDs. Side26 independently reviews; Karl alone merges.
+
+7. HARD STOPS AND SUCCESSOR
+STOP_PRE_EDIT if merged PR283/main mismatches, another B1-B branch/PR exists, RUNTIME readiness not IMPLEMENTATION_READY, protected certificate required, or pinned API/license/source unavailable in a way preventing ANY coherent core same-case parity. STOP_SCOPE if 17th tracked path, dependency/lock, protected mode, sandbox escape, external copied framework, real provider/market call, credential or tool permission expansion is needed. STOP_SEMANTIC if historical v1/v2 cannot cold verify, non-native score is reported as native without call, cohort denominators/clock change after outcomes, W01/B1-A backward behavior breaks or upstream mismatch is concealed. STOP_EVIDENCE if final source pin, tests, full suite/CI, posted evidence cannot be independently demonstrated. Resolve ordinary in-scope implementation and test defects within this single PR without repeated approval; revalidate after each final change. Nonmaterial preflight wording fixes allowed in prompt/spec and require readiness rerun. On STOP: no more code changes, deliver report with exact blocker; no invented extension or new WP.
+Successor only after Karl merges B1-B: B2 rules/relations and wallet/public intelligence together IF file/authority guard permits; else minimum technical split, not a WP per upstream repository. W08 orchestration and A8/A9 controlled feedback remain on compressed roadmap. No Alpha/live activation through this WP.
+
+8. READINESS STRUCTURE — OBJECTIVE / MATRIX / EVIDENCE
+Objective: the single B1-B opt-in offline source-method comparison and true native forecast + WP170 + learning diagnostic consumption specified in identity.objective, with no real model/provider or economic authority.
+Authority / Non-Authority: exactly the BEGIN_GOVERNANCE_AUTHORITY_V1 mirror and sections 1/4; the complete 16-field authority set (source, local tooling, tests, docs and canonical evidence only) are the exclusive source of granted authority.
+Negative-test matrix: required for new forecast/metric adapters and schema checks; R008/R009/R010, with applicable categories and explicit inapplicable cases.
+Evidence plan: authoritative 12 exact pytest nodes in wp_spec.json evidence_plan.items, one each R001-R012; each PASS must include real command result and evidence.
+Successor boundary: wp_spec.json successor_boundary, B2 only after Karl merges reviewed B1-B.
+Report-back: actual downloadable SIDE26_B1B_CC_REPORT_BACK.md (always, including STOP).
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|pin|upstream_source|frozen_verified_pin|REQUIRE|source_identity_and_truthful_method_class|requirements.r001|R001
+NR002|source|cohort_identity|frozen_native_pit_wp170|PRESERVE_EXACT|known_before_decision_membership|requirements.r002|R002
+NR003|sampler|forecastbench|same_seed_and_cohort|REQUIRE|no_silent_sampler_substitution|requirements.r003|R003
+NR004|forecast|wang_mle|train_only_pinned_source|REQUIRE|source_parity_or_explicit_refusal|requirements.r004|R004
+NR005|forecast|forecastbot_template|isolated_fake_provider_only|REQUIRE|actual_invocation_or_explicit_open|requirements.r005|R005
+NR006|forecast|native_consumption|validated_candidate_scope|REQUIRE|native_diagnostic_receipt_only|requirements.r006|R006
+NR007|scoring|three_source_parity|same_scoring_cohort|REQUIRE|real_native_score_consumer|requirements.r007|R007
+NR008|compat|historical_receipts|v1_v2_and_b1a_existing|PRESERVE_EXACT|cold_verify_unmodified_evidence|requirements.r008|R008
+NR009|security|invalid_inputs|leakage_or_bad_pin|REJECT|closed_refusal_denominators|requirements.r009|R009
+NR010|replay|method_receipt|tamper_or_partial_scratch|REJECT|no_forged_success_or_network|requirements.r010|R010
+NR011|value|paired_baseline|synthetic_or_insufficient|REJECT|no_false_lift_or_profits|requirements.r011|R011
+NR012|progress|capability_register|nine_touched_ids|PRESERVE_EXACT|no_false_acceptance_of_36|requirements.r012|R012
+END_NORMATIVE_RULE_MATRIX_V1
+
+9. SIDE26 AMENDMENT 01 (2026-11-23) — SEAL-PRESERVING LEARN-01 COMPATIBILITY, 16 -> 18 PATHS
+Side26, under Karl's standing delegation, conditionally authorized two additional tracked paths on the same WP and PR #284, only if a base-vs-head witness proved a new regression: tools/alpha/run_learning_feedback.py and tests/tools/alpha/test_learning_feedback.py. Witness: a v2 forecast receipt and a LEARN-01 receipt sealed by the real merged-base 0d5ddfa CLIs cold-verify on base, but the head c374fe0 LEARN-01 verify stops with FORECAST_CODE_IDENTITY_MISMATCH on the unchanged bytes. Regression reproduced; the amendment applies.
+Allowed repair: the smallest version-aware verify in run_learning_feedback.py. A historical learning receipt is recomputed only when the nested forecast receipt first passes the native forecast cold verifier, carries exactly FE.LEGACY_V2_CODE_IDENTITY, and the learning receipt claims exactly the pinned former LEARN-01 code identity derived from the merged-base bytes. Current receipts use the current identity; new runs never mint the legacy identity. Native learning_feedback.py, forecast_evaluation.py, experiment_os and Alpha/PIT stores stay unchanged for this fix. Tests only in tests/tools/alpha/test_learning_feedback.py. RUNTIME/Risk3/L, R001-R012, exact_scope_required and the authority mirror are unchanged. No 19th path, provider, network, dependency, credential, trading or merge authority.

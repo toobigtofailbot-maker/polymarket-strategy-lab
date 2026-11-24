@@ -768,3 +768,11 @@ def test_forecast_real_cli_offline_suite_and_adoption_truth(world, baseline, tmp
     d = core["scoring"]["denominators"]
     assert {core["scoring"]["methods"][m]["on_paired"]["n"] for m in FE.PRIMARY_METHODS} == {d["paired_intersection"]}
     assert core["scoring"]["methods"][FE.WANG]["on_paired"]["n"] == d["paired_with_wang"] <= d["paired_intersection"]
+    # S10-CAP-B1-METHODS-01: the four native method ids and the default v2 path are unchanged; the opt-in candidate
+    # scorer is never reached from build_evaluation_core
+    assert FE.METHODS == ("independent_stratum_prior_v1", "train_base_rate_global_v1", "market_reference_price_v1",
+                          "wang_probit_distortion_v1") and set(core["scoring"]["methods"]) == set(FE.METHODS)
+    tree = ast.parse(Path(FE.__file__).read_text(encoding="utf-8"))
+    build = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "build_evaluation_core")
+    assert "score_diagnostic_candidate" not in {n.id for n in ast.walk(build) if isinstance(n, ast.Name)}
+    assert core["code_identity"] == CLI.code_identity() != FE.LEGACY_V2_CODE_IDENTITY

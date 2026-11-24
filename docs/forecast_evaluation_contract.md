@@ -170,3 +170,15 @@ The independent prior is worse than the market on this market-aligned synthetic 
 - The other 27 of the 36 program IDs, the six provider lanes, Lane B and open PR #268 are unchanged.
 - S10-R3-FORECAST-WP170-BIND-01 is a native integration, not an external adoption. It leaves every adoption row unchanged, including the recorded ForecastBench sampler-objective difference (native proportional vs upstream target-weight apportionment).
 - `S10-R3-LEARN-01` stays mandatory. It must consume immutable score receipts after resolution and propose only future research priorities, never rewriting a past forecast.
+
+## B1-B opt-in method candidate (S10-CAP-B1-METHODS-01)
+
+- `score_diagnostic_candidate` is an additive, opt-in entry point. It scores one non-native method candidate's
+  `p_yes` with the native `resolve_outcome` gate and `score_one`, on the same frozen cohort as the native methods. It
+  reports the candidate on the cases where every native method also forecast, and on its own available cases.
+  `build_evaluation_core` never calls it. `METHODS`, score orientations, Brier, log loss, the WP170 membership and the
+  v2 `adoption` block above are unchanged, so default v1/v2 cores are identical.
+- `LEGACY_V2_CODE_IDENTITY` pins `code_identity()` at merged main `0d5ddfa`. `run_forecast_evaluation.verify` replays a
+  sealed v2 receipt that claims that identity against it. v1 replay is unchanged.
+- The only consumer is `docs/forecast_methods_integration_contract.md`. The adoption truth above is unchanged; the
+  B1-B dispositions live only in that contract and its receipts.

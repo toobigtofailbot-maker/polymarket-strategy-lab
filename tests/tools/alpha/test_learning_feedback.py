@@ -11,6 +11,7 @@ import ast
 import copy
 from decimal import Decimal
 import hashlib
+import io
 import json
 import math
 import os
@@ -19,6 +20,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import tarfile
 
 import pytest
 
@@ -26,6 +28,7 @@ from src.data_layer.analytical_research import forecast_evaluation as FE
 from src.data_layer.analytical_research import learning_feedback as LF
 from tests.data_layer.analytical_research.test_alpha_discovery import _alpha_registry
 from tests.tools.alpha.test_forecast_evaluation import MARKETS, baseline, world  # noqa: F401 - module fixtures
+from tests.tools.alpha.test_forecast_evaluation import _cases as _fc_cases
 from tools.alpha import run_forecast_evaluation as FCLI
 from tools.alpha import run_learning_feedback as CLI
 
@@ -567,3 +570,106 @@ def test_learning_end_to_end_synthetic_then_future_research_handoff(learned, alp
     assert json.loads(result.stdout.strip().splitlines()[-1])["status"] == "VERIFIED"
     assert _tree(scratch) == before
     assert sorted(p.name for p in scratch.iterdir()) == ["inputs", "receipt.json"]
+
+
+# ------------------------------------------------------------------ S10-CAP-B1-METHODS-01 Amendment 01: sealed pre-B1-B receipts
+
+LEGACY_V2_COMMIT = "0d5ddfaada8289454d8b4b2b08548c36ff18b16a"  # merged main before S10-CAP-B1-METHODS-01
+
+
+def _proc(script: Path, *args, cwd: Path) -> tuple[int, dict]:
+    p = subprocess.run([sys.executable, "-B", str(script), *map(str, args)], capture_output=True, text=True, timeout=900,
+                       cwd=str(cwd))
+    return p.returncode, json.loads(p.stdout.strip().splitlines()[-1])
+
+
+@pytest.fixture(scope="module")
+def legacy_learn(world, tmp_path_factory):  # noqa: F811 - module fixture imported above
+    """Genuine pre-B1-B v2 forecast + LEARN-01 receipts sealed by the unchanged 0d5ddfa CLIs, each its own process."""
+    root = tmp_path_factory.mktemp("learn_legacy_code")
+    archive = subprocess.run(["git", "-C", str(REPO_ROOT), "archive", "--format=tar", LEGACY_V2_COMMIT, "src", "tools"],
+                             capture_output=True, timeout=300)
+    assert archive.returncode == 0, "the pinned legacy commit must be in the checkout history (fetch-depth 0)"
+    with tarfile.open(fileobj=io.BytesIO(archive.stdout)) as tar:
+        tar.extractall(root, filter="data")
+    base = tmp_path_factory.mktemp("learn_legacy_runs")
+    cases = base / "cases.json"
+    cases.write_text(json.dumps(_fc_cases(world["src_receipt"]["receipt_id"])), encoding="utf-8")
+    forecast = (base / "forecast").resolve()
+    old_fc, old_learn = root / "tools" / "alpha" / "run_forecast_evaluation.py", root / "tools" / "alpha" / "run_learning_feedback.py"
+    assert _proc(old_fc, "run", "--grounding-scratch", world["grounding"], "--cases", cases, "--scratch-dir", forecast,
+                 cwd=base)[0] == 0
+    assert _proc(old_fc, "verify", "--scratch-dir", forecast, cwd=base)[1]["status"] == "VERIFIED"
+    receipt = json.loads((forecast / "receipt.json").read_text(encoding="utf-8"))
+    outcomes = base / "outcomes.json"
+    outcomes.write_text(json.dumps(_packet(receipt, _demo_records(receipt))), encoding="utf-8")
+    scratch = (base / "learn").resolve()
+    code, run = _proc(old_learn, "run", "--forecast-scratch", forecast, "--outcomes", outcomes, "--scratch-dir", scratch,
+                      cwd=base)
+    assert code == 0, run
+    code, verified = _proc(old_learn, "verify", "--scratch-dir", scratch, cwd=base)
+    assert (code, verified["status"], verified["receipt_id"]) == (0, "VERIFIED", run["receipt_id"])  # base control
+    return forecast, scratch, run["receipt_id"], _sha((scratch / "receipt.json").read_bytes())
+
+
+def test_learning_sealed_pre_b1b_receipts_replay_current_and_refusals(legacy_learn, learned, tmp_path, capsys):
+    forecast, scratch, receipt_id, receipt_sha = legacy_learn
+    sealed = json.loads((scratch / "receipt.json").read_text(encoding="utf-8"))
+    fc = json.loads((forecast / "receipt.json").read_text(encoding="utf-8"))
+    # the pinned former identity is derived from the merged-base bytes, never trusted from a receipt
+    digest = hashlib.sha256()
+    for path in ("src/data_layer/analytical_research/learning_feedback.py", "tools/alpha/run_learning_feedback.py"):
+        digest.update(subprocess.run(["git", "-C", str(REPO_ROOT), "show", f"{LEGACY_V2_COMMIT}:{path}"],
+                                     capture_output=True, check=True).stdout)
+    digest.update(FE.LEGACY_V2_CODE_IDENTITY.encode("ascii"))
+    assert CLI.LEGACY_V2_LEARN_CODE_IDENTITY == "code:sha256:" + digest.hexdigest() == sealed["core"]["code_identity"]
+    assert fc["core"]["code_identity"] == FE.LEGACY_V2_CODE_IDENTITY != FCLI.code_identity()
+    assert CLI.code_identity() != CLI.LEGACY_V2_LEARN_CODE_IDENTITY
+    # (a) the sealed historical receipt cold-verifies at this head with its original id and bytes, as a process and in-process
+    before = _tree(scratch)
+    code, result = _proc(REPO_ROOT / "tools" / "alpha" / "run_learning_feedback.py", "verify", "--scratch-dir", scratch,
+                         cwd=tmp_path)
+    assert (code, result) == (0, {"status": "VERIFIED", "failures": [], "receipt_id": receipt_id, "network_attempts": 0})
+    assert CLI.main(["verify", "--scratch-dir", str(scratch)]) == 0 and _stdout(capsys)["receipt_id"] == receipt_id
+    assert _tree(scratch) == before and _sha((scratch / "receipt.json").read_bytes()) == receipt_sha
+    # (b) current receipts keep the current identity; a new run never mints the legacy identity
+    _, _, current_scratch, current = learned
+    assert current["core"]["code_identity"] == CLI.code_identity()
+    assert CLI.main(["verify", "--scratch-dir", str(current_scratch)]) == 0 and _stdout(capsys)["status"] == "VERIFIED"
+    code, _, none = _learn(tmp_path, forecast, _packet(fc, _demo_records(fc)), "new-on-legacy")
+    assert code == 1 and none is None and _stdout(capsys) == {"status": "STOPPED", "reason_code": "FORECAST_CODE_IDENTITY_MISMATCH"}
+
+    # (c) forged, downgraded, mismatched or tampered evidence refuses
+    def edited(src, name, fn):
+        t = _tamper_copy(src, tmp_path, name)
+        r = json.loads((t / "receipt.json").read_text(encoding="utf-8"))
+        fn(r)
+        (t / "receipt.json").write_text(json.dumps(r), encoding="utf-8")
+        assert CLI.main(["verify", "--scratch-dir", str(t)]) == 1
+        return _stdout(capsys)
+    stop = {"status": "STOPPED", "reason_code": "FORECAST_CODE_IDENTITY_MISMATCH"}
+    assert edited(scratch, "forged", lambda r: r["core"].update(code_identity="code:sha256:" + "a" * 64)) == stop
+    assert edited(scratch, "as-current", lambda r: r["core"].update(code_identity=CLI.code_identity())) == stop
+    assert edited(scratch, "no-core", lambda r: r.update(core=None)) == stop
+    down = edited(current_scratch, "downgrade", lambda r: r["core"].update(code_identity=CLI.LEGACY_V2_LEARN_CODE_IDENTITY))
+    assert down["status"] == "TAMPER_DETECTED" and {"RECEIPT_ID_MISMATCH", "OUTPUT_MISMATCH:code_identity"} <= set(down["failures"])
+    score = edited(scratch, "legacy-score", lambda r: r["core"]["scoring"]["methods"][FE.MARKET]["on_paired"].update(brier="0.0"))
+    assert score["status"] == "TAMPER_DETECTED" and "OUTPUT_MISMATCH:scoring" in score["failures"]
+    t = _tamper_copy(scratch, tmp_path, "legacy-outcome")
+    packet = json.loads((t / "inputs" / "outcomes.json").read_text(encoding="utf-8"))
+    packet["records"][0]["outcome_label"] = "Yes" if packet["records"][0]["outcome_label"] == "No" else "No"
+    (t / "inputs" / "outcomes.json").write_text(json.dumps(packet), encoding="utf-8")
+    assert CLI.main(["verify", "--scratch-dir", str(t)]) == 1 and _stdout(capsys)["status"] == "TAMPER_DETECTED"
+    t = _tamper_copy(scratch, tmp_path, "legacy-nested-identity")  # a forecast copy re-stamped with an unknown identity
+    nested = t / "inputs" / "forecast" / "receipt.json"
+    nested.write_bytes(nested.read_bytes().replace(FE.LEGACY_V2_CODE_IDENTITY.encode(), b"code:sha256:" + b"b" * 64, 1))
+    assert CLI.main(["verify", "--scratch-dir", str(t)]) == 1
+    assert _stdout(capsys) == {"status": "STOPPED", "reason_code": "FORECAST_VERIFY_FAILED"}
+    t = _tamper_copy(scratch, tmp_path, "legacy-swapped-forecast")  # nested receipt from another (current) forecast run
+    shutil.rmtree(t / "inputs" / "forecast")
+    shutil.copytree(current_scratch / "inputs" / "forecast", t / "inputs" / "forecast")
+    assert CLI.main(["verify", "--scratch-dir", str(t)]) == 1
+    assert _stdout(capsys) == {"status": "STOPPED", "reason_code": "FOREIGN_FORECAST_RECEIPT"}
+    # (d) nothing was written, appended or sent
+    assert _tree(scratch) == before
+    assert sealed["core"]["authority"]["network_calls"] == 0 and not sealed["core"]["authority"]["alpha_registry_written"]
