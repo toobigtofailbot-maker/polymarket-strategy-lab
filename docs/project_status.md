@@ -2286,3 +2286,11 @@ Predecessor PR265 is merged at 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7
 - **Compatibility.** Legacy v1 and v2 forecast receipts still cold-verify, and so do LEARN-01 receipts sealed at `0d5ddfa` (Amendment 01 fixes a reproduced regression). Default forecast, WP170 and B1-A bind outputs are unchanged.
 - **Zero activity.** No real provider, market GET, credential, install, Alpha discovery, paper, order or deployment. LIVE DISABLED.
 - **References.** Contract: docs/forecast_methods_integration_contract.md. Stable record: docs/status_entries/S10-CAP-B1-METHODS-01.md. Side26 reviews; Karl alone merges.
+
+## S10-CAP-B2-RELATIONS-WALLET-01 B2 bundled shared-PIT relations + public-wallet advisory handoff
+
+- **Base and authority.** Predecessor PR #284 is merged at 573ac905b62fd2ee8e577db943503f6d8727b1d7 (head a716b4c). Side26 granted the exact 11-path B2 package under Karl's standing software-development authorization, conditional on native readiness. RUNTIME/Risk3/L. After one heading fix the native gate returned IMPLEMENTATION_READY (11/12/12).
+- **Chain.** A cold-verified B1-A spine supplies the read-only A1-A4 lineage and its frozen SRC-01 grounding. The native scout binds the exact target. A cold-verified REL-01 receipt over the same grounding feeds the genuine vendored Oracle3 parity (A5). The native WALLET-01 ledger at the exact head feeds WALLET-02 profile and WALLET-03 copyability with contexts bound to the same PIT universe (A6). A read-side A7 pointer is produced, plus one write-once `b2research:sha256:` receipt with cold verify.
+- **Dispositions.** R3-03 ENG_OFFLINE consumed on the shared case. R3-03-FEES fixture schedule invoked, currentness unverified. R3-04, R3-11 and R3-19 OPEN (native only). R3-14 OPEN_OWNER_RIGHTS. None is VALUE_VERIFIED; the other 30 IDs are unchanged.
+- **Zero activity.** No real provider, wallet, account or source acquisition, market GET, credential, Alpha discovery, paper, order or deployment. LIVE DISABLED.
+- **References.** Contract: docs/relation_wallet_spine_contract.md. Stable record: docs/status_entries/S10-CAP-B2-RELATIONS-WALLET-01.md. Side26 reviews; Karl alone merges.

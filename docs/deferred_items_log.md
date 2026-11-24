@@ -1,5 +1,16 @@
 # Deferred Items Log
 
+## S10-CAP-B2-RELATIONS-WALLET-01 deferred items
+
+| ID | Issue | Status | Priority | Required closure | Evidence/containment |
+|---|---|---|---|---|---|
+| S10-CAP-B2-RELATIONS-WALLET-01-D001 | Hosted CI has no pinned Hermes checkout (inherits S10-CAP-B1-SOURCE-FORECAST-01-D001). The B1-A spine receipt B2 consumes needs it, so R007 skips and the pinned tails of R008 and R010 skip in CI; R001-R006, R009, R011, R012 and the unpinned parts of R008/R010 run there | OPEN_EVIDENCE_LIMITATION | P2 | Accept the local exact-pin run recorded in the PR body, or a reviewed CI pin-provisioning WP | Without a verified spine the operator refuses `SPINE_NOT_VERIFIED`, never a false pass |
+| S10-CAP-B2-RELATIONS-WALLET-01-D002 | R3-04 (oracle3-extras Kairos settlement), R3-11 (alpha-bot implications) and R3-19 (Synpath matcher) were inspected at their exact pins but not executed: the import closures need unvendored oracle3 market relations, a Kairos provider client, an LLM client/loguru, the Synpath SDK and a network catalog | OPEN | P2 | An owner decision on vendoring/porting under license, dependency and security review, or a provider-authorized WP | Ledger records OPEN/NATIVE_ONLY with cause; native REL-01 formal and real-world outcomes are used; nothing copied |
+| S10-CAP-B2-RELATIONS-WALLET-01-D003 | R3-14 (prediction-market-analysis) dataset is ~36 GiB external storage with maker/taker public addresses and no declared data license; only the MIT code schema was inspected | OPEN_OWNER_RIGHTS | P1 | Karl data-rights decision and a separately authorized acquisition WP | Not downloaded; ledger BLOCKED_SCHEMA_INSPECTED_ONLY; WALLET-01 native ledger used instead |
+| S10-CAP-B2-RELATIONS-WALLET-01-D004 | R3-03-FEES uses the vendored fixture fee schedule; current venue fee correctness is not verified and the A7 pointer stays conditional | RECORDED_LIMITATION | P2 | A separately authorized recorded venue fee configuration | Status FIXTURE_FEE_SCHEDULE_INVOKED_CURRENTNESS_UNVERIFIED; tradable=false, executable_edge=false |
+| S10-CAP-B2-RELATIONS-WALLET-01-D005 | All evidence is a SANITIZED_SYNTHETIC offline engineering demonstration with synthetic public identifiers; no real relation, settlement, wallet copyability, edge or value | NOT_VALUE_VERIFIED | P1 | Separately authorized real PIT cohort and wallet acquisition under owner rights | value_verified=false and owner_disposition PENDING on every touched row |
+| S10-CAP-B2-RELATIONS-WALLET-01-D006 | Open PR #268 also edits `docs/deferred_items_log.md` (a future text collision) | RECORDED_COLLISION | P3 | Reconcile on whichever merges second, after a separate Karl decision; PR #268 is not edited here | Self-contained section; no PR #268 branch change |
+
 ## S10-CAP-B1-METHODS-01 deferred items
 
 | ID | Issue | Status | Priority | Required closure | Evidence/containment |
