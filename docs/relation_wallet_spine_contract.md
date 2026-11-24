@@ -29,8 +29,17 @@ verify --scratch-dir ABS
 ```
 
 Exit codes: 0 `RUN_COMPLETE` / `VERIFIED`; 1 closed refusal (`STOPPED` + `reason_code`) or `TAMPER_DETECTED`;
-2 `USAGE_ERROR` (arguments are never echoed). Caps: 1 GiB and 8000 files over all frozen inputs, case ≤ 1 MiB,
-`model_ids` ≤ 200, retained quote member ≤ 64 KiB.
+2 `USAGE_ERROR` (arguments are never echoed). Caps: 1 GiB and 8000 files over the aggregate of all inputs (both
+trees, registry, ledger, case and retained members), case ≤ 1 MiB, `model_ids` ≤ 200, retained quote member ≤ 64 KiB,
+B2 receipt ≤ 16 MiB (a bounded core of ids, counts and ≤ 200 model rows; ~34 KiB observed).
+
+Inventory (run on caller inputs and again on the frozen copies in every `compute`, including cold `verify`): tree
+roots and every child, singleton files and retained members are checked by `lstat` only (regular single-link files,
+no symlink, junction/reparse point, hardlink, alias, SQLite sidecar or secret-shaped dir; member parents contained
+in their root), and the aggregate caps hold **before any byte is hashed**. Hashing is streamed. The frozen case,
+retained members, parity receipt and B2 receipt are read with bounded reads only. The derived `parity/` scratch keeps
+the native parity caps; its REL copy must equal B2's frozen REL input. Distinct input roles must be disjoint
+(an equal path for two roles refuses `INPUT_PATHS_OVERLAP`).
 
 ## 3. Case (`s10-cap-b2-relation-wallet-case-v1`, closed keys)
 
@@ -56,7 +65,11 @@ ids are masked only at their closed `condition_value` field and must then equal 
    id `b2research:sha256:<canonical core>`, written with exclusive create.
 
 `verify` only reads: it recomputes the whole core from the frozen copies (re-running every nested native verifier)
-and compares; any difference is `TAMPER_DETECTED` with closed failure codes.
+and compares; any difference is `TAMPER_DETECTED` with closed failure codes. The receipt must have exactly the
+keys `schema_id`, `receipt_id`, `core` (`RECEIPT_SHAPE_INVALID`), and the outer `schema_id`, which the id does not
+hash, must equal `s10-cap-b2-relation-wallet-receipt-v1` exactly (`RECEIPT_SCHEMA_INVALID`). Receipt ids are stable
+within one code identity; this WP does not claim to preserve pre-merge B2 development receipts across intentional
+code-identity changes.
 
 ## 5. A5 relations
 

@@ -54,6 +54,41 @@ def _args(**kw):
     return type("Args", (), dict(command="run", **kw))()
 
 
+def _verify(scratch: Path) -> dict:
+    return CLI.run_safe(type("V", (), dict(command="verify", scratch_dir=scratch))())
+
+
+def _hardlink_twin(path: Path, twin: Path) -> None:
+    """Replace ``path`` by a hardlink to a separate same-content file (all content hashes unchanged)."""
+    shutil.copyfile(path, twin)
+    path.unlink()
+    os.link(twin, path)
+
+
+def _dir_link_twin(path: Path, twin: Path) -> bool:
+    """Replace directory ``path`` by a symlink (POSIX) or junction (Windows) to a same-content copy; False if
+    this host can create neither (then only the hardlink rows run here; hosted Linux and Windows both can)."""
+    shutil.copytree(path, twin)
+    shutil.rmtree(path)
+    try:
+        path.symlink_to(twin, target_is_directory=True)
+        return True
+    except OSError:
+        if os.name != "nt":
+            return False
+        import _winapi
+        _winapi.CreateJunction(str(twin), str(path))
+        return True
+
+
+class _HashSpy:
+    """Counts streamed hashes so a refusal can be shown to happen before any byte is hashed."""
+
+    def __init__(self, monkeypatch):
+        self.calls, real = [], CLI._sha
+        monkeypatch.setattr(CLI, "_sha", lambda p: (self.calls.append(1), real(p))[1])
+
+
 def _write_case(directory: Path, case: dict) -> Path:
     path = (directory / "b2-case.json").resolve()
     path.write_text(json.dumps(case), encoding="utf-8")
@@ -239,7 +274,7 @@ def test_b2_historical_native_receipts_unchanged(b2, pinned):
 # ------------------------------------------------------------------ R010
 
 
-def test_b2_write_once_cold_verify_and_tamper(b2, pinned, tmp_path, capsys):
+def test_b2_write_once_cold_verify_and_tamper(b2, pinned, tmp_path, capsys, monkeypatch):
     world, led = b2["world"], b2["ledger"]
     case_dir = (tmp_path / "case").resolve()
     case_dir.mkdir()
@@ -270,6 +305,53 @@ def test_b2_write_once_cold_verify_and_tamper(b2, pinned, tmp_path, capsys):
     assert CLI.run_safe(type("V", (), dict(command="verify", scratch_dir=partial))())["status"] != "VERIFIED"
     assert CLI.main(["verify", "--scratch-dir", str((tmp_path / "missing").resolve())]) == 1
     capsys.readouterr()
+    # distinct roles must be disjoint: the same file as registry and ledger refuses before any read
+    same = dict(base, wallet_ledger=world["registry"])
+    assert CLI.run_safe(_args(**same, scratch_dir=(tmp_path / "same").resolve()))["reason_code"] == "INPUT_PATHS_OVERLAP"
+    # caps hold over the aggregate (trees + singletons + case + retained members) before any byte is hashed
+    trees = {k: sum(p.stat().st_size for p in Path(src).rglob("*") if p.is_file())
+             for k, src in (("spine", world["grounding"]), ("rel", b2["rel_scratch"]))}
+    total = sum(trees.values()) + sum(Path(p).stat().st_size for p in (world["registry"], led["path"], case)) \
+        + (case_dir / "book-1.json").stat().st_size
+    files = sum(1 for src in (world["grounding"], b2["rel_scratch"]) for p in Path(src).rglob("*") if p.is_file()) + 4
+    member_size, case_size = (case_dir / "book-1.json").stat().st_size, case.stat().st_size
+    limits = {"aggregate_bytes": ("MAX_TOTAL_BYTES", CLI, total - 1, total, "INPUT_TOO_LARGE"),
+              "file_count": ("MAX_TOTAL_FILES", CLI, files - 1, files, "INPUT_TOO_LARGE"),
+              "case_bytes": ("MAX_CASE_BYTES", CLI, case_size - 1, case_size, "CASE_UNREADABLE"),
+              "member_bytes": ("MAX_MEMBER_BYTES", RW, member_size - 1, member_size, "QUOTE_MEMBER_UNSAFE")}
+    assert max(trees.values()) < total - 1  # each tree alone fits: only the aggregate refuses
+    for name, (attr, module, over, edge, code) in limits.items():
+        spy = _HashSpy(monkeypatch)
+        monkeypatch.setattr(module, attr, over)
+        assert CLI.run_safe(_args(**base, scratch_dir=(tmp_path / ("cap-" + name)).resolve()))["reason_code"] == code, name
+        assert spy.calls == [], name  # refused before the expensive hash
+        monkeypatch.setattr(module, attr, edge)  # exactly at the limit passes the guard, reaching the native spine check
+        assert CLI.run_safe(_args(**base, scratch_dir=(tmp_path / ("edge-" + name)).resolve()))["reason_code"] == "SPINE_NOT_VERIFIED", name
+        monkeypatch.undo()
+    # cold recompute applies the same inventory to the frozen copies before consuming them (partial scratch)
+    for name, member, code in (("bundle", "inputs/bundle/book-1.json", "QUOTE_MEMBER_UNSAFE"),
+                               ("case", "inputs/case.json", "CASE_UNREADABLE"),
+                               ("ledger", "inputs/wallet_ledger.sqlite3", "INPUT_TREE_UNSAFE"),
+                               ("registry", "inputs/alpha_registry.sqlite3", "INPUT_TREE_UNSAFE")):
+        copy_dir = (tmp_path / ("hl-" + name)).resolve()
+        shutil.copytree(partial, copy_dir)
+        _hardlink_twin(copy_dir / member, (tmp_path / ("twin-" + name)).resolve())
+        with pytest.raises(RW.RelationWalletStop, match="^" + code + "$"):
+            CLI.compute(copy_dir)
+    for name in ("rel", "bundle", "spine"):
+        copy_dir = (tmp_path / ("dl-" + name)).resolve()
+        shutil.copytree(partial, copy_dir)
+        if _dir_link_twin(copy_dir / "inputs" / name, (tmp_path / ("dtwin-" + name)).resolve()):
+            with pytest.raises(RW.RelationWalletStop, match="INPUT_TREE_UNSAFE|QUOTE_MEMBER_UNSAFE"):
+                CLI.compute(copy_dir)
+    spy = _HashSpy(monkeypatch)
+    monkeypatch.setattr(CLI, "MAX_TOTAL_BYTES", max(trees.values()) + 1)
+    with pytest.raises(RW.RelationWalletStop, match="INPUT_TOO_LARGE"):
+        CLI.compute(partial)
+    assert spy.calls == []
+    monkeypatch.undo()
+    with pytest.raises(CLI.STOPS, match="SPINE_NOT_VERIFIED"):  # unmodified frozen copies pass every guard
+        CLI.compute(partial)
     _need_pin()
     assert pinned["result"]["status"] == "RUN_COMPLETE" and pinned["calls"] == []
     caller_after = {"spine": _tree(pinned["spine"]), "registry": hashlib.sha256(pinned["registry"].read_bytes()).hexdigest(),
@@ -308,6 +390,43 @@ def test_b2_write_once_cold_verify_and_tamper(b2, pinned, tmp_path, capsys):
         result = CLI.run_safe(type("V", (), dict(command="verify", scratch_dir=copy_dir))())
         assert result["status"] in ("TAMPER_DETECTED", "STOPPED") and result["status"] != "VERIFIED", name
         assert "Traceback" not in json.dumps(result) and str(copy_dir) not in json.dumps(result), name
+    # the outer schema is outside the hashed core: it is checked exactly (unsupported version, non-string)
+    for name, value in (("v2", "s10-cap-b2-relation-wallet-receipt-v2"), ("int", 7), ("null", None)):
+        copy_dir = (tmp_path / ("schema-" + name)).resolve()
+        shutil.copytree(scratch, copy_dir)
+        receipt = json.loads((copy_dir / "receipt.json").read_text(encoding="utf-8"))
+        receipt["schema_id"] = value
+        (copy_dir / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
+        assert _verify(copy_dir) == {"status": "TAMPER_DETECTED", "failures": ["RECEIPT_SCHEMA_INVALID"],
+                                     "receipt_id": None, "network_attempts": 0}, name
+    # same-byte link substitution of a consumed frozen input or the receipt is refused on cold verify
+    for name, member, expected in (("bundle", "inputs/bundle/book-1.json", "RECOMPUTE_REFUSED:QUOTE_MEMBER_UNSAFE"),
+                                   ("case", "inputs/case.json", "RECOMPUTE_REFUSED:CASE_UNREADABLE"),
+                                   ("ledger", "inputs/wallet_ledger.sqlite3", "RECOMPUTE_REFUSED:INPUT_TREE_UNSAFE"),
+                                   ("parity", "parity/receipt.json", None), ("receipt", "receipt.json", None)):
+        copy_dir = (tmp_path / ("vhl-" + name)).resolve()
+        shutil.copytree(scratch, copy_dir)
+        _hardlink_twin(copy_dir / member, (tmp_path / ("vtwin-" + name)).resolve())
+        result = _verify(copy_dir)
+        assert result["status"] != "VERIFIED", name
+        if expected:
+            assert result["failures"] == [expected], name
+    for name in ("rel", "bundle"):
+        copy_dir = (tmp_path / ("vdl-" + name)).resolve()
+        shutil.copytree(scratch, copy_dir)
+        if _dir_link_twin(copy_dir / "inputs" / name, (tmp_path / ("vdtwin-" + name)).resolve()):
+            assert _verify(copy_dir)["status"] == "TAMPER_DETECTED", name
+    # the receipt is a bounded regular file before it is read; exactly at the bound it still verifies
+    size = (scratch / "receipt.json").stat().st_size
+    monkeypatch.setattr(CLI, "MAX_RECEIPT_BYTES", size - 1)
+    assert _verify(scratch) == {"status": "STOPPED", "reason_code": "RECEIPT_UNREADABLE"}
+    monkeypatch.setattr(CLI, "MAX_RECEIPT_BYTES", size)
+    assert _verify(scratch)["status"] == "VERIFIED"
+    spy = _HashSpy(monkeypatch)
+    monkeypatch.setattr(CLI, "MAX_TOTAL_FILES", 3)
+    assert _verify(scratch)["failures"] == ["RECOMPUTE_REFUSED:INPUT_TOO_LARGE"] and spy.calls == []
+    monkeypatch.undo()
+    assert CLI.verify(scratch)["receipt_id"] == pinned["receipt"]["receipt_id"] and _tree(scratch) == before
 
 
 # ------------------------------------------------------------------ R012

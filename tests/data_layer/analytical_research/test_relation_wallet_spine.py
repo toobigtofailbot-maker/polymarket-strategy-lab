@@ -551,7 +551,7 @@ def test_b2_strict_inputs_and_authority_denial(b2, tmp_path):
     bundle.mkdir()
     (bundle / "case.json").write_bytes(raw)
     (bundle / "book-1.json").write_bytes((led["base"] / "book-1.json").read_bytes())
-    assert set(CLI.member_hashes(bundle / "case.json", good)) == {"book-1.json"}
+    assert CLI._member(bundle, "book-1.json") == bundle / "book-1.json"
     outside = (tmp_path / "outside.json").resolve()
     outside.write_bytes(b"{}")
     import os
@@ -563,7 +563,7 @@ def test_b2_strict_inputs_and_authority_denial(b2, tmp_path):
         except (OSError, NotImplementedError):
             continue  # no link privilege on this host: the remaining rows still exercise the guard
         with pytest.raises(RW.RelationWalletStop, match="QUOTE_MEMBER_UNSAFE"):
-            CLI.member_hashes(bundle / "case.json", dict(good, quote_witnesses=[dict(q, raw_content_member=name)]))
+            CLI._member(bundle, name)
     # SQLite sidecars next to a caller store refuse (no half-committed journal is ever frozen)
     for suffix in CLI.SIDECARS:
         side = Path(str(led["path"]) + suffix)

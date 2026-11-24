@@ -37,6 +37,7 @@ from tools.alpha import run_source_grounding as SGCLI  # noqa: E402
 MAX_CASE_BYTES = 1 << 20
 MAX_TOTAL_BYTES = 1 << 30
 MAX_TOTAL_FILES = 8000
+MAX_RECEIPT_BYTES = 16 << 20  # ids, counts and <= 200 model rows (~34 KiB observed); bounded read before parsing
 SIDECARS = ("-wal", "-shm", "-journal")
 OK_STATUSES = ("RUN_COMPLETE", "VERIFIED")
 STOPS = (RW.RelationWalletStop, SG.GroundingStop, OB.Oracle3Stop) + B1A.STOPS
@@ -52,11 +53,20 @@ def code_identity() -> str:
 
 
 def _sha(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    with open(path, "rb") as handle:  # streamed, never a whole-file read
+        return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
-def _tree(root: Path) -> dict:
-    """Regular single-link files only; no links, reparse points, SQLite sidecars or secret-shaped dirs."""
+def _size(path: Path, limit: int, code: str) -> int:
+    """lstat only: a regular single-link file (no link, reparse point or hardlink) of at most ``limit`` bytes."""
+    RW._require(not REL._unsafe_entry(path, directory=False) and os.lstat(path).st_size <= limit, code)
+    return os.lstat(path).st_size
+
+
+def _walk(root: Path) -> dict:
+    """The root and every child by lstat: regular single-link files only; no links, reparse points, SQLite
+    sidecars or secret-shaped dirs. Returns {relative path: path}; nothing is read."""
+    RW._require(not REL._unsafe_entry(root, directory=True), "INPUT_TREE_UNSAFE")
     out, total = {}, 0
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
         for name in dirnames:
@@ -65,15 +75,20 @@ def _tree(root: Path) -> dict:
         for name in filenames:
             path = Path(dirpath) / name
             RW._require(not REL._unsafe_entry(path, directory=False) and not name.endswith(SIDECARS), "INPUT_TREE_UNSAFE")
-            total += path.stat().st_size
-            RW._require(len(out) < MAX_TOTAL_FILES and total <= MAX_TOTAL_BYTES, "INPUT_TOO_LARGE")  # cap before hashing
-            out[path.relative_to(root).as_posix()] = _sha(path)
+            total += os.lstat(path).st_size
+            RW._require(len(out) < MAX_TOTAL_FILES and total <= MAX_TOTAL_BYTES, "INPUT_TOO_LARGE")
+            out[path.relative_to(root).as_posix()] = path
     return out
+
+
+def _tree(root: Path) -> dict:
+    return {rel: _sha(path) for rel, path in _walk(root).items()}
 
 
 def _file(path: Path) -> dict:
     RW._require(not any(Path(str(path) + s).exists() for s in SIDECARS), "SQLITE_SIDECAR_PRESENT")
-    return {"": _sha(path)}
+    RW._require(not REL._unsafe_entry(path, directory=False), "INPUT_TREE_UNSAFE")
+    return {"": path}
 
 
 def _sources(args: dict, scratch: Path) -> dict:
@@ -83,36 +98,44 @@ def _sources(args: dict, scratch: Path) -> dict:
         path = REL._caller_path(str(args[key]), directory=directory, scratch=scratch)
         RW._require(path is not None, "INPUT_PATH_UNUSABLE:" + key)
         resolved[key] = path
-    paths = list(resolved.values())
-    RW._require(all(a == b or not (REL._inside(a, b) or REL._inside(b, a)) for a in paths for b in paths), "INPUT_PATHS_OVERLAP")
+    pairs = list(resolved.items())
+    RW._require(all(ka == kb or not (REL._inside(a, b) or REL._inside(b, a)) for ka, a in pairs for kb, b in pairs),
+                "INPUT_PATHS_OVERLAP")  # distinct roles are disjoint, equal paths included
     return resolved
 
 
-def member_hashes(case_path: Path, case: dict) -> dict:
-    """Retained quote bytes: case-parent relative regular single-link files only (no link/junction/alias/escape)."""
-    parent, out = case_path.parent, {}
-    for member in RW.members(case):
-        path = parent / member
-        chain = [path.parent] + [p for p in path.parent.parents if REL._inside(p, parent) and p != parent]
-        RW._require(path.is_file() and not REL._unsafe_entry(path, directory=False)
-                    and not any(REL._unsafe_entry(p, directory=True) for p in chain)
-                    and os.path.normcase(str(path.resolve())) == os.path.normcase(str(path))
-                    and 0 < path.stat().st_size <= RW.MAX_MEMBER_BYTES, "QUOTE_MEMBER_UNSAFE")
-        out[member] = _sha(path)
-    return out
+def _member(root: Path, member: str) -> Path:
+    """One retained quote member: root-relative regular single-link file (no link/junction/alias/escape), by lstat."""
+    path = root / member
+    chain = [root, path.parent] + [p for p in path.parent.parents if REL._inside(p, root) and p != root]
+    RW._require(not any(REL._unsafe_entry(p, directory=True) for p in chain)
+                and not REL._unsafe_entry(path, directory=False)
+                and os.path.normcase(str(path.resolve())) == os.path.normcase(str(path))
+                and 0 < os.lstat(path).st_size <= RW.MAX_MEMBER_BYTES, "QUOTE_MEMBER_UNSAFE")
+    return path
+
+
+def _inventory(paths: dict, member_root: Path, case: dict) -> dict:
+    """Every byte the receipt depends on (trees, files, case, retained members), checked by lstat only.
+    Path safety and the aggregate file/byte caps hold before any byte is hashed."""
+    found = {key: _walk(paths[key]) for key in ("spine", "rel")}
+    found.update({key: _file(paths[key]) for key in ("registry", "ledger")})
+    _size(paths["case"], MAX_CASE_BYTES, "CASE_UNREADABLE")
+    found["case"] = {"": paths["case"]}
+    found["bundle"] = {m: _member(member_root, m) for m in RW.members(case)}
+    entries = [path for files in found.values() for path in files.values()]
+    RW._require(len(entries) <= MAX_TOTAL_FILES and sum(os.lstat(p).st_size for p in entries) <= MAX_TOTAL_BYTES,
+                "INPUT_TOO_LARGE")
+    return found
+
+
+def _hashes(paths: dict, member_root: Path, case: dict) -> dict:
+    return {key: {rel: _sha(path) for rel, path in files.items()} for key, files in _inventory(paths, member_root, case).items()}
 
 
 def _snapshot(sources: dict, case: dict) -> dict:
-    """Hash every caller byte the receipt depends on (trees, files, retained quote members)."""
-    hashes = {key: (_tree(path) if key in ("spine", "rel") else _file(path)) for key, path in sources.items() if key != "case"}
-    hashes["case"] = {"": _sha(sources["case"])}
-    parent = sources["case"].parent
-    bundle = hashes["bundle"] = member_hashes(sources["case"], case)
-    files = sum(len(v) for v in hashes.values())
-    total = sum((sources[k] / rel if rel else sources[k]).stat().st_size for k in ("spine", "rel", "registry", "ledger")
-                for rel in hashes[k]) + sum((parent / m).stat().st_size for m in bundle)
-    RW._require(files <= MAX_TOTAL_FILES and total <= MAX_TOTAL_BYTES, "INPUT_TOO_LARGE")
-    return hashes
+    """Hash every caller byte the receipt depends on, after the inventory checks."""
+    return _hashes(sources, sources["case"].parent, case)
 
 
 def _masked(value: object) -> object:
@@ -147,23 +170,31 @@ def _freeze(sources: dict, case: dict, inputs: Path) -> None:
 
 
 def _frozen_hashes(inputs: Path, case: dict) -> dict:
-    hashes = {key: (_tree(inputs / LAYOUT[key]) if key in ("spine", "rel") else _file(inputs / LAYOUT[key]))
-              for key in ("spine", "registry", "rel", "ledger", "case")}
-    hashes["bundle"] = {m: _sha(inputs / LAYOUT["bundle"] / m) for m in RW.members(case)}
-    return hashes
+    """The frozen copies under the same inventory checks and caps as the caller inputs (cold verify included)."""
+    RW._require(not REL._unsafe_entry(inputs, directory=True), "INPUT_TREE_UNSAFE")
+    return _hashes({key: inputs / LAYOUT[key] for key in ("spine", "registry", "rel", "ledger", "case")},
+                   inputs / LAYOUT["bundle"], case)
 
 
 def _read_member(inputs: Path, allowed: list):
     def read(member: str) -> bytes:
-        path = inputs / LAYOUT["bundle"] / member
-        return path.read_bytes() if member in allowed and path.is_file() and not path.is_symlink() else b""
+        return REL._read_capped(_member(inputs / LAYOUT["bundle"], member), RW.MAX_MEMBER_BYTES) if member in allowed else b""
     return read
+
+
+def _read_json(path: Path, code: str):
+    """A bounded regular single-link JSON file (the derived parity receipt and the B2 receipt)."""
+    raw = REL._read_capped(path, MAX_RECEIPT_BYTES) if not REL._unsafe_entry(path, directory=False) else b""
+    return SGCLI._strict_json(raw, code)
 
 
 def compute(scratch: Path) -> dict:
     """Everything from the frozen copies: nested native verifiers first, then the pure B2 consumers."""
     inputs = scratch / "inputs"
-    raw = (inputs / LAYOUT["case"]).read_bytes()
+    RW._require(not REL._unsafe_entry(inputs, directory=True), "INPUT_TREE_UNSAFE")
+    case_path = inputs / LAYOUT["case"]
+    _size(case_path, MAX_CASE_BYTES, "CASE_UNREADABLE")
+    raw = REL._read_capped(case_path, MAX_CASE_BYTES)
     case = parse_case(raw)
     hashes = _frozen_hashes(inputs, case)
     spine_dir, registry = inputs / LAYOUT["spine"], inputs / LAYOUT["registry"]
@@ -174,10 +205,11 @@ def compute(scratch: Path) -> dict:
     binding = RW.bind_target(spine_dir / "forecast" / "inputs" / "grounding", case["target_market_id"], lineage)
     rel_checked = REL.verify(inputs / LAYOUT["rel"])
     RW._require(rel_checked["status"] == "VERIFIED" and rel_checked["receipt_id"] == case["rel_receipt_id"], "REL_NOT_VERIFIED")
+    RW._require(not REL._unsafe_entry(scratch / "parity", directory=True), "PARITY_NOT_VERIFIED")
     par_checked = PAR.verify(scratch / "parity")
     RW._require(par_checked["status"] == "VERIFIED", "PARITY_NOT_VERIFIED")
     rel = json.loads((inputs / LAYOUT["rel"] / "receipt.json").read_bytes())
-    parity = json.loads((scratch / "parity" / "receipt.json").read_bytes())
+    parity = _read_json(scratch / "parity" / "receipt.json", "PARITY_NOT_VERIFIED")
     RW._require(parity["receipt_id"] == par_checked["receipt_id"]
                 and _tree(scratch / "parity" / "inputs" / "rel") == hashes["rel"], "PARITY_INPUT_MISMATCH")
     a5 = RW.relations(binding, rel, parity, case["model_ids"])
@@ -190,7 +222,8 @@ def compute(scratch: Path) -> dict:
 
 def _scratch(path: Path) -> Path:
     scratch = Path(path)
-    RW._require(scratch.is_absolute() and not REL._inside(scratch.resolve(), REPO_ROOT) and not scratch.is_symlink()
+    RW._require(scratch.is_absolute() and ".." not in scratch.parts and not REL._inside(scratch.resolve(), REPO_ROOT)
+                and os.path.normcase(str(scratch.resolve())) == os.path.normcase(os.path.abspath(scratch))  # no alias
                 and not (scratch.exists() and REL._unsafe_entry(scratch, directory=True)), "SCRATCH_INVALID")
     return scratch.resolve()
 
@@ -223,12 +256,13 @@ def verify(scratch_dir) -> dict:
     RW._require(scratch.is_dir(), "SCRATCH_INVALID")
     failures = []
     with SGCLI.no_network() as attempts:
-        path = scratch / "receipt.json"
-        receipt = SGCLI._strict_json(path.read_bytes() if path.is_file() else b"", "RECEIPT_UNREADABLE")
+        receipt = _read_json(scratch / "receipt.json", "RECEIPT_UNREADABLE")
         try:
             core = compute(scratch)["core"]
             if not isinstance(receipt, dict) or set(receipt) != {"schema_id", "receipt_id", "core"}:
                 failures.append("RECEIPT_SHAPE_INVALID")
+            elif receipt["schema_id"] != RW.RECEIPT_SCHEMA:  # outside the hashed core: checked exactly
+                failures.append("RECEIPT_SCHEMA_INVALID")
             else:
                 if receipt["receipt_id"] != RW.finalize(receipt["core"])["receipt_id"]:
                     failures.append("RECEIPT_ID_MISMATCH")

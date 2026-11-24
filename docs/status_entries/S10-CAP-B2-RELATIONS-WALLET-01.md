@@ -48,6 +48,22 @@ Contract: `docs/relation_wallet_spine_contract.md`.
 - `run_relation_wallet_spine.py`: `run` (write-once scratch, socket block, freeze/re-hash, Oracle3 parity run, nested native verifies, receipt) and read-only `verify` (full recompute; `TAMPER_DETECTED` on any difference).
 - Every native producer (B1-A, W01, SRC-01, REL-01, Oracle3 bridge/parity, WALLET-01/02/03, Alpha modules) and the roadmap archive are byte-unchanged; no native module imports B2.
 
+## Side26 Follow-up Correction (2026-11-24, same WP, same 11 paths)
+
+Classification: F/G (implementation and test gap against the existing R009/R010 requirements). Localized fix in
+`tools/alpha/run_relation_wallet_spine.py` and the two B2 test files plus factual contract/status reconciliation.
+No native producer, prompt/spec semantics, capability ledger, A5/A6 role logic, A7 posture or D001-D006 change.
+Separate hardening WP needed: NO.
+
+- F1: cold `verify` now checks the outer `schema_id` exactly (`RECEIPT_SCHEMA_INVALID`); the core comparison and
+  receipt id are unchanged.
+- F2: one lstat inventory checks tree roots and children, singletons, the case and retained members (regular
+  single-link, no link/junction/hardlink/alias/sidecar/secret dir) and the aggregate 1 GiB/8000-file caps before any
+  hash, on run and on every cold recompute. Streamed hashing; bounded reads of the frozen case, members, parity
+  receipt and B2 receipt (16 MiB); distinct input roles must be disjoint; the scratch must not be an alias.
+- Red/green: real pinned B2 witness on reviewed head `06cdeb0` (VERIFIED or late refusal) against the corrected head
+  (closed refusal before consumption); the regression rows live in the R009/R010 nodes. The record is in the PR body.
+
 ## Dispositions
 
 | ID | Disposition |
@@ -83,8 +99,10 @@ None is VALUE_VERIFIED; owner disposition PENDING. The other 30 of the 36 progra
 | Wrong market / universe / rule / lineage | R002 (`SPINE_TARGET_MISMATCH`, `SPINE_GROUNDING_MISMATCH`, `TARGET_NOT_ADMITTED:*`, `REL_*_MISMATCH`, `PARITY_REL_MISMATCH`), R004 (`RULE_IDENTITY_MISMATCH`) |
 | Relation direction / settlement semantics | R004 (counterexample, tie/cancel/reschedule/partial INCONCLUSIVE, VOID modelled, `RULE_CONFLICT`) |
 | Wallet PIT / identity / coverage gaps | R006 (late observation, weak identity, no/scenario/wrong-token/late quote, orientation, missing cost/depth, outside cohort, tampered retained bytes, head drift, corrupt ledger, cutoff after decision), R002 context refusals |
-| Path / link / sidecar / scratch safety | R009 (`QUOTE_MEMBER_INVALID`, `QUOTE_MEMBER_UNSAFE`, `SQLITE_SIDECAR_PRESENT`), R010 (`SCRATCH_NOT_EMPTY`, `SCRATCH_INVALID`, `INPUT_PATHS_OVERLAP`, partial scratch) |
+| Path / link / sidecar / scratch safety | R009 (`QUOTE_MEMBER_INVALID`, `QUOTE_MEMBER_UNSAFE`, `SQLITE_SIDECAR_PRESENT`), R010 (`SCRATCH_NOT_EMPTY`, `SCRATCH_INVALID`, `INPUT_PATHS_OVERLAP` incl. equal role paths, partial scratch; frozen hardlink of member/case/ledger/registry/parity/receipt, symlink-or-junction tree roots on cold recompute and verify) |
 | Forbidden credential / secret wording | R009 (`FORBIDDEN_FIELD` incl. case variants, `SECRET_MATERIAL_REJECTED`; native price/depth/fee names still accepted) |
+| Caps before hashing | R010 (aggregate bytes, file count, case bytes, member bytes: refusal with zero hashes, exact limit passes; receipt bound `RECEIPT_UNREADABLE`, exact bound verifies) |
+| Outer receipt schema | R010 (`RECEIPT_SCHEMA_INVALID` for unsupported version, integer, null) |
 | Replay / tamper / network / no echo | R010 (receipt, case, registry, ledger, REL, parity, bundle, spine tamper → not VERIFIED; zero socket calls; no path/traceback echo), R009 usage exit 2 |
 | False value / tradability / person inference | R011 (no `tradable`/value/size/lift terms; A7 conditional only), R006 (no address, score, rank or recommendation) |
 | Historical receipts | R008 (native code identities pinned; REL/parity/B1-A receipts cold-verify unchanged) |
