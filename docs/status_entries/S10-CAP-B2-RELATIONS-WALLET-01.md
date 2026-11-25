@@ -64,6 +64,21 @@ Separate hardening WP needed: NO.
 - Red/green: real pinned B2 witness on reviewed head `06cdeb0` (VERIFIED or late refusal) against the corrected head
   (closed refusal before consumption); the regression rows live in the R009/R010 nodes. The record is in the PR body.
 
+## Side26 Core-Identity Micro-Correction F3 (2026-11-24, same WP, same 11 paths)
+
+Classification: F/G (residual pre-existing comparison gap against the existing R009/R010 exact-identity and no-echo
+requirements). Localized fix in `tools/alpha/run_relation_wallet_spine.py::verify` plus R010 rows and factual
+contract/status reconciliation. F1/F2 behavior, native producers, capability ledger, A5/A6 logic and D001-D006
+unchanged. Separate hardening WP needed: NO.
+
+- F3: the submitted core must be a JSON object (`RECEIPT_FIELDS_INVALID`) and is compared as exact canonical bytes
+  (`SG.canonical_bytes`) with the recomputed core (`CORE_MISMATCH`); the submitted id is compared with
+  `finalize(recomputed core)` (`RECEIPT_ID_MISMATCH`). Closed codes only: no caller-supplied key is echoed.
+- Red/green: on a real pinned B2 scratch per side, reviewed head `31535fe` VERIFIED an unknown null top-level core
+  field and nested bool->int, int->bool and int->float swaps with regenerated ids, and echoed an unknown non-null key
+  in `CORE_MISMATCH:<key>`; the corrected head refuses each with `CORE_MISMATCH`, `RECEIPT_ID_MISMATCH` and no echo.
+  The record is in the PR body.
+
 ## Dispositions
 
 | ID | Disposition |
@@ -103,6 +118,7 @@ None is VALUE_VERIFIED; owner disposition PENDING. The other 30 of the 36 progra
 | Forbidden credential / secret wording | R009 (`FORBIDDEN_FIELD` incl. case variants, `SECRET_MATERIAL_REJECTED`; native price/depth/fee names still accepted) |
 | Caps before hashing | R010 (aggregate bytes, file count, case bytes, member bytes: refusal with zero hashes, exact limit passes; receipt bound `RECEIPT_UNREADABLE`, exact bound verifies) |
 | Outer receipt schema | R010 (`RECEIPT_SCHEMA_INVALID` for unsupported version, integer, null) |
+| Exact core identity / no key echo | R010 (unknown null and non-null top-level core field, nested bool->int, int->bool, int->float with regenerated id → `CORE_MISMATCH` + `RECEIPT_ID_MISMATCH`, no caller key echoed; non-object core `RECEIPT_FIELDS_INVALID`) |
 | Replay / tamper / network / no echo | R010 (receipt, case, registry, ledger, REL, parity, bundle, spine tamper → not VERIFIED; zero socket calls; no path/traceback echo), R009 usage exit 2 |
 | False value / tradability / person inference | R011 (no `tradable`/value/size/lift terms; A7 conditional only), R006 (no address, score, rank or recommendation) |
 | Historical receipts | R008 (native code identities pinned; REL/parity/B1-A receipts cold-verify unchanged) |

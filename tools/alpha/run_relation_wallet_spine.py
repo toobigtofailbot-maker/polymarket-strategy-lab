@@ -263,11 +263,13 @@ def verify(scratch_dir) -> dict:
                 failures.append("RECEIPT_SHAPE_INVALID")
             elif receipt["schema_id"] != RW.RECEIPT_SCHEMA:  # outside the hashed core: checked exactly
                 failures.append("RECEIPT_SCHEMA_INVALID")
-            else:
-                if receipt["receipt_id"] != RW.finalize(receipt["core"])["receipt_id"]:
+            elif type(receipt["core"]) is not dict:
+                failures.append("RECEIPT_FIELDS_INVALID")
+            else:  # exact canonical bytes (no null/absent or bool/int/float conflation); closed codes, no caller keys
+                if SG.canonical_bytes(receipt["core"]) != SG.canonical_bytes(core):
+                    failures.append("CORE_MISMATCH")
+                if receipt["receipt_id"] != RW.finalize(core)["receipt_id"]:
                     failures.append("RECEIPT_ID_MISMATCH")
-                failures.extend(f"CORE_MISMATCH:{k}" for k in sorted(set(core) | set(receipt["core"]))
-                                if receipt["core"].get(k) != core.get(k))
         except STOPS as stop:
             failures.append("RECOMPUTE_REFUSED:" + str(stop).split(":")[0])
         except (KeyError, TypeError, AttributeError, OSError, ValueError):

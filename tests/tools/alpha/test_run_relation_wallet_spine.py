@@ -399,6 +399,49 @@ def test_b2_write_once_cold_verify_and_tamper(b2, pinned, tmp_path, capsys, monk
         (copy_dir / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
         assert _verify(copy_dir) == {"status": "TAMPER_DETECTED", "failures": ["RECEIPT_SCHEMA_INVALID"],
                                      "receipt_id": None, "network_attempts": 0}, name
+    # the core is compared as exact canonical bytes against the recomputation, and the id against the recomputed
+    # core: an unknown null/non-null field or an equal-valued bool/int/float swap with a regenerated id refuses
+    # with closed codes and never echoes the caller key
+    marker = "zz_b2_synthetic_marker_7f3a"
+    original = json.loads((scratch / "receipt.json").read_text(encoding="utf-8"))
+
+    def leaf(node, want):
+        stack = [(node, ())]
+        while stack:
+            value, trail = stack.pop()
+            if isinstance(value, dict | list):
+                stack.extend((v, trail + (k,)) for k, v in (value.items() if isinstance(value, dict) else enumerate(value)))
+            elif len(trail) > 1 and want(value):
+                return trail
+        raise AssertionError("fixture leaf absent")
+
+    def at(core, trail, convert):
+        node = core
+        for key in trail[:-1]:
+            node = node[key]
+        node[trail[-1]] = convert(node[trail[-1]])
+
+    bool_leaf = leaf(original["core"], lambda v: type(v) is bool)
+    int_leaf = leaf(original["core"], lambda v: type(v) is int and v in (0, 1))
+    identity = {"unknown_null": lambda c: c.__setitem__(marker, None),
+                "unknown_value": lambda c: c.__setitem__(marker, "synthetic"),
+                "bool_to_int": lambda c: at(c, bool_leaf, int), "int_to_bool": lambda c: at(c, int_leaf, bool),
+                "int_to_float": lambda c: at(c, int_leaf, float)}
+    for name, mutate in identity.items():
+        copy_dir = (tmp_path / ("core-" + name)).resolve()
+        shutil.copytree(scratch, copy_dir)
+        receipt = json.loads((copy_dir / "receipt.json").read_text(encoding="utf-8"))
+        mutate(receipt["core"])
+        receipt["receipt_id"] = RW.finalize(receipt["core"])["receipt_id"]
+        (copy_dir / "receipt.json").write_text(json.dumps(receipt), encoding="utf-8")
+        result = _verify(copy_dir)
+        assert result == {"status": "TAMPER_DETECTED", "failures": ["CORE_MISMATCH", "RECEIPT_ID_MISMATCH"],
+                          "receipt_id": None, "network_attempts": 0}, name
+        assert marker not in json.dumps(result), name
+    copy_dir = (tmp_path / "core-not-object").resolve()
+    shutil.copytree(scratch, copy_dir)
+    (copy_dir / "receipt.json").write_text(json.dumps(dict(original, core=[])), encoding="utf-8")
+    assert _verify(copy_dir)["failures"] == ["RECEIPT_FIELDS_INVALID"]
     # same-byte link substitution of a consumed frozen input or the receipt is refused on cold verify
     for name, member, expected in (("bundle", "inputs/bundle/book-1.json", "RECOMPUTE_REFUSED:QUOTE_MEMBER_UNSAFE"),
                                    ("case", "inputs/case.json", "RECOMPUTE_REFUSED:CASE_UNREADABLE"),

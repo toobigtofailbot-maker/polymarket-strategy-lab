@@ -67,7 +67,10 @@ ids are masked only at their closed `condition_value` field and must then equal 
 `verify` only reads: it recomputes the whole core from the frozen copies (re-running every nested native verifier)
 and compares; any difference is `TAMPER_DETECTED` with closed failure codes. The receipt must have exactly the
 keys `schema_id`, `receipt_id`, `core` (`RECEIPT_SHAPE_INVALID`), and the outer `schema_id`, which the id does not
-hash, must equal `s10-cap-b2-relation-wallet-receipt-v1` exactly (`RECEIPT_SCHEMA_INVALID`). Receipt ids are stable
+hash, must equal `s10-cap-b2-relation-wallet-receipt-v1` exactly (`RECEIPT_SCHEMA_INVALID`). The core must be a JSON object
+(`RECEIPT_FIELDS_INVALID`) whose canonical bytes equal the recomputed core's exactly (`CORE_MISMATCH`: no null/absent
+or bool/int/float conflation), and the receipt id must equal the id of the recomputed core (`RECEIPT_ID_MISMATCH`);
+failure codes are closed and never name a caller-supplied key. Receipt ids are stable
 within one code identity; this WP does not claim to preserve pre-merge B2 development receipts across intentional
 code-identity changes.
 
