@@ -2365,3 +2365,12 @@ Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 
 - **Tests.** tests/data_layer/analytical_research/test_forecast_methods_integration.py and tests/tools/alpha/test_run_forecast_methods_integration.py; additive checks in test_forecast_evaluation.py and test_forecast_wp170_binding.py. Live upstream comparisons need POLYMARKET_UPSTREAM_ROOT.
 - **Docs.** Contract: docs/forecast_methods_integration_contract.md. Stable evidence: docs/status_entries/S10-CAP-B1-METHODS-01.md.
 - **Boundaries.** W01, B1-A, source-grounding, native learning_feedback, experiment_os, Alpha and the roadmap archive are byte-unchanged. Real product GET 0; LIVE DISABLED.
+
+## S10-CAP-B2-RELATIONS-WALLET-01
+
+- **Package.** Exact 11-path RUNTIME/Risk3/L package on merged PR #284 (merge 573ac905b62fd2ee8e577db943503f6d8727b1d7). Frozen prompt/spec: docs/wp_specs/S10-CAP-B2-RELATIONS-WALLET-01/. Implementation PR pending Side26 review and Karl's merge decision.
+- **Source.** src/data_layer/analytical_research/relation_wallet_spine.py (thin shared-PIT A5/A6 consumer; no new canonical store or identity).
+- **Tool.** tools/alpha/run_relation_wallet_spine.py.
+- **Tests.** tests/data_layer/analytical_research/test_relation_wallet_spine.py and tests/tools/alpha/test_run_relation_wallet_spine.py. The pinned parts need POLYMARKET_HERMES_PIN_ROOT.
+- **Docs.** Contract: docs/relation_wallet_spine_contract.md. Stable evidence: docs/status_entries/S10-CAP-B2-RELATIONS-WALLET-01.md.
+- **Boundaries.** B1-A, W01, SRC-01, REL-01, Oracle3, WALLET-01/02/03, Alpha modules and the roadmap archive are byte-unchanged. Real product GET 0; LIVE DISABLED.

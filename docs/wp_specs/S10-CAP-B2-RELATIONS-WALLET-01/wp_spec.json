@@ -1,0 +1,568 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CAP-B2-RELATIONS-WALLET-01",
+    "title": "B2: Unified PIT rules, relations and public-wallet research integration",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "B2_BUNDLED_OFFLINE_RELATION_WALLET_RESEARCH",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-cap-b2-relations-wallet-01",
+    "required_predecessor": {
+      "pr_number": 284,
+      "head_sha": "a716b4c1a08d9a3eec5ffe0884af6bac4af6d707",
+      "merge_sha": "573ac905b62fd2ee8e577db943503f6d8727b1d7"
+    },
+    "objective": "One finite offline shared-PIT advisory case: existing B1-A native source identity -> real REL-01 and Oracle3 relation/fee diagnostics plus verified WALLET-01/02/03 profile and delayed copyability -> one cold-verifiable A5/A6 consumer handoff with native conditional economics pointer; no new discovery, stores, model or trading authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/relation_wallet_spine.py",
+      "tools/alpha/run_relation_wallet_spine.py",
+      "tests/data_layer/analytical_research/test_relation_wallet_spine.py",
+      "tests/tools/alpha/test_run_relation_wallet_spine.py",
+      "docs/relation_wallet_spine_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-B2-RELATIONS-WALLET-01.md",
+      "docs/wp_specs/S10-CAP-B2-RELATIONS-WALLET-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-B2-RELATIONS-WALLET-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/relation_wallet_spine.py",
+      "tools/alpha/run_relation_wallet_spine.py",
+      "tests/data_layer/analytical_research/test_relation_wallet_spine.py",
+      "tests/tools/alpha/test_run_relation_wallet_spine.py",
+      "docs/relation_wallet_spine_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-B2-RELATIONS-WALLET-01.md",
+      "docs/wp_specs/S10-CAP-B2-RELATIONS-WALLET-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-B2-RELATIONS-WALLET-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/live_pilot/",
+      "src/paper_trading/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/operator_cockpit_frontend/",
+      "src/research_runtime/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/execution/",
+      "tools/qualification/",
+      "src/data_layer/wallet_intelligence/",
+      "src/execution_feasibility/",
+      "src/data_layer/analytical_research/oracle3/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly 11 paths. New opt-in diagnostic module and CLI only; no existing native source or receipt identity files changed. Disposable test scratch only, no canonical store writes.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One opt-in offline A5/A6 handoff and native producer/consumer reuse; native contracts unchanged.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/relation_wallet_spine.py",
+        "before": "No shared frozen A5/A6 operator/consumer handoff at this surface.",
+        "after": "One bounded shared-case binding, native relation and wallet consumption, closed capability/read-side projection and receipt recompute.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use existing verified native receipts, loaders and pure consumers; no authority widening or changes to their default behavior or identities.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_relation_wallet_spine.py",
+        "before": "No shared frozen A5/A6 operator/consumer handoff at this surface.",
+        "after": "Finite run/verify over explicit frozen fixture paths, no network, no canonical writes, write-once local advisory receipt.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use existing verified native receipts, loaders and pure consumers; no authority widening or changes to their default behavior or identities.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "12 named source-to-consumer, historical compatibility, safety and accounting requirements.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R001: Reuse existing verified Oracle3 exact vendored pin 267fb7c48dae7c4ff8922c02a3a223443e51bf0b; prove actual check_constraint and PolymarketSchedule fee invocation on eligible fixture (not mock results). Inspect exact R3-04/11/19/14 pins and license/import closure before edits; only an actually executed safe pure leaf or independently matched pinned fixture with consumer may gain engineering evidence; blocked source/rights/provider remains OPEN with specific cause.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001: Reuse existing verified Oracle3 exact vendored pin 267fb7c48dae7c4ff8922c02a3a223443e51bf0b; prove actual check_constraint and PolymarketSchedule fee invocation on eligible fixture (not mock results). Inspect exact R3-04/11/19/14 pins and license/import closure before edits; only an actually executed safe pure leaf or independently matched pinned fixture with consumer may gain engineering evidence; blocked source/rights/provider remains OPEN with specific cause.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R002: Rebuild native B1-A scout from cold SRC-01 and bind target market, exact condition/token contexts, question/rule hash, event, candidate, native universe and as_of to REL-01 and wallet context. Target must be preexisting. Compare by verified native IDs, never names/normalized guesses. Unknown/ambiguous/foreign/future context refuses with explicit counts. No new candidate creation or broad search.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002: Rebuild native B1-A scout from cold SRC-01 and bind target market, exact condition/token contexts, question/rule hash, event, candidate, native universe and as_of to REL-01 and wallet context. Target must be preexisting. Compare by verified native IDs, never names/normalized guesses. Unknown/ambiguous/foreign/future context refuses with explicit counts. No new candidate creation or broad search.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R003: Consume real verified REL-01 scratch and regenerate Oracle3 parity using its native operator on frozen REL input. Select only exact predeclared target-related model IDs whose market/rule/payout/orientation are native-bound; preserve full native result/denominator and selected/rejected subset. Require actual upstream call and actual fee/depth native result for positive fixture; never infer atomicity, executable edge or real arbitrage. Same/complement/implication/other native formal model only under stated assumptions.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003: Consume real verified REL-01 scratch and regenerate Oracle3 parity using its native operator on frozen REL input. Select only exact predeclared target-related model IDs whose market/rule/payout/orientation are native-bound; preserve full native result/denominator and selected/rejected subset. Require actual upstream call and actual fee/depth native result for positive fixture; never infer atomicity, executable edge or real arbitrage. Same/complement/implication/other native formal model only under stated assumptions.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R004: Use existing related_market.formal_proof and real_world_classification semantics, preserve directional implication vs reverse, tie/void/cancel/reschedule/partial outcomes, rule mismatch and unknown finality; actual pair/multi-leg proof not text similarity or model confidence. For R3-04/11/19 distinguish native semantics from upstream source acceptance. A missing provider, license or source does not become a relation proof.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004: Use existing related_market.formal_proof and real_world_classification semantics, preserve directional implication vs reverse, tie/void/cancel/reschedule/partial outcomes, rule mismatch and unknown finality; actual pair/multi-leg proof not text similarity or model confidence. For R3-04/11/19 distinguish native semantics from upstream source acceptance. A missing provider, license or source does not become a relation proof.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R005: On one synthetic caller-retained WALLET-01 ledger, call load_and_verify_wallet_evidence_ledger, native build_wallet_profile_snapshot and build_wallet_copyability_research_assessment with native cohort/market context, exact expected head, target synthetic public account, delay/cost scenarios and at least one retained native registered quote witness. Bind context condition/token to same native PIT target and clocks; rederive profile and consume actual assessment mapping. Read-only original and frozen stores, no production account or new ledger schema.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005: On one synthetic caller-retained WALLET-01 ledger, call load_and_verify_wallet_evidence_ledger, native build_wallet_profile_snapshot and build_wallet_copyability_research_assessment with native cohort/market context, exact expected head, target synthetic public account, delay/cost scenarios and at least one retained native registered quote witness. Bind context condition/token to same native PIT target and clocks; rederive profile and consume actual assessment mapping. Read-only original and frozen stores, no production account or new ledger schema.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R006: Test native duplicate/reorg/weak identity/related-account and stale/future context, missing quote, wrong token/orientation, cost/depth unavailable, and action event time versus public/local availability; keep native considered=eligible+excluded, delay outcomes and observed vs scenario-only distinct. Neither public address nor a synthetic estimate identifies a person or proves predictive/copyable profit.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006: Test native duplicate/reorg/weak identity/related-account and stale/future context, missing quote, wrong token/orientation, cost/depth unavailable, and action event time versus public/local availability; keep native considered=eligible+excluded, delay outcomes and observed vs scenario-only distinct. Neither public address nor a synthetic estimate identifies a person or proves predictive/copyable profit.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R007: Real end-to-end local fixture: cold verify existing B1-A with caller-supplied frozen Alpha registry, preserve A3/A4 witness and forecast/episode IDs, cross-bind exact SRC-01/universe/target to REL, Oracle and WALLET-03. Emit one typed read-only role handoff with A5/A6 dispositions and A7 existing conditional economics pointer, no new A7 model. Verify native evidence actually affects downstream decision/refusal; no fake Hermes child or A5/A6 LLM invocation. At least one target relation and one target wallet context admit on same fixture. Existing Hermes pin gate if needed for fixture creation; report actual local pin run separately from CI.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007: Real end-to-end local fixture: cold verify existing B1-A with caller-supplied frozen Alpha registry, preserve A3/A4 witness and forecast/episode IDs, cross-bind exact SRC-01/universe/target to REL, Oracle and WALLET-03. Emit one typed read-only role handoff with A5/A6 dispositions and A7 existing conditional economics pointer, no new A7 model. Verify native evidence actually affects downstream decision/refusal; no fake Hermes child or A5/A6 LLM invocation. At least one target relation and one target wallet context admit on same fixture. Existing Hermes pin gate if needed for fixture creation; report actual local pin run separately from CI.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R008: Keep native W01/B1-A/B1-B, SRC, REL/Oracle, wallet ledger/profile/copyability and their identity dependencies byte-identical. Generate baseline sealed receipts with actual merged code and verify on new head without changing receipt IDs/bytes; include B1-B historical forecast/learning regression test, current B1-A, REL/Oracle and wallet native roundtrip. No new identity aliases or historical rewrites.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008: Keep native W01/B1-A/B1-B, SRC, REL/Oracle, wallet ledger/profile/copyability and their identity dependencies byte-identical. Generate baseline sealed receipts with actual merged code and verify on new head without changing receipt IDs/bytes; include B1-B historical forecast/learning regression test, current B1-A, REL/Oracle and wallet native roundtrip. No new identity aliases or historical rewrites.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R009: Closed schema, bounded input/tree, no duplicate JSON keys/nonfinite/bool-as-number/unknown schema, no arbitrary import/secret-bearing fields, traversal/symlink/reparse/hardlink/alias/sidecars/path escape, invalid source/receipt IDs, wrong clocks, source/provider/auth/credential/trade commands. Existing native path and network guards reused, invalid-output no-echo, no raw secret/address echo. Refusal statuses are closed; retain negative categories and allowed advisory vocabulary.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009: Closed schema, bounded input/tree, no duplicate JSON keys/nonfinite/bool-as-number/unknown schema, no arbitrary import/secret-bearing fields, traversal/symlink/reparse/hardlink/alias/sidecars/path escape, invalid source/receipt IDs, wrong clocks, source/provider/auth/credential/trade commands. Existing native path and network guards reused, invalid-output no-echo, no raw secret/address echo. Refusal statuses are closed; retain negative categories and allowed advisory vocabulary.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R010: One bounded operator run/verify, snapshot only caller-named local inputs outside repository, cold native reverify and recompute from frozen originals, deterministic content-addressed receipt excluding timings, no writes on verify. Write once, partial scratch fails, same immutable receipt can verify without rerun, changed input/receipt/registry/ledger/source or forged legacy identities fail; no network, source store mutation or provider access.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010: One bounded operator run/verify, snapshot only caller-named local inputs outside repository, cold native reverify and recompute from frozen originals, deterministic content-addressed receipt excluding timings, no writes on verify. Write once, partial scratch fails, same immutable receipt can verify without rerun, changed input/receipt/registry/ledger/source or forged legacy identities fail; no network, source store mutation or provider access.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R011: Native-vs-Oracle same-model comparison preserves mismatches, invocation counts, missing fees/depth/atomicity and explicit abstentions. Wallet native delay/cost scenarios and source-bound quote counts kept separate from real trading. A7 read-only projection exposes native conditional status/reasons only; do not add slippage/fill model, signals, order sizing, OOS release or claim lift. Real-source acceptance and profitability remain unproven.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011: Native-vs-Oracle same-model comparison preserves mismatches, invocation counts, missing fees/depth/atomicity and explicit abstentions. Wallet native delay/cost scenarios and source-bound quote counts kept separate from real trading. A7 read-only projection exposes native conditional status/reasons only; do not add slippage/fill model, signals, order sizing, OOS release or claim lift. Real-source acceptance and profitability remain unproven.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R012: Six W04/W05 IDs R3-03,R3-03-FEES,R3-04,R3-11,R3-19,R3-14 accounted separately, other 30 unchanged; current pin/executed callable/license/consumer/denominators/receipt and blocked reason per row. Roadmap archive/36-row CSV byte-identical; no fake VALUE_VERIFIED or owner dispositions. A5/A6 offline role consumers, A7 conditional pointer only, B3 Lane B and provider gates remain open. Exact 11 paths, original native code untouched.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012: Six W04/W05 IDs R3-03,R3-03-FEES,R3-04,R3-11,R3-19,R3-14 accounted separately, other 30 unchanged; current pin/executed callable/license/consumer/denominators/receipt and blocked reason per row. Roadmap archive/36-row CSV byte-identical; no fake VALUE_VERIFIED or owner dispositions. A5/A6 offline role consumers, A7 conditional pointer only, B3 Lane B and provider gates remain open. Exact 11 paths, original native code untouched.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed advisory diagnostic or refusal only; no executable edge, forecast value, account or trade authority.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Existing native market/rule, wallet and relation identities remain unchanged. Use SG.canonical_bytes and sha256_hex for the local opt-in envelope; no new canonical source/registry identity.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness followed by standing-owner-authorized bounded offline implementation and independent review.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Actual native readiness gate validates final prompt and spec on synchronized main before any source edit; no PROTECTED certificate for the expected RUNTIME track.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl standing software-development authorization and Side26 specific limited B2 grant apply after deterministic readiness; protected/provider or Lane B boundary stops.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "CC implements exactly 11 files and R001-R012, validates local full suite and final hosted CI, publishes complete evidence on one PR.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed WP159 schema-1.0.0 public error precedence, without a new custom error framework.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Real synthetic fixture witnesses and negative cases are required by R001-R012; no duplicate illustrative examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "R001-R012 one exact pytest node each, plus native complete suite and hosted exact-head CI and posted evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_b2_pinned_oracle_and_other_source_dispositions",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_relation_wallet_spine.py::test_b2_pinned_oracle_and_other_source_dispositions",
+        "expected_result": "R001: Reuse existing verified Oracle3 exact vendored pin 267fb7c48dae7c4ff8922c02a3a223443e51bf0b; prove actual check_constraint and PolymarketSchedule fee invocation on eligible fixture (not mock results). Inspect exact R3-04/11/19/14 pins and license/import closure before edits; only an actually executed safe pure leaf or independently matched pinned fixture with consumer may gain engineering evidence; blocked source/rights/provider remains OPEN with specific cause."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_b2_exact_shared_pit_case_binding",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_relation_wallet_spine.py::test_b2_exact_shared_pit_case_binding",
+        "expected_result": "R002: Rebuild native B1-A scout from cold SRC-01 and bind target market, exact condition/token contexts, question/rule hash, event, candidate, native universe and as_of to REL-01 and wallet context. Target must be preexisting. Compare by verified native IDs, never names/normalized guesses. Unknown/ambiguous/foreign/future context refuses with explicit counts. No new candidate creation or broad search."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_b2_real_rel_oracle_native_consumption",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_relation_wallet_spine.py::test_b2_real_rel_oracle_native_consumption",
+        "expected_result": "R003: Consume real verified REL-01 scratch and regenerate Oracle3 parity using its native operator on frozen REL input. Select only exact predeclared target-related model IDs whose market/rule/payout/orientation are native-bound; preserve full native result/denominator and selected/rejected subset. Require actual upstream call and actual fee/depth native result for positive fixture; never infer atomicity, executable edge or real arbitrage. Same/complement/implication/other native formal model only under stated assumptions."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_b2_rule_direction_and_settlement_refusals",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_relation_wallet_spine.py::test_b2_rule_direction_and_settlement_refusals",
+        "expected_result": "R004: Use existing related_market.formal_proof and real_world_classification semantics, preserve directional implication vs reverse, tie/void/cancel/reschedule/partial outcomes, rule mismatch and unknown finality; actual pair/multi-leg proof not text similarity or model confidence. For R3-04/11/19 distinguish native semantics from upstream source acceptance. A missing provider, license or source does not become a relation proof."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_b2_native_wallet_profile_and_copyability",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_relation_wallet_spine.py::test_b2_native_wallet_profile_and_copyability",
+        "expected_result": "R005: On one synthetic caller-retained WALLET-01 ledger, call load_and_verify_wallet_evidence_ledger, native build_wallet_profile_snapshot and build_wallet_copyability_research_assessment with native cohort/market context, exact expected head, target synthetic public account, delay/cost scenarios and at least one retained native registered quote witness. Bind context condition/token to same native PIT target and clocks; rederive profile and consume actual assessment mapping. Read-only original and frozen stores, no production account or new ledger schema."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_b2_wallet_observability_and_gap_refusals",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_relation_wallet_spine.py::test_b2_wallet_observability_and_gap_refusals",
+        "expected_result": "R006: Test native duplicate/reorg/weak identity/related-account and stale/future context, missing quote, wrong token/orientation, cost/depth unavailable, and action event time versus public/local availability; keep native considered=eligible+excluded, delay outcomes and observed vs scenario-only distinct. Neither public address nor a synthetic estimate identifies a person or proves predictive/copyable profit."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_b2_b1a_to_joint_role_receipt",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_relation_wallet_spine.py::test_b2_b1a_to_joint_role_receipt",
+        "expected_result": "R007: Real end-to-end local fixture: cold verify existing B1-A with caller-supplied frozen Alpha registry, preserve A3/A4 witness and forecast/episode IDs, cross-bind exact SRC-01/universe/target to REL, Oracle and WALLET-03. Emit one typed read-only role handoff with A5/A6 dispositions and A7 existing conditional economics pointer, no new A7 model. Verify native evidence actually affects downstream decision/refusal; no fake Hermes child or A5/A6 LLM invocation. At least one target relation and one target wallet context admit on same fixture. Existing Hermes pin gate if needed for fixture creation; report actual local pin run separately from CI."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_b2_historical_native_receipts_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_relation_wallet_spine.py::test_b2_historical_native_receipts_unchanged",
+        "expected_result": "R008: Keep native W01/B1-A/B1-B, SRC, REL/Oracle, wallet ledger/profile/copyability and their identity dependencies byte-identical. Generate baseline sealed receipts with actual merged code and verify on new head without changing receipt IDs/bytes; include B1-B historical forecast/learning regression test, current B1-A, REL/Oracle and wallet native roundtrip. No new identity aliases or historical rewrites."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_b2_strict_inputs_and_authority_denial",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_relation_wallet_spine.py::test_b2_strict_inputs_and_authority_denial",
+        "expected_result": "R009: Closed schema, bounded input/tree, no duplicate JSON keys/nonfinite/bool-as-number/unknown schema, no arbitrary import/secret-bearing fields, traversal/symlink/reparse/hardlink/alias/sidecars/path escape, invalid source/receipt IDs, wrong clocks, source/provider/auth/credential/trade commands. Existing native path and network guards reused, invalid-output no-echo, no raw secret/address echo. Refusal statuses are closed; retain negative categories and allowed advisory vocabulary."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_b2_write_once_cold_verify_and_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_relation_wallet_spine.py::test_b2_write_once_cold_verify_and_tamper",
+        "expected_result": "R010: One bounded operator run/verify, snapshot only caller-named local inputs outside repository, cold native reverify and recompute from frozen originals, deterministic content-addressed receipt excluding timings, no writes on verify. Write once, partial scratch fails, same immutable receipt can verify without rerun, changed input/receipt/registry/ledger/source or forged legacy identities fail; no network, source store mutation or provider access."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_b2_same_case_comparison_and_no_value_claim",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_relation_wallet_spine.py::test_b2_same_case_comparison_and_no_value_claim",
+        "expected_result": "R011: Native-vs-Oracle same-model comparison preserves mismatches, invocation counts, missing fees/depth/atomicity and explicit abstentions. Wallet native delay/cost scenarios and source-bound quote counts kept separate from real trading. A7 read-only projection exposes native conditional status/reasons only; do not add slippage/fill model, signals, order sizing, OOS release or claim lift. Real-source acceptance and profitability remain unproven."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_b2_six_id_ledger_and_scope",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_relation_wallet_spine.py::test_b2_six_id_ledger_and_scope",
+        "expected_result": "R012: Six W04/W05 IDs R3-03,R3-03-FEES,R3-04,R3-11,R3-19,R3-14 accounted separately, other 30 unchanged; current pin/executed callable/license/consumer/denominators/receipt and blocked reason per row. Roadmap archive/36-row CSV byte-identical; no fake VALUE_VERIFIED or owner dispositions. A5/A6 offline role consumers, A7 conditional pointer only, B3 Lane B and provider gates remain open. Exact 11 paths, original native code untouched."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CAP-EXEC-ECONOMICS-01",
+    "next_title": "B3: execution economics read-only integration with separately approved Lane B artifacts, then coordinator; no automatic activation.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CAP-B2-RELATIONS-WALLET-01",
+    "forbidden_in_this_wp": [
+      "No new provider or credential access, real public GET, model/LLM calls, wallet/account acquisition, external dataset download or new license/rights.",
+      "No changes to W01, B1-A/B1-B, native REL/Oracle, native WALLET-01/02/03, PIT, forecast, learning, Alpha or experiment stores or code; no provider or protected path.",
+      "No Lane B R3-15/16/17/26 takeover, book-gap model, paper/OMS, execution/strategy/risk, scheduler or live.",
+      "No new Alpha discovery, qualification/OOS release, trade recommendation, sizing, capital, or economic value claim.",
+      "No copied source, dependencies, framework, roadmap archive changes or PR #268 edits."
+    ]
+  }
+}
