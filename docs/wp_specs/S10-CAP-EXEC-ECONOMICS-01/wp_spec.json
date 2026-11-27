@@ -1,0 +1,568 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CAP-EXEC-ECONOMICS-01",
+    "title": "B3 — Shared-PIT A7 native execution economics and historical-gap diagnostic read-in",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "B3_OFFLINE_EXECUTION_ECONOMICS_READSIDE",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-cap-exec-economics-01",
+    "required_predecessor": {
+      "pr_number": 285,
+      "head_sha": "045f3f18264c7f1c3585eeaaf7a22f5015909bd7",
+      "merge_sha": "55fee0293c1687812d3fdf64d5099e4d5b4ab530"
+    },
+    "objective": "One finite local synthetic shared-PIT fixture: verified B2 -> exact native REL venue snapshot -> existing feasibility evaluator -> optional native WP167/168/172 non-OOS diagnostic replay -> actual WP173 admission-model refusal -> stable cold-verifiable A7 read-only advisory receipt. Keep all Synpath rights and four Lane B commitments open until accepted artifacts exist; never fabricate continuity or enable paper/trading.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/execution_economics_spine.py",
+      "tools/alpha/run_execution_economics_spine.py",
+      "tests/data_layer/analytical_research/test_execution_economics_spine.py",
+      "tests/tools/alpha/test_run_execution_economics_spine.py",
+      "docs/execution_economics_spine_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-EXEC-ECONOMICS-01.md",
+      "docs/wp_specs/S10-CAP-EXEC-ECONOMICS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-EXEC-ECONOMICS-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/execution_economics_spine.py",
+      "tools/alpha/run_execution_economics_spine.py",
+      "tests/data_layer/analytical_research/test_execution_economics_spine.py",
+      "tests/tools/alpha/test_run_execution_economics_spine.py",
+      "docs/execution_economics_spine_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-EXEC-ECONOMICS-01.md",
+      "docs/wp_specs/S10-CAP-EXEC-ECONOMICS-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-EXEC-ECONOMICS-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/live_pilot/",
+      "src/paper_trading/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/operator_cockpit_frontend/",
+      "src/research_runtime/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/execution/",
+      "tools/qualification/",
+      "src/data_layer/wallet_intelligence/",
+      "src/execution_feasibility/",
+      "src/data_layer/analytical_research/oracle3/",
+      "docs/roadmaps/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly eleven paths; no existing native source or identity dependencies changed, no canonical or caller store write. No paper session, engine, order or state mutation.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Two new opt-in local read-side surfaces; all native input contracts, evaluators and persisted identities unchanged.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/execution_economics_spine.py",
+        "before": "No B2-bound A7 economics diagnostic handoff at this surface.",
+        "after": "Bound selected native B2 leg, pure native evaluator and replay diagnostic, closed advisory projection.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use exact native loaders, source validation and pure read-side calls only; no protected path edits, no native contract or identity changes.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_execution_economics_spine.py",
+        "before": "No B2-bound A7 economics diagnostic handoff at this surface.",
+        "after": "Write-once finite run/verify over explicit sealed local synthetic fixture inputs.",
+        "change_authorized": true,
+        "compatibility_requirement": "Use exact native loaders, source validation and pure read-side calls only; no protected path edits, no native contract or identity changes.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Twelve named requirements with native producer/consumer, safety, compatibility, role and capability accounting.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R001: A real independently cold-verified merged B2 receipt is consumed; bind the exact B2 id, B1-A grounding/universe/target, admitted A5 model, basket id, exactly one target leg (market/YES-or-NO orientation), native condition/token and REL decision time. Rebuild the exact frozen REL venue snapshot with native _venue_snapshots and bounded frozen bytes; its id equals the B2 leg and REL record. Never assume a token by name or side order; reject wrong, duplicate, foreign, unadmitted, unbound, missing or late evidence. Test pure selector and raw source binding; full pinned integration R007.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001: A real independently cold-verified merged B2 receipt is consumed; bind the exact B2 id, B1-A grounding/universe/target, admitted A5 model, basket id, exactly one target leg (market/YES-or-NO orientation), native condition/token and REL decision time. Rebuild the exact frozen REL venue snapshot with native _venue_snapshots and bounded frozen bytes; its id equals the B2 leg and REL record. Never assume a token by name or side order; reject wrong, duplicate, foreign, unadmitted, unbound, missing or late evidence. Test pure selector and raw source binding; full pinned integration R007.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R002: Load a caller-frozen synthetic native StrategyVersion and ExecutionIntent by exact native mapping, validate binding, require exact target venue identity and cutoff, BUY on selected outcome, no strategy mutation. Invoke assess_execution_feasibility on native snapshot at frozen REL clock and validate full recomputation. Preserve FEASIBLE/LIMITED/INCONCLUSIVE/NOT_FEASIBLE, dimensions, closed reasons, per-level fee exactness, shares versus USDC notional, partial/zero fill, FOK/FAK or post-only semantics. Never infer latency, maker rebate, atomicity, real fill or profit; compare fixture results with direct native calls and independently test native unit/rounding invariants.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002: Load a caller-frozen synthetic native StrategyVersion and ExecutionIntent by exact native mapping, validate binding, require exact target venue identity and cutoff, BUY on selected outcome, no strategy mutation. Invoke assess_execution_feasibility on native snapshot at frozen REL clock and validate full recomputation. Preserve FEASIBLE/LIMITED/INCONCLUSIVE/NOT_FEASIBLE, dimensions, closed reasons, per-level fee exactness, shares versus USDC notional, partial/zero fill, FOK/FAK or post-only semantics. Never infer latency, maker rebate, atomicity, real fill or profit; compare fixture results with direct native calls and independently test native unit/rounding invariants.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R003: Cover stale and future receive/book/acquisition times, wrong condition/token/protocol/orientation, duplicate venue entry, crossed/one-sided/missing quote, tick conflict, min notional versus shares, unknown/expired fee and unsupported fee policy, partial depth and failed native dimension. Preserve existing hard-failure precedence and native unknowns. Oracle3 fixture-fee evidence remains fixture-only; no conversion of polynomial per-level native fee into WP172 basis points, no default zero fee.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003: Cover stale and future receive/book/acquisition times, wrong condition/token/protocol/orientation, duplicate venue entry, crossed/one-sided/missing quote, tick conflict, min notional versus shares, unknown/expired fee and unsupported fee policy, partial depth and failed native dimension. Preserve existing hard-failure precedence and native unknowns. Oracle3 fixture-fee evidence remains fixture-only; no conversion of polynomial per-level native fee into WP172 basis points, no default zero fee.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R004: With explicitly supplied synthetic PMXT-format Parquet, actual WP167 validate_and_describe_pmxt_v2_archive and WP168 conversion via WP172 build_market_truth_window, validate_any_market_truth_window; source hashes, actual row denominator, receive-time-primary ordering and exact selected condition/token retained. Only AS_CAPTURED or KNOWN_GAPS allowed; no interpolation, guessed depth, native capture substitution, continuity true, or Synpath invocation claim. Native lineage must change on altered source and refuse wrong rows. Require actual WP172 evaluator on validated non-OOS fixture records and one exact same-leg same-clock decision; native DIAGNOSTIC_ONLY, MARKET_DATA_CONTINUITY_INCOMPLETE preserved and no economic/eligibility claim; AS_CAPTURED cannot be upgraded to NONE.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004: With explicitly supplied synthetic PMXT-format Parquet, actual WP167 validate_and_describe_pmxt_v2_archive and WP168 conversion via WP172 build_market_truth_window, validate_any_market_truth_window; source hashes, actual row denominator, receive-time-primary ordering and exact selected condition/token retained. Only AS_CAPTURED or KNOWN_GAPS allowed; no interpolation, guessed depth, native capture substitution, continuity true, or Synpath invocation claim. Native lineage must change on altered source and refuse wrong rows. Require actual WP172 evaluator on validated non-OOS fixture records and one exact same-leg same-clock decision; native DIAGNOSTIC_ONLY, MARKET_DATA_CONTINUITY_INCOMPLETE preserved and no economic/eligibility claim; AS_CAPTURED cannot be upgraded to NONE.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R005: Rebuild exact native ExecutionCostModel, WP170 PreregisteredExperiment/RunEvidenceReceipt, and ResearchDecisionTrace via native loaders/builders, refusing OUT_OF_SAMPLE and foreign lineage before call. Explicit non-OOS test-only fixture assumptions, cost-model identity and clock; not real preregistration or release. Native assess_executable_edge output serialized and deserialized in memory. Call native WP173 build_strategy_binding on that exact diagnostic assessment and cost model; require actual WP172_BINDING_INVALID and no binding id. Cover unknown fee, missing/stale/gapped markout, passive touch without trade flow and partial depth with native fixture; native diagnostics never become PASS, no journal, engine or paper execution. Native WP172/WP173 positive legacy fixture compatibility stays in adjacent unchanged tests.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005: Rebuild exact native ExecutionCostModel, WP170 PreregisteredExperiment/RunEvidenceReceipt, and ResearchDecisionTrace via native loaders/builders, refusing OUT_OF_SAMPLE and foreign lineage before call. Explicit non-OOS test-only fixture assumptions, cost-model identity and clock; not real preregistration or release. Native assess_executable_edge output serialized and deserialized in memory. Call native WP173 build_strategy_binding on that exact diagnostic assessment and cost model; require actual WP172_BINDING_INVALID and no binding id. Cover unknown fee, missing/stale/gapped markout, passive touch without trade flow and partial depth with native fixture; native diagnostics never become PASS, no journal, engine or paper execution. Native WP172/WP173 positive legacy fixture compatibility stays in adjacent unchanged tests.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R006: Exact seven references R3-09, R3-09-BOOK_GAPS, R3-03-FEES, R3-15/16/17/26; match pinned repo/commit from immutable 36-row CSV. Synpath both PROVIDER_BLOCKED/OPEN with rights and actual witness needed (native gap/refusal engineering only). Oracle fee native fixture-consumed only if verified B2 evidence actually supports it, no currentness. Lane B four separately owned, NO_ACCEPTED_ARTIFACT_OBSERVED at frozen base, no fabricated data or generic loader. All value_verified=false, owner_disposition=PENDING; other 29 commitments unchanged by B3. Do not change roadmap CSV or old dispositions.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006: Exact seven references R3-09, R3-09-BOOK_GAPS, R3-03-FEES, R3-15/16/17/26; match pinned repo/commit from immutable 36-row CSV. Synpath both PROVIDER_BLOCKED/OPEN with rights and actual witness needed (native gap/refusal engineering only). Oracle fee native fixture-consumed only if verified B2 evidence actually supports it, no currentness. Lane B four separately owned, NO_ACCEPTED_ARTIFACT_OBSERVED at frozen base, no fabricated data or generic loader. All value_verified=false, owner_disposition=PENDING; other 29 commitments unchanged by B3. Do not change roadmap CSV or old dispositions.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R007: Build actual pinned B2 fixture using existing tests and exact local Hermes pin, no fake child; run B3 over its completed scratch and one predeclared selected admitted target leg, exact native probe, and actual local synthetic PMXT-format replay fixture on the same condition/token and decision clock (construct non-OOS WP170 fixture through existing native test builders). Prove full real B2->native venue snapshot->EF assessment->WP167/168/172 diagnostic->WP173 native refusal->A7 receipt call trace, native outputs affect A7 reasons. A5/A6 and B1-A ids preserved, no new candidate or provider. Demonstrate at least one FEASIBLE or LIMITED point-mechanics result and native replay/paper refusal. No pin-dependent positive skipped locally; hosted pin-only skip explicitly D001.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007: Build actual pinned B2 fixture using existing tests and exact local Hermes pin, no fake child; run B3 over its completed scratch and one predeclared selected admitted target leg, exact native probe, and actual local synthetic PMXT-format replay fixture on the same condition/token and decision clock (construct non-OOS WP170 fixture through existing native test builders). Prove full real B2->native venue snapshot->EF assessment->WP167/168/172 diagnostic->WP173 native refusal->A7 receipt call trace, native outputs affect A7 reasons. A5/A6 and B1-A ids preserved, no new candidate or provider. Demonstrate at least one FEASIBLE or LIMITED point-mechanics result and native replay/paper refusal. No pin-dependent positive skipped locally; hosted pin-only skip explicitly D001.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R008: Actual merged-base B2 receipt and B1-A/REL/Oracle native receipts generate on base and cold-verify on candidate with identical ids/bytes; B1-B historical forecast compatibility and native WP172/173 serializers, gap semantics and admission tests unchanged. Source files of B2/REL/Oracle/B1/W01, native execution feasibility, WP167/168/169/170/172/173, paper/strategy/runtime remain byte-identical. Exact 11 cumulative files, original roadmap CSV unchanged, PR268 untouched. No identity aliases or migrated receipts. Full native adjacent regression suites.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008: Actual merged-base B2 receipt and B1-A/REL/Oracle native receipts generate on base and cold-verify on candidate with identical ids/bytes; B1-B historical forecast compatibility and native WP172/173 serializers, gap semantics and admission tests unchanged. Source files of B2/REL/Oracle/B1/W01, native execution feasibility, WP167/168/169/170/172/173, paper/strategy/runtime remain byte-identical. Exact 11 cumulative files, original roadmap CSV unchanged, PR268 untouched. No identity aliases or migrated receipts. Full native adjacent regression suites.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R009: Closed strict JSON case and nested native mappings; refused missing/unknown/null/wrong type, duplicate keys, bool-as-int, unsupported schema, nonfinite, malformed/secret/trade-authority fields, unsafe paths (relative, alias, traversal, symlink, junction/reparse, hardlink, sidecar, secret dir), role overlap, over-bound aggregate tree/case/receipt/Parquet/metadata/row count before hashing/native content consumption. Native nested caps remain. Missing replay is explicit null and no replay path; unexpected/missing replay path refuses. No raw caller key/value/path/traceback/secret echo, zero sockets across real run/verify. Positive allowed native fee/leg/intent words, no false blanket block.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009: Closed strict JSON case and nested native mappings; refused missing/unknown/null/wrong type, duplicate keys, bool-as-int, unsupported schema, nonfinite, malformed/secret/trade-authority fields, unsafe paths (relative, alias, traversal, symlink, junction/reparse, hardlink, sidecar, secret dir), role overlap, over-bound aggregate tree/case/receipt/Parquet/metadata/row count before hashing/native content consumption. Native nested caps remain. Missing replay is explicit null and no replay path; unexpected/missing replay path refuses. No raw caller key/value/path/traceback/secret echo, zero sockets across real run/verify. Positive allowed native fee/leg/intent words, no false blanket block.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R010: Run once into fresh absolute scratch, freeze every caller input and rehash before/after, no canonical or caller store writes. Cold verify full recomputation from sealed copies only, no writes/network or returned id on any failure. Exact outer keys/schema, type(core) is dict, canonical_bytes(submitted core)==canonical_bytes(recomputed core), id equals hash of recomputed core, closed codes. Real pinned untouched and relocated same id/bytes plus tampered source, B2 receipt, case, replay, ID, outer schema, unknown null/non-null caller key with rehashed submitted id, nested bool/int/float swap, non-object core, symlink/hardlink and bounds before hash. Non-pin guard tests always run. No false VERIFIED, no caller key echo, partial scratch fails.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010: Run once into fresh absolute scratch, freeze every caller input and rehash before/after, no canonical or caller store writes. Cold verify full recomputation from sealed copies only, no writes/network or returned id on any failure. Exact outer keys/schema, type(core) is dict, canonical_bytes(submitted core)==canonical_bytes(recomputed core), id equals hash of recomputed core, closed codes. Real pinned untouched and relocated same id/bytes plus tampered source, B2 receipt, case, replay, ID, outer schema, unknown null/non-null caller key with rehashed submitted id, nested bool/int/float swap, non-object core, symlink/hardlink and bounds before hash. Non-pin guard tests always run. No false VERIFIED, no caller key echo, partial scratch fails.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R011: Distinguish native point-snapshot outcome from overall A7 incomplete external/replay evidence. All snapshot outputs are conditional synthetic mechanics; overall PARTIAL when valid point evidence with missing replay continuity/Lane B, REFUSED for native hard failure or invalid identity; missing dimensions retained and native diagnostics unchanged. No ECONOMICS_SUPPORTED overall label until the separate approved evidence exists; no actual fills, net profit, signal, recommendation, sizing, executable edge, paper eligibility, qualification/OOS unlock, strategy/capital or order authority. Prove no fabricated zero/unknown, fixture-vs-real/source distinctions and closed output schema.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011: Distinguish native point-snapshot outcome from overall A7 incomplete external/replay evidence. All snapshot outputs are conditional synthetic mechanics; overall PARTIAL when valid point evidence with missing replay continuity/Lane B, REFUSED for native hard failure or invalid identity; missing dimensions retained and native diagnostics unchanged. No ECONOMICS_SUPPORTED overall label until the separate approved evidence exists; no actual fills, net profit, signal, recommendation, sizing, executable edge, paper eligibility, qualification/OOS unlock, strategy/capital or order authority. Prove no fabricated zero/unknown, fixture-vs-real/source distinctions and closed output schema.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R012: One case and one selected leg/probe, requested=1 and exactly one terminal disposition. Replay null emits NOT_SUPPLIED, no implicit scan/fallback; attempted replay valid native diagnostic, malformed/foreign/tampered input refuses (no silently ignored row). Count actual native evaluations and paper refusal (0 if absent). Preserve native full B2 denominators, PMXT actual input rows and no continuity claim. Link actual source/native receipt/consumer IDs without raw caller values; B4 can consume the typed receipt, no extra runtime, registration or owner decision.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012: One case and one selected leg/probe, requested=1 and exactly one terminal disposition. Replay null emits NOT_SUPPLIED, no implicit scan/fallback; attempted replay valid native diagnostic, malformed/foreign/tampered input refuses (no silently ignored row). Count actual native evaluations and paper refusal (0 if absent). Preserve native full B2 denominators, PMXT actual input rows and no continuity claim. Link actual source/native receipt/consumer IDs without raw caller values; B4 can consume the typed receipt, no extra runtime, registration or owner decision.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Conditional synthetic advisory diagnostic, explicit incomplete or refusal; no economic value, strategy, paper, order or execution authority.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Existing native identities unchanged; B3 local noncanonical envelope uses SG.canonical_bytes and SHA-256, exact recomputed core/ID enforced by R010. No new canonical source or registry identity.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness followed by standing-owner-authorized bounded offline implementation and independent review.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Actual native readiness gate validates final prompt and spec on synchronized main before any source edit; no PROTECTED certificate for the expected RUNTIME track.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl standing and current explicit continuation direction, Side26 limited B3 grant only after deterministic readiness at exact merged base. Stop for protected/provider or separately owned Lane B scope.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Implement exactly 11 files and R001-R012; complete actual pinned local tests, native adjacent and full suite, exact-head hosted CI, published evidence and Side26 review.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed WP159 schema-1.0.0 public error precedence, without a new custom error framework.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Real synthetic fixture witnesses and negative cases are required by R001-R012; no duplicate illustrative examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "One exact planned pytest node per R001-R012; actual local pinned fixture, adjacent and full tests, exact-head CI and posted evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_b3_exact_b2_target_and_snapshot",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_exact_b2_target_and_snapshot",
+        "expected_result": "R001: A real independently cold-verified merged B2 receipt is consumed; bind the exact B2 id, B1-A grounding/universe/target, admitted A5 model, basket id, exactly one target leg (market/YES-or-NO orientation), native condition/token and REL decision time. Rebuild the exact frozen REL venue snapshot with native _venue_snapshots and bounded frozen bytes; its id equals the B2 leg and REL record. Never assume a token by name or side order; reject wrong, duplicate, foreign, unadmitted, unbound, missing or late evidence. Test pure selector and raw source binding; full pinned integration R007."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_b3_native_feasibility_and_fee_units",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_native_feasibility_and_fee_units",
+        "expected_result": "R002: Load a caller-frozen synthetic native StrategyVersion and ExecutionIntent by exact native mapping, validate binding, require exact target venue identity and cutoff, BUY on selected outcome, no strategy mutation. Invoke assess_execution_feasibility on native snapshot at frozen REL clock and validate full recomputation. Preserve FEASIBLE/LIMITED/INCONCLUSIVE/NOT_FEASIBLE, dimensions, closed reasons, per-level fee exactness, shares versus USDC notional, partial/zero fill, FOK/FAK or post-only semantics. Never infer latency, maker rebate, atomicity, real fill or profit; compare fixture results with direct native calls and independently test native unit/rounding invariants."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_b3_unknown_future_and_protocol_refusals",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_unknown_future_and_protocol_refusals",
+        "expected_result": "R003: Cover stale and future receive/book/acquisition times, wrong condition/token/protocol/orientation, duplicate venue entry, crossed/one-sided/missing quote, tick conflict, min notional versus shares, unknown/expired fee and unsupported fee policy, partial depth and failed native dimension. Preserve existing hard-failure precedence and native unknowns. Oracle3 fixture-fee evidence remains fixture-only; no conversion of polynomial per-level native fee into WP172 basis points, no default zero fee."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_b3_native_pmxt_diagnostic_and_gap",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_native_pmxt_diagnostic_and_gap",
+        "expected_result": "R004: With explicitly supplied synthetic PMXT-format Parquet, actual WP167 validate_and_describe_pmxt_v2_archive and WP168 conversion via WP172 build_market_truth_window, validate_any_market_truth_window; source hashes, actual row denominator, receive-time-primary ordering and exact selected condition/token retained. Only AS_CAPTURED or KNOWN_GAPS allowed; no interpolation, guessed depth, native capture substitution, continuity true, or Synpath invocation claim. Native lineage must change on altered source and refuse wrong rows. Require actual WP172 evaluator on validated non-OOS fixture records and one exact same-leg same-clock decision; native DIAGNOSTIC_ONLY, MARKET_DATA_CONTINUITY_INCOMPLETE preserved and no economic/eligibility claim; AS_CAPTURED cannot be upgraded to NONE."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_b3_wp172_cost_and_paper_admission_refusal",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_wp172_cost_and_paper_admission_refusal",
+        "expected_result": "R005: Rebuild exact native ExecutionCostModel, WP170 PreregisteredExperiment/RunEvidenceReceipt, and ResearchDecisionTrace via native loaders/builders, refusing OUT_OF_SAMPLE and foreign lineage before call. Explicit non-OOS test-only fixture assumptions, cost-model identity and clock; not real preregistration or release. Native assess_executable_edge output serialized and deserialized in memory. Call native WP173 build_strategy_binding on that exact diagnostic assessment and cost model; require actual WP172_BINDING_INVALID and no binding id. Cover unknown fee, missing/stale/gapped markout, passive touch without trade flow and partial depth with native fixture; native diagnostics never become PASS, no journal, engine or paper execution. Native WP172/WP173 positive legacy fixture compatibility stays in adjacent unchanged tests."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_b3_capability_ledger_no_lane_b_takeover",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_capability_ledger_no_lane_b_takeover",
+        "expected_result": "R006: Exact seven references R3-09, R3-09-BOOK_GAPS, R3-03-FEES, R3-15/16/17/26; match pinned repo/commit from immutable 36-row CSV. Synpath both PROVIDER_BLOCKED/OPEN with rights and actual witness needed (native gap/refusal engineering only). Oracle fee native fixture-consumed only if verified B2 evidence actually supports it, no currentness. Lane B four separately owned, NO_ACCEPTED_ARTIFACT_OBSERVED at frozen base, no fabricated data or generic loader. All value_verified=false, owner_disposition=PENDING; other 29 commitments unchanged by B3. Do not change roadmap CSV or old dispositions."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_b3_pinned_b2_to_a7_handoff",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_execution_economics_spine.py::test_b3_pinned_b2_to_a7_handoff",
+        "expected_result": "R007: Build actual pinned B2 fixture using existing tests and exact local Hermes pin, no fake child; run B3 over its completed scratch and one predeclared selected admitted target leg, exact native probe, and actual local synthetic PMXT-format replay fixture on the same condition/token and decision clock (construct non-OOS WP170 fixture through existing native test builders). Prove full real B2->native venue snapshot->EF assessment->WP167/168/172 diagnostic->WP173 native refusal->A7 receipt call trace, native outputs affect A7 reasons. A5/A6 and B1-A ids preserved, no new candidate or provider. Demonstrate at least one FEASIBLE or LIMITED point-mechanics result and native replay/paper refusal. No pin-dependent positive skipped locally; hosted pin-only skip explicitly D001."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_b3_historical_receipts_and_scope",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_execution_economics_spine.py::test_b3_historical_receipts_and_scope",
+        "expected_result": "R008: Actual merged-base B2 receipt and B1-A/REL/Oracle native receipts generate on base and cold-verify on candidate with identical ids/bytes; B1-B historical forecast compatibility and native WP172/173 serializers, gap semantics and admission tests unchanged. Source files of B2/REL/Oracle/B1/W01, native execution feasibility, WP167/168/169/170/172/173, paper/strategy/runtime remain byte-identical. Exact 11 cumulative files, original roadmap CSV unchanged, PR268 untouched. No identity aliases or migrated receipts. Full native adjacent regression suites."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_b3_paths_schema_bounds_and_no_echo",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_execution_economics_spine.py::test_b3_paths_schema_bounds_and_no_echo",
+        "expected_result": "R009: Closed strict JSON case and nested native mappings; refused missing/unknown/null/wrong type, duplicate keys, bool-as-int, unsupported schema, nonfinite, malformed/secret/trade-authority fields, unsafe paths (relative, alias, traversal, symlink, junction/reparse, hardlink, sidecar, secret dir), role overlap, over-bound aggregate tree/case/receipt/Parquet/metadata/row count before hashing/native content consumption. Native nested caps remain. Missing replay is explicit null and no replay path; unexpected/missing replay path refuses. No raw caller key/value/path/traceback/secret echo, zero sockets across real run/verify. Positive allowed native fee/leg/intent words, no false blanket block."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_b3_write_once_exact_cold_verify",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_execution_economics_spine.py::test_b3_write_once_exact_cold_verify",
+        "expected_result": "R010: Run once into fresh absolute scratch, freeze every caller input and rehash before/after, no canonical or caller store writes. Cold verify full recomputation from sealed copies only, no writes/network or returned id on any failure. Exact outer keys/schema, type(core) is dict, canonical_bytes(submitted core)==canonical_bytes(recomputed core), id equals hash of recomputed core, closed codes. Real pinned untouched and relocated same id/bytes plus tampered source, B2 receipt, case, replay, ID, outer schema, unknown null/non-null caller key with rehashed submitted id, nested bool/int/float swap, non-object core, symlink/hardlink and bounds before hash. Non-pin guard tests always run. No false VERIFIED, no caller key echo, partial scratch fails."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_b3_role_disposition_and_no_value_claim",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_execution_economics_spine.py::test_b3_role_disposition_and_no_value_claim",
+        "expected_result": "R011: Distinguish native point-snapshot outcome from overall A7 incomplete external/replay evidence. All snapshot outputs are conditional synthetic mechanics; overall PARTIAL when valid point evidence with missing replay continuity/Lane B, REFUSED for native hard failure or invalid identity; missing dimensions retained and native diagnostics unchanged. No ECONOMICS_SUPPORTED overall label until the separate approved evidence exists; no actual fills, net profit, signal, recommendation, sizing, executable edge, paper eligibility, qualification/OOS unlock, strategy/capital or order authority. Prove no fabricated zero/unknown, fixture-vs-real/source distinctions and closed output schema."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_b3_optional_replay_disposition_and_denominator",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_execution_economics_spine.py::test_b3_optional_replay_disposition_and_denominator",
+        "expected_result": "R012: One case and one selected leg/probe, requested=1 and exactly one terminal disposition. Replay null emits NOT_SUPPLIED, no implicit scan/fallback; attempted replay valid native diagnostic, malformed/foreign/tampered input refuses (no silently ignored row). Count actual native evaluations and paper refusal (0 if absent). Preserve native full B2 denominators, PMXT actual input rows and no continuity claim. Link actual source/native receipt/consumer IDs without raw caller values; B4 can consume the typed receipt, no extra runtime, registration or owner decision."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CAP-NINE-ROLE-COORD-01",
+    "next_title": "B4 — conditional nine-role coordinator, after Karl merges accepted B3; preserve A7 partial/open source and Lane B states.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CAP-EXEC-ECONOMICS-01",
+    "forbidden_in_this_wp": [
+      "No external source/provider acquisition, current fee fetch, Synpath install/call, real wallet/account or credentials, host/LLM/model/Hermes calls or dependency changes.",
+      "No Lane B R3-15/16/17/26 takeover, algorithm or paper/OMS/risk/strategy/exec modifications; no paper engine/store/session/order creation, simulated or live execution.",
+      "No WP170 OOS release, new candidate/discovery, strategy optimization, qualification, executable edge promotion, real fills, profit/size/recommendation, capital or Gate C.",
+      "No B2 or native identity/code changes, roadmap CSV/archive edits, PR #268 modifications or merge."
+    ]
+  }
+}
