@@ -97,6 +97,9 @@ derived canonical representation, separately bound to original page/index.
 | terminal / run stdout | schema_version, status, error_codes, manifest_sha256, summary |
 | index | operation, terminal_sha256 |
 | verify stdout | schema_version, status, error_codes, manifest_sha256, verified_operation_count, network_attempts, provider_dispatches |
+| strat_market | market_id, source_request_index, source_row_index, category_key, protocol_state, status_state, time_state, end_time_utc, selection_state, reason_codes, filter_state, category_origin, lane_tag_ids |
+| strat_manifest | schema_version, config_sha256, started_sha256, as_of_utc, mechanics_evaluated_ns, fee_policy_version, sources, coverage, categories, markets, tokens, summary, lanes |
+| lane | tag_id, label, pages, raw_rows, new_unique, identical_duplicates, conflicting_ids, stop_reason |
 
 Nested bucket keys are exact: status ACTIVE/INACTIVE/UNKNOWN; protocol
 CTF/V2/UNKNOWN; time MISSING/MALFORMED/DATE_ONLY/TIMEZONE_MISSING/EXPIRED/
@@ -245,3 +248,51 @@ R008 categories/filter/fee/token/market denominators and nonclaims. Existing hos
 recursive field-coverage/no-echo and reparse tests remain. Free-text typo/wording
 filters are not added; such policy matrix categories are not applicable. Source
 strings remain untrusted raw evidence and never become structured prose fields.
+
+## Opt-in category-stratified mode (S10-ALPHA-STRAT-01)
+
+`python tools/alpha/run_near_term_market_screener.py run --scratch-dir ABS --horizon-days N`
+(or `run(..., horizon_days=N)`) with integer N in 1..30. Without `--horizon-days`
+every legacy v2 byte, URL, record and verifier path is unchanged; `all_horizons`
+stays as-is and cannot be combined with `horizon_days`. `verify` takes no horizon.
+
+Lanes are the four tag-query ids observed to filter Gamma `/markets` on
+2026-11-02 (Side23 method proof): `tag_id=84` Weather, `100328` Economy, `74`
+Science, `1` Sports. They are query provenance, not row-level taxonomy: a row's
+`category` keeps its v2 meaning, so a missing category stays MISSING/UNKNOWN.
+Culture, technology, politics and geopolitics ids are unverified and absent; no
+taxonomy request is made and lanes are not configurable.
+
+Each page is exactly `https://gamma-api.polymarket.com/markets?closed=false&active=true&tag_id=<lane>&end_date_min=<as_of UTC>&end_date_max=<as_of+N days UTC>&order=endDate&ascending=true&limit=100&offset=<0..1900>`.
+`checked_url` and cold `verify` accept it only by exact round-trip (host, path,
+key order, duplicate or extra keys, whole-day bound and run-clock lower bound).
+The next page is the active lane with the fewest pages, ties in frozen lane
+order; 20 discovery pages are shared and the 64-request, 240 s, 10-market and
+20-book limits are unchanged. Provider endDate ordering is verified per page,
+not assumed: rows are never re-sorted.
+
+Lane stop states: PAGE_BOUND_REACHED (short or empty page),
+SORT_OR_PAGINATION_UNVERIFIED (repeated full page), ORDER_UNVERIFIED (missing or
+malformed endDate, or a decrease within or across the lane's pages),
+SOURCE_INVALID, SOURCE_UNAVAILABLE, FILTER_CONTRACT_UNVERIFIED (HTTP 4XX),
+COVERAGE_TRUNCATED (shared 20-page cap reached while the lane is active;
+four lanes each get a first page, so no lane reaches offset 1900),
+ACQUISITION_BUDGET_EXHAUSTED. One failed lane never stops another. Coverage
+`stop_reason` is PAGE_BOUND_REACHED only when every lane is; otherwise the first
+incomplete lane's state in frozen order. Rows with endDate outside the window are
+FILTER_MISMATCH, which keeps the assessment EVIDENCE_INCOMPLETE.
+
+Records of this mode carry `near-term-market-screen@3.0.0`: config (v2 fields,
+`window_s=N*86400`, `tag_lanes`), started, request, receipt, manifest and
+terminal. The manifest adds `lanes` (tag_id, label, pages, raw_rows, new_unique,
+identical_duplicates, conflicting_ids, stop_reason; `new_unique` counts every
+first-seen row including rows without a valid id, while coverage `unique_ids`
+counts valid ids only) and each market adds
+`lane_tag_ids` (every lane that returned the id, frozen order). Identical
+cross-lane rows count as duplicates; differing rows keep the first-seen row,
+add PAGE_CONFLICT and are never selected. The verify result keeps the v2
+schema; v2/v3 mixes refuse. Selection, books, `economics()` and the fee policy
+expiry 2026-11-04T00:00:00Z are unchanged, so neg-risk, no-ask and stale books
+stay INCONCLUSIVE_MECHANICS. Output is RESEARCH_ONLY with UNPROVEN universe
+completeness; lane membership is not account, regional or trading eligibility.
+No real request was made in this WP; tests use fake transports only.

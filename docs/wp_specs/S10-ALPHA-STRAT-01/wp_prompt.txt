@@ -1,0 +1,160 @@
+WP ID: S10-ALPHA-STRAT-01
+Title: Minimum Category-Stratified Non-Crypto Discovery Integration
+Repository: toobigtofailbot-maker/polymarket-strategy-lab
+Package class: BOUNDED_CATEGORY_STRATIFIED_GAMMA_DISCOVERY
+Package size class: M (exactly seven tracked files)
+Risk level: 3
+Governance track expected: RUNTIME
+Base branch: main
+Provisional inspected base: a0d54384ad7ef293336a5cf646bc80be0cccf1e1
+Required predecessor: PR #267, head b512604f2a85c6ee3e983ff88355ef0ec7368412, merge a0d54384ad7ef293336a5cf646bc80be0cccf1e1
+Suggested branch: codex/s10-alpha-strat-01
+Evidence mode expected: PUBLIC_VERIFIER_PASS if verified; otherwise honest PRIVATE_REPO_MANUAL_VERIFIED or BLOCKED_NOT_READY
+Runtime impact: optional finite foreground research discovery mode in existing tool; no daemon, scheduled run, deployment or automatic invocation
+Product impact: offline-tested category-diverse metadata discovery only; no new qualified hypotheses or trade intents
+Network impact: edits bounded public GET-only Gamma URL-planning/read-only operator code; NO ACTUAL PRODUCT GETS AUTHORIZED DURING THIS WP
+Credential impact: NONE
+Dependency impact: NONE
+Trading impact: NONE; zero capital, no wallet, no orders, no paper dispatch
+Recommended Claude/Codex mode: high reasoning for first scope/contract check, ordinary engineering for implementation; escalate only for material blocked native interfaces
+
+BEGIN_GOVERNANCE_AUTHORITY_V1
+risk_level: 3
+workflow_governance: false
+local_offline_tooling: true
+canonical_evidence_policy: true
+docs: true
+tests: true
+source_runtime: false
+workflow_files: false
+dependencies: false
+network: true
+credentials: false
+scheduler: false
+hermes_runtime: false
+strategy: false
+paper: false
+execution: false
+live: false
+END_GOVERNANCE_AUTHORITY_V1
+
+# 1. OBJECTIVE AND KARL'S AUTHORITY
+Integrate the externally validated, category-stratified market-discovery method into the existing `tools/alpha/run_near_term_market_screener.py`. This is ONE narrowly scoped RUNTIME software WP, not a new scanner, orchestrator, Hermes framework, or Alpha strategy. Preserve the existing legacy/default mode, original evidence verification and all live/execution limits. The optional mode supports non-crypto source-verified tag-query lanes, bounded end-date-ordered paging, explicit temporal window selection, row/receipt/coverage provenance and deterministic offline testability. Its output is RESEARCH_ONLY.
+
+Owner authorization recorded in this conversation (not a verbatim signature): Karl authorizes this WP preparation, native readiness finalization and, once `IMPLEMENTATION_READY` is verified against an unchanged material scope, autonomous Claude Code implementation, ordinary in-scope repairs, focused+adjacent/full validation and publication of ONE PR for independent Side24 review. Karl reserves merge decision. This authorization does not authorize real market/taxonomy/CLOB/product API GETs, real provider/Hermes inference, credentials, account access, paper orders, live trading, scheduler, deployment, capital or protected scope expansion. The `network: true` governance field permits the scoped bounded public-read SOFTWARE capability; its operational use remains separately gated, and this WP performs zero actual product requests. Repo git/GitHub and exact-head CI traffic for development are permitted.
+
+Formal state transition is still `LOCAL_DRAFT -> DRAFTABILITY_PASS -> AUTHORIZED -> IMPLEMENTED_LOCAL`. A package copied from this external ZIP is a DRAFT, NOT a native PASS or claimed implementation-ready package. The owner approval here is confined to the unexpanded intent/7-file envelope. Any material departure needs Side24/Karl authorization before code. No independent self-certification and no self-merge.
+
+# 1A. AUTHORITY / NON-AUTHORITY POSTURE
+Implementation authority: YES, only the exact seven paths in section 3.
+Report/export authority: research-only scratch evidence written by the operator when a human runs it; no canonical report or registry export.
+Paper authority: NONE (no paper engine, PaperIntent, paper fill or ledger).
+Execution authority: NONE (no execution gateway, OMS, risk engine, signing, order or cancel path).
+Live authority: NONE (`docs/live_trading_authorization.md` stays DISABLED; no live pilot change).
+Credential authority: NONE (no credentials, env loading, wallet or account access).
+Runtime/scheduler authority: NONE (finite foreground CLI only; no daemon, scheduler, retry loop or automatic invocation; `src/live_pilot/autonomous_cycle.py` is unchanged and never selects the new mode).
+Canonical evidence authority: NONE (no PIT, Alpha registry, qualification or canonical promotion).
+Network authority: CODE ONLY for the fixed-host public Gamma GET URL shapes and the existing CLOB book reads; ZERO real product GETs in this WP; tests use fake transport only.
+Dependency-change authority: NONE.
+Boundary groups (docs/ai/codex/PROTECTED_PATHS.md Centralized Boundary Group Reference) NOT crossed: credentials/secrets, authenticated clients, wallet/account behavior, order placement/cancel, execution gateway, paper engine, scheduler/bot loop, runtime/daemon, dashboard/deployment, dependency/lock changes, external code copying, generated artifacts.
+
+# 1B. HARD MERGE GATE
+Run before branch creation:
+```
+git fetch origin --prune
+git rev-parse origin/main
+git merge-base --is-ancestor b512604f2a85c6ee3e983ff88355ef0ec7368412 origin/main
+git merge-base --is-ancestor a0d54384ad7ef293336a5cf646bc80be0cccf1e1 origin/main
+gh pr list --state open --search S10-ALPHA-STRAT-01
+git ls-remote --heads origin codex/s10-alpha-strat-01
+git status --short
+```
+STOP unless PR #267 is merged with the recorded head and merge commit as ancestors, no open PR or remote branch exists for this WP, the worktree is clean, and no status document already claims this WP complete.
+
+# 2. STARTUP, SKILL ORDER, FRESH REPO TRUTH
+MANDATORY at the beginning of this WP DRAFTING/FINALIZATION execution and again at the beginning of its separate IMPLEMENTATION execution (including fresh contexts/resumptions): read `AGENTS.md`, `CLAUDE_START_HERE.md` where present, `AI_CODING_AGENT_START_HERE.md` where present, `CODEX_START_HERE.md`, `docs/project_status.md`, `docs/repo_truth_index.md`, `docs/deferred_items_log.md`, `docs/ai/codex/README.md`, `docs/ai/codex/WP_EXECUTION_STATE_MACHINE.md`, `WP_DRAFTING_STANDARD.md`, `WP_SPEC_STANDARD.md`, `VALIDATION_MATRIX.md`, `PROTECTED_PATHS.md`, and relevant token-efficiency direction. Follow the canonical repo order where it differs from this summary.
+
+Discover the ACTUAL installed LOCAL Claude Code/Codex skills catalog, read applicable SKILL.md files, and genuinely INVOKE `ponytail` LITE as FIRST invoked skill, before any other skill or code edit. Do not claim that reading a skill or a prior Side session equals invoking it. If the skill cannot be genuinely invoked, STOP and report the exact blocker, rather than faking use. In a separate implementation phase repeat startup/catalog and invoke Ponytail first AGAIN. Then invoke `wp-predraft-inspector`, `hermes-alpha-reuse-check`, `wp-minimum-test-plan`, `wp-one-shot-review` before final draft freeze, and `verification-before-completion` before claims. When applicable: `canonical-evidence-audit` (required here due to retained scratch replay), `runtime-authority-boundary-review` (required due to public GET URL changes), `wp-readiness-preflight`, `ponytail-review`, `pr-evidence-reconcile`; `financial-invariant-check` if mechanics/fee semantics are touched; `session-handoff-compact` on handoff. Actual invocations, order, instruction reads, evidence refs and measurable value must appear in the completion report. No historical fixed skill quota or unused-skill theater.
+
+Repo preflight: `git fetch origin --prune`; verify clean `main==origin/main`, PR #267 MERGED with head b512604f2a85c6ee3e983ff88355ef0ec7368412 and merge a0d54384ad7ef293336a5cf646bc80be0cccf1e1 as ancestors, zero already-open PR for S10-ALPHA-STRAT-01, and no earlier completed package. Inspect current head and affected tests/guards. If base advanced, re-evaluate the seven-path diff interface; fix harmless scope-compatible drift autonomously, but STOP if an actual incompatible change or frozen predecessor identity is invalid. Never revert other work. Separate branch/worktree: `codex/s10-alpha-strat-01` only once readiness and required authorization have been established by native workflow.
+
+# 3. CONTEXT BUDGET AND FROZEN EXACT SCOPE
+Read first: mandatory startup/governance documents above, then this prompt/spec and the attached one-shot Side23 method-proof report. Read for this WP: `tools/alpha/run_near_term_market_screener.py`, `tests/tools/alpha/test_near_term_market_screener.py`, `docs/near_term_market_screener_contract.md`, `docs/deferred_items_log.md`, and specifically only relevant `src/live_pilot/pilot.py` / `tools/alpha/run_shadow_alpha_cycle.py` for prior `tag_id` + sorting precedent (READ ONLY), and `tools/alpha/run_alpha_hunter.py` / `src/execution_feasibility/public_market.py` as API compatibility references (READ ONLY). Read only if blocked: `src/live_pilot/hunter_cycle.py`, `tools/wp/wp_readiness_gate.py`, existing S10-ALPHA-NEAR-TERM-02 specs, scope guard tests and related status files. Never bulk-read historic project transcripts.
+
+EXACT REQUIRED AND ALLOWED SEVEN CHANGED FILES:
+- `tools/alpha/run_near_term_market_screener.py`
+- `tests/tools/alpha/test_near_term_market_screener.py`
+- `docs/near_term_market_screener_contract.md`
+- `docs/deferred_items_log.md`
+- `docs/status_entries/S10-ALPHA-STRAT-01.md`
+- `docs/wp_specs/S10-ALPHA-STRAT-01/wp_prompt.txt`
+- `docs/wp_specs/S10-ALPHA-STRAT-01/wp_spec.json`
+No eighth tracked path, no package-class XL, no dependency/CI/workflow changes, no `src/`, paper engine, Hermes runtime, Alpha registry, wallet, live pilot, credential or deployment paths. The last two files are the canonical repo-copy of the draft pair from this ZIP. Do not commit the evidence ZIP or generated scratch.
+
+# 4. REQUIREMENTS — MINIMUM COMPLETE SCOPE
+R001 — Preserve original default EXACTLY: existing fixed 120-minute untagged `run/verify` behavior, internal `all_horizons` behavior and every old v2 scratch verifier/test continue working unchanged. The existing `all_horizons` switch IS ALREADY IMPLEMENTED internally; do not clone it, remove its test or falsely claim it is missing. Add an explicitly opted-in category-stratified mode, never silently change the default.
+
+R002 — Use only the FOUR empirical response-verified tag identifiers from Side23's 2026-11-02 frozen capture: Weather=84, Economy=100328, Science=74, Sports=1. Document that these are observed tag-query lanes, not a claim that row-level market category/tags exist. Do not guess Culture/Technology or Politics/Geopolitics ids, trust an unverified user-provided tag or feeType to classify markets, or use titles as authoritative taxonomy. Configurable future tag mapping, if supported, MUST require explicit evidence/provenance validation; otherwise defer it. No taxonomy GET in this WP.
+
+R003 — For the new optional mode, construct strictly fixed-host HTTPS GET `/markets` queries using `closed=false`, `active=true`, verified `tag_id`, `end_date_min`, `end_date_max`, `order=endDate`, `ascending=true`, `limit=100`, `offset` increments of100. Externally observed 2026-11-02 endDate sort was nondecreasing in four lanes, not a timeless provider guarantee. Validate each returned page's ordering and local UTC times, fail closed/mark coverage unknown on missing, malformed, stale or contradictory source data; do not re-sort silently to present false complete coverage. The URL checker and cold verifier must round-trip only the EXACT frozen parameter sets and reject host, path, duplicate query-key, unexpected fields and timestamp manipulation. No redirect, proxy, mutation, retry or auto-fallback.
+
+R004 — Support bounded explicit horizon for the opted-in mode, preferably `--horizon-days` within 1..30 using the existing deterministic as_of clock and UTC microsecond formatting. The legacy 7200s/default and existing all-horizons API remain intact. No unbounded universe or automatic default-time extension. Total page budget <=20, raw rows <=2000, physical request cap <=64, <=10 mechanically assessed markets / 20 CLOB books, 2 MiB per body, 15s socket, 240s monotonic acquisition budget. Equal/short/repeated full pages, empty pages, missing expected pages, and source failures retain honest, lane-specific truncation/completeness denominators. Use fair bounded lane rotation rather than exhaust a dominant lane first. Define stop state for each lane and aggregate, with deterministic tie-breaking, dedupe by immutable market id and visible cross-lane conflict status; never drop a duplicate/conflict silently.
+
+R005 — NEW MODE evidence must capture tag-query lane provenance, per-lane page/row/status/truncation counts, observed market-to-lane membership, first-seen receipt, dedup/conflict counts and source/time confidence without substituting the lane tag for a missing row-level `category`. Preserve exact original raw bytes/hashes, UTC first-observed clocks, STARTED-before-transport and complete request/receipt/index/manifest hash graph. If the existing v2 closed schema cannot represent the new mode cleanly, introduce a VERSIONED new-mode schema/replay branch (e.g. v3), leave v2 unchanged and independently verifiable, reject cross-version forgery. No registry/canonical PIT/alpha promotion, no source strings or credentials in structured outputs, no provenance inflation, no false claim of source-authenticated truth beyond available receipts. Zero-network cold `verify` must detect tampering with tag, horizon, offsets, counts, dedup identities and raw digests.
+
+R006 — Preserve original mechanical guardrails and conservative outcomes. Existing `economics()` deliberately returns INCONCLUSIVE for neg-risk and stale/no-ask books; never make this a PASS to make the new mode look productive. Fee policy expires on 2026-11-04 and MUST NOT silently extend; UNKNOWN fee/tick/delay/minimum/fill/eligibility remains UNKNOWN. Source-verified category-lane membership is not account or regional eligibility: `restricted=true` does not confer permission to trade; no live/order/paper, independent probability, priced edge or performance claim. Tool output is discovery research only, even if an old mechanics symbol is `POSSIBLE`.
+
+R007 — Meaningful offline tests with fake transport only. Include positive four-lane URL and fair round-robin coverage; mixed full/short/empty pages and per-lane unknown/truncated states; duplicate vs conflicting ids across lanes; tagged query rejected by existing legacy verifier; malformed / duplicate / tampered query args, forged tag ids, invalid horizon and reversed order; source raw-provenance tamper rejection; legacy default and `all_horizons` regression; preserved neg-risk, stale/no-ask and no-research-promotion constraints; zero real network dispatch; stop on physical request cap. No fake published historical evidence or hard-coded 312 as a test assertion for synthetic data. Test detailed edge cases only if failure risk warrants it, reuse existing fixtures and helpers.
+
+R008 — Minimum documentation and closure: update existing contract (new mode and protocol limitations), one concise status entry, one deferred log entry for unverified lanes and real-acquisition owner gate; leave future calibration, CPI model, wallet schema repair, neg-risk mechanics, schedulers, provider budgets and full-market OOS qualification separately gated. No new architecture/framework/roadmap reorganization.
+
+# 4A. FROZEN IMPLEMENTATION DECISIONS (closing draft ambiguity)
+- Opt-in surface: `run(scratch_dir, *, ..., horizon_days=None)` keyword-only and CLI `run --scratch-dir ABS --horizon-days N`, integer N in 1..30; bool/str/other types refused. `horizon_days` and `all_horizons=True` together refuse. Absent `horizon_days` keeps every legacy byte, URL, record and verifier path unchanged.
+- Versioned schema: stratified-mode config, started, request, receipt, manifest and terminal records carry `near-term-market-screen@3.0.0`; v2 records and their verifier remain unchanged. The v3 config equals the v2 config fields with `schema_version` v3, `window_s=N*86400`, plus `tag_lanes`, the ordered list `[["84","Weather"],["100328","Economy"],["74","Science"],["1","Sports"]]`. The verifier output record keeps its existing schema. Cross-version mixes (v2 config with v3 records or the reverse) refuse.
+- Exact query, in order: `closed=false`, `active=true`, `tag_id=<lane>`, `end_date_min=<as_of UTC>`, `end_date_max=<as_of+N days UTC>`, `order=endDate`, `ascending=true`, `limit=100`, `offset=<0..1900 step 100>` on `https://gamma-api.polymarket.com/markets`; `checked_url` accepts it only by exact round-trip equality.
+- Fair rotation: the next page is the active lane with the smallest next offset, ties broken by frozen lane order; shared cap 20 discovery pages; the existing 64-request and 240 s budgets are unchanged.
+- Lane stop states: PAGE_BOUND_REACHED (short page), SORT_OR_PAGINATION_UNVERIFIED (repeated full page in the lane), ORDER_UNVERIFIED (missing/malformed endDate, decreasing endDate within the page or versus the lane's previous page), SOURCE_INVALID, SOURCE_UNAVAILABLE, FILTER_CONTRACT_UNVERIFIED (HTTP 4XX), COVERAGE_TRUNCATED (page cap or offset 1900 reached with a full page), ACQUISITION_BUDGET_EXHAUSTED. Aggregate `stop_reason` is PAGE_BOUND_REACHED only if every lane is; otherwise the first non-complete lane's state in frozen lane order.
+- v3 manifest adds `lanes` (tag_id, label, pages, raw_rows, new_unique, identical_duplicates, conflicting_ids, stop_reason) and each market row adds `lane_tag_ids` (frozen lane order). Row category fields keep their v2 meaning, so a missing category stays MISSING/UNKNOWN. Selection, books and `economics()` are unchanged (<=10 markets, <=20 books).
+
+# 5. NATIVE READINESS AND IMPLEMENTATION SEQUENCE
+Copy the prompt/spec into the exact two `docs/wp_specs/S10-ALPHA-STRAT-01/` paths in a clean isolated WP worktree. This is external CANDIDATE DRAFT; prepare/freeze through the current canonical repository requirements. Run the deterministic native RUNTIME readiness gate:
+`python tools/wp/wp_readiness_gate.py --wp docs/wp_specs/S10-ALPHA-STRAT-01/wp_prompt.txt --spec docs/wp_specs/S10-ALPHA-STRAT-01/wp_spec.json --repo-root .`
+Require actual exit0 and `IMPLEMENTATION_READY`. No PROTECTED certificate unless the present authority actually routes there; if that happens STOP and obtain the proper independent certificate and consent. Fix only same-envelope schema and drafting defects in one bounded batch, re-run readiness and record the final exact raw-byte SHA256 of both governing files. Verify all historical changed-set guards that compare the complete diff before scope freeze. Do not invent a native PASS in this chat or ZIP. Owner scope authorization is recorded above; proceed autonomously through code after readiness, unless native governance demands a fresh exact-digest owner approval not already met by the supplied owner's bootstrap or the scope has materially changed. In that case STOP with the two exact hashes and one focused request instead of bypassing governance.
+
+Implement on one branch/PR using minimal edits to native tool. Write deterministic synthetic fixtures and tests. At stable final candidate, run focused+affected-adjacent tests, `--check-diff` readiness, actual-surface security, one authoritative full suite locally OR equivalent exact-head hosted full CI, and exact-head hosted CI. Report actual commands, exits, totals, test failures and unavailability honestly; no repeated full suites on unstable code. Inspect PR changed-file set and full-suite guards; no unapproved eighth file. Complete concise PR body/status/deferred docs; run local evidence guard, publish PR, re-fetch live head/body/checks. Mark Ready YES only if all required gates pass; otherwise publish exact blocker and Ready NO. STOP before merge; Karl only merges.
+
+# 6. COMPATIBILITY / IMPOSSIBILITY MATRIX
+| Need | Existing mechanism | Allowed edit | Outcome |
+|---|---|---|---|
+| Network discovery and original 120min path | `discovery_url` / `run` / `verify` | existing `tools/alpha/...` | additive opt-in mode; preserve original |
+| `--all-horizons` compatibility | `run(all_horizons=True)`, existing unit test | same tool+tests | preserve; do not replace |
+| Tag query and sort precedent | `src/live_pilot/pilot.py`, `tools/alpha/run_shadow_alpha_cycle.py` | READ-ONLY references | reuse shapes; do not alter |
+| Candidate/executable mechanics | `economics()` + native feasibility/hunter | existing tool only | no new positive-edge/negRisk claims |
+| Real source settlement and sourced probabilities | not available | NOT ALLOWED | deliberately unqualified/unknown |
+| Actual product GET / paid provider / Hermes / wallet | separate owner gate | NOT ALLOWED | zero dispatch |
+| Canonical evidence/Alpha promotion | registry and PIT require their own authority | NOT ALLOWED | research-only output |
+
+# 7. STOP / HANDOFF / REPORT FORMAT
+STOP if the current repo contradicts mandatory contract, or 7-path budget becomes impossible — because approval is for this exact coherence envelope.
+STOP if `ponytail` cannot be genuinely invoked after current skill discovery — because every WP execution must start with actual Ponytail LITE.
+STOP if an independently required new path lies outside the approved seven, or a PROTECTED/execution/paper/scheduler/credential boundary would be crossed — because higher owner authority is required.
+STOP if native RUNTIME readiness fails after one meaningful bounded correction batch, or if native governance needs a separate exact-hash user transition — because readiness cannot be faked.
+STOP if any actual product/provider request would occur during implementation, including unmocked tests — because no acquisition is authorized.
+STOP if real account/trading/region eligibility, calibrated probability, or positive expected net economics is being asserted — because this is unproven.
+
+Return to Side24: exact base and final head, changed paths, readiness prompt/spec SHA256, focused/full/CI results, request ledger REAL PRODUCT GET=0 (workflow GitHub activity separate), skills chronological table (`selected/read/invoked/order/proof/value/unavailable`), 1–2 paragraph design/result summary, contract & test oracles, deferred limitations, PR URL, evidence mode, `Ready for review: YES/NO`, and single follow-up blocker if any. Side24 performs independent exact-head PR review. No merge or operational activation in this WP.
+
+# 8. HARD STOPS, NEGATIVE TEST MATRIX, EVIDENCE PLAN, SUCCESSOR BOUNDARY AND REPORT-BACK
+The HARD STOPS in section 7 are binding. NEGATIVE TEST MATRIX includes invalid tag, duplicate query key, forged query lane, wrong time bound, out-of-order pages, cross-lane identity conflicts, legacy/v2 replay mismatch, unknown fee/eligibility, bad raw hash, and unmocked product network. EVIDENCE PLAN is mapped R001–R008 to named offline pytest nodes in the machine spec; no invented PASS before implementation. SUCCESSOR BOUNDARY is independently owner-gated probability-method validation and fresh product-data acquisition; this WP cannot begin it. REPORT-BACK must include actual skill invocation order, native readiness receipts, exact head and CI, true zero product GET count, conservative source confidence and no merge.
+
+BEGIN_NORMATIVE_RULE_MATRIX_V1
+RULE_ID|DOMAIN|SUBJECT|CONDITION|ACTION|CANONICAL_EFFECT|SPEC_PATH|EVIDENCE_ID
+NR001|legacy|default_and_all_horizons|new_mode_off|PRESERVE_EXACT|legacy_v2_unchanged|requirements.r001|R001
+NR002|taxonomy|verified_tag_lanes|row_category_missing|PRESERVE_EXPLICIT_NULL|unknown_row_category|requirements.r002|R002
+NR003|source|gamma_query|unexpected_key_or_reverse_order|REJECT|query_or_coverage_refused|requirements.r003|R003
+NR004|window|horizon_and_pages|out_of_bounds_or_dominant_lane|REQUIRE|finite_fair_lane_caps|requirements.r004|R004
+NR005|provenance|receipt_and_market_membership|corrupted_or_conflicted|REJECT|cold_replay_blocked|requirements.r005|R005
+NR006|economics|neg_risk_and_stale_book|mechanics_unconfirmed|FORBID|no_executable_edge_upgrade|requirements.r006|R006
+NR007|test|product_transport|unmocked_network_or_cap_exceeded|REJECT|offline_only_validation|requirements.r007|R007
+NR008|report|research_only_evidence|unsupported_alpha_claim|FORBID|no_canonical_or_trade_promotion|requirements.r008|R008
+END_NORMATIVE_RULE_MATRIX_V1

@@ -1,0 +1,484 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-ALPHA-STRAT-01",
+    "title": "Minimum Category-Stratified Non-Crypto Discovery Integration",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "BOUNDED_CATEGORY_STRATIFIED_GAMMA_DISCOVERY",
+    "package_size_class": "M",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-alpha-strat-01",
+    "required_predecessor": {
+      "pr_number": 267,
+      "head_sha": "b512604f2a85c6ee3e983ff88355ef0ec7368412",
+      "merge_sha": "a0d54384ad7ef293336a5cf646bc80be0cccf1e1"
+    },
+    "objective": "Implement an optional bounded, source-verified category-stratified mode inside the existing finite public Gamma scratch research screener, preserving legacy v2 and offline replay, explicit per-lane provenance and fair paging. Offline-only implementation validation; zero real product data acquisition or trading authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/tools/alpha/test_near_term_market_screener.py",
+      "docs/near_term_market_screener_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-STRAT-01.md",
+      "docs/wp_specs/S10-ALPHA-STRAT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-STRAT-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "tools/alpha/run_near_term_market_screener.py",
+      "tests/tools/alpha/test_near_term_market_screener.py",
+      "docs/near_term_market_screener_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/status_entries/S10-ALPHA-STRAT-01.md",
+      "docs/wp_specs/S10-ALPHA-STRAT-01/wp_prompt.txt",
+      "docs/wp_specs/S10-ALPHA-STRAT-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/",
+      "tools/deployment/",
+      "tools/execution/",
+      "tools/hermes/",
+      "config/"
+    ],
+    "max_changed_files": 7,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert the exact seven-file PR diff. Original v2 evidence, immutable source bytes, existing source/Alpha/Hermes/Paper/Wallet services and any external scratch directories remain untouched.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": true
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": false,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": true,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "One optional branch in existing bounded Gamma scratch operator; no new framework or runtime activation.",
+    "items": [
+      {
+        "surface": "tools/alpha/run_near_term_market_screener.py discovery_url/run/verify",
+        "before": "Default fixed 120-minute untagged discovery and internal all_horizons; v2 replay.",
+        "after": "Default preserved; optional four-source-verified tag lanes, bounded horizon, fair paging and versioned replay.",
+        "change_authorized": true,
+        "compatibility_requirement": "No unsolicited real product GET, no default-change, no loss of v2 or previous evidence, no new network host/retry/daemon.",
+        "authority": "READ_ONLY_PUBLIC_NETWORK_CAPABILITY_CODE_OFFLINE_VALIDATION_ONLY"
+      },
+      {
+        "surface": "tests/tools/alpha/test_near_term_market_screener.py",
+        "before": "Legacy v2 synthetic transport tests including all_horizons.",
+        "after": "Legacy tests retained plus minimum deterministic stratified lane, horizon, negative and replay oracles.",
+        "change_authorized": true,
+        "compatibility_requirement": "Only synthetic bytes and intercept transport; no public GET or extra test file.",
+        "authority": "OFFLINE_TEST_ONLY"
+      },
+      {
+        "surface": "docs/near_term_market_screener_contract.md",
+        "before": "Existing finite v2 scratch research contract.",
+        "after": "Add optional stratified mode contract, provenance, v2 compatibility and acquisition gate.",
+        "change_authorized": true,
+        "compatibility_requirement": "No canonical upgrade, fee expiry extension or live authority.",
+        "authority": "RESEARCH_CONTRACT_ONLY"
+      },
+      {
+        "surface": "src/live_pilot/pilot.py and tools/alpha/run_shadow_alpha_cycle.py",
+        "before": "Existing source precedent for tag_id and ordering.",
+        "after": "Read-only reuse reference; not changed.",
+        "change_authorized": false,
+        "compatibility_requirement": "Keep source/live and trading control entirely unchanged.",
+        "authority": "READ_ONLY_REFERENCE"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Eight concrete research-only semantics with closed offline test evidence.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Preserve exact legacy default 120minute and all_horizons behavior; new mode opt-in only; do not invalidate earlier v2 evidence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Preserve exact legacy default 120minute and all_horizons behavior; new mode opt-in only; do not invalidate earlier v2 evidence.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Only frozen tag lanes Weather84 Economy100328 Science74 Sports1; missing row category stays UNKNOWN; unverified tags not admitted.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Only frozen tag lanes Weather84 Economy100328 Science74 Sports1; missing row category stays UNKNOWN; unverified tags not admitted.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "New query fixed endpoint and exact ordered parameters; validate local time, ordering and URL; reject duplicate or unexpected keys.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "New query fixed endpoint and exact ordered parameters; validate local time, ordering and URL; reject duplicate or unexpected keys.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Explicit bounded 1-30 day horizon and fair round-robin lane paging; <=20 shared pages and 64 total requests; per-lane/truncation denominators.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Explicit bounded 1-30 day horizon and fair round-robin lane paging; <=20 shared pages and 64 total requests; per-lane/truncation denominators.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "New-mode lane/market/receipt provenance, dedup conflict states, raw hashes and cold verification; original evidence unchanged.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "New-mode lane/market/receipt provenance, dedup conflict states, raw hashes and cold verification; original evidence unchanged.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Retain native negRisk, book freshness/no-ask, expired fees and financial non-authority refusals; never equate category tag with eligibility.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Retain native negRisk, book freshness/no-ask, expired fees and financial non-authority refusals; never equate category tag with eligibility.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "Offline synthetic transport only, negative tamper/malformed/order/cap tests, no product GET, no invented live successful economics.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "Offline synthetic transport only, negative tamper/malformed/order/cap tests, no product GET, no invented live successful economics.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "One contract, status and deferred update, minimal change set; original Hermes/paper/wallet/live obligations deferred.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "One contract, status and deferred update, minimal change set; original Hermes/paper/wallet/live obligations deferred.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "bounded RESEARCH_ONLY evidence or UNKNOWN, never provider text or trade intent",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "Only original hash graphs and exact raw SHA256s are reused or versioned; no new global identity scheme.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Canonical draft/readiness/authority/implementation chain; no operational activation transitions.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Native RUNTIME readiness gate exit0 and IMPLEMENTATION_READY on exact seven-path prompt/spec; practical one-shot draft review, no open decisions.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl sent full scoped WP owner authorization in accompanying bootstrap; no real product GET and no protected/live/provider/paper authority.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Seven-file bounded code+tests+docs delivered with all 8 evidence nodes, full stable candidate validation and exact-head hosted CI; no merge or data acquisition.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Unchanged WP159 fixed native schema error precedence.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "No new canonical domain identity or standalone schema; named offline tests cover query and replay behavior.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "One bounded offline synthetic acceptance node per requirement; adjacent/full/CI/native guards separately mandatory.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_strat_legacy_default_and_all_horizons_unchanged",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_legacy_default_and_all_horizons_unchanged",
+        "expected_result": "Original untagged/default/all_horizons requests, replay and output remain byte-compatible and validated."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_strat_four_verified_lanes_and_unknown_row_category",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_four_verified_lanes_and_unknown_row_category",
+        "expected_result": "Only four provenance-backed tag ids appear; query lane does not turn absent row category into source category."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_strat_ordered_fixed_host_query_and_closed_invalid_query",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_ordered_fixed_host_query_and_closed_invalid_query",
+        "expected_result": "Exact source query shape; reversed ordering, unexpected/duplicate fields and host/URL manipulations fail closed."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_strat_fair_paging_horizon_bounds_and_stop_denominators",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_fair_paging_horizon_bounds_and_stop_denominators",
+        "expected_result": "Finite 1-30 day horizon, lane rotation, bounded pages/requests, truthful truncation/unknown stop denominators."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_strat_dedup_conflict_and_cold_provenance_tamper",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_dedup_conflict_and_cold_provenance_tamper",
+        "expected_result": "Cross-lane membership/dedup/conflicts and zero-network replay reject modified raw hash, lane, time or offset."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_strat_neg_risk_and_no_ask_remain_inconclusive",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_neg_risk_and_no_ask_remain_inconclusive",
+        "expected_result": "Existing unsupported negRisk/stale/no-ask/fee-unknown semantics remain closed; no eligibility or edge admission."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_strat_offline_fixture_zero_product_network",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_offline_fixture_zero_product_network",
+        "expected_result": "Fake transport is sole product data input; negative fixture failures and physical request cap are observable."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_strat_report_schema_and_source_confidence",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_near_term_market_screener.py::test_strat_report_schema_and_source_confidence",
+        "expected_result": "Report fields, source confidence and versioned cold verification are complete without unauthorized promotion or raw echo."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-ALPHA-METHOD-FEASIBILITY-01",
+    "next_title": "Only if independently authorized: credible probability methods, economics and owner-approved forward data collection after discovery integration.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-ALPHA-STRAT-01",
+    "forbidden_in_this_wp": [
+      "Actual product/Gamma/CLOB/taxonomy/public wallet GET or real provider inference; workflow GitHub activity is separate.",
+      "Unverified politics/geopolitics/culture technology tag guesses or unsupported row-category inference.",
+      "Unknown market/account eligibility asserted as trade permission, even when restricted/tradingEligible appear.",
+      "Changes to src/, live pilot, Alpha registry, Hermes runtime, wallet, paper, execution, source rule or financial gate.",
+      "Neg-risk repair, fee policy extension, priced profitable edge, strategy qualification or paper fill claim.",
+      "Scheduler, daemon, deployment, retry, new endpoint, new dependency/CI workflow or extra eighth tracked file.",
+      "Capital, order, cancellation, signing, credential, wallet, live activation or merge; Karl owns merge."
+    ]
+  }
+}

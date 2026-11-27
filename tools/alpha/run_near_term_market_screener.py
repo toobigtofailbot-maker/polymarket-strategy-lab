@@ -72,6 +72,31 @@ FIELDS = {
                'network_attempts','provider_dispatches'),
     'source': ('request_index','receipt_sha256','raw_sha256'),
 }
+# Opt-in category-stratified mode (S10-ALPHA-STRAT-01): observed tag-query lanes,
+# not row-level taxonomy. v2 records above stay byte-identical.
+STRAT_SCHEMA = 'near-term-market-screen@3.0.0'
+LANES = (('84','Weather'),('100328','Economy'),('74','Science'),('1','Sports'))
+FIELDS.update(
+    strat_market=FIELDS['market']+('lane_tag_ids',),
+    strat_manifest=FIELDS['manifest']+('lanes',),
+    lane=('tag_id','label','pages','raw_rows','new_unique','identical_duplicates','conflicting_ids','stop_reason'))
+
+
+def strat_config(days):
+    require(type(days) is int and 1<=days<=30)
+    return dict(CONFIG,schema_version=STRAT_SCHEMA,window_s=days*86400,tag_lanes=[list(lane) for lane in LANES])
+
+
+def mode(config):
+    """Return (schema, all_horizons, horizon_days) for exactly one frozen config."""
+    if config==CONFIG:
+        return SCHEMA,False,None
+    if config==dict(CONFIG,window_s=0):
+        return SCHEMA,True,None
+    require(type(config) is dict and type(config.get('window_s')) is int)
+    days=config['window_s']//86400
+    require(config==strat_config(days))
+    return STRAT_SCHEMA,False,days
 
 
 class Refused(ValueError):
@@ -165,7 +190,7 @@ def timestamp(value):
     return seconds*NS + parsed.microsecond*1000
 
 
-def time_bucket(value, as_of):
+def time_bucket(value, as_of, window_s=7200):
     if value is None:
         return 'MISSING', None
     if type(value) is str and re.fullmatch(r'\d{4}-\d\d-\d\d', value):
@@ -176,7 +201,7 @@ def time_bucket(value, as_of):
         end = timestamp(value)
     except (ValueError, OverflowError, OSError):
         return 'MALFORMED', None
-    return ('EXPIRED' if end<=as_of else 'FUTURE_OUTSIDE' if end-as_of>7200*NS else 'IN_WINDOW'), end
+    return ('EXPIRED' if end<=as_of else 'FUTURE_OUTSIDE' if end-as_of>window_s*NS else 'IN_WINDOW'), end
 
 
 def discovery_url(offset, as_of, *, all_horizons=False):
@@ -191,10 +216,26 @@ def discovery_url(offset, as_of, *, all_horizons=False):
     return 'https://gamma-api.polymarket.com/markets?'+query
 
 
+def strat_url(tag, offset, as_of, days):
+    require(tag in dict(LANES) and type(offset) is int and 0<=offset<=1900 and offset%100==0)
+    require(type(as_of) is int and as_of>=0 and type(days) is int and 1<=days<=30)
+    return 'https://gamma-api.polymarket.com/markets?'+urllib.parse.urlencode((('closed','false'),
+        ('active','true'),('tag_id',tag),('end_date_min',utc(as_of)),('end_date_max',utc(as_of+days*86400*NS)),
+        ('order','endDate'),('ascending','true'),('limit','100'),('offset',str(offset))))
+
+
 def checked_url(url, as_of=None):
     require(type(url) is str and len(url)<=512)
     if url.startswith('https://gamma-api.polymarket.com/markets?'):
         query=urllib.parse.parse_qs(urllib.parse.urlsplit(url).query,strict_parsing=True)
+        if 'tag_id' in query:
+            require(all(len(v)==1 for v in query.values()) and set(query)=={'closed','active','tag_id',
+                'end_date_min','end_date_max','order','ascending','limit','offset'})
+            begin=timestamp(query['end_date_min'][0])
+            days,rest=divmod(timestamp(query['end_date_max'][0])-begin,86400*NS)
+            require(rest==0 and (as_of is None or begin==as_of))
+            require(url==strat_url(query['tag_id'][0],int(query['offset'][0]),begin,days))
+            return url
         if set(query) == {'closed', 'limit', 'offset'}:
             require(all(len(v)==1 for v in query.values()))
             require(url == discovery_url(int(query['offset'][0]), as_of or 0, all_horizons=True))
@@ -292,13 +333,68 @@ def category(value):
     return digest(canonical(value)), key.upper() if key in FEE_RATES else 'OPAQUE_CATEGORY', False
 
 
-def catalog(receipts, body, as_of, *, all_horizons=False):
+def lanes(receipts, body, as_of, days):
+    """Replay fair lane rotation over discovery receipts; return (lane states, pages, next URL).
+
+    The next page is the active lane with the fewest pages, ties in frozen lane order.
+    A lane still active once discovery stops is finalized by the caller.
+    """
+    state={tag:dict(tag_id=tag,label=label,pages=0,raw_rows=0,new_unique=0,identical_duplicates=0,
+                    conflicting_ids=0,stop_reason=None) for tag,label in LANES}
+    hashes={tag:set() for tag in state};last={};pages=[]
+
+    def pending():
+        active=[tag for tag,_ in LANES if state[tag]['stop_reason'] is None]
+        if len(pages)>=20 or not active:
+            return None
+        tag=min(active,key=lambda t:state[t]['pages'])
+        return tag,strat_url(tag,state[tag]['pages']*100,as_of,days)
+
+    for r in (r for r in receipts if r['endpoint_kind']=='DISCOVERY'):
+        planned=pending()
+        require(planned is not None and r['url']==planned[1])
+        lane=state[planned[0]];lane['pages']+=1;pages.append((r,planned[0]))
+        if r['body_state']!='AVAILABLE':
+            lane['stop_reason']=('SOURCE_INVALID' if r['body_state'] in ('INVALID','OVERSIZE')
+                else 'FILTER_CONTRACT_UNVERIFIED' if r['status_class']=='HTTP_4XX' else 'SOURCE_UNAVAILABLE')
+            continue
+        rows=source_body(r,body);lane['raw_rows']+=len(rows)
+        page_hash=digest(canonical(rows))
+        ordered=True;previous=last.get(lane['tag_id'])
+        for market in rows:
+            try:
+                end=timestamp(market.get('endDate'))
+            except (ValueError,OverflowError,OSError):
+                ordered=False;break
+            ordered=previous is None or previous<=end
+            if not ordered:break
+            previous=end
+        last[lane['tag_id']]=previous
+        if len(rows)==100 and page_hash in hashes[lane['tag_id']]:
+            lane['stop_reason']='SORT_OR_PAGINATION_UNVERIFIED'
+        elif not ordered:
+            lane['stop_reason']='ORDER_UNVERIFIED'
+        elif len(rows)<100:
+            lane['stop_reason']='PAGE_BOUND_REACHED'
+        hashes[lane['tag_id']].add(page_hash)
+    planned=pending()
+    return state,pages,None if planned is None else planned[1]
+
+
+def catalog(receipts, body, as_of, *, all_horizons=False, days=None):
     entries, seen, conflicts, page_hashes = [], {}, set(), set()
     pages = [r for r in receipts if r['endpoint_kind']=='DISCOVERY']
     raw_rows = duplicates = 0
     stop = 'SOURCE_UNAVAILABLE'
+    window_s = 7200 if days is None else days*86400
+    if days is not None:
+        lane_state,lane_pages,_=lanes(receipts,body,as_of,days)
+        lane_of={r['request_index']:lane_state[tag] for r,tag in lane_pages}
+        member,lane_conflicts={},{tag:set() for tag in lane_state}
     for r in pages:
+        lane=None if days is None else lane_of[r['request_index']]
         if r['body_state']!='AVAILABLE':
+            if lane:continue  # stratified lanes stop independently
             stop = 'SOURCE_INVALID' if r['body_state'] in ('INVALID','OVERSIZE') else 'FILTER_CONTRACT_UNVERIFIED' if r['status_class']=='HTTP_4XX' else 'SOURCE_UNAVAILABLE'
             break
         rows = source_body(r, body)
@@ -315,12 +411,15 @@ def catalog(receipts, body, as_of, *, all_horizons=False):
             if key in seen:
                 if seen[key][0]==fingerprint:
                     duplicates += 1
+                    if lane:lane['identical_duplicates']+=1
                 else:
                     conflicts.add(key)
+                    if lane:lane_conflicts[lane['tag_id']].add(key)
+                if lane:member[key].add(lane['tag_id'])
                 continue
             ckey, label, malformed = category(market.get('category'))
             _, tokens, protocol = identity(market)
-            bucket, end = time_bucket(market.get('endDate'),as_of)
+            bucket, end = time_bucket(market.get('endDate'),as_of,window_s)
             row = record('market',market_id=mid if valid_id else None,
                 source_request_index=r['request_index'],source_row_index=ordinal,category_key=ckey,
                 protocol_state=protocol,status_state=status(market),time_state=bucket,
@@ -330,12 +429,22 @@ def catalog(receipts, body, as_of, *, all_horizons=False):
             item = (market,row,tokens,end,label,malformed)
             seen[key]=(fingerprint,item)
             entries.append(item)
+            if lane:
+                member[key]={lane['tag_id']};lane['new_unique']+=1
+        if lane:continue
         if repeated:
             stop = 'SORT_OR_PAGINATION_UNVERIFIED'
             break
         stop = 'PAGE_BOUND_REACHED' if len(rows)<100 else 'COVERAGE_TRUNCATED' if len(pages)==20 else 'ACQUISITION_BUDGET_EXHAUSTED'
         if len(rows)<100:
             break
+    if days is not None:
+        for tag,lane in lane_state.items():
+            lane['conflicting_ids']=len(lane_conflicts[tag])
+            if lane['stop_reason'] is None:
+                lane['stop_reason']='COVERAGE_TRUNCATED' if len(pages)==20 else 'ACQUISITION_BUDGET_EXHAUSTED'
+        incomplete=[lane_state[t]['stop_reason'] for t,_ in LANES if lane_state[t]['stop_reason']!='PAGE_BOUND_REACHED']
+        stop=incomplete[0] if incomplete else 'PAGE_BOUND_REACHED'
     for key, (_,item) in seen.items():
         market,row,tokens,end,label,malformed=item
         reasons=row['reason_codes']
@@ -347,6 +456,9 @@ def catalog(receipts, body, as_of, *, all_horizons=False):
         if not all_horizons and row['time_state']!='IN_WINDOW': reasons.append('TIME_UNKNOWN_OR_OUTSIDE')
         if row['filter_state']=='FILTER_MISMATCH': reasons.append('FILTER_MISMATCH')
         if not reasons: row['selection_state']='NOT_ACQUIRED'
+        if days is not None:
+            row['lane_tag_ids']=[tag for tag,_ in LANES if tag in member[key]]
+            record('strat_market',**row)
     candidates = sorted((e for e in entries if not e[1]['reason_codes']),key=(lambda e:(e[3] if e[3] is not None and e[3]>as_of else 2**63, e[1]['market_id'])) if all_horizons else (lambda e:e[3]))
     selected=candidates[:10]
     for item in selected:
@@ -356,7 +468,8 @@ def catalog(receipts, body, as_of, *, all_horizons=False):
         invalid=sum(r['body_state'] in ('INVALID','OVERSIZE') for r in pages),raw_rows=raw_rows,
         unique_ids=sum(type(k) is str for k in seen),identical_duplicates=duplicates,
         conflicting_ids=len(conflicts),stop_reason=stop,external_universe_completeness='UNPROVEN')
-    return entries,selected,coverage
+    lane_rows=None if days is None else [record('lane',**lane_state[t]) for t,_ in LANES]
+    return entries,selected,coverage,lane_rows
 
 
 def decimal(value, *, positive=False):
@@ -469,11 +582,9 @@ def counts(rows,key,states):
 
 
 def analyze(root,started,receipts,evaluated):
-    config=read_record(root/'config.json')
-    require(config in (CONFIG, dict(CONFIG, window_s=0)))
-    all_horizons=config['window_s']==0
+    schema,all_horizons,days=mode(read_record(root/'config.json'))
     body=lambda name:read_bytes(root/'op-000001'/name,CONFIG['max_body_bytes'])
-    entries,selected,coverage=catalog(receipts,body,started['as_of_ns'],all_horizons=all_horizons)
+    entries,selected,coverage,lane_rows=catalog(receipts,body,started['as_of_ns'],all_horizons=all_horizons,days=days)
     rows=[item[1] for item in entries]
     books=[r for r in receipts if r['endpoint_kind']=='BOOK']
     expected=[venue.clob_book_url(t) for item in selected for t in sorted(item[2],key=int)]
@@ -519,33 +630,39 @@ def analyze(root,started,receipts,evaluated):
         possible_count=sum(t['state']==POSSIBLE for t in tokens),minimum_failure_count=sum(t['state']==MINIMUM for t in tokens),
         inconclusive_count=sum(t['state']==UNKNOWN for t in tokens),resolution_within_120m_confirmed_count=0,
         external_universe_completeness='UNPROVEN',claim='RESEARCH_ONLY')
-    return record('manifest',schema_version=SCHEMA,config_sha256=started['config_sha256'],
+    values=dict(schema_version=schema,config_sha256=started['config_sha256'],
         started_sha256=digest(read_bytes(root/'op-000001/started.json')),as_of_utc=started['as_of_utc'],
         mechanics_evaluated_ns=evaluated,fee_policy_version=FEE_POLICY,
         sources=[record('source',request_index=r['request_index'],receipt_sha256=digest(canonical(r)+b'\n'),
                         raw_sha256=r['raw_sha256']) for r in receipts],coverage=record('coverage',**coverage),
         categories=category_rows,markets=rows,tokens=tokens,summary=summary)
+    return record('manifest',**values) if days is None else record('strat_manifest',**values,lanes=lane_rows)
 
 
-def terminal(status='BLOCKED',manifest_sha256=None,summary=None):
-    return record('terminal',schema_version=SCHEMA,status=status,
+def terminal(status='BLOCKED',manifest_sha256=None,summary=None,schema=SCHEMA):
+    return record('terminal',schema_version=schema,status=status,
         error_codes=[] if status=='COMPLETED' else ['CAPTURE_REFUSED'],manifest_sha256=manifest_sha256,summary=summary)
 
 
-def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.monotonic, all_horizons=False):
+def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.monotonic, all_horizons=False,
+        horizon_days=None):
     root=None
     owned=False
+    schema=SCHEMA
     try:
+        if horizon_days is not None:
+            require(all_horizons is False)
+            config=strat_config(horizon_days);schema=STRAT_SCHEMA
         root=safe(scratch_dir)
         if not root.exists(): root.mkdir(mode=0o700)
         require(root.is_dir() and not any(root.iterdir()))
         require(type(all_horizons) is bool)
-        write(root/'config.json',dict(CONFIG,window_s=0) if all_horizons else CONFIG)
+        write(root/'config.json',config if horizon_days is not None else dict(CONFIG,window_s=0) if all_horizons else CONFIG)
         op=root/'op-000001';op.mkdir(mode=0o700)
         owned=True
         as_of=clock_ns()//1000*1000
         mono=monotonic();deadline=mono+240
-        started=record('started',schema_version=SCHEMA,as_of_utc=utc(as_of),as_of_ns=as_of,
+        started=record('started',schema_version=schema,as_of_utc=utc(as_of),as_of_ns=as_of,
             started_monotonic_ns=int(mono*NS),config_sha256=digest(read_bytes(root/'config.json')))
         write(op/'started.json',started)
         receipts=[]
@@ -555,7 +672,7 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
             checked_url(url,as_of)
             i=len(receipts)+1
             start=utc(clock_ns()//1000*1000);sm=int(monotonic()*NS)
-            request=record('request',schema_version=SCHEMA,request_index=i,endpoint_kind=kind,
+            request=record('request',schema_version=schema,request_index=i,endpoint_kind=kind,
                 url=url,started_utc=start,started_monotonic_ns=sm)
             write(op/f'request-{i:02d}.started.json',request)
             status_class,raw='TRANSPORT_UNAVAILABLE',None
@@ -585,8 +702,14 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
             write(op/f'receipt-{i:02d}.json',receipt);receipts.append(receipt)
             return receipt
 
+        body=lambda n:read_bytes(op/n,CONFIG['max_body_bytes'])
+        # shortcut: each page replays earlier pages (<=20, O(n^2) parses inside the 240 s budget); cache bodies if pages grow.
+        while horizon_days is not None and monotonic()<deadline:
+            planned=lanes(receipts,body,as_of,horizon_days)[2]
+            if planned is None:break
+            collect('DISCOVERY',planned)
         page_hashes=set()
-        for offset in range(0,2000,100):
+        for offset in range(0,2000,100) if horizon_days is None else ():
             if monotonic()>=deadline:break
             receipt=collect('DISCOVERY',discovery_url(offset,as_of,all_horizons=all_horizons))
             if receipt['body_state']!='AVAILABLE':break
@@ -594,7 +717,7 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
             page_hash=digest(canonical(page))
             if len(page)<100 or page_hash in page_hashes:break
             page_hashes.add(page_hash)
-        _,selected,_=catalog(receipts,lambda n:read_bytes(op/n,CONFIG['max_body_bytes']),as_of,all_horizons=all_horizons)
+        _,selected,_,_=catalog(receipts,body,as_of,all_horizons=all_horizons,days=horizon_days)
         for item in selected:
             if len(receipts)+2>64:break
             for token in sorted(item[2],key=int):
@@ -605,13 +728,13 @@ def run(scratch_dir, *, transport=None, clock_ns=time.time_ns, monotonic=time.mo
             context.prec=80
             manifest=analyze(root,started,receipts,evaluated)
         write(op/'manifest.json',manifest)
-        result=terminal('COMPLETED',digest(read_bytes(op/'manifest.json')),manifest['summary'])
+        result=terminal('COMPLETED',digest(read_bytes(op/'manifest.json')),manifest['summary'],schema)
         write(op/'terminal.json',result)
         write(root/'index-op-000001.json',record('index',operation='op-000001',terminal_sha256=digest(read_bytes(op/'terminal.json'))))
         return result
     except Exception:
         # Never repair a partial operation or expose input/exception text.
-        result=terminal()
+        result=terminal(schema=schema)
         if owned:
             try:
                 if not (op/'terminal.json').exists():
@@ -630,17 +753,16 @@ def verify(scratch_dir):
     try:
         root=safe(scratch_dir);op=root/'op-000001'
         require({p.name for p in root.iterdir()}=={'config.json','op-000001','index-op-000001.json'})
-        config=read_record(root/'config.json')
-        require(config in (CONFIG,dict(CONFIG,window_s=0)))
-        all_horizons=config['window_s']==0
+        schema,all_horizons,days=mode(read_record(root/'config.json'))
         started=read_record(op/'started.json')
-        require(set(started)==set(FIELDS['started']) and started['schema_version']==SCHEMA
+        require(set(started)==set(FIELDS['started']) and started['schema_version']==schema
             and type(started['as_of_ns']) is int and utc(started['as_of_ns'])==started['as_of_utc']
             and started['config_sha256']==digest(read_bytes(root/'config.json')))
         manifest=read_record(op/'manifest.json')
         evaluated=manifest['mechanics_evaluated_ns']
         require(type(evaluated) is int and evaluated>=started['as_of_ns'])
         receipts=[];expected_files={'started.json','manifest.json','terminal.json'};books=False;pages=0
+        body=lambda n:read_bytes(op/n,CONFIG['max_body_bytes'])
         discovery_stopped=False;page_hashes=set()
         previous_received=started['started_monotonic_ns']
         paths=sorted(op.glob('receipt-*.json'));require(len(paths)<=64)
@@ -648,8 +770,10 @@ def verify(scratch_dir):
             require(path.name==f'receipt-{i:02d}.json')
             receipt=read_record(path);require(set(receipt)==set(FIELDS['receipt']))
             require(type(receipt['request_index']) is int and receipt['request_index']==i
-                and receipt['schema_version']==SCHEMA and receipt['endpoint_kind'] in ('DISCOVERY','BOOK'))
-            if receipt['endpoint_kind']=='DISCOVERY':
+                and receipt['schema_version']==schema and receipt['endpoint_kind'] in ('DISCOVERY','BOOK'))
+            if receipt['endpoint_kind']=='DISCOVERY' and days is not None:
+                require(not books and receipt['url']==lanes(receipts,body,started['as_of_ns'],days)[2])
+            elif receipt['endpoint_kind']=='DISCOVERY':
                 require(not books and not discovery_stopped and pages<20 and receipt['url']==discovery_url(pages*100,started['as_of_ns'],all_horizons=all_horizons));pages+=1
             else:books=True
             checked_url(receipt['url'],started['as_of_ns'])
@@ -695,7 +819,7 @@ def verify(scratch_dir):
             derived=analyze(root,started,receipts,evaluated)
         require(canonical(derived)==canonical(manifest))
         sha=digest(read_bytes(op/'manifest.json'))
-        require(read_record(op/'terminal.json')==terminal('COMPLETED',sha,derived['summary']))
+        require(read_record(op/'terminal.json')==terminal('COMPLETED',sha,derived['summary'],schema))
         require(read_record(root/'index-op-000001.json')==record('index',operation='op-000001',terminal_sha256=digest(read_bytes(op/'terminal.json'))))
         result.update(status='VERIFIED',error_codes=[],manifest_sha256=sha,verified_operation_count=1)
     except Exception:
@@ -713,8 +837,11 @@ def main(argv=None):
         parser=Parser(description=__doc__)
         parser.add_argument('command',choices=['run','verify'])
         parser.add_argument('--scratch-dir',required=True)
+        parser.add_argument('--horizon-days',type=int)
         args=parser.parse_args(argv)
-        result=run(args.scratch_dir) if args.command=='run' else verify(args.scratch_dir)
+        require(args.command=='run' or args.horizon_days is None)
+        result=(run(args.scratch_dir,horizon_days=args.horizon_days) if args.command=='run'
+                else verify(args.scratch_dir))
     except Exception:
         result=terminal()
     print(canonical(result).decode('utf-8'))
