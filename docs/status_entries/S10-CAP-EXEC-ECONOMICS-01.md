@@ -56,11 +56,23 @@ Contract: `docs/execution_economics_spine_contract.md`.
   - `replay_diagnostic`: WP167 describe, then WP168/172 market truth, then `assess_executable_edge` on non-OOS WP170 records, an in-memory serialization round trip, then the required WP173 `WP172_BINDING_INVALID`.
   - A7 role, the seven-ID ledger, and core/finalize.
 - `run_execution_economics_spine.py` has two commands:
-  - `run`: write-once scratch, socket block, lstat caps before hashing, then freeze and re-hash, a nested B2 cold verify, Parquet footer bounds, and the receipt.
-  - `verify`: read-only, with a full recompute and exact canonical core bytes.
+  - `run`: write-once scratch and a socket block. Then a closed scratch layout, lstat caps and the Parquet footer bounds, all before any hash. Then freeze and re-hash, a nested B2 cold verify, the same layout and digests again after the native calls, and a receipt size check before the write.
+  - `verify`: read-only. The exact sealed layout comes before any read, hash or nested verifier; then a full recompute with exact canonical core bytes; then a frozen-tree and receipt-byte witness after the native calls.
 - Every native producer and the roadmap archive are byte-unchanged; no native module imports B3.
 
-## Validation Split (Side26-approved)
+## Side26 Receipt-Envelope Correction (same PR, operator only)
+
+Side26 found three material defects in the receipt envelope at the first reviewed head. Each was reproduced first through the real operator entry points over a real base-built pinned B2 scratch, and then corrected:
+
+- **F1:** extra root or `inputs/` entries after the seal still verified.
+- **F2:** the Parquet footer caps ran after the input hashing and the nested B2 verifier.
+- **F3:** frozen inputs were not re-hashed after the native calls.
+
+The fix is in `tools/alpha/run_execution_economics_spine.py` only, and the existing R009, R010 and R012 nodes are extended. No native module, B2 file, node id or frozen prompt/spec byte changed. The B3 code identity, and so every B3 receipt id, changes with the CLI bytes. Pre-correction B3 fixture receipts are not migrated and have no alias.
+
+## Validation Split (limited evidence exception, not a completed R007)
+
+CC reported that this split was approved in session; that approval is not independently corroborated. Side26 accepts the split only for the partial B3 engineering slice. The original R007 witness, a single sealed pinned receipt running B2, then replay, then the WP173 refusal, is NOT DEMONSTRATED and stays OPEN_EVIDENCE_LIMITATION (D002). It must be closed by a single-environment witness before final system acceptance.
 
 The Windows host has the exact Hermes pin, but its application-control policy blocks the pyarrow and nautilus native libraries. The Linux container runs those libraries but cannot run the Windows-only pin. The work is split as follows (deferred row D002):
 

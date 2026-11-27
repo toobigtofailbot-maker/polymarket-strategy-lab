@@ -130,6 +130,29 @@ def _fake_b2(base: Path) -> Path:
     return root
 
 
+def _stub_seal(base: Path, case_value: dict, replay: bytes | None = None) -> Path:
+    """A sealed-shaped scratch (inputs/b2/, inputs/case.json[, inputs/replay.parquet], receipt.json) with no B2 proof:
+    the envelope preflight must refuse a bad layout or replay footer before any hash or nested verifier."""
+    scratch = (base / "stub-seal").resolve()
+    b2_dir = scratch / "inputs" / "b2"
+    b2_dir.mkdir(parents=True)
+    (b2_dir / "receipt.json").write_bytes(b"{}")
+    (scratch / "inputs" / "case.json").write_text(json.dumps(case_value), encoding="utf-8")
+    if replay is not None:
+        (scratch / "inputs" / "replay.parquet").write_bytes(replay)
+    (scratch / "receipt.json").write_bytes(b"{}")
+    return scratch
+
+
+def _recorders(monkeypatch) -> list:
+    """Every input hash and every nested B2 verifier call, in order (the real hash still runs)."""
+    events = []
+    real_sha = B2._sha
+    monkeypatch.setattr(B2, "_sha", lambda p: (events.append("hash"), real_sha(p))[1])
+    monkeypatch.setattr(B2, "verify", lambda d: (events.append("b2_verify"), {"status": "REFUSED", "receipt_id": None})[1])
+    return events
+
+
 # ------------------------------------------------------------------ R007
 
 
@@ -282,6 +305,58 @@ def test_b3_paths_schema_bounds_and_no_echo(world, tmp_path, monkeypatch, capsys
     (fake / "second.bin").unlink()
     assert hashed == []
     monkeypatch.undo()
+    # closed scratch layout through the verify entry, unpinned: refused before any hash or nested verifier, and the
+    # verifier mutates nothing (F1). The untouched stub control passes the layout and reaches the nested verifier.
+    snapshot = lambda s: {p.relative_to(s).as_posix(): p.read_bytes() if p.is_file() else None  # noqa: E731
+                          for p in sorted(s.rglob("*"))}
+    events = _recorders(monkeypatch)
+    control = _stub_seal(tmp_path / "lay-control", case_value)
+    assert _verify(control)["failures"] == ["RECOMPUTE_REFUSED:B2_NOT_VERIFIED"] and events == ["hash", "hash", "b2_verify"]
+    layouts = {
+        "root_file": lambda s: (s / "untracked.txt").write_bytes(b"x"),
+        "inputs_file": lambda s: (s / "inputs" / "untracked.txt").write_bytes(b"x"),
+        "root_dir": lambda s: (s / "extra").mkdir(),
+        "inputs_dir": lambda s: (s / "inputs" / "extra").mkdir(),
+        "hidden": lambda s: (s / "inputs" / ".case.json").write_bytes(b"{}"),
+        "sidecar": lambda s: (s / "receipt.json-wal").write_bytes(b""),
+        "no_receipt": lambda s: (s / "receipt.json").unlink(),
+        "no_b2": lambda s: shutil.rmtree(s / "inputs" / "b2"),
+        "no_case": lambda s: (s / "inputs" / "case.json").unlink(),
+        "misnamed": lambda s: (s / "inputs" / "case.json").rename(s / "inputs" / "case.jsn"),
+        "case_is_dir": lambda s: ((s / "inputs" / "case.json").unlink(), (s / "inputs" / "case.json").mkdir()),
+        "b2_is_file": lambda s: (shutil.rmtree(s / "inputs" / "b2"), (s / "inputs" / "b2").write_bytes(b"{}")),
+        "hardlinked_case": lambda s: os.link(s / "inputs" / "case.json", s.parent / "outside-twin.json"),
+    }
+    outside = _write(tmp_path / "lay-outside", "receipt.json", b"{}")
+    try:
+        (tmp_path / "symlink-probe").symlink_to(outside)
+    except OSError:
+        pass  # symlinks need a privilege this host lacks; the hardlink row still runs
+    else:
+        layouts["symlinked_receipt"] = lambda s: ((s / "receipt.json").unlink(), (s / "receipt.json").symlink_to(outside))
+    for name, mutate in layouts.items():
+        stub = _stub_seal(tmp_path / ("lay-" + name), case_value)
+        mutate(stub)
+        tree, events[:] = snapshot(stub), []
+        assert _verify(stub) == {"status": "STOPPED", "reason_code": "SCRATCH_LAYOUT_INVALID"}, name
+        assert events == [] and snapshot(stub) == tree, name
+    # replay footer bounds before any input hash or nested verifier, on verify and on run (F2; footer recorder here,
+    # the real pyarrow footer with reduced caps is R012)
+    monkeypatch.setattr(CLI, "_parquet_bounds", lambda p: (events.append("footer"), XE._require(False, "REPLAY_ROWS_OUT_OF_BOUNDS")))
+    stub, events[:] = _stub_seal(tmp_path / "foot-verify", dict(case_value, replay=replay_value), b"PAR1"), []
+    assert _verify(stub)["failures"] == ["RECOMPUTE_REFUSED:REPLAY_ROWS_OUT_OF_BOUNDS"] and events == ["footer"]
+    events[:] = []
+    assert CLI.run_safe(type("A", (), dict(command="run", b2_scratch=fake, case=with_replay, replay_file=parquet,
+                                           scratch_dir=out("foot-run")))())["reason_code"] == "REPLAY_ROWS_OUT_OF_BOUNDS"
+    assert events == ["footer"] and not out("foot-run").exists()
+    monkeypatch.setattr(CLI, "_parquet_bounds", lambda p: None)
+    # run entry: a member appearing in the frozen tree refuses before the nested verifier
+    real_freeze = CLI._freeze
+    monkeypatch.setattr(CLI, "_freeze", lambda s, i: (real_freeze(s, i), (i / "untracked.txt").write_bytes(b"x")))
+    events[:] = []
+    assert _run(b2_scratch=fake, case=case, scratch_dir=out("drift"))["reason_code"] == "SCRATCH_LAYOUT_INVALID"
+    assert "b2_verify" not in events and not (out("drift") / "receipt.json").exists()
+    monkeypatch.undo()
     # a real run over a non-B2 tree stops at the nested B2 verifier; zero sockets, no echo of any caller value
     spy = _Sockets(monkeypatch)
     stopped = _run(b2_scratch=fake, case=case, scratch_dir=out("nob2"))
@@ -301,13 +376,13 @@ def test_b3_paths_schema_bounds_and_no_echo(world, tmp_path, monkeypatch, capsys
 # ------------------------------------------------------------------ R010
 
 
-def test_b3_write_once_exact_cold_verify(world, pinned, sealed, tmp_path):
+def test_b3_write_once_exact_cold_verify(world, pinned, sealed, tmp_path, monkeypatch):
     fake, case = _fake_b2(tmp_path), _write(tmp_path / "case", "case.json", X.probe_case(world))
     busy = (tmp_path / "busy").resolve()
     busy.mkdir()
     (busy / "x").write_bytes(b"1")
     assert _run(b2_scratch=fake, case=case, scratch_dir=busy) == {"status": "STOPPED", "reason_code": "SCRATCH_NOT_EMPTY"}
-    for bad in (REPO_ROOT / "b3-scratch", Path("relative")):
+    for bad in (REPO_ROOT / "b3-scratch", Path("relative"), (tmp_path / "secrets" / "b3").resolve()):
         assert _run(b2_scratch=fake, case=case, scratch_dir=bad)["reason_code"] == "SCRATCH_INVALID"
     # a stop after freezing leaves a partial scratch that is never reused nor verified
     partial = (tmp_path / "partial").resolve()
@@ -318,7 +393,10 @@ def test_b3_write_once_exact_cold_verify(world, pinned, sealed, tmp_path):
     _need_pin()
     scratch, receipt = sealed["scratch"], sealed["receipt"]
     assert _run(b2_scratch=pinned["scratch"], case=sealed["case"], scratch_dir=scratch)["reason_code"] == "SCRATCH_NOT_EMPTY"
-    # relocation keeps the same id and bytes; verify writes nothing
+    # untouched seal: verify leaves the frozen tree byte-identical; relocation keeps the same id and bytes
+    tree = _tree(scratch)
+    assert _verify(scratch)["receipt_id"] == receipt["receipt_id"] and _tree(scratch) == tree
+    assert _tree(scratch / "inputs" / "b2") == sealed["before"]["b2"]  # run froze the caller B2 tree byte for byte
     moved = (tmp_path / "relocated").resolve()
     shutil.copytree(scratch, moved)
     tree = _tree(moved)
@@ -329,7 +407,7 @@ def test_b3_write_once_exact_cold_verify(world, pinned, sealed, tmp_path):
         shutil.copytree(scratch, copy_dir)
         mutate(copy_dir)
         result = _verify(copy_dir)
-        assert result["receipt_id"] is None and result["status"] in ("TAMPER_DETECTED", "STOPPED"), name
+        assert result.get("receipt_id") is None and result["status"] in ("TAMPER_DETECTED", "STOPPED"), name
         return result
 
     def receipt_edit(fn):
@@ -365,8 +443,49 @@ def test_b3_write_once_exact_cold_verify(world, pinned, sealed, tmp_path):
 
     def hardlink(d):
         member = d / "inputs" / "case.json"
-        B2T._hardlink_twin(member, d / "twin.json")
-    assert tampered("t-hard", hardlink)["failures"] == ["RECOMPUTE_REFUSED:CASE_UNREADABLE"]
+        B2T._hardlink_twin(member, d.parent / (d.name + "-twin.json"))  # the twin lives outside the scratch
+    assert tampered("t-hard", hardlink) == {"status": "STOPPED", "reason_code": "SCRATCH_LAYOUT_INVALID"}
+    # F1 on the real pinned seal: any post-seal extra entry refuses before any hash or nested verifier; no id
+    layout = {"STOPPED": "SCRATCH_LAYOUT_INVALID"}
+    for name, mutate in (("t-root-file", lambda d: (d / "untracked.txt").write_bytes(b"x")),
+                         ("t-inputs-file", lambda d: (d / "inputs" / "untracked.txt").write_bytes(b"x")),
+                         ("t-root-dir", lambda d: (d / "extra").mkdir()),
+                         ("t-inputs-dir", lambda d: (d / "inputs" / "extra").mkdir())):
+        result = tampered(name, mutate)
+        assert {result["status"]: result["reason_code"]} == layout, name
+    outside = _write(tmp_path / "outside", "receipt.json", sealed["scratch"].joinpath("receipt.json").read_bytes())
+    try:
+        (tmp_path / "symlink-probe").symlink_to(outside)
+    except OSError:
+        pass  # no symlink privilege on this host; the hardlink row above covers the link class
+    else:
+        result = tampered("t-symlink", lambda d: ((d / "receipt.json").unlink(), (d / "receipt.json").symlink_to(outside)))
+        assert {result["status"]: result["reason_code"]} == layout
+    # F3: a frozen member changed during computation (fault injected at the nested-verifier seam, after the real B2
+    # verify) refuses on run and on verify; layout drift at the same seam refuses too. Not a native success claim.
+    real_verify = B2.verify
+
+    def seam(change):
+        def verify_then_change(d):
+            result = real_verify(d)
+            change(Path(d).parent)
+            return result
+        return verify_then_change
+
+    grow = lambda inputs: (inputs / "case.json").write_bytes((inputs / "case.json").read_bytes() + b"\n")  # noqa: E731
+    for name, change, code in (("f3-bytes", grow, "FROZEN_INPUT_CHANGED"),
+                               ("f3-layout", lambda i: (i / "untracked.txt").write_bytes(b"x"), "SCRATCH_LAYOUT_INVALID")):
+        monkeypatch.setattr(B2, "verify", seam(change))
+        fresh = (tmp_path / (name + "-run")).resolve()
+        assert _run(b2_scratch=pinned["scratch"], case=sealed["case"], scratch_dir=fresh) == {
+            "status": "STOPPED", "reason_code": code}, name
+        assert not (fresh / "receipt.json").exists()
+        copy_dir = (tmp_path / (name + "-verify")).resolve()
+        shutil.copytree(scratch, copy_dir)
+        assert _verify(copy_dir) == {"status": "TAMPER_DETECTED", "failures": ["RECOMPUTE_REFUSED:" + code],
+                                     "receipt_id": None, "network_attempts": 0}, name
+        monkeypatch.undo()
+    assert _tree(pinned["scratch"]) == sealed["before"]["b2"]  # caller B2 untouched throughout
 
 
 # ------------------------------------------------------------------ R012
@@ -425,6 +544,39 @@ def test_b3_optional_replay_disposition_and_denominator(world, tmp_path, monkeyp
     core = result["core"]
     assert core["replay_diagnostic"] == json.loads(json.dumps(diagnostic)) and core["trace"][-1] == "WP173 binding refusal"
     assert set(core["input_sha256"]) == {"b2", "case", "replay"}
+    # the real pyarrow footer guard through BOTH operator entry points (F2): reduced caps or a corrupt footer refuse
+    # with zero input hashes, zero nested verifier and zero replay-consumer calls; a valid footer proceeds to hashing
+    events = _recorders(monkeypatch)
+    monkeypatch.setattr(XE, "replay_diagnostic", lambda *a: events.append("replay_consumer"))
+    fake = _fake_b2(tmp_path)
+    caller_case = _write(tmp_path / "rcase", "case.json", dict(case, replay=replay))
+    corrupt = _write(tmp_path / "corrupt", "replay.parquet", b"PAR1 not a parquet footer PAR1")
+    sealed_copy = (tmp_path / "b3-sealed").resolve()
+    shutil.copytree(scratch, sealed_copy)
+    (sealed_copy / "receipt.json").write_bytes(b"{}")
+    corrupt_copy = (tmp_path / "b3-corrupt").resolve()
+    shutil.copytree(sealed_copy, corrupt_copy)
+    shutil.copyfile(corrupt, corrupt_copy / "inputs" / "replay.parquet")
+    for name, (target, attr, value), code, replay_file, sealed_dir in (
+            ("rows", (XE, "MAX_REPLAY_ROWS", 2), "REPLAY_ROWS_OUT_OF_BOUNDS", path, sealed_copy),
+            ("bytes", (CLI, "MAX_PARQUET_UNCOMPRESSED", 1), "REPLAY_UNCOMPRESSED_TOO_LARGE", path, sealed_copy),
+            ("corrupt", (CLI, "MAX_PARQUET_UNCOMPRESSED", CLI.MAX_PARQUET_UNCOMPRESSED), "REPLAY_FILE_UNUSABLE", corrupt,
+             corrupt_copy)):
+        with monkeypatch.context() as cap:
+            cap.setattr(target, attr, value)
+            events[:] = []
+            assert CLI.run_safe(type("A", (), dict(command="run", b2_scratch=fake, case=caller_case, replay_file=replay_file,
+                                                   scratch_dir=(tmp_path / ("fr-" + name)).resolve()))()) == {
+                "status": "STOPPED", "reason_code": code}, name
+            assert _verify(sealed_dir) == {"status": "TAMPER_DETECTED", "failures": ["RECOMPUTE_REFUSED:" + code],
+                                           "receipt_id": None, "network_attempts": 0}, name
+            assert events == [], name
+    events[:] = []
+    assert CLI.run_safe(type("A", (), dict(command="run", b2_scratch=fake, case=caller_case, replay_file=path,
+                                           scratch_dir=(tmp_path / "fr-valid").resolve()))())["reason_code"] == "B2_NOT_VERIFIED"
+    assert events[0] == "hash" and events[-1] == "b2_verify" and "replay_consumer" not in events
+    monkeypatch.undo()
+    monkeypatch.setattr(B2, "verify", lambda d: {"status": "VERIFIED", "receipt_id": receipt["receipt_id"]})
     (scratch / "inputs" / "replay.parquet").write_bytes(path.read_bytes()[:-8] + b"\0" * 8)
     with pytest.raises(XE.ExecutionEconomicsStop):  # tampered sealed replay bytes refuse (footer or digest), never ignored
         CLI.compute(scratch)

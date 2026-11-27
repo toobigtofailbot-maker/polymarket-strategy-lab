@@ -35,13 +35,32 @@ the cost model id. Record clocks must not be later than the decision clock. The 
 ## Operator (`tools/alpha/run_execution_economics_spine.py`)
 
 `run --b2-scratch ABS --case ABS [--replay-file ABS] --scratch-dir ABS` and `verify --scratch-dir ABS`.
-Exit 0 `RUN_COMPLETE`/`VERIFIED`; 1 `STOPPED`/`TAMPER_DETECTED`; 2 `USAGE_ERROR`. Scratch layout is exactly
-`inputs/b2/`, `inputs/case.json`, optional `inputs/replay.parquet`, `receipt.json`. Inputs must be absolute,
+Exit 0 `RUN_COMPLETE`/`VERIFIED`; 1 `STOPPED`/`TAMPER_DETECTED`; 2 `USAGE_ERROR`. Inputs must be absolute,
 outside the checkout and disjoint from each other. Links, junctions, hardlinks, sidecars and secret directories are
-refused. Caps: aggregate 3 GiB / 20,000 files; case 1 MiB; receipt 16 MiB; Parquet 16 MiB, 4096 rows and 64 MiB of
-declared uncompressed bytes. Path, file-count and byte caps are checked by lstat before any hash; the Parquet row and
-declared-uncompressed caps are read from the footer before any native WP167 parse; both on run and verify. Every
-socket entry point is blocked. Refusals carry closed codes and never echo caller text, paths or tracebacks.
+refused. The scratch must also have no secret-named part and no unsafe existing parent. Caps: aggregate 3 GiB / 20,000
+files; case 1 MiB; receipt 16 MiB (checked before the receipt is written); Parquet 16 MiB, 4096 rows and 64 MiB of
+declared uncompressed bytes. Every refusal carries a closed code and never echoes caller text, paths or tracebacks.
+Every socket entry point is blocked.
+
+Closed scratch layout (`SCRATCH_LAYOUT_INVALID` otherwise). The root is exactly `inputs/` before the seal, and exactly
+`inputs/` plus a regular `receipt.json` after it. `inputs/` is exactly `b2/` and a regular `case.json`, plus
+`replay.parquet` only when the case names a replay (`REPLAY_FILE_CASE_MISMATCH` otherwise). Extra files or directories,
+empty ones included, refuse; so do hidden or misnamed entries, sidecars, links, reparse points, hardlinks, a missing
+role, and a file where a directory belongs. Nothing is ignored or deleted. The B2 tree's own interior is guarded by the
+aggregate walk and by B2's own cold verify.
+
+Order, identical on `run` (caller side and frozen side) and `verify`:
+1. The exact layout, then a bounded strict read of the case and, on verify, of the receipt.
+2. lstat path, file-count and byte caps.
+3. For a supplied replay, the existing pyarrow footer guard (rows, declared uncompressed bytes). It runs before any
+   input hash, nested B2 verifier or native WP167 parse; the row data is not loaded.
+4. Only then the streamed input hashes. The parsed case bytes must equal the hashed case digest.
+5. B2 cold verify and the native B3 consumers.
+6. The same layout check and the same inventory, footer and digests again, which must be equal
+   (`FROZEN_INPUT_CHANGED`). On verify the receipt bytes must be unchanged (`RECEIPT_CHANGED`).
+
+This is the contracted bounded before/after witness, not a defence against every concurrent external writer. Any
+failure returns no receipt id, and verify writes nothing.
 
 ## Receipt (`s10-cap-b3-execution-economics-receipt-v1`)
 

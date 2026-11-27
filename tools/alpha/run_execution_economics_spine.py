@@ -3,8 +3,10 @@
   run    --b2-scratch DIR --case FILE [--replay-file FILE] --scratch-dir DIR
   verify --scratch-dir DIR
 
-One finite, manual, offline pass over caller-named local copies only. Call path: freeze (lstat caps, hash, copy,
-re-hash) -> unmodified ``run_relation_wallet_spine.verify`` on the frozen B2 copy -> exact admitted target leg ->
+One finite, manual, offline pass over caller-named local copies only. Every entry (run and verify) first checks the
+closed scratch layout (inputs/{b2/,case.json[,replay.parquet]} [+ receipt.json once sealed]; anything else refuses),
+then lstat caps and the replay Parquet footer bounds, and only then hashes a byte; the same layout and digests are
+re-checked after the native calls. Call path: freeze (bounds, hash, copy, re-hash) -> unmodified ``run_relation_wallet_spine.verify`` on the frozen B2 copy -> exact admitted target leg ->
 native REL ``_venue_snapshots`` over the frozen REL bytes -> native ``assess_execution_feasibility`` -> optional native
 WP167/168/172 replay diagnostic + WP173 refusal -> one write-once ``b3research:sha256:`` receipt. ``verify`` only
 reads: it cold-verifies B2 again and recomputes the whole core from the frozen copies. Every socket entry point is
@@ -85,7 +87,38 @@ def _inventory(paths: dict) -> dict:
 
 
 def _hashes(paths: dict) -> dict:
-    return {key: {rel: B2._sha(path) for rel, path in files.items()} for key, files in _inventory(paths).items()}
+    """lstat inventory, then the replay footer bounds, and only then any byte hash."""
+    found = _inventory(paths)
+    if "replay" in found:
+        _parquet_bounds(paths["replay"])
+    return {key: {rel: B2._sha(path) for rel, path in files.items()} for key, files in found.items()}
+
+
+def _scratch(path) -> Path:
+    """B2's scratch guard plus REL's caller-path principles: no secret-named part, no unsafe existing parent."""
+    scratch = B2._scratch(path)
+    XE._require(not {p.casefold() for p in scratch.parts} & REL.SECRET_DIR_PARTS
+                and not any(REL._unsafe_entry(p, directory=True) for p in list(scratch.parents)[:-1] if p.exists()),
+                "SCRATCH_INVALID")
+    return scratch
+
+
+def _entries(directory: Path, required: dict, optional: dict) -> None:
+    """Exactly the named members (name -> is_dir), each a safe regular file or directory by lstat; nothing else."""
+    XE._require(not REL._unsafe_entry(directory, directory=True), "SCRATCH_LAYOUT_INVALID")
+    names = {entry.name for entry in os.scandir(directory)}
+    allowed = {**required, **optional}
+    XE._require(set(required) <= names <= set(allowed), "SCRATCH_LAYOUT_INVALID")
+    XE._require(not any(REL._unsafe_entry(directory / name, directory=allowed[name]) for name in names),
+                "SCRATCH_LAYOUT_INVALID")
+
+
+def _layout(scratch: Path, sealed: bool) -> Path:
+    """Closed scratch layout: inputs/ (+ receipt.json once sealed); inputs/ = b2/, case.json, optional replay.parquet."""
+    _entries(scratch, {"inputs": True, **({"receipt.json": False} if sealed else {})}, {})
+    inputs = scratch / "inputs"
+    _entries(inputs, {LAYOUT["b2"]: True, LAYOUT["case"]: False}, {LAYOUT["replay"]: False})
+    return inputs
 
 
 def _sources(b2_scratch, case_path, replay_file, scratch: Path) -> dict:
@@ -120,7 +153,7 @@ def parse_case(raw: bytes) -> dict:
 
 
 def _parquet_bounds(path: Path) -> None:
-    """Footer-declared rows and uncompressed bytes, before any native WP167 parse."""
+    """Footer-declared rows and uncompressed bytes, before any input hash, nested verifier or native WP167 parse."""
     import pyarrow.parquet as pq  # lazy: only a supplied replay needs it
     try:
         meta = pq.ParquetFile(path).metadata
@@ -157,15 +190,21 @@ def _read_member(root: Path, member: str) -> bytes:
     return REL._read_capped(path, REL.MAX_VENUE_BYTES) if not REL._unsafe_entry(path, directory=False) else b""
 
 
-def compute(scratch: Path) -> dict:
-    """Everything from the frozen copies: B2 cold verify first, then the pure B3 consumers."""
-    inputs = scratch / "inputs"
-    XE._require(not REL._unsafe_entry(inputs, directory=True), "INPUT_TREE_UNSAFE")
-    case_path = inputs / LAYOUT["case"]
-    _file(case_path, MAX_CASE_BYTES, "CASE_UNREADABLE")
-    case = parse_case(REL._read_capped(case_path, MAX_CASE_BYTES))
+def _case(path: Path) -> tuple:
+    """Bounded strict case read; the parsed bytes are returned so they can be bound to the input digest."""
+    _file(path, MAX_CASE_BYTES, "CASE_UNREADABLE")
+    raw = REL._read_capped(path, MAX_CASE_BYTES)
+    return parse_case(raw), hashlib.sha256(raw).hexdigest()
+
+
+def compute(scratch: Path, sealed: bool = False) -> dict:
+    """Everything from the frozen copies: exact layout, every bound, then hashes, B2 cold verify, the pure B3
+    consumers, and the same layout + digests again after every native call."""
+    inputs = _layout(scratch, sealed)
+    case, case_digest = _case(inputs / LAYOUT["case"])
     paths = _frozen(inputs, case)
     hashes = _hashes(paths)
+    XE._require(hashes["case"][""] == case_digest, "FROZEN_INPUT_CHANGED")  # the parsed bytes are the sealed bytes
     b2_dir = paths["b2"]
     checked = B2.verify(b2_dir)
     XE._require(checked["status"] == "VERIFIED" and checked["receipt_id"] == case["b2_receipt_id"], "B2_NOT_VERIFIED")
@@ -177,8 +216,9 @@ def compute(scratch: Path) -> dict:
     if case["replay"] is None:
         replay = XE.not_supplied()
     else:
-        _parquet_bounds(paths["replay"])
         replay = XE.replay_diagnostic(case["replay"], paths["replay"], bound, intent, selected["target"]["market_id"])
+    _layout(scratch, sealed)  # before/after frozen witness: no native call added, removed or changed a member
+    XE._require(_hashes(_frozen(inputs, case)) == hashes, "FROZEN_INPUT_CHANGED")
     core = XE.build_core(code_identity=code_identity(),
                          input_sha256={k: RW.sha_json(v) for k, v in sorted(hashes.items())},
                          lineage=XE.b2_lineage(case["b2_receipt_id"], b2_core, selected, bound), point=point,
@@ -188,36 +228,41 @@ def compute(scratch: Path) -> dict:
 
 
 def run(b2_scratch, case_path, replay_file, scratch_dir) -> dict:
-    scratch = B2._scratch(scratch_dir)
+    scratch = _scratch(scratch_dir)
     XE._require(not (scratch.exists() and any(scratch.iterdir())), "SCRATCH_NOT_EMPTY")  # write once, no hidden rerun
     with SGCLI.no_network() as attempts:
         sources = _sources(b2_scratch, case_path, replay_file, scratch)
-        case = parse_case(REL._read_capped(sources["case"], MAX_CASE_BYTES))
+        case, case_digest = _case(sources["case"])
         XE._require((case["replay"] is None) == ("replay" not in sources), "REPLAY_FILE_CASE_MISMATCH")
         before = _hashes(sources)
+        XE._require(before["case"][""] == case_digest, "INPUT_CHANGED_DURING_RUN")
         _freeze(sources, scratch / "inputs")
+        _layout(scratch, sealed=False)
         XE._require(_hashes(_frozen(scratch / "inputs", case)) == before, "INPUT_CHANGED_DURING_FREEZE")
         result = compute(scratch)
         XE._require(_hashes(sources) == before, "INPUT_CHANGED_DURING_RUN")  # caller files untouched
     XE._require(not attempts, "NETWORK_ATTEMPT_BLOCKED")
     receipt = XE.finalize(result["core"])
+    data = json.dumps(receipt, sort_keys=True, indent=1, ensure_ascii=False).encode("utf-8")
+    XE._require(len(data) <= MAX_RECEIPT_BYTES, "RECEIPT_TOO_LARGE")  # stop before writing, never a truncated seal
     with open(scratch / "receipt.json", "xb") as handle:
-        handle.write(json.dumps(receipt, sort_keys=True, indent=1, ensure_ascii=False).encode("utf-8"))
+        handle.write(data)
     return {"status": "RUN_COMPLETE", "receipt_id": receipt["receipt_id"], "a7": result["a7"], "point": result["point"],
             "replay": result["replay"], "network_attempts": 0}
 
 
 def verify(scratch_dir) -> dict:
     """Cold and read-only: B2 re-verified, whole core recomputed and compared byte for byte."""
-    scratch = B2._scratch(scratch_dir)
+    scratch = _scratch(scratch_dir)
     XE._require(scratch.is_dir(), "SCRATCH_INVALID")
     failures = []
     with SGCLI.no_network() as attempts:
-        raw = REL._read_capped(scratch / "receipt.json", MAX_RECEIPT_BYTES) \
-            if not REL._unsafe_entry(scratch / "receipt.json", directory=False) else b""
+        _layout(scratch, sealed=True)  # exact sealed layout before any read, hash or native verifier
+        raw = REL._read_capped(scratch / "receipt.json", MAX_RECEIPT_BYTES)
         receipt = SGCLI._strict_json(raw, "RECEIPT_UNREADABLE")
         try:
-            core = compute(scratch)["core"]
+            core = compute(scratch, sealed=True)["core"]
+            XE._require(REL._read_capped(scratch / "receipt.json", MAX_RECEIPT_BYTES) == raw, "RECEIPT_CHANGED")
             if not isinstance(receipt, dict) or set(receipt) != {"schema_id", "receipt_id", "core"}:
                 failures.append("RECEIPT_SHAPE_INVALID")
             elif receipt["schema_id"] != XE.RECEIPT_SCHEMA:
