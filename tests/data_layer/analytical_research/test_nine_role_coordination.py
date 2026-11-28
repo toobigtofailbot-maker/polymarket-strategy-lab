@@ -2,8 +2,9 @@
 
 Routing, journal and denominator mechanics run on synthetic consumer records (``simulate``): they prove the closed
 state machine and the counts only, never an integration or role credit. A5/A6/A7 consumers run on real native B2/B3
-cores built by the existing native builders (no pin needed); A1-A4 run on the real pinned B1-A/W01 receipts and skip
-with a reason when the exact pinned Hermes checkout is absent (D001).
+cores built by the existing native builders (no pin needed). The A1-A4 consumers over the real pinned B1-A/W01
+receipts run in the tools test file, which skips them with a reason when the exact pinned checkout is absent (D001);
+this file never skips (hosted CI fails any skip under tests/data_layer/analytical_research).
 """
 from __future__ import annotations
 
@@ -266,29 +267,8 @@ def test_b4_role_consumers_native_states(world):
     for role in ("A8", "A9", "A0"):
         assert stop(NR.consume, role, view, {}) == "ROLE_HAS_NO_CONSUMER"
     assert set(NR.CONSUMERS) == set(NR.ROLES[:7]) and len({id(f) for f in NR.CONSUMERS.values()}) == 7
-    # A1-A4 run on the real pinned B1-A / W01 receipts (same builders the tools tests use)
-    from tests.tools.alpha import test_run_nine_role_coordination as TT
-    views = TT.pinned_views()
-    if views is None:
-        pytest.skip("pinned part: real B1-A/W01 receipts need POLYMARKET_HERMES_PIN_ROOT (D001)")
-    real = views["b3"]
-    p1 = NR.consume("A1", real, {})
-    spine = real["spine"]["core"]
-    assert p1["native_status"] == spine["a1_scout"]["status"] == "ADMITTED"
-    assert p1["projection"]["target_market_id"] == spine["a1_scout"]["target"]["market_id"]
-    p2 = NR.consume("A2", real, {"A1": p1["projection"]})
-    assert p2["projection"]["source_allowlist"] == spine["a2_research"]["source_allowlist"]
-    assert p2["projection"]["sdk_real_network_requests"] == 0 and p1["source"]["receipt_id"] == p2["source"]["receipt_id"]
-    assert p1["projection"] != p2["projection"] and p1["source"]["member"] != p2["source"]["member"]  # distinct projections
-    bad = copy.deepcopy(real)
-    bad["spine"]["core"]["a2_research"]["source_allowlist"] = []
-    with pytest.raises(NR.RoleRefusal, match="A2_LINEAGE_MISMATCH"):
-        NR.consume("A2", bad, {"A1": p1["projection"]})
-    bad = copy.deepcopy(real)
-    bad["spine"]["core"]["a1_scout"]["target"]["candidate_id"] = "other"
-    with pytest.raises(NR.RoleRefusal, match="A1_LINEAGE_MISMATCH"):
-        NR.consume("A1", bad, {})
-
+    # the pinned A1/A2 consumers over the real B1-A receipt run in tools test_b4_pinned_child_origin_pair, beside
+    # the pinned A3/A4 pair: hosted CI forbids any skip in this directory (ci.yml WP167 focused step)
 
 # ------------------------------------------------------------------ R011
 

@@ -348,6 +348,24 @@ def test_b4_pinned_child_origin_pair(tmp_path, monkeypatch):
     assert pair(lambda v: body(v)["children"][0].update(api_calls=True)) == ["W01_PAIR_USAGE_INVALID"] * 2
     with pytest.raises(NR.RoleRefusal, match="W01_PAIR_PARTNER_MISMATCH"):
         NR.consume("A4", views["b2"], {"A3": dict(tasks["A3"]["projection"], subagent_id="sa-x")})
+    # R004 pinned part: the A1/A2 consumers on the real pinned B1-A receipt (moved from the pure test file)
+    real = views["b3"]
+    p1 = NR.consume("A1", real, {})
+    spine = real["spine"]["core"]
+    assert p1["native_status"] == spine["a1_scout"]["status"] == "ADMITTED"
+    assert p1["projection"]["target_market_id"] == spine["a1_scout"]["target"]["market_id"]
+    p2 = NR.consume("A2", real, {"A1": p1["projection"]})
+    assert p2["projection"]["source_allowlist"] == spine["a2_research"]["source_allowlist"]
+    assert p2["projection"]["sdk_real_network_requests"] == 0 and p1["source"]["receipt_id"] == p2["source"]["receipt_id"]
+    assert p1["projection"] != p2["projection"] and p1["source"]["member"] != p2["source"]["member"]  # distinct projections
+    bad = copy.deepcopy(real)
+    bad["spine"]["core"]["a2_research"]["source_allowlist"] = []
+    with pytest.raises(NR.RoleRefusal, match="A2_LINEAGE_MISMATCH"):
+        NR.consume("A2", bad, {"A1": p1["projection"]})
+    bad = copy.deepcopy(real)
+    bad["spine"]["core"]["a1_scout"]["target"]["candidate_id"] = "other"
+    with pytest.raises(NR.RoleRefusal, match="A1_LINEAGE_MISMATCH"):
+        NR.consume("A1", bad, {})
 
 
 # ------------------------------------------------------------------ R005
