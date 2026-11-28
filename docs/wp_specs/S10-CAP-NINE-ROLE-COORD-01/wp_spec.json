@@ -1,0 +1,567 @@
+{
+  "schema_id": "polymarket-work-package-spec",
+  "schema_version": "1.0.0",
+  "identity": {
+    "wp_id": "S10-CAP-NINE-ROLE-COORD-01",
+    "title": "B4 — finite conditional nine-role native receipt coordinator",
+    "repository": "toobigtofailbot-maker/polymarket-strategy-lab",
+    "package_class": "B4_OFFLINE_NINE_ROLE_COORDINATION",
+    "package_size_class": "L",
+    "risk_level": 3,
+    "base_branch": "main",
+    "suggested_branch": "codex/s10-cap-nine-role-coord-01",
+    "required_predecessor": {
+      "pr_number": 286,
+      "head_sha": "67b53d6c7444e5fb64631b0ad788746c3f572158",
+      "merge_sha": "5666a3347f6f56215e290f2cbea90926ce9e4877"
+    },
+    "objective": "One bounded offline campaign of one or two explicitly selected synthetic cases from cold-verified B2/B3 native receipts; route nine role slots per case into real conditional native receipt consumers, persist intent prior to each attempt, reconcile interruptions without duplicate task execution, seal and independently cold-verify complete denominators and handoffs. A8/A9 are explicit dependency skips reserved for W09/W10; no new Hermes dispatch, provider, scheduler, strategy, paper or execution authority.",
+    "capital_at_risk_usd": 0,
+    "xl_explicit_authorization": false,
+    "xl_authorization_basis": null
+  },
+  "scope": {
+    "required_changed_files": [
+      "src/data_layer/analytical_research/nine_role_coordination.py",
+      "tools/alpha/run_nine_role_coordination.py",
+      "tests/data_layer/analytical_research/test_nine_role_coordination.py",
+      "tests/tools/alpha/test_run_nine_role_coordination.py",
+      "docs/nine_role_coordination_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-NINE-ROLE-COORD-01.md",
+      "docs/wp_specs/S10-CAP-NINE-ROLE-COORD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-NINE-ROLE-COORD-01/wp_spec.json"
+    ],
+    "allowed_changed_files": [
+      "src/data_layer/analytical_research/nine_role_coordination.py",
+      "tools/alpha/run_nine_role_coordination.py",
+      "tests/data_layer/analytical_research/test_nine_role_coordination.py",
+      "tests/tools/alpha/test_run_nine_role_coordination.py",
+      "docs/nine_role_coordination_contract.md",
+      "docs/deferred_items_log.md",
+      "docs/project_status.md",
+      "docs/repo_truth_index.md",
+      "docs/status_entries/S10-CAP-NINE-ROLE-COORD-01.md",
+      "docs/wp_specs/S10-CAP-NINE-ROLE-COORD-01/wp_prompt.txt",
+      "docs/wp_specs/S10-CAP-NINE-ROLE-COORD-01/wp_spec.json"
+    ],
+    "forbidden_prefixes": [
+      ".github/",
+      "agent_memory/",
+      "agent_runtime/",
+      "config/",
+      "credentials/",
+      "secrets/",
+      "local_data/",
+      "src/execution_gateway/",
+      "src/exploratory_gate_c/",
+      "src/live_pilot/",
+      "src/paper_trading/",
+      "src/risk_engine/",
+      "src/strategy_lifecycle/",
+      "src/operator_cockpit_frontend/",
+      "src/research_runtime/",
+      "src/data_layer/polymarket/",
+      "src/data_layer/point_in_time_market_research/",
+      "tools/deployment/",
+      "tools/hermes/",
+      "tools/polymarket/",
+      "tools/execution/",
+      "tools/qualification/",
+      "src/data_layer/wallet_intelligence/",
+      "src/execution_feasibility/",
+      "src/data_layer/analytical_research/oracle3/",
+      "docs/roadmaps/"
+    ],
+    "max_changed_files": 11,
+    "exact_scope_required": true,
+    "historical_compatibility_edits": [],
+    "rollback_surface": "Revert exactly 11 paths; all native producers, identities and protected runtime remain unchanged; caller scratch is the only new data surface.",
+    "mode_boundaries": [
+      {
+        "boundary": "workflow_governance",
+        "crossed": false
+      },
+      {
+        "boundary": "local_offline_tooling",
+        "crossed": true
+      },
+      {
+        "boundary": "canonical_evidence_policy",
+        "crossed": true
+      },
+      {
+        "boundary": "docs",
+        "crossed": true
+      },
+      {
+        "boundary": "tests",
+        "crossed": true
+      },
+      {
+        "boundary": "source_runtime",
+        "crossed": true
+      },
+      {
+        "boundary": "workflow_files",
+        "crossed": false
+      },
+      {
+        "boundary": "dependencies",
+        "crossed": false
+      },
+      {
+        "boundary": "network",
+        "crossed": false
+      },
+      {
+        "boundary": "credentials",
+        "crossed": false
+      },
+      {
+        "boundary": "scheduler",
+        "crossed": false
+      },
+      {
+        "boundary": "hermes_runtime",
+        "crossed": false
+      },
+      {
+        "boundary": "strategy",
+        "crossed": false
+      },
+      {
+        "boundary": "paper",
+        "crossed": false
+      },
+      {
+        "boundary": "execution",
+        "crossed": false
+      },
+      {
+        "boundary": "live",
+        "crossed": false
+      }
+    ]
+  },
+  "authority": {
+    "workflow_governance": false,
+    "local_offline_tooling": true,
+    "canonical_evidence_policy": true,
+    "docs": true,
+    "tests": true,
+    "source_runtime": true,
+    "workflow_files": false,
+    "dependencies": false,
+    "network": false,
+    "credentials": false,
+    "scheduler": false,
+    "hermes_runtime": false,
+    "strategy": false,
+    "paper": false,
+    "execution": false,
+    "live": false
+  },
+  "api_matrix": {
+    "applicable": true,
+    "reason": "Two opt-in offline surfaces; no existing native API, schema, or protected runtime changes.",
+    "items": [
+      {
+        "surface": "src/data_layer/analytical_research/nine_role_coordination.py",
+        "before": "No W08 bounded native receipt campaign at this surface.",
+        "after": "Pure fixed role plan, event/consumer projection, terminal counts and receipt identity.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing sealed B2/B3 verifiers, W01 identity, native source/economic contracts remain unchanged; no fresh upstream dispatch.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      },
+      {
+        "surface": "tools/alpha/run_nine_role_coordination.py",
+        "before": "No W08 bounded native receipt campaign at this surface.",
+        "after": "Finite explicit run/resume/verify, bounded frozen scratch and durable journal, native cold checks.",
+        "change_authorized": true,
+        "compatibility_requirement": "Existing sealed B2/B3 verifiers, W01 identity, native source/economic contracts remain unchanged; no fresh upstream dispatch.",
+        "authority": "LOCAL_OFFLINE_RESEARCH_DIAGNOSTIC_ONLY"
+      }
+    ]
+  },
+  "semantic_fields": {
+    "applicable": true,
+    "reason": "Twelve exact native coordination, recovery, safety and evidence requirements.",
+    "items": [
+      {
+        "path": "requirements.r001",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R001: Strict manifest v1, 1–2 ordered case slots, source kind B2/B3, exact expected receipt id, closed route enum and fixed case paths; copy immutable bounded source trees into caller scratch and cold-verify using native B2.verify or B3.verify once per case attempt. Derive nested verified B2/B1-A/W01 identity, same grounding/universe/target/as_of and native decision time; reject wrong/mismatched, duplicate (receipt_id, route), aliases, foreign or unverified sources. Retain native identities, no caller-derived role claims.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R001: Strict manifest v1, 1–2 ordered case slots, source kind B2/B3, exact expected receipt id, closed route enum and fixed case paths; copy immutable bounded source trees into caller scratch and cold-verify using native B2.verify or B3.verify once per case attempt. Derive nested verified B2/B1-A/W01 identity, same grounding/universe/target/as_of and native decision time; reject wrong/mismatched, duplicate (receipt_id, route), aliases, foreign or unverified sources. Retain native identities, no caller-derived role claims.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r002",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R002: Pure deterministic routing table for SOURCE_REVIEW, FORECAST_REVIEW, RELATION_REVIEW, WALLET_REVIEW, FULL_SHARED_CASE. Exactly nine ordered slots per case, unique case/task/role/attempt ids; conditional same-case prerequisites and atomic W01 A3/A4 eligibility; explicit NOT_REQUESTED and dependency reasons. A8/A9 always skipped with separate W09/W10 reasons; no role-success label without actual consumer. Test all routes and native admission/refusal permutations, count conservation and no truthy coercion.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R002: Pure deterministic routing table for SOURCE_REVIEW, FORECAST_REVIEW, RELATION_REVIEW, WALLET_REVIEW, FULL_SHARED_CASE. Exactly nine ordered slots per case, unique case/task/role/attempt ids; conditional same-case prerequisites and atomic W01 A3/A4 eligibility; explicit NOT_REQUESTED and dependency reasons. A8/A9 always skipped with separate W09/W10 reasons; no role-success label without actual consumer. Test all routes and native admission/refusal permutations, count conservation and no truthy coercion.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r003",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R003: Exercise actual pinned B2 and W01 produced by existing tests and cold-verify through native call chain. Map FORECASTER/FALSIFIER by exact task_index/role and independently retained parent, child session and subagent IDs, effective toolsets, witness id, episode id, status, recorded usage and cost status; no summaries echoed. Pair eligibility atomic, consumers distinct, source child metadata must match B1-A summary. Never mint fresh host evidence, unknown cost remains unknown, zero new provider/Hermes dispatch.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R003: Exercise actual pinned B2 and W01 produced by existing tests and cold-verify through native call chain. Map FORECASTER/FALSIFIER by exact task_index/role and independently retained parent, child session and subagent IDs, effective toolsets, witness id, episode id, status, recorded usage and cost status; no summaries echoed. Pair eligibility atomic, consumers distinct, source child metadata must match B1-A summary. Never mint fresh host evidence, unknown cost remains unknown, zero new provider/Hermes dispatch.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r004",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R004: Seven role-specific consumers with actual verified native projections and closed source/reference digests, not a generic success stub. A1/A2 source allowlist and grounding; A3/A4 forecast and independent falsifier receipt; A5 selected model/REL/parity/pointer, A6 native cohort/profile/assessment/delay with admitted/refusal/insufficient status, A7 exact B3 same selected target and validated point/replay/role disposition. A5 refusal blocks dependent A7; B2-only and wallet-only routes do not invent B3/wallet economics. Distinguish delivery success from native ADMITTED/PARTIAL/REFUSED/INSUFFICIENT, no economics or authority promotion.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R004: Seven role-specific consumers with actual verified native projections and closed source/reference digests, not a generic success stub. A1/A2 source allowlist and grounding; A3/A4 forecast and independent falsifier receipt; A5 selected model/REL/parity/pointer, A6 native cohort/profile/assessment/delay with admitted/refusal/insufficient status, A7 exact B3 same selected target and validated point/replay/role disposition. A5 refusal blocks dependent A7; B2-only and wallet-only routes do not invent B3/wallet economics. Distinguish delivery success from native ADMITTED/PARTIAL/REFUSED/INSUFFICIENT, no economics or authority promotion.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r005",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R005: Use write-once canonical plan and sequential hash-chained exclusive journal entries with strict closed shape, bounded bytes/events, durable flush/fsync before native verifier or role consumer called. At most one logical attempt per verification/task, deterministic identities, fixed single-writer lock and closed state machine. Demonstrate intent exists before real call, correct transition/order, duplicate prevention, refusal on malformed or torn chain; no canonical store writes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R005: Use write-once canonical plan and sequential hash-chained exclusive journal entries with strict closed shape, bounded bytes/events, durable flush/fsync before native verifier or role consumer called. At most one logical attempt per verification/task, deterministic identities, fixed single-writer lock and closed state machine. Demonstrate intent exists before real call, correct transition/order, duplicate prevention, refusal on malformed or torn chain; no canonical store writes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r006",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R006: Real interrupted finite two-case campaign in tests (clean exception unwinds writer lock after STARTED before terminal); resume from frozen plan/inputs/journal without rerunning in-flight attempt, record QUARANTINED and downstream skips, continue independent eligible slots and next case; no repeated consumption of completed task. Validation-only cold re-verification distinguished from logical attempts. Stale lock or torn journal refuses, no auto-steal, no hard-crash automatic recovery claim. Test after verification intent and after role intent, after terminal before seal, verified final receipt and no mutation on second resume.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R006: Real interrupted finite two-case campaign in tests (clean exception unwinds writer lock after STARTED before terminal); resume from frozen plan/inputs/journal without rerunning in-flight attempt, record QUARANTINED and downstream skips, continue independent eligible slots and next case; no repeated consumption of completed task. Validation-only cold re-verification distinguished from logical attempts. Stale lock or torn journal refuses, no auto-steal, no hard-crash automatic recovery claim. Test after verification intent and after role intent, after terminal before seal, verified final receipt and no mutation on second resume.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r007",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R007: Real local exact Hermes pin (existing test fixture) makes B2 and B3 receipts; run two-case campaign on sealed copies, including B2 source route and B3 full route with at least one A1–A7 successful delivery each where native eligibility permits; include actual A5/A6 refusal or insufficient native fixture and B2 A7 not supplied, plus explicit A8/A9 skips. Independently verify seal from frozen bytes and observe exact native lineage and role digests, zero new calls, no mock bypass. Local pin required; hosted pin-only positive skip explicitly bounded and non-pin negative coverage unconditional. Preserve B3 replay dependency split as D-item, do not claim locally unavailable history.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R007: Real local exact Hermes pin (existing test fixture) makes B2 and B3 receipts; run two-case campaign on sealed copies, including B2 source route and B3 full route with at least one A1–A7 successful delivery each where native eligibility permits; include actual A5/A6 refusal or insufficient native fixture and B2 A7 not supplied, plus explicit A8/A9 skips. Independently verify seal from frozen bytes and observe exact native lineage and role digests, zero new calls, no mock bypass. Local pin required; hosted pin-only positive skip explicitly bounded and non-pin negative coverage unconditional. Preserve B3 replay dependency split as D-item, do not claim locally unavailable history.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r008",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R008: Create historical pinned B2 and B3 fixture receipts at exact merged base in isolated worktree before edits, replay cold checks at candidate from immutable copies. No changes to native code, pin, schema, producer IDs, native fixture contract, registry or policy. B3 R007 established accepted split preserved; do not require re-performing unsupported Windows replay or misclassify prior limitation. Report native verification and historical input bytes/hash equality.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R008: Create historical pinned B2 and B3 fixture receipts at exact merged base in isolated worktree before edits, replay cold checks at candidate from immutable copies. No changes to native code, pin, schema, producer IDs, native fixture contract, registry or policy. B3 R007 established accepted split preserved; do not require re-performing unsupported Windows replay or misclassify prior limitation. Report native verification and historical input bytes/hash equality.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r009",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R009: Validate exact root/file layout before reads/hashes or native calls; absolute nonrepo scratch, no alias/symlink/reparse/hardlink/special paths or overlap, 2 cases <=3 GiB/20000 files each incl nested receipt, max 1 MiB manifest, bounded journal and projection/receipt caps. Use existing native bounds and B3 parquet footer preflight before hashing optional replay, no raw traceback/path/secret/source echo, no network. Reject duplicate JSON keys unknown fields, malformed ids, wrong data types, invalid CLI and overbound inputs before expensive processing. Input inventory before/after freeze/verify, no input writes.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R009: Validate exact root/file layout before reads/hashes or native calls; absolute nonrepo scratch, no alias/symlink/reparse/hardlink/special paths or overlap, 2 cases <=3 GiB/20000 files each incl nested receipt, max 1 MiB manifest, bounded journal and projection/receipt caps. Use existing native bounds and B3 parquet footer preflight before hashing optional replay, no raw traceback/path/secret/source echo, no network. Reject duplicate JSON keys unknown fields, malformed ids, wrong data types, invalid CLI and overbound inputs before expensive processing. Input inventory before/after freeze/verify, no input writes.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r010",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R010: Seal receipt from replayed strict plan+journal and role projections, closed core schema/id using native canonical bytes + SHA256, fixed identity/version/hash coverage; cold verify exact full core and id plus actual native verification and successful consumers projection recomputation, no mutation or arbitrary caller evidence. Strict canonical byte comparison rejects bool/numeric equality, forged rehashed core/projection, extra/missing keys, journal reorder/tampering and false terminal state. Negative/uncertain attempt history is structural local evidence only, not cryptographic host attestation. No overwrite; sealed resume read-only.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R010: Seal receipt from replayed strict plan+journal and role projections, closed core schema/id using native canonical bytes + SHA256, fixed identity/version/hash coverage; cold verify exact full core and id plus actual native verification and successful consumers projection recomputation, no mutation or arbitrary caller evidence. Strict canonical byte comparison rejects bool/numeric equality, forged rehashed core/projection, extra/missing keys, journal reorder/tampering and false terminal state. Negative/uncertain attempt history is structural local evidence only, not cryptographic host attestation. No overwrite; sealed resume read-only.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r011",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R011: R3-21 pmxt-mcp and R3-29 Valory remain original CONCEPT_ONLY / PARTIAL_CONCEPT_UNACCEPTED and owner disposition PENDING, no upstream invocation/value verification/install; native task envelopes and denied tool mutation design only. Preserve all other 34 rows, previous B3 D-items, #268, W07 rights and separately owned Lane B. Output frozen nonauthorizing handoff metadata for W09/W10 only; no learning, routing mutation, prompt optimization at runtime, provider or strategy.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R011: R3-21 pmxt-mcp and R3-29 Valory remain original CONCEPT_ONLY / PARTIAL_CONCEPT_UNACCEPTED and owner disposition PENDING, no upstream invocation/value verification/install; native task envelopes and denied tool mutation design only. Preserve all other 34 rows, previous B3 D-items, #268, W07 rights and separately owned Lane B. Output frozen nonauthorizing handoff metadata for W09/W10 only; no learning, routing mutation, prompt optimization at runtime, provider or strategy.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      },
+      {
+        "path": "requirements.r012",
+        "source": "DERIVED",
+        "type": "object",
+        "required_rule": "R012: For every case and aggregate exact nine-slot denominator (9 or 18), mutually exclusive terminal delivery states COMPLETED_CONSUMED, SKIPPED, REFUSED, FAILED, QUARANTINED; no COMPLETED_UNCONSUMED success or unfinished slot in final seal. Count attempted/consumed and upstream native conditions separately; no fabricated retries, elapsed/cost unknown when not observed, zero new provider/orders/capital; route and prerequisite failure propagation deterministic, no output says nine functional agents or integration complete. Test mixed outcomes, interrupted and out-of-order events and invalid transition/failure precedence.",
+        "mutable": false,
+        "identity_role": "NONE",
+        "exclusion_reason": null,
+        "validation_rule": "R012: For every case and aggregate exact nine-slot denominator (9 or 18), mutually exclusive terminal delivery states COMPLETED_CONSUMED, SKIPPED, REFUSED, FAILED, QUARANTINED; no COMPLETED_UNCONSUMED success or unfinished slot in final seal. Count attempted/consumed and upstream native conditions separately; no fabricated retries, elapsed/cost unknown when not observed, zero new provider/orders/capital; route and prerequisite failure propagation deterministic, no output says nine functional agents or integration complete. Test mixed outcomes, interrupted and out-of-order events and invalid transition/failure precedence.",
+        "failure_category": "SEMANTIC_CONTRADICTION",
+        "safe_output": "Closed nonauthorizing synthetic receipt delivery, refusal, skip, failure or quarantine; no false proof.",
+        "derivation_rule_id": null
+      }
+    ]
+  },
+  "identity_derivations": {
+    "applicable": false,
+    "reason": "No new native or registry identity. Local coordination identifiers and journal hashes are exact canonical SHA-256 derivations specified in prompt and R002/R005/R010, independently recomputed; no existing identity changes.",
+    "items": []
+  },
+  "state_transitions": {
+    "applicable": true,
+    "reason": "Deterministic RUNTIME readiness followed by standing-owner-authorized bounded offline implementation and independent review.",
+    "items": [
+      {
+        "from_state": "LOCAL_DRAFT",
+        "to_state": "DRAFTABILITY_PASS",
+        "condition": "Actual native readiness gate validates final prompt and spec on synchronized main before any source edit; no PROTECTED certificate for the expected RUNTIME track.",
+        "failure_category": "DRAFTABILITY_INCOMPLETE"
+      },
+      {
+        "from_state": "DRAFTABILITY_PASS",
+        "to_state": "AUTHORIZED",
+        "condition": "Karl standing and explicit continuation direction; Side26 limited B4 grant only after deterministic readiness on exact merged base. No protected/provider or Lane B scope.",
+        "failure_category": "AUTHORITY_CONTRADICTION"
+      },
+      {
+        "from_state": "AUTHORIZED",
+        "to_state": "IMPLEMENTED_LOCAL",
+        "condition": "Implement exactly 11 files and R001-R012; complete actual pinned local tests, native adjacent and full suite, exact-head hosted CI, published evidence and Side26 review.",
+        "failure_category": "SEMANTIC_CONTRADICTION"
+      }
+    ]
+  },
+  "failure_precedence": {
+    "applicable": true,
+    "reason": "Fixed WP159 schema-1.0.0 public error precedence, without a new custom error framework.",
+    "items": [
+      {
+        "condition_id": "file_unreadable",
+        "category": "FILE_READ_ERROR",
+        "priority": 10
+      },
+      {
+        "condition_id": "json_invalid",
+        "category": "JSON_PARSE_INVALID",
+        "priority": 20
+      },
+      {
+        "condition_id": "schema_unsupported",
+        "category": "SCHEMA_UNSUPPORTED",
+        "priority": 30
+      },
+      {
+        "condition_id": "unknown_field",
+        "category": "UNKNOWN_FIELD",
+        "priority": 40
+      },
+      {
+        "condition_id": "field_missing",
+        "category": "FIELD_MISSING",
+        "priority": 50
+      },
+      {
+        "condition_id": "field_type_invalid",
+        "category": "FIELD_TYPE_INVALID",
+        "priority": 60
+      },
+      {
+        "condition_id": "field_value_invalid",
+        "category": "FIELD_VALUE_INVALID",
+        "priority": 70
+      },
+      {
+        "condition_id": "certificate_hash_mismatch",
+        "category": "CERTIFICATE_HASH_MISMATCH",
+        "priority": 80
+      },
+      {
+        "condition_id": "draftability_incomplete",
+        "category": "DRAFTABILITY_INCOMPLETE",
+        "priority": 90
+      },
+      {
+        "condition_id": "scope_policy_invalid",
+        "category": "SCOPE_POLICY_INVALID",
+        "priority": 100
+      },
+      {
+        "condition_id": "authority_contradiction",
+        "category": "AUTHORITY_CONTRADICTION",
+        "priority": 110
+      },
+      {
+        "condition_id": "semantic_contradiction",
+        "category": "SEMANTIC_CONTRADICTION",
+        "priority": 120
+      },
+      {
+        "condition_id": "identity_derivation_invalid",
+        "category": "IDENTITY_DERIVATION_INVALID",
+        "priority": 130
+      },
+      {
+        "condition_id": "failure_precedence_invalid",
+        "category": "FAILURE_PRECEDENCE_INVALID",
+        "priority": 140
+      },
+      {
+        "condition_id": "example_truth_invalid",
+        "category": "EXAMPLE_TRUTH_INVALID",
+        "priority": 150
+      }
+    ]
+  },
+  "examples": {
+    "applicable": false,
+    "reason": "Real synthetic fixture witnesses and negative cases are required by R001-R012; no duplicate illustrative examples.",
+    "items": []
+  },
+  "evidence_plan": {
+    "applicable": true,
+    "reason": "Twelve mapped exact pytest nodes; positive actual historical pinned native cases and real interruption, unconditional non-pin negatives, full local and hosted exact-head evidence.",
+    "items": [
+      {
+        "requirement_id": "R001",
+        "source": "pytest",
+        "test": "test_b4_exact_native_case_lineage",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_exact_native_case_lineage",
+        "expected_result": "R001: Strict manifest v1, 1–2 ordered case slots, source kind B2/B3, exact expected receipt id, closed route enum and fixed case paths; copy immutable bounded source trees into caller scratch and cold-verify using native B2.verify or B3.verify once per case attempt. Derive nested verified B2/B1-A/W01 identity, same grounding/universe/target/as_of and native decision time; reject wrong/mismatched, duplicate (receipt_id, route), aliases, foreign or unverified sources. Retain native identities, no caller-derived role claims."
+      },
+      {
+        "requirement_id": "R002",
+        "source": "pytest",
+        "test": "test_b4_route_matrix_and_denominator",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_nine_role_coordination.py::test_b4_route_matrix_and_denominator",
+        "expected_result": "R002: Pure deterministic routing table for SOURCE_REVIEW, FORECAST_REVIEW, RELATION_REVIEW, WALLET_REVIEW, FULL_SHARED_CASE. Exactly nine ordered slots per case, unique case/task/role/attempt ids; conditional same-case prerequisites and atomic W01 A3/A4 eligibility; explicit NOT_REQUESTED and dependency reasons. A8/A9 always skipped with separate W09/W10 reasons; no role-success label without actual consumer. Test all routes and native admission/refusal permutations, count conservation and no truthy coercion."
+      },
+      {
+        "requirement_id": "R003",
+        "source": "pytest",
+        "test": "test_b4_pinned_child_origin_pair",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_pinned_child_origin_pair",
+        "expected_result": "R003: Exercise actual pinned B2 and W01 produced by existing tests and cold-verify through native call chain. Map FORECASTER/FALSIFIER by exact task_index/role and independently retained parent, child session and subagent IDs, effective toolsets, witness id, episode id, status, recorded usage and cost status; no summaries echoed. Pair eligibility atomic, consumers distinct, source child metadata must match B1-A summary. Never mint fresh host evidence, unknown cost remains unknown, zero new provider/Hermes dispatch."
+      },
+      {
+        "requirement_id": "R004",
+        "source": "pytest",
+        "test": "test_b4_role_consumers_native_states",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_nine_role_coordination.py::test_b4_role_consumers_native_states",
+        "expected_result": "R004: Seven role-specific consumers with actual verified native projections and closed source/reference digests, not a generic success stub. A1/A2 source allowlist and grounding; A3/A4 forecast and independent falsifier receipt; A5 selected model/REL/parity/pointer, A6 native cohort/profile/assessment/delay with admitted/refusal/insufficient status, A7 exact B3 same selected target and validated point/replay/role disposition. A5 refusal blocks dependent A7; B2-only and wallet-only routes do not invent B3/wallet economics. Distinguish delivery success from native ADMITTED/PARTIAL/REFUSED/INSUFFICIENT, no economics or authority promotion."
+      },
+      {
+        "requirement_id": "R005",
+        "source": "pytest",
+        "test": "test_b4_journal_intent_before_call",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_journal_intent_before_call",
+        "expected_result": "R005: Use write-once canonical plan and sequential hash-chained exclusive journal entries with strict closed shape, bounded bytes/events, durable flush/fsync before native verifier or role consumer called. At most one logical attempt per verification/task, deterministic identities, fixed single-writer lock and closed state machine. Demonstrate intent exists before real call, correct transition/order, duplicate prevention, refusal on malformed or torn chain; no canonical store writes."
+      },
+      {
+        "requirement_id": "R006",
+        "source": "pytest",
+        "test": "test_b4_resume_quarantine_and_progress",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_resume_quarantine_and_progress",
+        "expected_result": "R006: Real interrupted finite two-case campaign in tests (clean exception unwinds writer lock after STARTED before terminal); resume from frozen plan/inputs/journal without rerunning in-flight attempt, record QUARANTINED and downstream skips, continue independent eligible slots and next case; no repeated consumption of completed task. Validation-only cold re-verification distinguished from logical attempts. Stale lock or torn journal refuses, no auto-steal, no hard-crash automatic recovery claim. Test after verification intent and after role intent, after terminal before seal, verified final receipt and no mutation on second resume."
+      },
+      {
+        "requirement_id": "R007",
+        "source": "pytest",
+        "test": "test_b4_actual_pinned_two_case_campaign",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_actual_pinned_two_case_campaign",
+        "expected_result": "R007: Real local exact Hermes pin (existing test fixture) makes B2 and B3 receipts; run two-case campaign on sealed copies, including B2 source route and B3 full route with at least one A1–A7 successful delivery each where native eligibility permits; include actual A5/A6 refusal or insufficient native fixture and B2 A7 not supplied, plus explicit A8/A9 skips. Independently verify seal from frozen bytes and observe exact native lineage and role digests, zero new calls, no mock bypass. Local pin required; hosted pin-only positive skip explicitly bounded and non-pin negative coverage unconditional. Preserve B3 replay dependency split as D-item, do not claim locally unavailable history."
+      },
+      {
+        "requirement_id": "R008",
+        "source": "pytest",
+        "test": "test_b4_native_predecessor_compatibility",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_native_predecessor_compatibility",
+        "expected_result": "R008: Create historical pinned B2 and B3 fixture receipts at exact merged base in isolated worktree before edits, replay cold checks at candidate from immutable copies. No changes to native code, pin, schema, producer IDs, native fixture contract, registry or policy. B3 R007 established accepted split preserved; do not require re-performing unsupported Windows replay or misclassify prior limitation. Report native verification and historical input bytes/hash equality."
+      },
+      {
+        "requirement_id": "R009",
+        "source": "pytest",
+        "test": "test_b4_scratch_bounds_authority",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_scratch_bounds_authority",
+        "expected_result": "R009: Validate exact root/file layout before reads/hashes or native calls; absolute nonrepo scratch, no alias/symlink/reparse/hardlink/special paths or overlap, 2 cases <=3 GiB/20000 files each incl nested receipt, max 1 MiB manifest, bounded journal and projection/receipt caps. Use existing native bounds and B3 parquet footer preflight before hashing optional replay, no raw traceback/path/secret/source echo, no network. Reject duplicate JSON keys unknown fields, malformed ids, wrong data types, invalid CLI and overbound inputs before expensive processing. Input inventory before/after freeze/verify, no input writes."
+      },
+      {
+        "requirement_id": "R010",
+        "source": "pytest",
+        "test": "test_b4_seal_exact_cold_verify",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/tools/alpha/test_run_nine_role_coordination.py::test_b4_seal_exact_cold_verify",
+        "expected_result": "R010: Seal receipt from replayed strict plan+journal and role projections, closed core schema/id using native canonical bytes + SHA256, fixed identity/version/hash coverage; cold verify exact full core and id plus actual native verification and successful consumers projection recomputation, no mutation or arbitrary caller evidence. Strict canonical byte comparison rejects bool/numeric equality, forged rehashed core/projection, extra/missing keys, journal reorder/tampering and false terminal state. Negative/uncertain attempt history is structural local evidence only, not cryptographic host attestation. No overwrite; sealed resume read-only."
+      },
+      {
+        "requirement_id": "R011",
+        "source": "pytest",
+        "test": "test_b4_capability_and_successor_boundaries",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_nine_role_coordination.py::test_b4_capability_and_successor_boundaries",
+        "expected_result": "R011: R3-21 pmxt-mcp and R3-29 Valory remain original CONCEPT_ONLY / PARTIAL_CONCEPT_UNACCEPTED and owner disposition PENDING, no upstream invocation/value verification/install; native task envelopes and denied tool mutation design only. Preserve all other 34 rows, previous B3 D-items, #268, W07 rights and separately owned Lane B. Output frozen nonauthorizing handoff metadata for W09/W10 only; no learning, routing mutation, prompt optimization at runtime, provider or strategy."
+      },
+      {
+        "requirement_id": "R012",
+        "source": "pytest",
+        "test": "test_b4_terminal_denominators_and_failures",
+        "command": "python -B -m pytest -q -p no:cacheprovider tests/data_layer/analytical_research/test_nine_role_coordination.py::test_b4_terminal_denominators_and_failures",
+        "expected_result": "R012: For every case and aggregate exact nine-slot denominator (9 or 18), mutually exclusive terminal delivery states COMPLETED_CONSUMED, SKIPPED, REFUSED, FAILED, QUARANTINED; no COMPLETED_UNCONSUMED success or unfinished slot in final seal. Count attempted/consumed and upstream native conditions separately; no fabricated retries, elapsed/cost unknown when not observed, zero new provider/orders/capital; route and prerequisite failure propagation deterministic, no output says nine functional agents or integration complete. Test mixed outcomes, interrupted and out-of-order events and invalid transition/failure precedence."
+      }
+    ]
+  },
+  "successor_boundary": {
+    "next_wp": "S10-CAP-LEARNING-ROUTING-01",
+    "next_title": "B5/W09 A8 learning and versioned suggestion consumption, then W10 A9 improvement; separately gated after B4 acceptance and Karl merge.",
+    "separately_gated": true,
+    "feature_validator_moved_to": "S10-CAP-NINE-ROLE-COORD-01",
+    "forbidden_in_this_wp": [
+      "No provider/source/model/Hermes dispatch, host or scheduler, network data, credentials, dependencies, external code or upstream MCP/Valory installation.",
+      "No strategy mutation, real outcome/learning loop, A8/A9 implementation, candidate discovery, paper/OMS/risk/Gate C/execution or live, no calibration/value/upstream promotion.",
+      "No canonical data write, source identity change, roadmap CSV changes, Lane B takeover or PR #268 mutation/merge."
+    ]
+  }
+}
