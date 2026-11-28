@@ -2374,3 +2374,12 @@ Approved exact-ten-path RUNTIME/Risk3 wire-compatibility repair on merged PR265 
 - **Tests.** tests/data_layer/analytical_research/test_relation_wallet_spine.py and tests/tools/alpha/test_run_relation_wallet_spine.py. The pinned parts need POLYMARKET_HERMES_PIN_ROOT.
 - **Docs.** Contract: docs/relation_wallet_spine_contract.md. Stable evidence: docs/status_entries/S10-CAP-B2-RELATIONS-WALLET-01.md.
 - **Boundaries.** B1-A, W01, SRC-01, REL-01, Oracle3, WALLET-01/02/03, Alpha modules and the roadmap archive are byte-unchanged. Real product GET 0; LIVE DISABLED.
+
+## S10-CAP-EXEC-ECONOMICS-01
+
+- **Package.** Exact 11-path offline diagnostic package on merged PR #285 (merge 55fee0293c1687812d3fdf64d5099e4d5b4ab530). The frozen prompt and spec are in docs/wp_specs/S10-CAP-EXEC-ECONOMICS-01/. The implementation PR is pending Side26 review and Karl's merge decision.
+- **Source.** src/data_layer/analytical_research/execution_economics_spine.py: a thin consumer of the B2 A7 leg, the native REL snapshot binder, native execution feasibility and the optional WP167/168/172/173 diagnostic. It adds no new canonical store, identity, fee, fill or market model.
+- **Tool.** tools/alpha/run_execution_economics_spine.py.
+- **Tests.** tests/data_layer/analytical_research/test_execution_economics_spine.py and tests/tools/alpha/test_run_execution_economics_spine.py. The pinned parts need POLYMARKET_HERMES_PIN_ROOT; the replay parts need the pyarrow and nautilus_trader native libraries.
+- **Docs.** Contract: docs/execution_economics_spine_contract.md. Stable evidence: docs/status_entries/S10-CAP-EXEC-ECONOMICS-01.md.
+- **Boundaries.** B2, B1-A, REL-01, Oracle3, the execution_feasibility, WP167/168/170/172/173, paper and strategy modules, and the roadmap archive are byte-unchanged. Real product GET 0; LIVE DISABLED.
