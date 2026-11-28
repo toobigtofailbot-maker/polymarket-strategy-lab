@@ -2310,3 +2310,13 @@ Predecessor PR265 is merged at 7b8d2c895122682bcba915325dd3dd9dafdaa770 (head f7
   - F3: a before/after frozen digest witness.
 - **Zero activity.** No provider, market GET, Synpath call, credential, paper binding, order or deployment. LIVE DISABLED.
 - **References.** Contract: docs/execution_economics_spine_contract.md. Stable record: docs/status_entries/S10-CAP-EXEC-ECONOMICS-01.md. Side26 reviews; Karl alone merges.
+
+## S10-CAP-NINE-ROLE-COORD-01 B4 finite conditional nine-role native receipt coordination
+
+- **Base and authority.** Predecessor PR #286 (B3) is merged at 5666a3347f6f56215e290f2cbea90926ce9e4877 (head 67b53d6). Side26 granted the exact 11-path RUNTIME/Risk3 offline package under Karl's standing software-development authorization, conditional on native readiness. The native gate returned IMPLEMENTATION_READY (11/12/12) on the actual checkout before any source edit. PR #268 stays separate and untouched.
+- **Chain.** A strict manifest names at most two sealed native B2/B3 cases with one route each. B4 freezes copies, writes a write-once plan, calls each unmodified native top-level verifier once, checks the declared id and every nested lineage identity, then runs one typed read-side consumer per eligible role (A1-A7) over the verified native fields. A8/A9 are explicit `W09_PENDING`/`W10_PENDING` skips. One write-once `b4receipt:sha256:` receipt; cold verify recomputes it.
+- **Delivery vs native status.** `COMPLETED_CONSUMED` is kept separate from the carried native disposition (for example A6 `REFUSED`, A7 `PARTIAL`); native refusals are never promoted. Planned slots are always nine per case (18 for two).
+- **Journal and recovery.** A hash-chained, exclusive, fsynced journal records intent before every native call and consumer; one never-stolen writer lock; resume quarantines an in-flight subject (never retried), continues with the next case and seals; a sealed scratch only verifies. Hard-kill lock-break is deferred (W11/W12).
+- **Dispositions.** Capability rows R3-21 and R3-29 are static concept references (`CONCEPT_ONLY` / `PARTIAL_CONCEPT_UNACCEPTED`, owner PENDING); the other 34 IDs are unchanged. B3 deferred rows D001-D008, including the R007 split, are carried unchanged.
+- **Zero activity.** No new Hermes/W01 dispatch, provider or model call, market GET, credential, scheduler, strategy, paper binding, order or deployment. LIVE DISABLED. The project does not claim nine functional agents or integration completion.
+- **References.** Contract: docs/nine_role_coordination_contract.md. Stable record: docs/status_entries/S10-CAP-NINE-ROLE-COORD-01.md. Side26 reviews; Karl alone merges.
